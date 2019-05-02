@@ -1,0 +1,19 @@
+{
+    "pluginName": "快捷命令",
+    "description": "自定义在 uTools 中快速执行的命令或脚本",
+    "main": "index.html",
+    "homepage": "https://github.com/fofolee/uTools-QuickerCommand",
+    "publishPage": "https://yuanliao.info/d/296",
+    "version": "0.0.1",
+    "author": "云之轩",
+    "logo": "logo.png",
+    "platform": [ "win32", "darwin" ],
+    "preload": "preload.js",
+    "features": [
+        {
+            "code": "options",
+            "explain": "自定义在 uTools 中快速执行的命令或脚本",
+            "cmds": [ "快捷命令", "QuickCommand" ]
+        }
+    ]
+}
