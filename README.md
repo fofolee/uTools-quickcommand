@@ -62,14 +62,13 @@
 
 ![UTOOLS1556780846840.png](https://i.loli.net/2019/05/02/5cca973294933.png)
 
-
 ## 下载
 
 [百度网盘](https://pan.baidu.com/s/1kEEQcQ1p3Rjli2sTtmCcTg) 提取码: `rbek`
 
 [项目地址](https://github.com/fofolee/uTools-QuickerCommand)
 
-[插件发布页](https://yuanliao.info/d/356)
+[插件发布页](https://yuanliao.info/d/424)
 
 ## 安装方法
 
@@ -82,3 +81,8 @@
 ## 鸣谢
 
 鸣谢`uTools`团队，插件中使用的`robotJS`使用的是`剪贴板`插件中的`robotJS`，省去了自行编译的麻烦，在此感谢！
+
+## 另：两个小需求
+
+希望插件的`Features`能够支持以`base64`作为图标，好实现多设备的图标同步，目前的实现方案有点麻烦~
+另外可以根据使用的操作系统动态启用或禁用某些`Feature`，即给`Feature`添加类似`platform`的功能

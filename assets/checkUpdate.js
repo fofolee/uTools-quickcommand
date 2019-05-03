@@ -22,6 +22,8 @@ checkUpdate = () => {
                         utools.db.put({ _id: p.version, data: "pass" })
                     }
                 })
+            } else {
+                console.log('当前已是最新版本!');
             }
         })
     }
