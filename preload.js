@@ -32,31 +32,32 @@ basename = path.basename;
 
 dirname = __dirname;
 
-pjoin = path.join;
+resolve = path.resolve;
 
 exists = fs.existsSync;
-
-getIconPath = name => {
-    let dir = path.resolve(__dirname, '..', 'QuickCommandIcons')
-    if (!exists(dir)) fs.mkdirSync(dir);
-    return `../QuickCommandIcons/${name}`
-}
 
 getBase64Ico = path => {
     return fs.readFileSync(path, 'base64');
 }
 
-saveBase64Ico = (path, b64) => {
-    fs.writeFileSync(path, b64, 'base64');
+cacheIco = (b64, icon) => {
+    var file = path.resolve(__dirname, icon),
+        dir = path.dirname(file);
+    !exists(dir) && fs.mkdirSync(dir);
+    b64 && !exists(file) && fs.writeFileSync(file, b64, 'base64');
+    return file;
 }
 
-openFolder = () => {
-    return dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
-        buttonLabel: '选择',
-        filters: [
-          {name: 'Images', extensions: ['jpg', 'jpeg', 'png']},
-        ]
-    });
+openFolder = options => {
+    return dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), options);
+}
+
+saveFile = (options, content) => {
+    dialog.showSaveDialog(BrowserWindow.getFocusedWindow(), options, filename => {
+        filename && fs.writeFile(filename, content, 'utf8', err => {
+            err && console.log(err)
+        })
+    })
 }
 
 copy = () => {

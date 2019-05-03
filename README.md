@@ -10,7 +10,7 @@
 
 可以配置一些常用的命令，比如`回收站` `查看网络连接`之类
 
-![UTOOLS1556779074409.png](https://i.loli.net/2019/05/02/5cca904684757.png)
+![UTOOLS1556854200416.png](https://i.loli.net/2019/05/03/5ccbb5bb2c7d5.png)
 
 ![UTOOLS1556779310377.png](https://i.loli.net/2019/05/02/5cca91329a525.png)
 
@@ -61,6 +61,10 @@
 ![UTOOLS1556780752100.png](https://i.loli.net/2019/05/02/5cca96d32ea14.png)
 
 ![UTOOLS1556780846840.png](https://i.loli.net/2019/05/02/5cca973294933.png)
+
+#### 导入导出
+
+支持命令的导入或者导出
 
 ## 下载
 

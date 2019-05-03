@@ -4,6 +4,38 @@ getCustomFts = () => {
     return customFts;
 }
 
+putCustomFts = (code, pushData) => {
+    var db = utools.db.get("customFts");
+    if (db) {
+        var rev = db._rev
+        var data = db.data
+        data[code] = pushData;
+        utools.db.put({ _id: "customFts", data: data, _rev: rev });
+    } else {
+        var data = {};
+        data[code] = pushData;
+        utools.db.put({ _id: "customFts", data: data });
+    }    
+}
+
+importCommand = () => {
+    var options = {
+        filters: [{ name: 'json', extensions: ['json'] }, ]
+    }
+    let file = window.openFolder(options)[0];
+    $.get(file, data => {
+        var pushData = JSON.parse(data),
+            code = basename(file, '.json'),
+            customFts = getCustomFts();
+        if (code in customFts) {
+            window.messageBox({ type: 'error', icon: window.logo, message: "命令名称重复, 请先修改文件名再导入！", buttons: ['朕知道了'] })
+        } else {
+            putCustomFts(code, pushData);
+            showOptions();
+        }
+    })
+}
+
 programs = {
         shell: {
             bin: 'bash',
@@ -78,9 +110,11 @@ showOptions = () => {
                 break;
             }
         }
-        var iconpath = pjoin(dirname, features.icon),
-            base64Ico = customFts[fts].base64Ico;
-        if (!exists(iconpath) && base64Ico) saveBase64Ico(iconpath, base64Ico);
+        try {
+            var iconpath = cacheIco(customFts[fts].base64Ico, features.icon);
+        } catch (e) {
+            window.messageBox({ type: 'error', icon: window.logo, message: e.toString(), buttons: ['纳尼?!'] })
+        }
         featureList += `<tr><td><img class="logo" src="${iconpath}"></td>
         <td>${cmds}</td><td width="300px">${features.explain}</td><td>
         <label class="switch-btn">
@@ -88,12 +122,14 @@ showOptions = () => {
         <span class="text-switch"></span>
         <span class="toggle-btn"></span>
         </label>
-        <span class="editBtn" code="${features.code}">✎</span>
-        <span class="delBtn" code="${features.code}">✘</span>
+        <span class="Btn editBtn" code="${features.code}"><i class="fa fa-pencil-square fa-fw"></i></span>
+        <span class="Btn exportBtn" code="${features.code}"><i class="fa fa-share-square fa-fw"></i></span>
+        <span class="Btn delBtn" code="${features.code}"><i class="fa fa-trash fa-fw"></i></span>
         </td>`
     };
     featureList += `</tr></table><div class="foot">
     <div id="add" class="footBtn">添加命令</div>
+    <div id="import" class="footBtn">导入命令</div>
     <div id="disableAll" class="footBtn">全部禁用</div>
     <div id="enableAll" class="footBtn">全部启用</div>
     </div>`
@@ -180,6 +216,8 @@ $("#options").on('click', '.footBtn', function () {
     switch ($(this).attr('id')) {
         case 'add': showCustomize();
             break;
+        case 'import': importCommand();
+            break;
         case 'enableAll': $(".checked-switch:not(:checked)").click();
             break;
         case 'disableAll': $(".checked-switch:checked").click();
@@ -219,6 +257,20 @@ $("#options").on('click', '.editBtn', function () {
     window.editor.setValue(data.cmd);
 })
 
+// 导出
+$("#options").on('click', '.exportBtn', function () {
+    var code = $(this).attr('code'),
+        json = getCustomFts()[code],
+        options = {
+            title: '选择保存位置',
+            defaultPath: code,
+            filters: [
+                { name: 'json', extensions: ['json'] },
+            ]
+        };
+    window.saveFile(options, JSON.stringify(json));
+})
+
 // 删除
 $("#options").on('click', '.delBtn', function () {
     var code = $(this).attr('code'),
@@ -232,7 +284,14 @@ $("#options").on('click', '.delBtn', function () {
 
 // 选择图标
 $("#options").on('click', '#icon, #iconame', function () {
-    let iconpath = window.openFolder()[0];
+    var options = {
+        buttonLabel: '选择',
+        filters: [{
+            name: 'Images',
+            extensions: ['jpg', 'jpeg', 'png']
+        }, ]
+    }
+    let iconpath = window.openFolder(options)[0];
     $("#iconame").val(basename(iconpath));
     $("#icon").attr('src', iconpath);
 })
@@ -244,7 +303,7 @@ $("#options").on('click', '.saveBtn', function () {
     // 如果 code 重复, 编辑状态下不检测
     if (code in customFts && !$('#kw').attr('edit')) {
         $('#kw').css({ 'border-bottom-color': '#ec1212' })
-        window.messageBox({ type: 'error', icon: window.logo, message: "命令名称与现有的重复！", buttons: ['朕知道了'] })
+        window.messageBox({ type: 'error', icon: window.logo, message: "命令名称重复!", buttons: ['朕知道了'] })
     } else {
         var kw = $('#kw').val().split(','),
             program = $('#program').val(),
@@ -258,9 +317,9 @@ $("#options").on('click', '.saveBtn', function () {
             base64ico;
         // 自定义了图标的情况下
         if (iconame) {
-            icon = window.getIconPath(iconame);
+            icon = `../QuickCommandIcons/${iconame}`;
             if (iconpath == icon) {
-                base64ico = window.getBase64Ico(pjoin(dirname, iconpath));
+                base64ico = window.getBase64Ico(resolve(dirname, iconpath));
             } else {
                 base64ico = window.getBase64Ico(iconpath);
             }   
@@ -281,9 +340,8 @@ $("#options").on('click', '.saveBtn', function () {
             noKeyword = false;
         }
         $("#customize").animate({ top: '100%' });
-        var pushData = {};
         // 添加特性
-        pushData[code] = {
+        pushData = {
             features: {
                 "code": code,
                 "explain": desc,
@@ -297,15 +355,7 @@ $("#options").on('click', '.saveBtn', function () {
             base64Ico: base64ico,
             noKeyword: noKeyword
         }
-        var db = utools.db.get("customFts");
-        if (db) {
-            var rev = db._rev
-            var data = db.data
-            data[code] = pushData[code];
-            utools.db.put({ _id: "customFts", data: data, _rev: rev });
-        } else {
-            utools.db.put({ _id: "customFts", data: pushData });
-        }
+        putCustomFts(code, pushData);
         showOptions();
     }
 })

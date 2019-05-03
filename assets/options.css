@@ -203,20 +203,29 @@
     margin-right: 10px;
 }
 
-#options span.editBtn {
+#options span.Btn{
     font-size: 16px;
     cursor: pointer;
+}
+
+#options span.editBtn {
     color: #00af2c;
 }
 
+#options span.exportBtn {
+    color: #407abf;
+}
+
 #options span.delBtn {
-    font-size: 16px;
-    cursor: pointer;
     color: #ed5b49
 }
 
 #options span.editBtn:hover {
     color: #057205;
+}
+
+#options span.exportBtn:hover {
+    color: #2d5586;
 }
 
 #options span.delBtn:hover {
