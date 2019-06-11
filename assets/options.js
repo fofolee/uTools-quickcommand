@@ -155,6 +155,7 @@ showCustomize = () => {
         <select id="vars">
             <option value="" style="display:none">插入特殊变量</option>
             <option value="{{isWin}}">是否Window系统</option>
+            <option value="{{HostName}}">本计算机名</option>
             <option value="{{input}}">主输入框的文本</option>
             <option value="{{pwd}}">文件管理器当前目录</option>
             <option value="{{ChromeUrl}}">Chrome当前链接</option>
@@ -173,10 +174,12 @@ showCustomize = () => {
     </p>
     <p>
         <span class="word">脚&#12288;本</span>
+        <!--
         <select id="codec">
             <option value="gbk">GBK 编码</option>
             <option value="utf8">UTF8 编码</option>
         </select>
+        -->
     </p>
     <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处"></textarea></p>
     <p>
