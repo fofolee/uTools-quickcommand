@@ -4,6 +4,7 @@ const { spawn, exec } = require("child_process")
 const iconv = require('iconv-lite')
 const { clipboard } = require('electron')
 const robot = require('./robotjs')
+const jschardet = require("jschardet")
 
 //-------checkUpdate------
 const path = require("path")
@@ -144,6 +145,12 @@ special = async cmd => {
         cmd = cmd.replace(/\{\{isWin\}\}/mg, repl)
     }
 
+    // 获取电脑名
+    if (cmd.includes('{{HostName}}')) {
+        let repl = os.hostname();
+        cmd = cmd.replace(/\{\{HostName\}\}/mg, repl)
+    }
+
     // 获取资源管理器或访达当前目录
     if (cmd.includes('{{pwd}}')) {
         let repl = await pwd();
@@ -193,12 +200,11 @@ run = async (cmd, option, codec, callback) => {
     }
     var chunks = [],
         err_chunks = [];
-    codec = isWin ? codec : 'utf8';
     child.stdout.on('data', chunk => {
-        chunks.push(iconv.decode(chunk, codec))
+        chunks.push(iconv.decode(chunk, jschardet.detect(chunk).encoding))
     })
     child.stderr.on('data', err_chunk => {
-        err_chunks.push(iconv.decode(err_chunk, codec))
+        err_chunks.push(iconv.decode(err_chunk, jschardet.detect(err_chunk).encoding))
     })
     child.on('close', code => {
         let stdout = chunks.join("");
