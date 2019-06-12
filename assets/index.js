@@ -16,8 +16,8 @@ utools.onPluginEnter(({ code, type, payload }) => {
             option = programs[db.program];
         // 通过主输入框直接进入
         if (type == 'over') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
-        // 忽略输出直接退出插件
-        if (db.output == "ignore") utools.outPlugin();
+        // 无输出的批处理
+        if (db.output == 'ignore' && option.ext == 'bat') option.bin = 'explorer';
         // 运行脚本
         window.run(cmd, option, db.codec, (stdout, stderr) => {
             // 报错
@@ -29,6 +29,9 @@ utools.onPluginEnter(({ code, type, payload }) => {
             // 有输出
             if (stdout) {
                 switch (db.output) {
+                    case "ignore":
+                        utools.outPlugin();
+                        break;
                     case "text":
                         utools.showMainWindow();
                         utools.setExpendHeight(600);
