@@ -3,7 +3,7 @@ const os = require('os');
 const { spawn, exec } = require("child_process")
 const iconv = require('iconv-lite')
 const { clipboard } = require('electron')
-const robot = require('./robotjs')
+const robot = utools.robot
 const jschardet = require("jschardet")
 
 //-------checkUpdate------
