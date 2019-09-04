@@ -50,7 +50,7 @@ cacheIco = (b64, icon) => {
 }
 
 openFolder = options => {
-    return dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), options);
+    return dialog.showOpenDialogSync(BrowserWindow.getFocusedWindow(), options);
 }
 
 saveFile = (options, content) => {
