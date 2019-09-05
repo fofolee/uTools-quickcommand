@@ -16,6 +16,7 @@ logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
 
 messageBox = (options, callback) => {
     dialog.showMessageBox(BrowserWindow.getFocusedWindow(), options, index => {
+        utools.showMainWindow()
         callback(index);
     })
 }

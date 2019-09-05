@@ -183,8 +183,25 @@
     cursor: pointer;
 }
 
+#options .footBtn.danger{
+    float: left;
+    /* right: 5px;
+    bottom: 2px; */
+    border-radius: 4px;
+    background: #df3f54;
+    color: white;
+    padding: 2px 5px;
+    margin: 0px 5px;
+    cursor: pointer;
+}
+
 #options .footBtn:hover {
     background: #068506;
+    transition: 0.5s;
+}
+
+#options .footBtn.danger:hover {
+    background: #b32033;
     transition: 0.5s;
 }
 

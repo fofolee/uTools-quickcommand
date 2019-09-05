@@ -22,16 +22,56 @@ importCommand = () => {
     var options = {
         filters: [{ name: 'json', extensions: ['json'] }, ]
     }
-    let file = window.openFolder(options)[0];
+    var file = window.openFolder(options)[0];
+    var customFts = getCustomFts();
     $.get(file, data => {
-        var pushData = JSON.parse(data),
-            code = basename(file, '.json'),
-            customFts = getCustomFts();
-        if (code in customFts) {
-            window.messageBox({ type: 'error', icon: window.logo, message: "命令名称重复, 请先修改文件名再导入！", buttons: ['朕知道了'] })
+        try {
+            var pushData = JSON.parse(data);
+        } catch (error) {
+            window.messageBox({ type: 'error', icon: window.logo, message: "格式错误！", buttons: ['朕知道了'] })
+            return
+        }
+        if (typeof(pushData.features)=='object') {
+            var code = basename(file, '.json');
+            if (code in customFts) {
+                window.messageBox({ type: 'error', icon: window.logo, message: "命令名称重复, 请先修改文件名再导入！", buttons: ['朕知道了'] })
+            } else {
+                putCustomFts(code, pushData);
+                showOptions();
+            }    
         } else {
-            putCustomFts(code, pushData);
-            showOptions();
+            if (typeof (Object.values(pushData)[0].features) == 'object') {
+                for (var code of Object.keys(pushData)){
+                    if (!(code in customFts)) {
+                        putCustomFts(code, pushData[code]);
+                    }
+                }
+                showOptions(); 
+            } else {
+                window.messageBox({ type: 'error', icon: window.logo, message: "格式错误！", buttons: ['朕知道了'] })
+            }
+        }
+    })
+}
+
+exportAll = () => {
+    json = utools.db.get('customFts').data,
+    options = {
+        title: '选择保存位置',
+        defaultPath: 'quickCommand',
+        filters: [
+            { name: 'json', extensions: ['json'] },
+        ]
+    };
+window.saveFile(options, JSON.stringify(json));
+}
+
+
+clearAll = () => {
+    window.messageBox({ type: 'question', icon: window.logo, message: "将会清空所有命令，请确认！", buttons: ['手抖...', '确定！'] }, index => {
+        if (index) {
+            utools.db.remove('customFts')
+            showOptions();           
         }
     })
 }
@@ -130,7 +170,9 @@ showOptions = () => {
     featureList += `</tr></table><div class="foot">
     <div id="add" class="footBtn">添加命令</div>
     <div id="import" class="footBtn">导入命令</div>
-    <div id="disableAll" class="footBtn">全部禁用</div>
+    <div id="exportAll" class="footBtn">全部导出</div>
+    <div id="clear" class="footBtn danger">全部删除</div>
+    <div id="disableAll" class="footBtn danger">全部禁用</div>
     <div id="enableAll" class="footBtn">全部启用</div>
     </div>`
     $("#options").html(featureList);
@@ -225,6 +267,10 @@ $("#options").on('click', '.footBtn', function () {
             break;
         case 'disableAll': $(".checked-switch:checked").click();
             break;
+        case 'exportAll': exportAll();
+            break;
+        case 'clear': clearAll();
+            break;
     }
 })
 
@@ -318,6 +364,7 @@ $("#options").on('click', '.saveBtn', function () {
             cmd = window.editor.getValue(),
             icon,
             base64ico;
+        if (!desc) desc = ' ';
         // 自定义了图标的情况下
         if (iconame) {
             icon = `../QuickCommandIcons/${iconame}`;
