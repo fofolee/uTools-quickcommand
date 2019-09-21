@@ -126,7 +126,12 @@ programs = {
             bin: 'perl',
             agrv: '',
             ext: 'pl'   
-        }
+    },
+        custom: {
+            bin: '',
+            agrv: '',
+            ext: ''   
+    }
     }
 
 showOptions = () => {
@@ -216,12 +221,11 @@ showCustomize = () => {
     </p>
     <p>
         <span class="word">脚&#12288;本</span>
-        <!--
-        <select id="codec">
-            <option value="gbk">GBK 编码</option>
-            <option value="utf8">UTF8 编码</option>
-        </select>
-        -->
+        <span>
+        <input type="text" id="custombin" style="display: none;" placeholder="解释器绝对路径">
+        <input type="text" id="customarg" style="display: none;" placeholder="参数">
+        <input type="text" id="customext" style="display: none;" placeholder="脚本后缀,不含.">
+        </span>
     </p>
     <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处"></textarea></p>
     <p>
@@ -300,6 +304,11 @@ $("#options").on('click', '.editBtn', function () {
     let mode = data.program;
     let iconame = basename(data.features.icon);
     if (iconame != `${mode}.png`) $('#iconame').val(iconame);
+    if (mode == 'custom') {
+        $('#custombin').show().val(data.customOptions.bin);
+        $('#customarg').show().val(data.customOptions.args);
+        $('#customext').show().val(data.customOptions.ext);   
+    }
     mode == 'applescript' && (mode = 'shell');
     mode == 'cmd' && (mode = 'powershell');
     window.editor.setOption("mode", mode);
@@ -405,6 +414,13 @@ $("#options").on('click', '.saveBtn', function () {
             base64Ico: base64ico,
             noKeyword: noKeyword
         }
+        if (program == 'custom') {
+            pushData.customOptions = {
+                "bin": $('#custombin').val(),
+                "args": $('#customarg').val(),
+                "ext": $('#customext').val()
+            }
+        }
         putCustomFts(code, pushData);
         showOptions();
     }
@@ -414,6 +430,15 @@ $("#options").on('click', '.saveBtn', function () {
 $("#options").on('change', '#program', function () {
     let mode = $(this).val();
     if (!$("#iconame").val()) $("#icon").attr('src', `logo/${mode}.png`);
+    if (mode == 'custom') {
+        $('#custombin').show();
+        $('#customarg').show();
+        $('#customext').show();
+    } else {
+        $('#custombin').hide();
+        $('#customarg').hide();
+        $('#customext').hide();
+    }
     mode == 'applescript' && (mode = 'shell');
     mode == 'cmd' && (mode = 'powershell');
     window.editor.setOption("mode", mode);

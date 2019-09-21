@@ -249,6 +249,11 @@
     color: #bd3523;
 }
 
+#options #customize input#custombin, #options #customize input#customarg, #options #customize input#customext {
+    margin-left: 5px;
+    width: 200px;
+}
+
 #options #customize {
     position: fixed;
     height: 100%;

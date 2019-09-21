@@ -1,5 +1,5 @@
 utools.onPluginEnter(({ code, type, payload }) => {
-    checkUpdate();
+    // checkUpdate();
     // 配置页面
     if (code == 'options') {
         utools.setExpendHeight(600);
@@ -12,8 +12,12 @@ utools.onPluginEnter(({ code, type, payload }) => {
         $("#options").hide();
         $("#out").show();
         var db = utools.db.get('customFts').data[code],
-            cmd = db.cmd,
+            cmd = db.cmd;
+        if (db.program == "custom") {
+            option = db.customOptions;
+        } else {
             option = programs[db.program];
+        }
         // 通过主输入框直接进入
         if (type == 'over') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
         // 无输出的批处理
