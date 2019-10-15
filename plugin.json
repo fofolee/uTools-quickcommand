@@ -4,7 +4,7 @@
     "main": "index.html",
     "homepage": "https://github.com/fofolee/uTools-QuickerCommand",
     "publishPage": "https://yuanliao.info/d/424",
-    "version": "0.0.2",
+    "version": "1.1.0",
     "author": "云之轩",
     "logo": "logo.png",
     "platform": [ "win32", "darwin", "linux" ],

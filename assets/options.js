@@ -167,9 +167,9 @@ showOptions = () => {
         <span class="text-switch"></span>
         <span class="toggle-btn"></span>
         </label>
-        <span class="Btn editBtn" code="${features.code}"><i class="fa fa-pencil-square fa-fw"></i></span>
-        <span class="Btn exportBtn" code="${features.code}"><i class="fa fa-share-square fa-fw"></i></span>
-        <span class="Btn delBtn" code="${features.code}"><i class="fa fa-trash fa-fw"></i></span>
+        <span class="Btn editBtn" code="${features.code}">✎</span>
+        <span class="Btn exportBtn" code="${features.code}">➦</span>
+        <span class="Btn delBtn" code="${features.code}">✖</span>
         </td>`
     };
     featureList += `</tr></table><div class="foot">
