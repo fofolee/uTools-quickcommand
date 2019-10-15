@@ -15,7 +15,7 @@ putCustomFts = (code, pushData) => {
         var data = {};
         data[code] = pushData;
         utools.db.put({ _id: "customFts", data: data });
-    }    
+    }
 }
 
 importCommand = () => {
@@ -38,7 +38,7 @@ importCommand = () => {
             } else {
                 putCustomFts(code, pushData);
                 showOptions();
-            }    
+            }
         } else {
             if (typeof (Object.values(pushData)[0].features) == 'object') {
                 for (var code of Object.keys(pushData)){
@@ -46,7 +46,7 @@ importCommand = () => {
                         putCustomFts(code, pushData[code]);
                     }
                 }
-                showOptions(); 
+                showOptions();
             } else {
                 window.messageBox({ type: 'error', icon: window.logo, message: "格式错误！", buttons: ['朕知道了'] })
             }
@@ -71,7 +71,7 @@ clearAll = () => {
     window.messageBox({ type: 'question', icon: window.logo, message: "将会清空所有命令，请确认！", buttons: ['手抖...', '确定！'] }, index => {
         if (index) {
             utools.db.remove('customFts')
-            showOptions();           
+            showOptions();
         }
     })
 }
@@ -90,47 +90,47 @@ programs = {
         cmd: {
             bin: '',
             agrv: '',
-            ext: 'bat'   
+            ext: 'bat'
         },
         powershell: {
             bin: 'powershell',
             agrv: '-NoProfile -File',
-            ext: 'ps1'   
+            ext: 'ps1'
         },
         python: {
             bin: 'python',
             agrv: '-u',
-            ext: 'py'   
+            ext: 'py'
         },
         javascript: {
             bin: 'node',
             agrv: '',
-            ext: 'js'   
+            ext: 'js'
         },
         ruby: {
             bin: 'ruby',
             agrv: '',
-            ext: 'rb'   
+            ext: 'rb'
         },
         php: {
             bin: 'php',
             agrv: '',
-            ext: 'php'   
+            ext: 'php'
         },
         lua: {
             bin: 'lua',
             agrv: '',
-            ext: 'lua'   
+            ext: 'lua'
         },
         perl: {
             bin: 'perl',
             agrv: '',
-            ext: 'pl'   
+            ext: 'pl'
     },
         custom: {
             bin: '',
             agrv: '',
-            ext: ''   
+            ext: ''
     }
     }
 
@@ -204,6 +204,7 @@ showCustomize = () => {
             <option value="{{isWin}}">是否Window系统</option>
             <option value="{{HostName}}">本计算机名</option>
             <option value="{{input}}">主输入框的文本</option>
+            <option value="{{subinput}}">子输入框的文本</option>
             <option value="{{pwd}}">文件管理器当前目录</option>
             <option value="{{ChromeUrl}}">Chrome当前链接</option>
             <option value="{{ClipText}}">剪切板的文本</option>
@@ -295,7 +296,7 @@ $("#options").on('click', '.editBtn', function () {
     } else {
         $('#kw').val(data.features.cmds.toString());
     }
-    $('#kw').attr('edit', true);   
+    $('#kw').attr('edit', true);
     $('#program').val(data.program);
     $('#output').val(data.output);
     $('#desc').val(data.features.explain);
@@ -307,7 +308,7 @@ $("#options").on('click', '.editBtn', function () {
     if (mode == 'custom') {
         $('#custombin').show().val(data.customOptions.bin);
         $('#customarg').show().val(data.customOptions.args);
-        $('#customext').show().val(data.customOptions.ext);   
+        $('#customext').show().val(data.customOptions.ext);
     }
     mode == 'applescript' && (mode = 'shell');
     mode == 'cmd' && (mode = 'powershell');
@@ -336,7 +337,7 @@ $("#options").on('click', '.delBtn', function () {
         data = db.data;
     delete data[code];
     utools.removeFeature(code);
-    utools.db.put({ _id: "customFts", data: data, _rev: db._rev }); 
+    utools.db.put({ _id: "customFts", data: data, _rev: db._rev });
     showOptions();
 })
 
@@ -372,7 +373,8 @@ $("#options").on('click', '.saveBtn', function () {
             iconpath = $("#icon").attr('src'),
             cmd = window.editor.getValue(),
             icon,
-            base64ico;
+            base64ico,
+            hasSubInput;
         if (!desc) desc = ' ';
         // 自定义了图标的情况下
         if (iconame) {
@@ -381,7 +383,7 @@ $("#options").on('click', '.saveBtn', function () {
                 base64ico = window.getBase64Ico(resolve(dirname, iconpath));
             } else {
                 base64ico = window.getBase64Ico(iconpath);
-            }   
+            }
         // 未自定义使用默认
         } else {
             icon = iconpath;
@@ -398,6 +400,12 @@ $("#options").on('click', '.saveBtn', function () {
         } else {
             noKeyword = false;
         }
+        // 需要子输入框
+        if (cmd.includes('{{subinput}}')) {
+            hasSubInput = true;
+        } else {
+            hasSubInput = false;
+        }
         $("#customize").animate({ top: '100%' });
         // 添加特性
         pushData = {
@@ -412,7 +420,8 @@ $("#options").on('click', '.saveBtn', function () {
             output: output,
             codec: codec,
             base64Ico: base64ico,
-            noKeyword: noKeyword
+            noKeyword: noKeyword,
+            hasSubInput: hasSubInput
         }
         if (program == 'custom') {
             pushData.customOptions = {
