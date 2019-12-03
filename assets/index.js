@@ -45,10 +45,6 @@ utools.onPluginEnter(({ code, type, payload }) => {
     }
 });
 
-utools.onPluginOut(_ => {
-    $("#out").text('');
-})
-
 function runCmd(cmd, option, codec, output) {
     // 不需要输出的，提前关闭窗口
     if (['ignore', 'clip', 'send'].indexOf(output) !== -1){
