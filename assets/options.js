@@ -89,47 +89,47 @@ programs = {
         },
         cmd: {
             bin: '',
-            agrv: '',
+            argv: '',
             ext: 'bat'
         },
         powershell: {
             bin: 'powershell',
-            agrv: '-NoProfile -File',
+            argv: '-NoProfile -File',
             ext: 'ps1'
         },
         python: {
             bin: 'python',
-            agrv: '-u',
+            argv: '-u',
             ext: 'py'
         },
         javascript: {
             bin: 'node',
-            agrv: '',
+            argv: '',
             ext: 'js'
         },
         ruby: {
             bin: 'ruby',
-            agrv: '',
+            argv: '',
             ext: 'rb'
         },
         php: {
             bin: 'php',
-            agrv: '',
+            argv: '',
             ext: 'php'
         },
         lua: {
             bin: 'lua',
-            agrv: '',
+            argv: '',
             ext: 'lua'
         },
         perl: {
             bin: 'perl',
-            agrv: '',
+            argv: '',
             ext: 'pl'
     },
         custom: {
             bin: '',
-            agrv: '',
+            argv: '',
             ext: ''
     }
     }
@@ -307,7 +307,7 @@ $("#options").on('click', '.editBtn', function () {
     if (iconame != `${mode}.png`) $('#iconame').val(iconame);
     if (mode == 'custom') {
         $('#custombin').show().val(data.customOptions.bin);
-        $('#customarg').show().val(data.customOptions.args);
+        $('#customarg').show().val(data.customOptions.argv);
         $('#customext').show().val(data.customOptions.ext);
     }
     mode == 'applescript' && (mode = 'shell');
@@ -426,7 +426,7 @@ $("#options").on('click', '.saveBtn', function () {
         if (program == 'custom') {
             pushData.customOptions = {
                 "bin": $('#custombin').val(),
-                "args": $('#customarg').val(),
+                "argv": $('#customarg').val(),
                 "ext": $('#customext').val()
             }
         }

@@ -14,6 +14,9 @@ const { shell } = require('electron');
 pluginInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')));
 logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
 
+// fix PATH
+process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
+
 messageBox = (options, callback) => {
     dialog.showMessageBox(BrowserWindow.getFocusedWindow(), options, index => {
         utools.showMainWindow()
