@@ -218,6 +218,7 @@ showCustomize = () => {
             <option value="html">显示html格式的输出</option>
             <option value="clip">复制到剪贴板</option>
             <option value="send">发送到活动窗口</option>
+            <option value="notice">发送系统通知</option>
         </select>
     </p>
     <p>
