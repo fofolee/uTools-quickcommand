@@ -47,7 +47,7 @@ utools.onPluginEnter(({ code, type, payload }) => {
 
 function runCmd(cmd, option, codec, output) {
     // 不需要输出的，提前关闭窗口
-    if (['ignore', 'clip', 'send'].indexOf(output) !== -1){
+    if (['ignore', 'clip', 'send', 'notice'].indexOf(output) !== -1){
         utools.outPlugin()
         utools.hideMainWindow()
     }
@@ -75,8 +75,7 @@ function runCmd(cmd, option, codec, output) {
                     break;
                 case "notice":
                     // 发送系统通知
-                    utools.showNotification(stdout, null, true);
-                    utools.outPlugin();
+                    utools.showNotification(stdout, null, true);q1c
                     break;
                 case "ignore":
                 default:
