@@ -127,21 +127,6 @@ pwd = () =>
         }
     });
 
-chromeUrl = () =>
-    new Promise((reslove, reject) => {
-        if (isWin) {
-            reslove(getAddr());
-        } else {
-            var cmd = `osascript  -e 'tell application "Google Chrome"
-                        get URL of active tab of window 1
-                        end tell'`
-            exec(cmd, (err, stdout, stderr) => {
-                if (err) reject(stderr)
-                reslove(stdout.trim());
-            });
-        }
-});
-
 special = async cmd => {
     // 判断是否 windows 系统
     if (cmd.includes('{{isWin}}')) {
@@ -161,9 +146,9 @@ special = async cmd => {
         cmd = cmd.replace(/\{\{pwd\}\}/mg, repl)
     }
     // 获取 Chrome 当前链接
-    if (cmd.includes('{{ChromeUrl}}')) {
-        let repl = await chromeUrl();
-        cmd = cmd.replace(/\{\{ChromeUrl\}\}/mg, repl)
+    if (cmd.includes('{{BrowserUrl}}')) {
+        let repl = utools.getCurrentBrowserUrl();
+        cmd = cmd.replace(/\{\{BrowserUrl\}\}/mg, repl)
     }
     // 获取剪切板的文本
     if (cmd.includes('{{ClipText}}')) {
