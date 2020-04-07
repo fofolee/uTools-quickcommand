@@ -73,6 +73,11 @@ function runCmd(cmd, option, codec, output) {
                     copyTo(stdout);
                     paste();
                     break;
+                case "notice":
+                    // 发送系统通知
+                    utools.showNotification(stdout, null, true);
+                    utools.outPlugin();
+                    break;
                 case "ignore":
                 default:
                     break;
