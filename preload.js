@@ -175,7 +175,7 @@ run = async (cmd, option, codec, callback) => {
         ext = option.ext;
     cmd = await special(cmd);
     let script = path.join(tmp, `QuickCommandTempScript.${ext}`)
-    if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd, 'cp936');
+    // if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd, 'cp936');
     fs.writeFileSync(script, cmd);
     var argvs = [script]
     if (argv) {
@@ -190,10 +190,10 @@ run = async (cmd, option, codec, callback) => {
     var chunks = [],
         err_chunks = [];
     child.stdout.on('data', chunk => {
-        chunks.push(iconv.decode(chunk, jschardet.detect(chunk).encoding))
+        chunks.push(chunk)
     })
     child.stderr.on('data', err_chunk => {
-        err_chunks.push(iconv.decode(err_chunk, jschardet.detect(err_chunk).encoding))
+        err_chunks.push(err_chunk)
     })
     child.on('close', code => {
         let stdout = chunks.join("");
