@@ -206,9 +206,9 @@ showCustomize = () => {
             <option value="{{input}}">主输入框的文本</option>
             <option value="{{subinput}}">子输入框的文本</option>
             <option value="{{pwd}}">文件管理器当前目录</option>
-            <option value="{{ChromeUrl}}">Chrome当前链接</option>
+            <option value="{{BrowserUrl}}">浏览器当前链接</option>
             <option value="{{ClipText}}">剪切板的文本</option>
-            <option value="{{SelectText}}">选中的文本</option>
+            aa<option value="{{SelectText}}">选中的文本</option>
             <option value="{{SelectFile}}">选中的文件</option>
         </select>
         <span class="word">输&#12288;出</span>
@@ -359,20 +359,33 @@ $("#options").on('click', '#icon, #iconame', function () {
 // 保存
 $("#options").on('click', '.saveBtn', function () {
     var code = $('#kw').val().split(',')[0].trim()
-    var customFts = getCustomFts();
+    var customFts = getCustomFts(),
+        output = $('#output').val(),
+        cmd = window.editor.getValue();
     // 如果 code 重复, 编辑状态下不检测
     if (code in customFts && !$('#kw').attr('edit')) {
         $('#kw').css({ 'border-bottom-color': '#ec1212' })
-        window.messageBox({ type: 'error', icon: window.logo, message: "命令名称重复!", buttons: ['朕知道了'] })
+        window.messageBox({
+            type: 'error',
+            icon: window.logo,
+            message: "命令名称重复!",
+            buttons: ['朕知道了']
+        })
+    } else if (['text', 'html'].includes($('#output').val())
+        && ['{{SelectText}}', '{{SelectFile}}', '{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
+        window.messageBox({
+            type: 'error',
+            icon: window.logo,
+            message: "显示文本或html输出时无法使用{{SelectText}}、{{SelectFile}}或{{pwd}}!",
+            buttons: ['朕知道了']
+        })
     } else {
         var kw = $('#kw').val().split(','),
             program = $('#program').val(),
             desc = $('#desc').val(),
-            output = $('#output').val(),
             codec = $('#codec').val(),
             iconame = $("#iconame").val(),
             iconpath = $("#icon").attr('src'),
-            cmd = window.editor.getValue(),
             icon,
             base64ico,
             hasSubInput;
