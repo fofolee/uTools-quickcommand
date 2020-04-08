@@ -4,9 +4,8 @@ const { spawn, exec } = require("child_process")
 const iconv = require('iconv-lite')
 const { clipboard } = require('electron')
 const robot = utools.robot
-const jschardet = require("jschardet")
+// const jschardet = require("jschardet")
 
-//-------checkUpdate------
 const path = require("path")
 const { dialog, BrowserWindow, nativeImage } = require('electron').remote
 const { shell } = require('electron');
@@ -80,12 +79,55 @@ paste = () => {
     robot.keyTap('v', ctlKey);
 }
 
+// 保存剪贴板
+storeClip = () => {
+    var formats = clipboard.availableFormats("clipboard");
+    if (formats.includes("text/plain")) {
+        return ['text', clipboard.readText()]
+    }
+    if (formats.includes("image/png") || formats.includes("image/jpeg")) {
+        return ['image', clipboard.readImage()]
+    }
+    var file;
+    if (isWin) {
+        file = clipboard.readBuffer('FileNameW').toString('ucs2').replace(/\\/g, '/');
+        file = file.replace(new RegExp(String.fromCharCode(0), 'g'), '');
+    } else {
+        file = clipboard.read('public.file-url').replace('file://', '');
+    }
+    if (file) {
+        return ['file', file]
+    }
+    return []
+}
+
+// 恢复剪贴板
+restoreClip = historyData => {
+    if (historyData[0] == 'text') {
+        clipboard.writeText(historyData[1]);
+        return
+    }
+    if (historyData[0] == 'image') {
+        clipboard.writeImage(historyData[1]);
+        return
+    }
+    if (historyData[0] == 'file') {
+        utools.copyFile(historyData[1])
+        return
+    }
+    clipboard.writeText('')
+}
+
 getSelectText = () => {
+    var historyData = storeClip()
     copy();
-    return clipboard.readText()
+    var selectText = clipboard.readText()
+    restoreClip(historyData)
+    return selectText
 }
 
 getSelectFile = () => {
+    var historyData = storeClip()
     copy();
     var filePath;
     if (isWin) {
@@ -94,21 +136,32 @@ getSelectFile = () => {
     } else {
         filePath = clipboard.read('public.file-url').replace('file://', '');
     }
+    restoreClip(historyData)
     return filePath;
 }
 
-getAddr = () => {
-    robot.keyTap('d', 'alt');
-    robot.setKeyboardDelay(10);
-    return getSelectText().replace(/\\/g, '/');
-}
+// 获取前台窗口句柄
+GetForegroundWindow = callback => 
+        exec(`"${path.join(__dirname, 'bin', 'GetForegroundWindow.exe')}"`, (error, stdout, stderr) => {
+            callback(stdout);
+          });
+
+    
 
 pwd = () =>
     new Promise((reslove, reject) => {
         if (isWin) {
-            var addr = getAddr();
-            if (!exists(addr)) addr = `${os.homedir().replace(/\\/g, '/')}/Desktop`;
-            reslove(addr);
+            GetForegroundWindow(hwnd => {
+                var cmd = `powershell.exe -NoProfile "((New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq (${hwnd}) } | Select-Object -Expand LocationURL).replace('file:///','')"`;
+                exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
+                    if (err) {
+                        console.log(stderr);
+                        reslove(`${os.homedir().replace(/\\/g, '/')}/Desktop`)
+                    } else {
+                        reslove(decodeURIComponent(iconv.decode(stdout, 'GBK').trim()));
+                    }
+                });
+            })
         } else {
             var cmd = `osascript -l JavaScript -e '
             const frontmost_app_name = Application("System Events").applicationProcesses.where({ frontmost: true }).name()[0]

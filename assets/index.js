@@ -75,7 +75,7 @@ function runCmd(cmd, option, codec, output) {
                     break;
                 case "notice":
                     // 发送系统通知
-                    utools.showNotification(stdout, null, true);q1c
+                    utools.showNotification(stdout, null, true);
                     break;
                 case "ignore":
                 default:
