@@ -143,7 +143,6 @@
 #options table td {
     border-collapse: collapse;
     padding: 3px;
-    word-break: break-all;
 }
 
 #options table tr:nth-child(odd) {
@@ -164,7 +163,22 @@
     line-height: 22px;
     padding: 0 10px;
     background-color: #f3f3f3;
-    margin-right: 5px
+    margin-right: 5px;
+}
+
+#options div.cmds {
+    width: 260px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#options .keyword.re {
+    color: rgb(105, 40, 97);
+}
+
+#options .keyword.win {
+    color: rgb(48, 21, 122);
 }
 
 #options .logo {
@@ -183,7 +197,7 @@
     cursor: pointer;
 }
 
-#options .footBtn.danger{
+#options .footBtn.danger {
     float: left;
     /* right: 5px;
     bottom: 2px; */
@@ -220,7 +234,7 @@
     margin-right: 10px;
 }
 
-#options span.Btn{
+#options span.Btn {
     font-size: 16px;
     cursor: pointer;
 }
@@ -249,7 +263,9 @@
     color: #bd3523;
 }
 
-#options #customize input#custombin, #options #customize input#customarg, #options #customize input#customext {
+#options #customize input#custombin,
+#options #customize input#customarg,
+#options #customize input#customext {
     margin-left: 5px;
     width: 200px;
 }
@@ -290,6 +306,10 @@
     border-right: 0px;
     font-size: 15px;
     margin-left: 15px
+}
+
+#options #customize input#rule {
+    width: 40%;
 }
 
 #options #customize input:hover {
@@ -368,6 +388,10 @@ input::-webkit-input-placeholder {
     color: black;
 }
 
+#options #customize select option.var {
+    display: none;
+    color: rgb(129, 76, 226);
+}
 
 #options #customize input#iconame {
     width: 35%;
