@@ -158,7 +158,7 @@ showOptions = () => {
         try {
             var iconpath = cacheIco(customFts[fts].base64Ico, features.icon);
         } catch (e) {
-            window.messageBox({ type: 'error', icon: window.logo, message: e.toString(), buttons: ['纳尼?!'] })
+            window.messageBox({ type: 'error', icon: window.logo, message: e.toString(), buttons: ['啊嘞?!'] })
         }
         featureList += `<tr><td><img class="logo" src="${iconpath}"></td>
         <td>${cmds}</td><td width="300px">${features.explain}</td><td>
@@ -219,6 +219,7 @@ showCustomize = () => {
             <option value="clip">复制到剪贴板</option>
             <option value="send">发送到活动窗口</option>
             <option value="notice">发送系统通知</option>
+            <option value="terminal">在终端显示</option>
         </select>
     </p>
     <p>
