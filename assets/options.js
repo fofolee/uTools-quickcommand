@@ -208,7 +208,7 @@ showCustomize = () => {
         <select id="vars">
             <option value="" style="display:none">插入特殊变量</option>
             <option value="{{isWin}}">是否Window系统</option>
-            <option value="{{LocalId()}}">本机唯一ID</option>
+            <option value="{{LocalId}}">本机唯一ID</option>
             <option value="{{input}}" class="var regex">主输入框的文本</option>
             <option value="{{subinput}}">子输入框的文本</option>
             <option value="{{pwd}}" class="var window">文件管理器当前目录</option>
