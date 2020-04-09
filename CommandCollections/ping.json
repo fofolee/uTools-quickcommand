@@ -1,0 +1,1 @@
+{"base64Ico":"","cmd":"ping {{subinput}}","features":{"cmds":["ping"],"code":"ping","explain":" ping某个地址","icon":"logo/cmd.png"},"hasSubInput":true,"noKeyword":false,"output":"text","program":"cmd"}
