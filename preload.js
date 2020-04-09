@@ -16,9 +16,10 @@ logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
 // fix PATH
 process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
-messageBox = options => {
+messageBox = (options, callback) => {
     dialog.showMessageBox(BrowserWindow.getFocusedWindow(), options, index => {
         utools.showMainWindow()
+        callback(index)
     })
 }
 
@@ -126,15 +127,13 @@ getSelectText = () => {
     return selectText
 }
 
-getSelectFile = () =>
+getSelectFile = hwnd =>
     new Promise((reslove, reject) => {
         if (isWin) {
-            GetForegroundWindow(hwnd => {
-                var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
-                exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
-                    if (err) reject(stderr)
-                    reslove(iconv.decode(stdout, 'GBK').trim().replace(/\\/g, '/'));
-                });
+            var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
+            exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
+                if (err) reject(stderr)
+                reslove(iconv.decode(stdout, 'GBK').trim().replace(/\\/g, '/'));
             })
         } else {
             var cmd = `osascript -e 'tell application "Finder" to set selectedItems to selection as alias list
@@ -154,35 +153,33 @@ getSelectFile = () =>
         }
     })
 
-GetBinPath = () => {
-    if (isDev) {
-        return path.join(__dirname.replace(/(unsafe-\w+\.asar)/,'$1.unpacked'), 'bin', 'GetForegroundWindow.exe')  
-    } else {
-        return path.join(__dirname, 'bin', 'GetForegroundWindow.exe')
-    }
-}
+// GetBinPath = () => {
+//     if (isDev) {
+//         return path.join(__dirname.replace(/(unsafe-\w+\.asar)/,'$1.unpacked'), 'bin', 'GetForegroundWindow.exe')  
+//     } else {
+//         return path.join(__dirname, 'bin', 'GetForegroundWindow.exe')
+//     }
+// }
 
 // 获取前台窗口句柄
-GetForegroundWindow = callback => 
-        exec(`"${GetBinPath()}"`, (error, stdout, stderr) => {
-            callback(stdout);
-          });
+// GetForegroundWindow = callback => 
+//         exec(`"${GetBinPath()}"`, (error, stdout, stderr) => {
+//             callback(stdout);
+//           });
     
 
-pwd = () =>
+pwd = hwnd =>
     new Promise((reslove, reject) => {
         if (isWin) {
-            GetForegroundWindow(hwnd => {
-                var cmd = `powershell.exe -NoProfile "((New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq (${hwnd}) } | Select-Object -Expand LocationURL).replace('file:///','')"`;
-                exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
-                    if (err) {
-                        console.log(iconv.decode(stderr, 'GBK'));
-                        reslove(`${os.homedir().replace(/\\/g, '/')}/Desktop`)
-                    } else {
-                        reslove(decodeURIComponent(iconv.decode(stdout, 'GBK').trim()));
-                    }
-                });
-            })
+            var cmd = `powershell.exe -NoProfile "((New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq (${hwnd}) } | Select-Object -Expand LocationURL).replace('file:///','')"`;
+            exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
+                if (err) {
+                    console.log(iconv.decode(stderr, 'GBK'));
+                    reslove(`${os.homedir().replace(/\\/g, '/')}/Desktop`)
+                } else {
+                    reslove(decodeURIComponent(iconv.decode(stdout, 'GBK').trim()));
+                }
+            });
         } else {
             var cmd = `osascript -l JavaScript -e '
             const frontmost_app_name = Application("System Events").applicationProcesses.where({ frontmost: true }).name()[0]
@@ -208,36 +205,28 @@ special = async cmd => {
         cmd = cmd.replace(/\{\{isWin\}\}/mg, repl)
     }
 
-    // 获取电脑名
-    if (cmd.includes('{{HostName}}')) {
-        let repl = os.hostname();
+    // 获取本机唯一ID
+    if (cmd.includes('{{LocalID}}')) {
+        let repl = utools.getLocalId();
         cmd = cmd.replace(/\{\{HostName\}\}/mg, repl)
     }
 
-    // 获取资源管理器或访达当前目录
-    if (cmd.includes('{{pwd}}')) {
-        let repl = await pwd();
-        cmd = cmd.replace(/\{\{pwd\}\}/mg, repl)
-    }
-    // 获取 Chrome 当前链接
+    // 获取浏览器当前链接
     if (cmd.includes('{{BrowserUrl}}')) {
         let repl = utools.getCurrentBrowserUrl();
         cmd = cmd.replace(/\{\{BrowserUrl\}\}/mg, repl)
     }
+
     // 获取剪切板的文本
     if (cmd.includes('{{ClipText}}')) {
         let repl = clipboard.readText();
         cmd = cmd.replace(/\{\{ClipText\}\}/mg, repl)
     }
+
     // 获取选中的文本
     if (cmd.includes('{{SelectText}}')) {
         let repl = getSelectText();
         cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
-    }
-    // 获取选中的文件
-    if (cmd.includes('{{SelectFile}}')) {
-        let repl = await getSelectFile();
-        cmd = cmd.replace(/\{\{SelectFile\}\}/mg, repl)
     }
     return cmd;
 }
@@ -292,11 +281,11 @@ run = async (cmd, option, codec, terminal, callback) => {
     var chunks = [],
         err_chunks = [];
     child.stdout.on('data', chunk => {
-        if (ext == 'bat' || ext == 'ps1') chunk = iconv.decode(chunk, 'GBK')
+        chunk = iconv.decode(chunk, 'GBK')
         chunks.push(chunk)
     })
     child.stderr.on('data', err_chunk => {
-        if (ext == 'bat' || ext == 'ps1') err_chunk = iconv.decode(err_chunk, 'GBK')
+        err_chunk = iconv.decode(err_chunk, 'GBK')
         err_chunks.push(err_chunk)
     })
     child.on('close', code => {
