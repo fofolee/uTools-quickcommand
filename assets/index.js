@@ -39,6 +39,10 @@ utools.onPluginEnter(({ code, type, payload }) => {
             };
             setSubInput();
             document.addEventListener('keydown', handleEnter);
+            // 移除监听
+            utools.onPluginOut(() => {
+                document.removeEventListener('keydown', handleEnter);
+              })
         } else {
             runCmd(cmd, option, db.codec, db.output);
         }
@@ -47,15 +51,17 @@ utools.onPluginEnter(({ code, type, payload }) => {
 
 function runCmd(cmd, option, codec, output) {
     // 不需要输出的，提前关闭窗口
-    if (['ignore', 'clip', 'send', 'notice'].indexOf(output) !== -1){
+    if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1){
         utools.outPlugin()
         utools.hideMainWindow()
     }
-        // 运行脚本
-    window.run(cmd, option, codec, (stdout, stderr) => {
+    var terminal = false;
+    if(output == 'terminal') terminal = true;
+    // 运行脚本
+    window.run(cmd, option, codec, terminal, (stdout, stderr) => {
         if (stderr) {
             // 报错
-            window.messageBox({ type: 'error', icon: window.logo, message: stderr, buttons: ['纳尼?!'] })
+            window.messageBox({ type: 'error', icon: window.logo, message: stderr, buttons: ['啊嘞?!'] })
             utools.outPlugin()
         } else if (stdout) {
             // 有输出
@@ -70,8 +76,11 @@ function runCmd(cmd, option, codec, output) {
                     copyTo(stdout);
                     break;
                 case "send":
+                    // 暂存用户剪贴板
+                    var historyData = storeClip();
                     copyTo(stdout);
                     paste();
+                    restoreClip(historyData);
                     break;
                 case "notice":
                     // 发送系统通知
