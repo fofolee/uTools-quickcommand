@@ -1,1 +1,1 @@
-{"base64Ico":"","cmd":"{{input}}","features":{"cmds":[{"label":" 计算器","match":"/^[0-9+\\-*/%^]*$/","minNum":1,"type":"regex"}],"code":"key_bmu5bjsykw","explain":" 计算器","icon":"logo/powershell.png"},"hasSubInput":false,"noKeyword":true,"output":"text","program":"powershell"}
+{"base64Ico":"","cmd":"print({{input}})","features":{"cmds":[{"label":" 计算器","match":"/^[0-9+\\-*/%.xb^]*$/","minNum":1,"type":"regex"}],"code":"key_bmu5bjsykw","explain":" 计算器","icon":"logo/python.png"},"hasSubInput":false,"noKeyword":true,"output":"text","program":"python"}

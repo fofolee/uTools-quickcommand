@@ -1,1 +1,0 @@
-{"base64Ico":"","cmd":"$url = ((\"{{BrowserUrl}}\" -split \"//\")[-1] -split \":\")[0]\nping -n 2 $url","features":{"cmds":[{"label":"ping当前域名","match":{"app":"/chrome|msedge|iexplore/i"},"type":"window"}],"code":"window_2kkl16x3wug","explain":"ping当前域名","icon":"logo/powershell.png"},"hasSubInput":false,"noKeyword":true,"output":"text","program":"powershell"}

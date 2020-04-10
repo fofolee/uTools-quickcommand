@@ -1,0 +1,1 @@
+{"base64Ico":"","cmd":"#coding:utf8\nimport json\nprint json.loads('''{{WindowInfo}}'''.replace('\\\\', '\\\\\\\\'))","features":{"cmds":[{"label":"窗口信息","match":{"app":"/.*?/"},"type":"window"}],"code":"window_1jqv4x7tbtj","explain":"窗口信息","icon":"logo/python.png"},"hasSubInput":false,"noKeyword":true,"output":"text","program":"python"}
