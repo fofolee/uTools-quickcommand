@@ -143,7 +143,6 @@ getSelectFile = hwnd =>
             repeat with theItem in selectedItems
                 set pathData to pathData & POSIX path of theItem & linefeed
             end repeat
-            set stdout to pathData
             '
             `
             exec(cmd, (err, stdout, stderr) => {
@@ -181,16 +180,7 @@ pwd = hwnd =>
                 }
             });
         } else {
-            var cmd = `osascript -l JavaScript -e '
-            const frontmost_app_name = Application("System Events").applicationProcesses.where({ frontmost: true }).name()[0]
-            if (frontmost_app_name === "Finder") {
-              unescape(Application("Finder").insertionLocation().url()).slice(7).slice(0, -1)
-            } else if(frontmost_app_name === "Path Finder") {
-              unescape(Application("Path Finder").finderWindows[0].target.url()).slice(7).slice(0, -1)
-            } else {
-              unescape(Application("Finder").desktop.url()).slice(7).slice(0, -1)
-            }
-          '`
+            var cmd = `osascript -e 'tell application "Finder" to get the POSIX path of (target of front window as alias)'`
             exec(cmd, (err, stdout, stderr) => {
                 if (err) reject(stderr)
                 reslove(stdout.trim());
@@ -281,11 +271,11 @@ run = async (cmd, option, codec, terminal, callback) => {
     var chunks = [],
         err_chunks = [];
     child.stdout.on('data', chunk => {
-        chunk = iconv.decode(chunk, 'GBK')
+        if (isWin) chunk = iconv.decode(chunk, 'GBK')
         chunks.push(chunk)
     })
     child.stderr.on('data', err_chunk => {
-        err_chunk = iconv.decode(err_chunk, 'GBK')
+        if (isWin) err_chunk = iconv.decode(err_chunk, 'GBK')
         err_chunks.push(err_chunk)
     })
     child.on('close', code => {
