@@ -137,12 +137,18 @@
 
 #options table {
     border-collapse: collapse;
+    table-layout:fixed;
     width: 100%;
 }
 
 #options table td {
     border-collapse: collapse;
     padding: 3px;
+    margin-right: 15px;
+    word-break:keep-all;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 #options table tr:nth-child(odd) {
@@ -164,13 +170,6 @@
     padding: 0 10px;
     background-color: #f3f3f3;
     margin-right: 5px;
-}
-
-#options div.cmds {
-    width: 260px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 #options .keyword.re {

@@ -135,14 +135,18 @@ programs = {
 showOptions = () => {
     var currentFts = utools.getFeatures(),
         customFts = getCustomFts();
-    let featureList = '<table><tr><td></td><td>模式</td><td>说明</td><td>启用</td></tr>';
+    let featureList = '<table><tr><td width="40"></td><td width="240">模式</td><td width="270">说明</td><td>启用</td></tr>';
     for (var fts in customFts) {
         let features = customFts[fts].features;
         var cmds = '';
         if (features.cmds[0].type == 'regex') {
-            cmds = `<span class="keyword re">正则: ${features.cmds[0].match}</span>`;
+            var reg = features.cmds[0].match;
+            if (reg.length > 15) reg = reg.slice(0, 15) + '...';
+            cmds = `<span class="keyword re">正则: ${reg}</span>`;
         } else if (features.cmds[0].type == 'window') {
-            cmds = `<span class="keyword win">窗口: ${features.cmds[0].match.app}</span>`;
+            var app = features.cmds[0].match.app
+            if (app.length > 15) app = app.slice(0, 15) + '...';
+            cmds = `<span class="keyword win">窗口: ${app}</span>`;
         } else {
             features.cmds.forEach(cmd => {
                 cmds += `<span class="keyword">${cmd}</span>`;
@@ -161,7 +165,7 @@ showOptions = () => {
             window.messageBox({ type: 'error', icon: window.logo, message: e.toString(), buttons: ['啊嘞?!'] })
         }
         featureList += `<tr><td><img class="logo" src="${iconpath}"></td>
-        <td><div class="cmds">${cmds}</div></td><td width="300px">${features.explain}</td><td>
+        <td>${cmds}</td><td>${features.explain}</td><td>
         <label class="switch-btn">
         <input class="checked-switch" id="${features.code}" type="checkbox" ${isChecked}>
         <span class="text-switch"></span>
