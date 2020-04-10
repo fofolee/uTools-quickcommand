@@ -67,7 +67,8 @@ window.saveFile(options, JSON.stringify(json));
 clearAll = () => {
     window.messageBox({ type: 'question', icon: window.logo, message: "将会清空所有命令，请确认！", buttons: ['手抖...', '确定！'] }, index => {
         if (index) {
-            utools.db.remove('customFts')
+            utools.db.remove('customFts');
+            clearAllFeatures();
             showOptions();
         }
     })
@@ -301,6 +302,12 @@ typeCheck = () => {
             break;
         default:
             break;
+    }
+}
+
+clearAllFeatures = () => {
+    for (var fts of utools.getFeatures()) {
+        utools.removeFeature(fts.code)
     }
 }
 
