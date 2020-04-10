@@ -44,14 +44,6 @@ getBase64Ico = path => {
     return fs.readFileSync(path, 'base64');
 }
 
-cacheIco = (b64, icon) => {
-    var file = path.resolve(__dirname, icon),
-        dir = path.dirname(file);
-    !exists(dir) && fs.mkdirSync(dir);
-    b64 && !exists(file) && fs.writeFileSync(file, b64, 'base64');
-    return file;
-}
-
 openFolder = options => {
     return dialog.showOpenDialogSync(BrowserWindow.getFocusedWindow(), options);
 }

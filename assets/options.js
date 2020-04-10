@@ -159,12 +159,7 @@ showOptions = () => {
                 break;
             }
         }
-        try {
-            var iconpath = cacheIco(customFts[fts].base64Ico, features.icon);
-        } catch (e) {
-            window.messageBox({ type: 'error', icon: window.logo, message: e.toString(), buttons: ['啊嘞?!'] })
-        }
-        featureList += `<tr><td><img class="logo" src="${iconpath}"></td>
+        featureList += `<tr><td><img class="logo" src="${features.icon}"></td>
         <td>${cmds}</td><td>${features.explain}</td><td>
         <label class="switch-btn">
         <input class="checked-switch" id="${features.code}" type="checkbox" ${isChecked}>
@@ -370,8 +365,6 @@ $("#options").on('click', '.editBtn', function () {
     $('#codec').val(data.codec);
     $("#icon").attr('src', data.features.icon);
     let mode = data.program;
-    let iconame = basename(data.features.icon);
-    if (iconame != `${mode}.png`) $('#iconame').val(iconame);
     if (mode == 'custom') {
         $('#custombin').show().val(data.customOptions.bin);
         $('#customarg').show().val(data.customOptions.argv);
@@ -416,7 +409,7 @@ $("#options").on('click', '#icon, #iconame', function () {
         buttonLabel: '选择',
         filters: [{
             name: 'Images',
-            extensions: ['jpg', 'jpeg', 'png']
+            extensions: ['png']
         }, ]
     }
     let iconpath = window.openFolder(options)[0];
@@ -476,18 +469,13 @@ $("#options").on('click', '.saveBtn', function () {
             base64ico,
             hasSubInput;
         if (!desc) desc = ' ';
-        // 自定义了图标的情况下
+        // 选择了图标的情况下
         if (iconame) {
-            icon = `../QuickCommandIcons/${iconame}`;
-            if (iconpath == icon) {
-                base64ico = window.getBase64Ico(resolve(dirname, iconpath));
-            } else {
-                base64ico = window.getBase64Ico(iconpath);
-            }
+            base64ico = window.getBase64Ico(iconpath);
+            icon = "data:image/png;base64," + base64ico;
         // 未自定义使用默认
         } else {
             icon = iconpath;
-            base64ico = '';
         }
         var noKeyword;
         var rule = $('#rule').val();
@@ -533,7 +521,6 @@ $("#options").on('click', '.saveBtn', function () {
             cmd: cmd,
             output: output,
             codec: codec,
-            base64Ico: base64ico,
             noKeyword: noKeyword,
             hasSubInput: hasSubInput
         }
@@ -553,10 +540,16 @@ $("#options").on('click', '.saveBtn', function () {
     }
 })
 
+hasCustomIcon = () => {
+    var src = $("#icon").attr('src');
+    var iconame = $("#iconame").val();
+    return /data:image\/png;base64,/.test(src) || iconame
+}
+
 // 语言选项改变时
 $("#options").on('change', '#program', function () {
     let mode = $(this).val();
-    if (!$("#iconame").val()) $("#icon").attr('src', `logo/${mode}.png`);
+    if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
     if (mode == 'custom') {
         $('#custombin').show();
         $('#customarg').show();
