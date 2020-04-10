@@ -3,7 +3,7 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
     // 配置页面
     if (code == 'options') {
         utools.setExpendHeight(600);
-        $("#out").hide();
+        $("#out").hide().html('');
         $("#options").show();
         showOptions();
     } else {
