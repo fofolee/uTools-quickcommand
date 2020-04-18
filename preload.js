@@ -115,7 +115,9 @@ getSelectText = () => {
     clipboard.writeText('');
     copy();
     var selectText = clipboard.readText()
-    restoreClip(historyData)
+    setTimeout(() => {
+        restoreClip(historyData)
+    }, 500);
     return selectText
 }
 

@@ -98,7 +98,9 @@ function runCmd(cmd, option, codec, output) {
                     var historyData = storeClip();
                     copyTo(stdout);
                     paste();
-                    restoreClip(historyData);
+                    setTimeout(() => {
+                        restoreClip(historyData);
+                    }, 500);
                     break;
                 case "notice":
                     // 发送系统通知
