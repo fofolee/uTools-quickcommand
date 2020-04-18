@@ -304,7 +304,7 @@
     border-left: 0px;
     border-right: 0px;
     font-size: 15px;
-    margin-left: 15px
+    margin-left: 13px
 }
 
 #options #customize input#rule {
@@ -356,7 +356,7 @@ input::-webkit-input-placeholder {
 #options #customize select {
     width: 40%;
     height: 25px;
-    margin-left: 5px;
+    margin-left: 3px;
     border-bottom: 1px solid #dbdbdb;
     border-top: 0px;
     border-left: 0px;
