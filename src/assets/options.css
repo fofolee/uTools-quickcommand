@@ -180,16 +180,37 @@
     color: rgb(48, 21, 122);
 }
 
+#options .keyword.key {
+    color: rgb(122, 115, 21);
+}
+
 #options .logo {
     width: 32px;
 }
 
+#options #customize .robot{
+    display: none;
+}
+
+#options #customize .keys{
+    width: 10%;
+}
+
+#options #customize .robot.footBtn{
+    background:#3085d6;
+    float: none;
+}
+
+#options #customize .robot.footBtn:hover{
+    background:#55aafa;
+}
+
 #options .footBtn {
-    float: right;
     /* right: 5px;
     bottom: 2px; */
-    border-radius: 4px;
+    float: right;
     background: #00af2c;
+    border-radius: 4px;
     color: white;
     padding: 2px 5px;
     margin: 0px 5px;
@@ -262,11 +283,10 @@
     color: #bd3523;
 }
 
-#options #customize input#custombin,
-#options #customize input#customarg,
-#options #customize input#customext {
+#options #customize input.customscript {
     margin-left: 5px;
     width: 200px;
+    display: none;
 }
 
 #options #customize {

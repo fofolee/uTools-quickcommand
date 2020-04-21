@@ -10,6 +10,13 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
         $("#out").show().text('');
         var db = utools.db.get('customFts').data[code],
             cmd = db.cmd;
+        if (db.robotjs) {
+            utools.setExpendHeight(0);
+            utools.hideMainWindow();
+            eval(cmd);
+            utools.outPlugin();
+            return;
+        }
         if (db.program == "custom") {
             option = db.customOptions;
         } else {
@@ -68,9 +75,8 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
 
 function runCmd(cmd, option, codec, output) {
     // 不需要输出的，提前关闭窗口
-    if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1){
+    if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1) {
         utools.hideMainWindow()
-        utools.outPlugin()
     }
     var terminal = false;
     if(output == 'terminal') terminal = true;
@@ -78,8 +84,24 @@ function runCmd(cmd, option, codec, output) {
     window.run(cmd, option, codec, terminal, (stdout, stderr) => {
         if (stderr) {
             // 报错
-            window.messageBox({ type: 'error', icon: window.logo, message: stderr, buttons: ['啊嘞?!'] })
-            utools.outPlugin()
+            utools.showMainWindow()
+            Swal.fire({
+                title: '啊嘞?!',
+                text: stderr,
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '转至脚本目录',
+                cancelButtonText: '退出',
+              }).then((result) => {
+                if (result.value) {
+                    open(resolve(tmpdir, `QuickCommandTempScript.${option.ext}`));
+                  }
+                  copyTo(stderr);
+                  utools.showNotification("已复制报错信息");
+                  utools.outPlugin();
+              })
         } else if (stdout) {
             // 有输出
             switch (output) {
@@ -91,6 +113,7 @@ function runCmd(cmd, option, codec, output) {
                     break;
                 case "clip":
                     copyTo(stdout);
+                    utools.outPlugin();
                     break;
                 case "send":
                     // 暂存用户剪贴板
@@ -100,12 +123,16 @@ function runCmd(cmd, option, codec, output) {
                     setTimeout(() => {
                         restoreClip(historyData);
                     }, 500);
+                    utools.outPlugin();
                     break;
                 case "notice":
                     // 发送系统通知
-                    utools.showNotification(stdout, null, true);
+                    utools.showNotification(stdout);
+                    utools.outPlugin();
                     break;
                 case "ignore":
+                    utools.outPlugin();
+                    break;
                 default:
                     break;
             }

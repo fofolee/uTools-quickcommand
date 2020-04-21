@@ -29,7 +29,11 @@ importCommand = () => {
         try {
             var pushData = JSON.parse(data);
         } catch (error) {
-            window.messageBox({ type: 'error', icon: window.logo, message: "格式错误！", buttons: ['朕知道了'] })
+            Swal.fire({
+                icon: 'error',
+                title: '啊嘞?!',
+                text: '格式错误!',
+              })
             return
         }
         // 单个命令导入
@@ -45,7 +49,11 @@ importCommand = () => {
                 }
                 showOptions();
             } else {
-                window.messageBox({ type: 'error', icon: window.logo, message: "格式错误！", buttons: ['朕知道了'] })
+                Swal.fire({
+                    icon: 'error',
+                    title: '啊嘞?!',
+                    text: '格式错误!',
+                  })
             }
         }
     })
@@ -65,13 +73,21 @@ window.saveFile(options, JSON.stringify(json));
 
 
 clearAll = () => {
-    window.messageBox({ type: 'question', icon: window.logo, message: "将会清空所有命令，请确认！", buttons: ['手抖...', '确定！'] }, index => {
-        if (index) {
+    Swal.fire({
+        text: '将会清空所有命令，请确认！',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '确定！',
+        cancelButtonText: '手抖...',
+      }).then((result) => {
+        if (result.value) {
             utools.db.remove('customFts');
             clearAllFeatures();
             showOptions();
-        }
-    })
+          }
+      })
 }
 
 programs = {
@@ -130,7 +146,7 @@ programs = {
             argv: '',
             ext: ''
     }
-    }
+}
 
 showOptions = () => {
     var currentFts = utools.getFeatures(),
@@ -146,7 +162,11 @@ showOptions = () => {
         } else if (features.cmds[0].type == 'window') {
             var app = features.cmds[0].match.app
             if (app.length > 15) app = app.slice(0, 15) + '...';
-            cmds = `<span class="keyword win">窗口: ${app}</span>`;
+            if (customFts[fts].robotjs) {
+                cmds = `<span class="keyword key">按键: ${app}</span>`;
+            } else {
+                cmds = `<span class="keyword win">窗口: ${app}</span>`;
+            }
         } else {
             features.cmds.forEach(cmd => {
                 cmds += `<span class="keyword">${cmd}</span>`;
@@ -178,6 +198,7 @@ showOptions = () => {
     <div id="clear" class="footBtn danger">全部删除</div>
     <div id="disableAll" class="footBtn danger">全部禁用</div>
     <div id="enableAll" class="footBtn">全部启用</div>
+    <div id="sample" class="footBtn">下载命令</div>
     </div>`
     $("#options").html(featureList);
 }
@@ -192,6 +213,7 @@ showCustomize = () => {
             <option value="key">通过输入关键字进入插件</option>
             <option value="regex">通过正则匹配主输入框文本</option>
             <option value="window">通过呼出uTools前的活动窗口匹配</option>
+            <option value="robotjs">匹配窗口后模拟按键</option>
         </select>
     <span class="word" id="ruleWord">关键字</span><input type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
     <p><span class="word">说&#12288;明</span><input type="text" id="desc" placeholder="命令功能的描述"></p>
@@ -232,9 +254,29 @@ showCustomize = () => {
     <p>
         <span class="word">脚&#12288;本</span>
         <span>
-        <input type="text" id="custombin" style="display: none;" placeholder="解释器绝对路径">
-        <input type="text" id="customarg" style="display: none;" placeholder="参数">
-        <input type="text" id="customext" style="display: none;" placeholder="脚本后缀,不含.">
+        <select id="modifier1" class="robot keys">
+            <option value=""></option>
+            <option value="control">control</option>
+            <option value="alt">alt</option>
+            <option value="shift">shift</option>
+            <option value="command">⌘/win</option>
+        </select>
+        <select id="modifier2" class="robot keys">
+            <option value=""></option>
+            <option value="control">control</option>
+            <option value="alt">alt</option>
+            <option value="shift">shift</option>
+            <option value="command">⌘/win</option>
+        </select>
+        <input type="text" id="presskey" class="robot keys" placeholder="按键">
+        <span id="addKey" class="robot footBtn">添加</span>
+        <input type="text" id="keydelay" class="robot keys" placeholder="延时">
+        <span id="addDelay" class="robot footBtn">添加</span>
+        </span>
+        <span>
+        <input type="text" id="custombin" class="customscript" placeholder="解释器绝对路径">
+        <input type="text" id="customarg" class="customscript" placeholder="参数">
+        <input type="text" id="customext" class="customscript" placeholder="脚本后缀,不含.">
         </span>
     </p>
     <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处"></textarea></p>
@@ -249,7 +291,6 @@ showCustomize = () => {
     } else {
         var shell = 'shell',
             mode = 'shell';
-        $("#codec").hide();
     }
     $("#program").val(shell);
     $("#icon").attr('src', `logo/${shell}.png`);
@@ -280,6 +321,8 @@ outputCheck = () => {
 // 检查模式选项
 typeCheck = () => {
     var type = $("#type").val();
+    $("#output, #program, #vars").prop("disabled", false);
+    $(".robot").hide()
     switch (type) {
         case 'key':
             $("#ruleWord").html("关键字");
@@ -292,6 +335,14 @@ typeCheck = () => {
             $(".var.regex").show()
             $(".var.window").hide()
             $("#rule").prop("placeholder", '匹配的正则规则，如/\\w+/i');
+            break;
+        case 'robotjs':
+            $("#ruleWord").html("进&#12288;程");
+            $("#output, #program, #vars").prop("disabled", true).val('');
+            $("#rule").prop("placeholder", '窗口的进程名，支持正则，如explorer.exe');
+            $(".robot").show();
+            $('.customscript').hide();
+            window.editor.setOption("mode", 'javascript');
             break;
         case 'window':
             $("#ruleWord").html("进&#12288;程");
@@ -322,6 +373,8 @@ $("#options").on('change', 'input[type=checkbox]', function () {
 // 底部功能按钮
 $("#options").on('click', '.footBtn', function () {
     switch ($(this).attr('id')) {
+        case 'sample': visit('https://github.com/fofolee/uTools-QuickerCommand/tree/master/CommandCollections');
+            break;
         case 'add': showCustomize();
             break;
         case 'import': importCommand();
@@ -347,12 +400,13 @@ $("#options").on('click', '.editBtn', function () {
     var code = $(this).attr('code');
     var data = utools.db.get("customFts").data[code];
     showCustomize();
+    var robotjs = data.robotjs;
     var cmds = data.features.cmds[0]
     if (cmds.type == 'regex') {
         $('#type').val('regex')
         $('#rule').val(cmds.match);
     } else if (cmds.type == 'window') {
-        $('#type').val('window')
+        robotjs ? $('#type').val('robotjs') : $('#type').val('window')
         $('#rule').val(cmds.match.app);
     } else {
         $('#type').val('key')
@@ -362,7 +416,6 @@ $("#options").on('click', '.editBtn', function () {
     $('#program').val(data.program);
     $('#output').val(data.output);
     $('#desc').val(data.features.explain);
-    $('#codec').val(data.codec);
     $("#icon").attr('src', data.features.icon);
     let mode = data.program;
     if (mode == 'custom') {
@@ -377,6 +430,51 @@ $("#options").on('click', '.editBtn', function () {
     resetVars();
     typeCheck();
     outputCheck();
+})
+
+// 添加模拟按键
+$("#options").on('click', '#addKey', function () {
+    var m1 = $('#modifier1').val();
+    var m2 = $('#modifier2').val();
+    var k = $('#presskey').val();
+    var code = 'utools.robot.keyTap';
+    if (/^(\S|f1[0-2]|f[1-9]|backspace|delete|enter|tab|escape|up|down|right|left|home|end|pageup|pagedown|command|alt|control|shift|right_shift|space|printscreen|insert')$/.test(k)) {
+        if (!m1 && !m2) {
+            code += `('${k}');\n`;
+        } else if(m1 && m2){
+            code += `('${k}', ['${m1}', '${m2}']);\n`
+        } else {
+            code += `('${k}', '${m1}${m2}');\n`
+        }
+        window.editor.replaceSelection(code);
+    } else {
+        Swal.fire({
+            text: '请输入正确的按键',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '帮助',
+            cancelButtonText: '确定',
+          }).then((result) => {
+            if (result.value) {
+                visit('https://robotjs.io/docs/syntax#keys');
+              }
+          })
+    }
+})
+
+// 添加延时
+$("#options").on('click', '#addDelay', function () {
+    var t = $('#keydelay').val();
+    if (/\d+/.test(t)) {
+        window.editor.replaceSelection(`utools.robot.setKeyboardDelay(${t});\n`)
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            text: '请输入正确的时间, 单位 ms',
+          })
+    }
 })
 
 // 导出
@@ -431,40 +529,42 @@ $("#options").on('click', '.saveBtn', function () {
     // 合规性校验
     if (type == 'key'
         && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}'].map(x => cmd.includes(x)).includes(true)) {
-        window.messageBox({
-            type: 'error',
-            icon: window.logo,
-            message: "关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!",
-            buttons: ['朕知道了']
-        })
+            Swal.fire({
+                icon: 'error',
+                title: '啊嘞?!',
+                text: '关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!',
+              })
     } else if (type == 'regex'
-        && ['{{SelectFile}}', '{{WindowInfo}}','{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
-            window.messageBox({
-                type: 'error',
-                icon: window.logo,
-                message: "正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!",
-                buttons: ['朕知道了']
-            })
+        && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
+            Swal.fire({
+                icon: 'error',
+                title: '啊嘞?!',
+                text: '正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!',
+              })
     } else if (type == 'window' && cmd.includes('{{input}}')) {
-        window.messageBox({
-            type: 'error',
-            icon: window.logo,
-            message: "窗口模式无法使用{{input}}!",
-            buttons: ['朕知道了']
-        })
+        Swal.fire({
+            icon: 'error',
+            title: '啊嘞?!',
+            text: '窗口模式无法使用{{input}}!',
+          })
     } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
-        window.messageBox({
-            type: 'error',
-            icon: window.logo,
-            message: "显示文本或html输出时无法使用{{SelectText}}!",
-            buttons: ['朕知道了']
-        })
-    } else {
+        Swal.fire({
+            icon: 'error',
+            title: '啊嘞?!',
+            text: '显示文本或html输出时无法使用{{SelectText}}!',
+          })
+    } else if (type == 'robotjs'  && /\{\{.*?\}\}/.test(cmd)) {
+        Swal.fire({
+            icon: 'error',
+            title: '啊嘞?!',
+            text: '模拟按键模式无法使用特殊变量!',
+          })
+    }else {
         var program = $('#program').val(),
             desc = $('#desc').val(),
-            codec = $('#codec').val(),
             iconame = $("#iconame").val(),
             iconpath = $("#icon").attr('src'),
+            robotjs = false,
             icon,
             base64ico,
             hasSubInput;
@@ -477,11 +577,9 @@ $("#options").on('click', '.saveBtn', function () {
         } else {
             icon = iconpath;
         }
-        var noKeyword;
         var rule = $('#rule').val();
         if (type == 'key') {
             cmds = rule.split(',')
-            noKeyword = false;
         }
         if (type == 'regex') {
             cmds = [{
@@ -490,17 +588,15 @@ $("#options").on('click', '.saveBtn', function () {
                 "match": rule,
                 "minNum": 1
             }];
-            noKeyword = true;
         } 
-        if (type == 'window') {
+        if (type == 'window' || type == 'robotjs') {
             cmds = [{
                 "label": desc,
                 "type": "window",
                 "match": {
                     "app": rule
-                },
+                }
             }];
-            noKeyword = true;
         }
         // 需要子输入框
         if (cmd.includes('{{subinput}}')) {
@@ -509,6 +605,11 @@ $("#options").on('click', '.saveBtn', function () {
             hasSubInput = false;
         }
         $("#customize").animate({ top: '100%' });
+        if (type == "robotjs") {
+            program = "";
+            output = "";
+            robotjs = true;
+        }
         // 添加特性
         pushData = {
             features: {
@@ -520,9 +621,8 @@ $("#options").on('click', '.saveBtn', function () {
             program: program,
             cmd: cmd,
             output: output,
-            codec: codec,
-            noKeyword: noKeyword,
-            hasSubInput: hasSubInput
+            hasSubInput: hasSubInput,
+            robotjs: robotjs
         }
         if (program == 'custom') {
             pushData.customOptions = {
@@ -551,13 +651,9 @@ $("#options").on('change', '#program', function () {
     let mode = $(this).val();
     if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
     if (mode == 'custom') {
-        $('#custombin').show();
-        $('#customarg').show();
-        $('#customext').show();
+        $('.customscript').show();
     } else {
-        $('#custombin').hide();
-        $('#customarg').hide();
-        $('#customext').hide();
+        $('.customscript').hide();
     }
     mode == 'applescript' && (mode = 'shell');
     mode == 'cmd' && (mode = 'powershell');
