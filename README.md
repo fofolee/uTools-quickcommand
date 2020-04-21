@@ -1,10 +1,17 @@
-# 快捷命令 V1.5.1
+# 快捷命令 V1.5.5
 
 ## 简介
 
-自定义可以在`uTools`中快速执行的命令或脚本
+快速执行自定义的命令、脚本或模拟按键
 
 ### 更新
+
+#### v1.5.5
+
+- 添加一个新的`匹配窗口后模拟按键`模式,可以实现针对不同软件进行模拟按键的功能,该模式仅模拟按键,不执行脚本
+- 脚本报错时提供跳转至临时脚本目录的选项
+
+![UTOOLS1587490102521.png](https://user-gold-cdn.xitu.io/2020/4/22/1719dc89e83f326d?w=1608&h=1320&f=png&s=285582)
 
 #### v1.5.1
 - 修复macOS下新增命令界面排版错误的问题
@@ -20,13 +27,12 @@
 - 新增`通过uTools呼出前的窗口匹配`的模式，现在可以快速编写一个应用到当前活动窗口的脚本
 - 现在可以分别通过`关键字`,`主输入框正则匹配`,`活动窗口匹配`三种方式来调用自定义的脚本
 
-![UTOOLS1586518502184.png](https://user-gold-cdn.xitu.io/2020/4/10/17163df2ca458cf8?w=804&h=660&f=png&s=82971)
 
 - 新增一个特殊变量`当前窗口信息`，输出`json`格式的窗口相关信息，将原先的特殊变量`用户名`改为`本机唯一ID`，方便针对不同电脑编写脚本，两个变量均通过官方API获取
 - 弃用原先模拟按键的方式，获取资源管理器路径、选中文件、浏览器地址均借助官方API
 - 新增`发送系统通知`的输出模式 By [imxiny](https://github.com/imxiny)
 - 新增`在终端显示`的输出模式, 用以解决脚本需要显示动态输出的问题, 如 curl 命令 [issue](https://github.com/fofolee/uTools-QuickerCommand/issues/3)
-- 上传一些命令至仓库的`CommandCollections`文件夹，用以作为编写命令的样例，同时大家可以提交PR丰富这个命令库
+- 上传一些命令至仓库的`CommandCollections`文件夹，用以作为编写命令的样例，同时大家可以提交PR丰富这个命令库 [CommandCollections](https://github.com/fofolee/uTools-QuickerCommand/tree/master/CommandCollections)
 
 ##### BUG 修复
 
