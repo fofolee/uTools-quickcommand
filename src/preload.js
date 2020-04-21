@@ -2,12 +2,11 @@ const fs = require('fs');
 const os = require('os');
 const { spawn, exec } = require("child_process")
 const iconv = require('iconv-lite')
-const { clipboard } = require('electron')
+const { clipboard, shell} = require('electron')
 const robot = utools.robot
 
 const path = require("path")
 const { dialog, BrowserWindow, nativeImage } = require('electron').remote
-const { shell } = require('electron');
 
 pluginInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')));
 logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
@@ -15,14 +14,11 @@ logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
 // fix PATH
 process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
-messageBox = (options, callback) => {
-    dialog.showMessageBox(BrowserWindow.getFocusedWindow(), options, index => {
-        utools.showMainWindow()
-        callback(index)
-    })
+open = path => {
+    shell.showItemInFolder(path);
 }
 
-open = url => {
+visit = url => {
     shell.openExternal(url);
 }
 // ------------------------
@@ -32,12 +28,10 @@ isWin = os.platform() == 'win32' ? true : false;
 isDev = /unsafe-\w+\.asar/.test(__dirname) ? false : true
 
 basename = path.basename;
-
 dirname = __dirname;
-
 resolve = path.resolve;
-
 exists = fs.existsSync;
+tmpdir = os.tmpdir(),
 
 getBase64Ico = path => {
     return fs.readFileSync(path, 'base64');
@@ -143,22 +137,7 @@ getSelectFile = hwnd =>
                 reslove(stdout.trim());
             });
         }
-    })
-
-// GetBinPath = () => {
-//     if (isDev) {
-//         return path.join(__dirname.replace(/(unsafe-\w+\.asar)/,'$1.unpacked'), 'bin', 'GetForegroundWindow.exe')  
-//     } else {
-//         return path.join(__dirname, 'bin', 'GetForegroundWindow.exe')
-//     }
-// }
-
-// 获取前台窗口句柄
-// GetForegroundWindow = callback => 
-//         exec(`"${GetBinPath()}"`, (error, stdout, stderr) => {
-//             callback(stdout);
-//           });
-    
+    })   
 
 pwd = hwnd =>
     new Promise((reslove, reject) => {
@@ -215,12 +194,11 @@ special = async cmd => {
 }
 
 run = async (cmd, option, codec, terminal, callback) => {
-    var tmp = os.tmpdir(),
-        bin = option.bin,
+    var bin = option.bin,
         argv = option.argv,
         ext = option.ext;
     cmd = await special(cmd);
-    let script = path.join(tmp, `QuickCommandTempScript.${ext}`)
+    let script = path.join(tmpdir, `QuickCommandTempScript.${ext}`)
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), 'GBK');
     fs.writeFileSync(script, cmd);
