@@ -149,9 +149,10 @@ programs = {
 }
 
 showOptions = () => {
+    $("#featureList").remove();
     var currentFts = utools.getFeatures(),
         customFts = getCustomFts();
-    let featureList = '<table><tr><td width="40"></td><td width="240">模式</td><td width="270">说明</td><td>启用</td></tr>';
+    let featureList = '<div id="featureList"><table><tr><td width="40"></td><td width="240">模式</td><td width="270">说明</td><td>启用</td></tr>';
     for (var fts in customFts) {
         let features = customFts[fts].features;
         var cmds = '';
@@ -162,11 +163,7 @@ showOptions = () => {
         } else if (features.cmds[0].type == 'window') {
             var app = features.cmds[0].match.app
             if (app.length > 15) app = app.slice(0, 15) + '...';
-            if (customFts[fts].robotjs) {
-                cmds = `<span class="keyword key">按键: ${app}</span>`;
-            } else {
-                cmds = `<span class="keyword win">窗口: ${app}</span>`;
-            }
+            cmds = `<span class="keyword win">窗口: ${app}</span>`;
         } else {
             features.cmds.forEach(cmd => {
                 cmds += `<span class="keyword">${cmd}</span>`;
@@ -199,8 +196,8 @@ showOptions = () => {
     <div id="disableAll" class="footBtn danger">全部禁用</div>
     <div id="enableAll" class="footBtn">全部启用</div>
     <div id="sample" class="footBtn">下载命令</div>
-    </div>`
-    $("#options").html(featureList);
+    </div></div>`
+    $("#options").append(featureList);
 }
 
 showCustomize = () => {
@@ -213,19 +210,19 @@ showCustomize = () => {
             <option value="key">通过输入关键字进入插件</option>
             <option value="regex">通过正则匹配主输入框文本</option>
             <option value="window">通过呼出uTools前的活动窗口匹配</option>
-            <option value="robotjs">匹配窗口后模拟按键</option>
         </select>
     <span class="word" id="ruleWord">关键字</span><input type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
     <p><span class="word">说&#12288;明</span><input type="text" id="desc" placeholder="命令功能的描述"></p>
     <p>
         <span class="word">类&#12288;型</span>
         <select id="program">
+        <option value="simulation">模拟操作</option>
         ${options}
         </select>
         <span class="word">图&#12288;标</span><input type="text" readonly id="iconame" placeholder="更改图标">
         <img id="icon" src="">
     </p>
-    <p>
+    <p class="varoutput">
         <span class="word">变&#12288;量</span>
         <select id="vars">
             <option value="" style="display:none">插入特殊变量</option>
@@ -251,9 +248,8 @@ showCustomize = () => {
             <option value="terminal">在终端显示</option>
         </select>
     </p>
-    <p>
-        <span class="word">脚&#12288;本</span>
-        <span>
+    <p class="simulation">
+        <span class="word">操&#12288;作</span>
         <select id="modifier1" class="robot keys">
             <option value=""></option>
             <option value="control">control</option>
@@ -268,15 +264,28 @@ showCustomize = () => {
             <option value="shift">shift</option>
             <option value="command">⌘/win</option>
         </select>
-        <input type="text" id="presskey" class="robot keys" placeholder="按键">
-        <span id="addKey" class="robot footBtn">添加</span>
-        <input type="text" id="keydelay" class="robot keys" placeholder="延时">
-        <span id="addDelay" class="robot footBtn">添加</span>
-        </span>
+        <input type="text" id="presskey" class="robot keys" placeholder="模拟按键">
+        <span id="addKey" class="robot footBtn">﹢按键</span>
+        <input type="text" id="keydelay" class="robot keys" placeholder="等待时间">
+        <span id="addDelay" class="robot footBtn">﹢延时</span>
+        <select id="action" class="robot keys">
+            <option value="" style="display:none">预设动作</option>
+            <option value="open">打开文件</option>
+            <option value="visit">打开网址</option>
+            <option value="locate">定位文件</option>
+            <option value="system">执行命令</option>
+            <option value="copyTo">写剪贴板</option>
+            <option value="message">系统消息</option>
+            <option value="alert">弹窗显示</option>
+        </select>
+        <span id="addAction" class="robot footBtn">﹢动作</span>
+    </p>
+    <p>
+        <span class="word">脚&#12288;本</span>
         <span>
-        <input type="text" id="custombin" class="customscript" placeholder="解释器绝对路径">
-        <input type="text" id="customarg" class="customscript" placeholder="参数">
-        <input type="text" id="customext" class="customscript" placeholder="脚本后缀,不含.">
+            <input type="text" id="custombin" class="customscript" placeholder="解释器绝对路径">
+            <input type="text" id="customarg" class="customscript" placeholder="参数">
+            <input type="text" id="customext" class="customscript" placeholder="脚本后缀,不含.">
         </span>
     </p>
     <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处"></textarea></p>
@@ -285,20 +294,12 @@ showCustomize = () => {
         <button class="cancelBtn">取消</button>
     </p>`
     $("#options").append(customWindow)
-    if (window.isWin) {
-        var shell = 'cmd',
-            mode = 'powershell';
-    } else {
-        var shell = 'shell',
-            mode = 'shell';
-    }
-    $("#program").val(shell);
-    $("#icon").attr('src', `logo/${shell}.png`);
+    $("#icon").attr('src', 'logo/simulation.png');
     window.editor = CodeMirror.fromTextArea(document.getElementById("cmd"), {
         lineNumbers: true,
         lineWrapping: true
     });
-    window.editor.setOption("mode", mode);
+    window.editor.setOption("mode", 'javascript');
     $("#customize").animate({ top: '0px' });
 }
 
@@ -321,8 +322,10 @@ outputCheck = () => {
 // 检查模式选项
 typeCheck = () => {
     var type = $("#type").val();
-    $("#output, #program, #vars").prop("disabled", false);
-    $(".robot").hide()
+    // $("#output, #program, #vars").prop("disabled", false);
+    // $('.varoutput').show()
+    // $(".simulation").hide()
+    // $("#program").prop("disabled", false)
     switch (type) {
         case 'key':
             $("#ruleWord").html("关键字");
@@ -335,14 +338,6 @@ typeCheck = () => {
             $(".var.regex").show()
             $(".var.window").hide()
             $("#rule").prop("placeholder", '匹配的正则规则，如/\\w+/i');
-            break;
-        case 'robotjs':
-            $("#ruleWord").html("进&#12288;程");
-            $("#output, #program, #vars").prop("disabled", true).val('');
-            $("#rule").prop("placeholder", '窗口的进程名，支持正则，如explorer.exe');
-            $(".robot").show();
-            $('.customscript').hide();
-            window.editor.setOption("mode", 'javascript');
             break;
         case 'window':
             $("#ruleWord").html("进&#12288;程");
@@ -400,13 +395,12 @@ $("#options").on('click', '.editBtn', function () {
     var code = $(this).attr('code');
     var data = utools.db.get("customFts").data[code];
     showCustomize();
-    var robotjs = data.robotjs;
     var cmds = data.features.cmds[0]
     if (cmds.type == 'regex') {
         $('#type').val('regex')
         $('#rule').val(cmds.match);
     } else if (cmds.type == 'window') {
-        robotjs ? $('#type').val('robotjs') : $('#type').val('window')
+        $('#type').val('window');
         $('#rule').val(cmds.match.app);
     } else {
         $('#type').val('key')
@@ -423,12 +417,13 @@ $("#options").on('click', '.editBtn', function () {
         $('#customarg').show().val(data.customOptions.argv);
         $('#customext').show().val(data.customOptions.ext);
     }
-    mode == 'applescript' && (mode = 'shell');
-    mode == 'cmd' && (mode = 'powershell');
-    window.editor.setOption("mode", mode);
+    // mode == 'applescript' && (mode = 'shell');
+    // mode == 'cmd' && (mode = 'powershell');
+    // window.editor.setOption("mode", mode);
     window.editor.setValue(data.cmd);
     resetVars();
     typeCheck();
+    programCheck();
     outputCheck();
 })
 
@@ -468,13 +463,56 @@ $("#options").on('click', '#addKey', function () {
 $("#options").on('click', '#addDelay', function () {
     var t = $('#keydelay').val();
     if (/\d+/.test(t)) {
-        window.editor.replaceSelection(`utools.robot.setKeyboardDelay(${t});\n`)
+        window.editor.replaceSelection(`await sleep(${t});\n`)
     } else {
         Swal.fire({
             icon: 'warning',
             text: '请输入正确的时间, 单位 ms',
           })
     }
+})
+
+// 添加动作
+$("#options").on('click', '#addAction', async function () {
+    var a = $('#action').val();
+    var text;
+    switch (a) {
+        case 'open':
+            text = '要打开的文件';
+            break;
+        case 'visit':
+            text = '要访问的网址';
+            break;
+        case 'locate':
+            text = '要定位的文件'
+            break;
+        case 'system':
+            text = '要执行的命令'
+            break;
+        case 'message':
+            text = '要发送的消息'
+            break;
+        case 'copyTo':
+            text = '要写入的内容'
+            break;
+        case 'alert':
+            text = '要弹窗的消息'
+            break;
+        default:
+            Swal.fire({
+                icon: 'warning',
+                text: '未选中任何动作',
+              })
+            return;
+    }
+    const { value: content } = await Swal.fire({
+        title: text,
+        input: 'text',
+        showCancelButton: true,
+      })
+      if (content) {
+        window.editor.replaceSelection(`${a}("${content.replace(/\\/g, '\\\\')}");\n`)
+      }
 })
 
 // 导出
@@ -553,18 +591,11 @@ $("#options").on('click', '.saveBtn', function () {
             title: '啊嘞?!',
             text: '显示文本或html输出时无法使用{{SelectText}}!',
           })
-    } else if (type == 'robotjs'  && /\{\{.*?\}\}/.test(cmd)) {
-        Swal.fire({
-            icon: 'error',
-            title: '啊嘞?!',
-            text: '模拟按键模式无法使用特殊变量!',
-          })
-    }else {
+    } else {
         var program = $('#program').val(),
             desc = $('#desc').val(),
             iconame = $("#iconame").val(),
             iconpath = $("#icon").attr('src'),
-            robotjs = false,
             icon,
             base64ico,
             hasSubInput;
@@ -589,7 +620,7 @@ $("#options").on('click', '.saveBtn', function () {
                 "minNum": 1
             }];
         } 
-        if (type == 'window' || type == 'robotjs') {
+        if (type == 'window') {
             cmds = [{
                 "label": desc,
                 "type": "window",
@@ -605,11 +636,11 @@ $("#options").on('click', '.saveBtn', function () {
             hasSubInput = false;
         }
         $("#customize").animate({ top: '100%' });
-        if (type == "robotjs") {
-            program = "";
-            output = "";
-            robotjs = true;
-        }
+        // if (type == "robotjs") {
+        //     program = "";
+        //     output = "";
+        //     robotjs = true;
+        // }
         // 添加特性
         pushData = {
             features: {
@@ -621,8 +652,8 @@ $("#options").on('click', '.saveBtn', function () {
             program: program,
             cmd: cmd,
             output: output,
-            hasSubInput: hasSubInput,
-            robotjs: robotjs
+            hasSubInput: hasSubInput
+            // robotjs: robotjs
         }
         if (program == 'custom') {
             pushData.customOptions = {
@@ -630,6 +661,9 @@ $("#options").on('click', '.saveBtn', function () {
                 "argv": $('#customarg').val(),
                 "ext": $('#customext').val()
             }
+        }
+        if (program == 'simulation') {
+            $('#output').val('');
         }
         putCustomFts(code, pushData);
         showOptions();
@@ -646,24 +680,42 @@ hasCustomIcon = () => {
     return /data:image\/png;base64,/.test(src) || iconame
 }
 
+programCheck = () => {
+    let mode = $('#program').val();
+    if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
+    switch (mode) {
+        case 'custom':
+            $('.customscript').show();
+            break;
+        case 'simulation':
+            $('.varoutput').hide();
+            $('.simulation').show();
+            mode = 'javascript';
+            break;
+        default:
+            $('.customscript').hide();
+            $('.simulation').hide();
+            $('.varoutput').show();
+            break;
+    }
+    if('applescript') mode = 'shell';
+    if('cmd') mode = 'powershell';
+    window.editor.setOption("mode", mode);
+}
+
 // 语言选项改变时
 $("#options").on('change', '#program', function () {
-    let mode = $(this).val();
-    if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
-    if (mode == 'custom') {
-        $('.customscript').show();
-    } else {
-        $('.customscript').hide();
-    }
-    mode == 'applescript' && (mode = 'shell');
-    mode == 'cmd' && (mode = 'powershell');
-    window.editor.setOption("mode", mode);
+    programCheck()
 })
 
 // 变量选项改变时
 $("#options").on('change', '#vars', function () {
     $("#vars").css({'color':'black'})
     window.editor.replaceSelection($("#vars").val());
+})
+
+$("#options").on('change', '#action', function () {
+    $("#action").css({ 'color': 'black' })
 })
 
 // 输出选项改变时

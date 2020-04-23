@@ -180,16 +180,8 @@
     color: rgb(48, 21, 122);
 }
 
-#options .keyword.key {
-    color: rgb(122, 115, 21);
-}
-
 #options .logo {
     width: 32px;
-}
-
-#options #customize .robot{
-    display: none;
 }
 
 #options #customize .keys{
@@ -291,6 +283,7 @@
 
 #options #customize {
     position: fixed;
+    z-index: 999;
     height: 100%;
     top: 100%;
     left: 0;
@@ -299,6 +292,10 @@
     box-shadow: 0px 0px 9px 0px #00000030;
     color: black;
     background: white;
+}
+
+#options .varoutput{
+    display: none;
 }
 
 #options #customize p {
@@ -399,7 +396,7 @@ input::-webkit-input-placeholder {
     transition: 0.5s;
 }
 
-#options #customize select#vars {
+#options #customize select#vars,#action {
     color: #999;
 }
 
