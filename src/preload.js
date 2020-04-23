@@ -1,6 +1,6 @@
 const fs = require('fs');
 const os = require('os');
-const { spawn, exec } = require("child_process")
+const { spawn, exec, execSync } = require("child_process")
 const iconv = require('iconv-lite')
 const { clipboard, shell} = require('electron')
 const robot = utools.robot
@@ -14,13 +14,34 @@ logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
 // fix PATH
 process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
+messageBox = (options,callback) => {
+    dialog.showMessageBox(BrowserWindow.getFocusedWindow(), options, index => {
+        utools.showMainWindow()
+        callback(index);
+    })
+}
+
 open = path => {
+    shell.openItem(path)
+}
+
+locate = path => {
     shell.showItemInFolder(path);
 }
 
 visit = url => {
     shell.openExternal(url);
 }
+
+system = cmd => {
+    return execSync(cmd);
+}
+
+message = msg => {
+    utools.showNotification(msg)
+}
+
+sleep = ms => new Promise((r, j)=>setTimeout(r, ms))
 // ------------------------
 
 isWin = os.platform() == 'win32' ? true : false;
@@ -160,7 +181,7 @@ pwd = hwnd =>
         }
     });
 
-special = async cmd => {
+special = cmd => {
     // 判断是否 windows 系统
     if (cmd.includes('{{isWin}}')) {
         let repl = isWin ? 1 : 0;
@@ -168,9 +189,9 @@ special = async cmd => {
     }
 
     // 获取本机唯一ID
-    if (cmd.includes('{{LocalID}}')) {
+    if (cmd.includes('{{LocalId}}')) {
         let repl = utools.getLocalId();
-        cmd = cmd.replace(/\{\{HostName\}\}/mg, repl)
+        cmd = cmd.replace(/\{\{LocalId\}\}/mg, repl)
     }
 
     // 获取浏览器当前链接
@@ -193,11 +214,10 @@ special = async cmd => {
     return cmd;
 }
 
-run = async (cmd, option, codec, terminal, callback) => {
+run = (cmd, option, terminal, callback) => {
     var bin = option.bin,
         argv = option.argv,
         ext = option.ext;
-    cmd = await special(cmd);
     let script = path.join(tmpdir, `QuickCommandTempScript.${ext}`)
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), 'GBK');
