@@ -84,6 +84,7 @@ function runCmd(cmd, option, output) {
         utools.setExpendHeight(0);
         utools.outPlugin();
         // utools.hideMainWindow();
+        if(output == 'send') utools.hideMainWindow();
     }
     var terminal = false;
     if(output == 'terminal') terminal = true;
