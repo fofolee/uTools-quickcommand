@@ -72,7 +72,7 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
 function runCmd(cmd, option, output) {
     if (option == "simulation") {
         utools.setExpendHeight(0);
-        // utools.hideMainWindow();
+        utools.hideMainWindow();
         eval(`(async () => { 
             ${cmd}
         })()`);
