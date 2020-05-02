@@ -183,9 +183,9 @@ showOptions = () => {
         <span class="text-switch"></span>
         <span class="toggle-btn"></span>
         </label>
-        <span class="Btn editBtn" code="${features.code}">✎</span>
-        <span class="Btn exportBtn" code="${features.code}">➦</span>
-        <span class="Btn delBtn" code="${features.code}">✖</span>
+        <span class="Btn editBtn" code="${features.code}"><img src="img/edit.png"></span>
+        <span class="Btn exportBtn" code="${features.code}"><img src="img/export.png"></span>
+        <span class="Btn delBtn" code="${features.code}"><img src="img/del.png"></span>
         </td>`
     };
     featureList += `</tr></table><div class="foot">
@@ -277,6 +277,8 @@ showCustomize = () => {
             <option value="copyTo">写剪贴板</option>
             <option value="message">系统消息</option>
             <option value="alert">弹窗显示</option>
+            <option value="send">发送文本</option>
+            <option value="ubrowser">ubrowser</option>
         </select>
         <span id="addAction" class="robot footBtn">﹢动作</span>
     </p>
@@ -343,7 +345,7 @@ typeCheck = () => {
             $("#ruleWord").html("进&#12288;程");
             $(".var.regex").hide()
             $(".var.window").show()
-            $("#rule").prop("placeholder", '窗口的进程名，支持正则，如explorer.exe');
+            $("#rule").prop("placeholder", '窗口的进程名，多个用逗号隔开');
             break;
         default:
             break;
@@ -432,7 +434,7 @@ $("#options").on('click', '#addKey', function () {
     var m1 = $('#modifier1').val();
     var m2 = $('#modifier2').val();
     var k = $('#presskey').val();
-    var code = 'utools.robot.keyTap';
+    var code = 'keyTap';
     if (/^(\S|f1[0-2]|f[1-9]|backspace|delete|enter|tab|escape|up|down|right|left|home|end|pageup|pagedown|command|alt|control|shift|right_shift|space|printscreen|insert')$/.test(k)) {
         if (!m1 && !m2) {
             code += `('${k}');\n`;
@@ -495,8 +497,14 @@ $("#options").on('click', '#addAction', async function () {
         case 'copyTo':
             text = '要写入的内容'
             break;
+        case 'send':
+            text = '要发送的文本'
+            break;
         case 'alert':
             text = '要弹窗的消息'
+            break;
+        case 'ubrowser':
+            text = '要访问的网站'
             break;
         default:
             Swal.fire({
@@ -510,8 +518,12 @@ $("#options").on('click', '#addAction', async function () {
         input: 'text',
         showCancelButton: true,
       })
-      if (content) {
-        window.editor.replaceSelection(`${a}("${content.replace(/\\/g, '\\\\')}");\n`)
+    if (content) {
+        if (a == 'ubrowser') {
+            window.editor.replaceSelection(`utools.ubrowser.goto("${content}")\n  .run()\n`)
+        } else {
+            window.editor.replaceSelection(`${a}("${content.replace(/\\/g, '\\\\')}");\n`)
+        }
       }
 })
 
@@ -625,7 +637,7 @@ $("#options").on('click', '.saveBtn', function () {
                 "label": desc,
                 "type": "window",
                 "match": {
-                    "app": rule
+                    "app": rule.split(',')
                 }
             }];
         }
