@@ -251,6 +251,10 @@
     cursor: pointer;
 }
 
+#options span.Btn img {
+    height: 20px;
+}
+
 #options span.editBtn {
     color: #00af2c;
 }
@@ -383,7 +387,7 @@ input::-webkit-input-placeholder {
     outline: none;
     font-size: 15px;
     background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJAgMAAAB71iXHAAAADFBMVEUAAAAqPz8rN0csOEgGlpD7AAAAA3RSTlMABvwYJ91vAAAAGklEQVQI12OAgQNAaMDMwMAjw8DAVAAWgAEAPFADDsXseo4AAAAASUVORK5CYII=") no-repeat scroll right center transparent;
-    -webkit-appearance: button
+    -webkit-appearance: none
 }
 
 #options #customize select:hover {
