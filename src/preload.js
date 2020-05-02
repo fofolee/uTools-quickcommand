@@ -2,35 +2,26 @@ const fs = require('fs');
 const os = require('os');
 const { spawn, exec, execSync } = require("child_process")
 const iconv = require('iconv-lite')
-const { clipboard, shell} = require('electron')
-const robot = utools.robot
+const { clipboard } = require('electron')
 
 const path = require("path")
-const { dialog, BrowserWindow, nativeImage } = require('electron').remote
 
 pluginInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')));
-logo = nativeImage.createFromPath(path.join(__dirname, 'logo.png'));
 
 // fix PATH
 process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
-messageBox = (options,callback) => {
-    dialog.showMessageBox(BrowserWindow.getFocusedWindow(), options, index => {
-        utools.showMainWindow()
-        callback(index);
-    })
-}
 
 open = path => {
-    shell.openItem(path)
+    utools.shellOpenItem(path)
 }
 
 locate = path => {
-    shell.showItemInFolder(path);
+    utools.shellShowItemInFolder(path);
 }
 
 visit = url => {
-    shell.openExternal(url);
+    utools.shellOpenExternal(url);
 }
 
 system = cmd => {
@@ -40,6 +31,8 @@ system = cmd => {
 message = msg => {
     utools.showNotification(msg)
 }
+
+keyTap = utools.simulateKeyboardTap
 
 sleep = ms => new Promise((r, j)=>setTimeout(r, ms))
 // ------------------------
@@ -59,21 +52,19 @@ getBase64Ico = path => {
 }
 
 openFolder = options => {
-    return dialog.showOpenDialogSync(BrowserWindow.getFocusedWindow(), options);
+    return utools.showOpenDialog(options);
 }
 
 saveFile = (options, content) => {
-    dialog.showSaveDialog(BrowserWindow.getFocusedWindow(), options, filename => {
-        filename && fs.writeFile(filename, content, 'utf8', err => {
-            err && console.log(err)
-        })
+    var filename = utools.showSaveDialog(options)
+    filename && fs.writeFile(filename, content, 'utf8', err => {
+        err && console.log(err)
     })
 }
 
 copy = () => {
     var ctlKey = isWin ? 'control' : 'command';
-    robot.keyTap('c', ctlKey);
-    robot.setKeyboardDelay(20);
+    utools.simulateKeyboardTap('c', ctlKey);
 }
 
 copyTo = text => {
@@ -82,8 +73,18 @@ copyTo = text => {
 
 paste = () => {
     var ctlKey = isWin ? 'control' : 'command';
-    robot.keyTap('v', ctlKey);
+    utools.simulateKeyboardTap('v', ctlKey);
 }
+
+send = text => {
+    var historyData = storeClip();
+    copyTo(text);
+    paste();
+    setTimeout(() => {
+        restoreClip(historyData);
+    }, 500);
+}
+
 
 // 保存剪贴板
 storeClip = () => {
@@ -160,26 +161,26 @@ getSelectFile = hwnd =>
         }
     })   
 
-pwd = hwnd =>
-    new Promise((reslove, reject) => {
-        if (isWin) {
-            var cmd = `powershell.exe -NoProfile "((New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq (${hwnd}) } | Select-Object -Expand LocationURL).replace('file:///','')"`;
-            exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
-                if (err) {
-                    console.log(iconv.decode(stderr, 'GBK'));
-                    reslove(`${os.homedir().replace(/\\/g, '/')}/Desktop`)
-                } else {
-                    reslove(decodeURIComponent(iconv.decode(stdout, 'GBK').trim()));
-                }
-            });
-        } else {
-            var cmd = `osascript -e 'tell application "Finder" to get the POSIX path of (target of front window as alias)'`
-            exec(cmd, (err, stdout, stderr) => {
-                if (err) reject(stderr)
-                reslove(stdout.trim());
-            });
-        }
-    });
+// pwd = hwnd =>
+//     new Promise((reslove, reject) => {
+//         if (isWin) {
+//             var cmd = `powershell.exe -NoProfile "((New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq (${hwnd}) } | Select-Object -Expand LocationURL).replace('file:///','')"`;
+//             exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
+//                 if (err) {
+//                     console.log(iconv.decode(stderr, 'GBK'));
+//                     reslove(`${os.homedir().replace(/\\/g, '/')}/Desktop`)
+//                 } else {
+//                     reslove(decodeURIComponent(iconv.decode(stdout, 'GBK').trim()));
+//                 }
+//             });
+//         } else {
+//             var cmd = `osascript -e 'tell application "Finder" to get the POSIX path of (target of front window as alias)'`
+//             exec(cmd, (err, stdout, stderr) => {
+//                 if (err) reject(stderr)
+//                 reslove(stdout.trim());
+//             });
+//         }
+//     });
 
 special = cmd => {
     // 判断是否 windows 系统

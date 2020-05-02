@@ -29,7 +29,7 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
             }
             // 获取资源管理器或访达当前目录
             if (cmd.includes('{{pwd}}')) {
-                let repl = await pwd(payload.id);
+                let repl = utools.getCurrentFolderPath().replace(/\\/g, '\\\\');
                 cmd = cmd.replace(/\{\{pwd\}\}/mg, repl)
             }
             // 获取窗口信息
@@ -92,20 +92,18 @@ function runCmd(cmd, option, output) {
     window.run(cmd, option, terminal, (stdout, stderr) => {
         if (stderr) {
             // 报错
-            messageBox({
+            var index = utools.showMessageBox({
                 type: 'error',
                 title: '啊嘞?!',
-                icon: window.logo,
                 message: stderr,
                 buttons: ['转至脚本目录', '退出']
-            }, index => {
-                if (index == 0) {
-                    locate(resolve(tmpdir, `QuickCommandTempScript.${option.ext}`));
-                }
-                copyTo(stderr);
-                message("已复制报错信息");
-                utools.outPlugin();
             })
+            if (index == 0) {
+                locate(resolve(tmpdir, `QuickCommandTempScript.${option.ext}`));
+            }
+            copyTo(stderr);
+            message("已复制报错信息");
+            utools.outPlugin();
         } else if (stdout) {
             // 有输出
             switch (output) {
@@ -119,13 +117,7 @@ function runCmd(cmd, option, output) {
                     copyTo(stdout);
                     break;
                 case "send":
-                    // 暂存用户剪贴板
-                    var historyData = storeClip();
-                    copyTo(stdout);
-                    paste();
-                    setTimeout(() => {
-                        restoreClip(historyData);
-                    }, 500);
+                    send(stdout)
                     break;
                 case "notice":
                     // 发送系统通知
