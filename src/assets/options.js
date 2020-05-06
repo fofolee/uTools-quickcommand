@@ -439,7 +439,7 @@ $("#options").on('click', '#addKey', function () {
         if (!m1 && !m2) {
             code += `('${k}');\n`;
         } else if(m1 && m2){
-            code += `('${k}', ['${m1}', '${m2}']);\n`
+            code += `('${k}', '${m1}', '${m2}');\n`
         } else {
             code += `('${k}', '${m1}${m2}');\n`
         }
