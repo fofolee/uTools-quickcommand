@@ -82,9 +82,10 @@ function runCmd(cmd, option, output) {
     // 不需要输出的，提前关闭窗口
     if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1) {
         utools.setExpendHeight(0);
-        utools.outPlugin();
-        // utools.hideMainWindow();
-        if(output == 'send') utools.hideMainWindow();
+        utools.hideMainWindow();
+        setTimeout(() => {
+            utools.outPlugin();
+        }, 10);
     }
     var terminal = false;
     if(output == 'terminal') terminal = true;
