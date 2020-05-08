@@ -24,8 +24,8 @@ importCommand = () => {
         filters: [{ name: 'json', extensions: ['json'] }, ]
     }
     var file = window.openFolder(options)[0];
-    var customFts = getCustomFts();
-    $.get(file, data => {
+    if (file) {
+        var data = readFile(file)
         try {
             var pushData = JSON.parse(data);
         } catch (error) {
@@ -56,7 +56,7 @@ importCommand = () => {
                   })
             }
         }
-    })
+    }
 }
 
 exportAll = () => {
