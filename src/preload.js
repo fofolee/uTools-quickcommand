@@ -34,7 +34,11 @@ message = msg => {
 
 keyTap = utools.simulateKeyboardTap
 
-sleep = ms => new Promise((r, j)=>setTimeout(r, ms))
+sleep = ms => new Promise((r, j) => setTimeout(r, ms))
+
+readFile = fs.readFileSync
+
+writeFile = fs.writeFileSync
 // ------------------------
 
 isWin = os.platform() == 'win32' ? true : false;
