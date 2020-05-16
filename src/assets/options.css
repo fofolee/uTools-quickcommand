@@ -185,7 +185,7 @@
 }
 
 #options #customize .keys{
-    width: 10%;
+    width: 16%;
 }
 
 #options #customize .robot.footBtn{
@@ -281,7 +281,7 @@
 
 #options #customize input.customscript {
     margin-left: 5px;
-    width: 200px;
+    width: 20%;
     display: none;
 }
 
