@@ -43,7 +43,7 @@ writeFile = fs.writeFileSync
 
 isWin = os.platform() == 'win32' ? true : false;
 
-isDev = /unsafe-\w+\.asar/.test(__dirname) ? false : true
+isDev = /[a-zA-Z0-9\-]+\.asar/.test(__dirname) ? false : true
 
 basename = path.basename;
 dirname = __dirname;
@@ -267,11 +267,11 @@ run = (cmd, option, terminal, callback) => {
     var chunks = [],
         err_chunks = [];
     child.stdout.on('data', chunk => {
-        if (isWin) chunk = iconv.decode(chunk, 'GBK')
+        if (option.codec) chunk = iconv.decode(chunk, option.codec)
         chunks.push(chunk)
     })
     child.stderr.on('data', err_chunk => {
-        if (isWin) err_chunk = iconv.decode(err_chunk, 'GBK')
+        if (option.codec) err_chunk = iconv.decode(err_chunk, option.codec)
         err_chunks.push(err_chunk)
     })
     child.on('close', code => {

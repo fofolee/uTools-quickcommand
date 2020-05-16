@@ -104,17 +104,20 @@ programs = {
         cmd: {
             bin: '',
             argv: '',
-            ext: 'bat'
+            ext: 'bat',
+            codec: isWin ? 'gbk' : 'utf8'
         },
         powershell: {
             bin: 'powershell',
             argv: '-NoProfile -File',
-            ext: 'ps1'
+            ext: 'ps1',
+            codec: isWin ? 'gbk' : 'utf8'
         },
         python: {
             bin: 'python',
             argv: '-u',
-            ext: 'py'
+            ext: 'py',
+            codec: isWin ? 'gbk' : 'utf8'
         },
         javascript: {
             bin: 'node',
@@ -144,7 +147,8 @@ programs = {
         custom: {
             bin: '',
             argv: '',
-            ext: ''
+            ext: '',
+            codec: ''
     }
 }
 
@@ -266,10 +270,9 @@ showCustomize = () => {
         </select>
         <input type="text" id="presskey" class="robot keys" placeholder="模拟按键">
         <span id="addKey" class="robot footBtn">﹢按键</span>
-        <input type="text" id="keydelay" class="robot keys" placeholder="等待时间">
-        <span id="addDelay" class="robot footBtn">﹢延时</span>
         <select id="action" class="robot keys">
             <option value="" style="display:none">预设动作</option>
+            <option value="await sleep">添加延时</option>
             <option value="open">打开文件</option>
             <option value="visit">打开网址</option>
             <option value="locate">定位文件</option>
@@ -278,7 +281,7 @@ showCustomize = () => {
             <option value="message">系统消息</option>
             <option value="alert">弹窗显示</option>
             <option value="send">发送文本</option>
-            <option value="ubrowser">ubrowser</option>
+            <option value="ubrowser">ubrowser打开</option>
         </select>
         <span id="addAction" class="robot footBtn">﹢动作</span>
     </p>
@@ -287,7 +290,8 @@ showCustomize = () => {
         <span>
             <input type="text" id="custombin" class="customscript" placeholder="解释器绝对路径">
             <input type="text" id="customarg" class="customscript" placeholder="参数">
-            <input type="text" id="customext" class="customscript" placeholder="脚本后缀,不含.">
+            <input type="text" id="customext" class="customscript" placeholder="后缀,不含.">
+            <input type="text" id="customcodec" class="customscript" placeholder="输出编码">
         </span>
     </p>
     <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处"></textarea></p>
@@ -418,6 +422,7 @@ $("#options").on('click', '.editBtn', function () {
         $('#custombin').show().val(data.customOptions.bin);
         $('#customarg').show().val(data.customOptions.argv);
         $('#customext').show().val(data.customOptions.ext);
+        $('#customcodec').show().val(data.customOptions.codec);
     }
     // mode == 'applescript' && (mode = 'shell');
     // mode == 'cmd' && (mode = 'powershell');
@@ -479,6 +484,9 @@ $("#options").on('click', '#addAction', async function () {
     var a = $('#action').val();
     var text;
     switch (a) {
+        case 'await sleep':
+            text = '要延时的毫秒';
+            break;
         case 'open':
             text = '要打开的文件';
             break;
@@ -521,6 +529,8 @@ $("#options").on('click', '#addAction', async function () {
     if (content) {
         if (a == 'ubrowser') {
             window.editor.replaceSelection(`utools.ubrowser.goto("${content}")\n  .run()\n`)
+        } else if (a == 'await sleep') {
+            window.editor.replaceSelection(`${a}(${content})\n`)
         } else {
             window.editor.replaceSelection(`${a}("${content.replace(/\\/g, '\\\\')}");\n`)
         }
@@ -671,7 +681,8 @@ $("#options").on('click', '.saveBtn', function () {
             pushData.customOptions = {
                 "bin": $('#custombin').val(),
                 "argv": $('#customarg').val(),
-                "ext": $('#customext').val()
+                "ext": $('#customext').val(),
+                'codec': $('#customcodec').val()
             }
         }
         if (program == 'simulation') {
@@ -698,10 +709,13 @@ programCheck = () => {
     switch (mode) {
         case 'custom':
             $('.customscript').show();
+            $('.simulation').hide();
+            $('.varoutput').show();
             break;
         case 'simulation':
             $('.varoutput').hide();
             $('.simulation').show();
+            $('.customscript').hide();
             mode = 'javascript';
             break;
         default:
