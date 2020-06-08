@@ -8,9 +8,9 @@ const path = require("path")
 
 pluginInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')));
 
-// fix PATH
 process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
+window.require = require // 😈😈
 
 open = path => {
     utools.shellOpenItem(path)
@@ -39,7 +39,6 @@ sleep = ms => new Promise((r, j) => setTimeout(r, ms))
 readFile = fs.readFileSync
 
 writeFile = fs.writeFileSync
-// ------------------------
 
 isWin = os.platform() == 'win32' ? true : false;
 
@@ -164,27 +163,6 @@ getSelectFile = hwnd =>
             });
         }
     })   
-
-// pwd = hwnd =>
-//     new Promise((reslove, reject) => {
-//         if (isWin) {
-//             var cmd = `powershell.exe -NoProfile "((New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq (${hwnd}) } | Select-Object -Expand LocationURL).replace('file:///','')"`;
-//             exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
-//                 if (err) {
-//                     console.log(iconv.decode(stderr, 'GBK'));
-//                     reslove(`${os.homedir().replace(/\\/g, '/')}/Desktop`)
-//                 } else {
-//                     reslove(decodeURIComponent(iconv.decode(stdout, 'GBK').trim()));
-//                 }
-//             });
-//         } else {
-//             var cmd = `osascript -e 'tell application "Finder" to get the POSIX path of (target of front window as alias)'`
-//             exec(cmd, (err, stdout, stderr) => {
-//                 if (err) reject(stderr)
-//                 reslove(stdout.trim());
-//             });
-//         }
-//     });
 
 special = cmd => {
     // 判断是否 windows 系统
