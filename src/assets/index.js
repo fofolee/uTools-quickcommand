@@ -6,6 +6,7 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
         $("#options").show();
         showOptions();
     } else {
+        utools.setExpendHeight(0);
         $("#options").hide();
         $("#out").show().text('');
         var db = utools.db.get('customFts').data[code],
@@ -109,9 +110,11 @@ function runCmd(cmd, option, output) {
             // 有输出
             switch (output) {
                 case "text":
+                    utools.setExpendHeight(600);
                     $("#out").text(stdout);
                     break;
                 case "html":
+                    utools.setExpendHeight(600);
                     $("#out").html(stdout);
                     break;
                 case "clip":
