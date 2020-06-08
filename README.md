@@ -1,10 +1,16 @@
-# 快捷命令 V1.6.0
+# 快捷命令 V1.6.1
 
 ## 简介
 
 快速执行自定义的命令、脚本或模拟按键
 
 ### 更新
+
+#### v1.6.1
+
+ - 现在执行快捷命令时，会现将uTools的高度设置为0，如果有输出，再展开
+ - 模拟动作模式增加支持`require` 😈😈
+ - 匹配主窗口输入模式下，会对输入的格式做简单校验
 
 #### v1.6.0
 
@@ -161,9 +167,9 @@
 
 插值使用示例
 
-![UTOOLS1586459651493.png](https://user-gold-cdn.xitu.io/2020/4/10/171605d2dcc092fd?w=804&h=660&f=png&s=36561)
+![tfoJsJ.png](https://s1.ax1x.com/2020/06/08/tfoJsJ.png)
 
-![UTOOLS1586459708623.png](https://user-gold-cdn.xitu.io/2020/4/10/171605e0cf962dad?w=804&h=660&f=png&s=29783)
+![tfoNZR.png](https://s1.ax1x.com/2020/06/08/tfoNZR.png)
 
 ## 安装方法
 
