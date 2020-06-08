@@ -105,19 +105,19 @@ programs = {
             bin: '',
             argv: '',
             ext: 'bat',
-            codec: isWin ? 'gbk' : 'utf8'
+            codec: 'gbk'
         },
         powershell: {
             bin: 'powershell',
             argv: '-NoProfile -File',
             ext: 'ps1',
-            codec: isWin ? 'gbk' : 'utf8'
+            codec: isWin ? 'gbk' : ''
         },
         python: {
             bin: 'python',
             argv: '-u',
             ext: 'py',
-            codec: isWin ? 'gbk' : 'utf8'
+            codec: isWin ? 'gbk' : ''
         },
         javascript: {
             bin: 'node',
@@ -576,7 +576,7 @@ $("#options").on('click', '#icon, #iconame', function () {
 })
 
 // 保存
-$("#options").on('click', '.saveBtn', function () {
+$("#options").on('click', '.saveBtn', async function () {
     var type = $('#type').val();
     var code = $("#code").val();
     if (!code) {
@@ -633,16 +633,21 @@ $("#options").on('click', '.saveBtn', function () {
         var rule = $('#rule').val();
         if (type == 'key') {
             cmds = rule.split(',')
-        }
-        if (type == 'regex') {
+        } else if (type == 'regex') {
+            if (rule[0] != '/' || rule[rule.length - 1] != '/') {
+                await Swal.fire({
+                    icon: 'info',
+                    text: '亲，是不是忘了正则表达式两边的"/"了？正确的写法是/xxxx/,不过作者会很贴心地帮你自动加上哟',
+                })
+                rule = "/" + rule + "/"
+            }
             cmds = [{
                 "label": desc,
                 "type": "regex",
                 "match": rule,
                 "minNum": 1
             }];
-        } 
-        if (type == 'window') {
+        } else if (type == 'window') {
             cmds = [{
                 "label": desc,
                 "type": "window",
