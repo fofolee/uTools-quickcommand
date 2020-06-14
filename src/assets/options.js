@@ -1,10 +1,10 @@
-getCustomFts = () => {
+let getCustomFts = () => {
     var db = utools.db.get("customFts"),
         customFts = db ? db.data : {};
     return customFts;
 }
 
-putCustomFts = (code, pushData) => {
+let putCustomFts = (code, pushData) => {
     var db = utools.db.get("customFts");
     if (db) {
         var rev = db._rev
@@ -19,15 +19,14 @@ putCustomFts = (code, pushData) => {
 }
 
 // 导入
-importCommand = () => {
+let importCommand = () => {
     var options = {
         filters: [{ name: 'json', extensions: ['json'] }, ]
     }
-    var file = window.openFolder(options)[0];
+    var file = openFileInDialog(options, true)
     if (file) {
-        var data = readFile(file)
         try {
-            var pushData = JSON.parse(data);
+            var pushData = JSON.parse(file.data);
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -59,7 +58,7 @@ importCommand = () => {
     }
 }
 
-exportAll = () => {
+let exportAll = () => {
     json = utools.db.get('customFts').data,
     options = {
         title: '选择保存位置',
@@ -72,7 +71,7 @@ window.saveFile(options, JSON.stringify(json));
 }
 
 
-clearAll = () => {
+let clearAll = () => {
     Swal.fire({
         text: '将会清空所有命令，请确认！',
         icon: 'warning',
@@ -90,7 +89,7 @@ clearAll = () => {
       })
 }
 
-programs = {
+let programs = {
         shell: {
             bin: 'bash',
             argv: '',
@@ -111,13 +110,13 @@ programs = {
             bin: 'powershell',
             argv: '-NoProfile -File',
             ext: 'ps1',
-            codec: isWin ? 'gbk' : ''
+            codec: utools.isWindows() ? 'gbk' : ''
         },
         python: {
             bin: 'python',
             argv: '-u',
             ext: 'py',
-            codec: isWin ? 'gbk' : ''
+            codec: utools.isWindows() ? 'gbk' : ''
         },
         javascript: {
             bin: 'node',
@@ -152,7 +151,7 @@ programs = {
     }
 }
 
-showOptions = () => {
+let showOptions = () => {
     $("#featureList").remove();
     var currentFts = utools.getFeatures(),
         customFts = getCustomFts();
@@ -187,9 +186,9 @@ showOptions = () => {
         <span class="text-switch"></span>
         <span class="toggle-btn"></span>
         </label>
-        <span class="Btn editBtn" code="${features.code}"><img src="img/edit.png"></span>
-        <span class="Btn exportBtn" code="${features.code}"><img src="img/export.png"></span>
-        <span class="Btn delBtn" code="${features.code}"><img src="img/del.png"></span>
+        <span class="Btn editBtn" code="${features.code}"><img src="img/edit.svg"></span>
+        <span class="Btn exportBtn" code="${features.code}"><img src="img/export.svg"></span>
+        <span class="Btn delBtn" code="${features.code}"><img src="img/del.svg"></span>
         </td>`
     };
     featureList += `</tr></table><div class="foot">
@@ -204,7 +203,7 @@ showOptions = () => {
     $("#options").append(featureList);
 }
 
-showCustomize = () => {
+let showCustomize = () => {
     $("#customize").remove();
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
     customWindow = `<div id="customize">
@@ -272,7 +271,7 @@ showCustomize = () => {
         <span id="addKey" class="robot footBtn">﹢按键</span>
         <select id="action" class="robot keys">
             <option value="" style="display:none">预设动作</option>
-            <option value="await sleep">添加延时</option>
+            <option value="sleep">添加延时</option>
             <option value="open">打开文件</option>
             <option value="visit">打开网址</option>
             <option value="locate">定位文件</option>
@@ -294,29 +293,70 @@ showCustomize = () => {
             <input type="text" id="customcodec" class="customscript" placeholder="输出编码">
         </span>
     </p>
-    <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处"></textarea></p>
+    <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+S 保存\nCtrl+Q 取消\nCtrl+F 搜索"></textarea></p>
     <p>
-        <button class="saveBtn">保存</button>
-        <button class="cancelBtn">取消</button>
+        <button class="cmdBtn save">保存</button>
+        <button class="cmdBtn run">运行</button>
+        <button class="cmdBtn cancel">取消</button>
     </p>`
     $("#options").append(customWindow)
     $("#icon").attr('src', 'logo/simulation.png');
+    getSpecialVars()
+
     window.editor = CodeMirror.fromTextArea(document.getElementById("cmd"), {
         lineNumbers: true,
-        lineWrapping: true
+        matchBrackets: true,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        styleActiveLine: true,
+        keyMap: "vscode",
+        theme: "mdn-like",
+        extraKeys: {
+            "Alt-Enter": cm => {
+              cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+            },
+            "Ctrl-B": () => {
+                runQuickCommand()
+            },
+            "Ctrl-S": () => {
+                SaveQuickCommand()
+            },
+            "Ctrl-Q": () => {
+                quitQuickCommand()
+            },
+            "Ctrl-F": "findPersistent",
+          }
+    });
+
+    window.editor.on("cursorActivity", function () {
+        editor.showHint({
+            completeSingle: false
+        });
     });
     window.editor.setOption("mode", 'javascript');
+
     $("#customize").animate({ top: '0px' });
 }
 
+
+// 获取特殊变量
+let getSpecialVars = () => {
+    var specialVars = []
+    $("#vars option").each(i => {
+        var selector = $("#vars option").eq(i)
+        if (selector.css('display') != 'none') specialVars.push(selector.val())
+    })
+    localStorage['specialVars'] = specialVars
+}
+
 // 重置变量下拉框
-resetVars = () => {
+let resetVars = () => {
     $('#vars').val("");
     $("#vars").css({ 'color': '#999' });
 }
 
 // 检查输出选项
-outputCheck = () => {
+let outputCheck = () => {
     var output = $("#output").val()
     if (output == 'text' || output == 'html') {
         $(".selectText").hide()
@@ -326,7 +366,7 @@ outputCheck = () => {
 }
 
 // 检查模式选项
-typeCheck = () => {
+let typeCheck = () => {
     var type = $("#type").val();
     // $("#output, #program, #vars").prop("disabled", false);
     // $('.varoutput').show()
@@ -343,7 +383,7 @@ typeCheck = () => {
             $("#ruleWord").html("正&#12288;则");
             $(".var.regex").show()
             $(".var.window").hide()
-            $("#rule").prop("placeholder", '匹配的正则规则，如/\\w+/i');
+            $("#rule").prop("placeholder", '匹配的正则规则，如 /.*?\\.exe$/i');
             break;
         case 'window':
             $("#ruleWord").html("进&#12288;程");
@@ -354,12 +394,43 @@ typeCheck = () => {
         default:
             break;
     }
+    getSpecialVars()
 }
 
-clearAllFeatures = () => {
+let clearAllFeatures = () => {
     for (var fts of utools.getFeatures()) {
         utools.removeFeature(fts.code)
     }
+}
+
+let hasCustomIcon = () => {
+    var src = $("#icon").attr('src');
+    var iconame = $("#iconame").val();
+    return /data:image\/png;base64,/.test(src) || iconame
+}
+
+let programCheck = () => {
+    let mode = $('#program').val();
+    if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
+    switch (mode) {
+        case 'custom':
+            $('.customscript').show();
+            $('.simulation').hide();
+            $('.varoutput').show();
+            break;
+        case 'simulation':
+            $('.varoutput').hide();
+            $('.simulation').show();
+            $('.customscript').hide();
+            mode = 'javascript';
+            break;
+        default:
+            $('.customscript').hide();
+            $('.simulation').hide();
+            $('.varoutput').show();
+            break;
+    }
+    window.editor.setOption("mode", mode);
 }
 
 // 开关
@@ -391,11 +462,6 @@ $("#options").on('click', '.footBtn', function () {
     }
 })
 
-// 取消
-$("#options").on('click', '.cancelBtn', function () {
-    $("#customize").animate({ top: '100%'});
-})
-
 // 编辑
 $("#options").on('click', '.editBtn', function () {
     var code = $(this).attr('code');
@@ -424,9 +490,6 @@ $("#options").on('click', '.editBtn', function () {
         $('#customext').show().val(data.customOptions.ext);
         $('#customcodec').show().val(data.customOptions.codec);
     }
-    // mode == 'applescript' && (mode = 'shell');
-    // mode == 'cmd' && (mode = 'powershell');
-    // window.editor.setOption("mode", mode);
     window.editor.setValue(data.cmd);
     resetVars();
     typeCheck();
@@ -570,13 +633,14 @@ $("#options").on('click', '#icon, #iconame', function () {
             extensions: ['png']
         }, ]
     }
-    let iconpath = window.openFolder(options)[0];
-    $("#iconame").val(basename(iconpath));
-    $("#icon").attr('src', iconpath);
+    var file = openFileInDialog(options, false)
+    if (file) {
+        $("#iconame").val(file.name);
+        $("#icon").attr('src', file.path); 
+    }
 })
 
-// 保存
-$("#options").on('click', '.saveBtn', async function () {
+let SaveQuickCommand = async () => {
     var type = $('#type').val();
     var code = $("#code").val();
     if (!code) {
@@ -613,7 +677,14 @@ $("#options").on('click', '.saveBtn', async function () {
             title: '啊嘞?!',
             text: '显示文本或html输出时无法使用{{SelectText}}!',
           })
-    } else {
+    } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
+        Swal.fire({
+            icon: 'error',
+            title: '啊嘞?!',
+            text: '正则匹配 .* 和 .+ 已被uTools禁用！',
+          })
+     }
+    else {
         var program = $('#program').val(),
             desc = $('#desc').val(),
             iconame = $("#iconame").val(),
@@ -700,39 +771,88 @@ $("#options").on('click', '.saveBtn', async function () {
             $(`#${code}`).click();
         }
     }
-})
-
-hasCustomIcon = () => {
-    var src = $("#icon").attr('src');
-    var iconame = $("#iconame").val();
-    return /data:image\/png;base64,/.test(src) || iconame
 }
 
-programCheck = () => {
-    let mode = $('#program').val();
-    if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
-    switch (mode) {
-        case 'custom':
-            $('.customscript').show();
-            $('.simulation').hide();
-            $('.varoutput').show();
+// 显示运行结果
+let showResult = (content, raw, success) => {
+    var options
+    var htmlEncode = value => {
+        return !value ? value : String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
+    }
+    var preView = () => {
+        var result = $('#swal2-content').text()
+        var style = "text-align: left; padding: 0px 10px; white-space: pre-wrap; word-break: break-all;"
+        if (raw) result = htmlEncode(result)
+        $('#swal2-content').html(`<pre style="${style}">${result}</pre>`)
+        $('.swal2-popup').addClass('swal2-toast')
+    }
+    options = {
+        onBeforeOpen: preView,
+        icon: success ? "success" : "error",
+        text: content,
+        position: 'top',
+        width: 800,
+        showConfirmButton: false,
+        showClass: {
+            popup: 'fadeInDownWindow'
+        },
+        hideClass: {
+            popup: 'fadeOutUpWindow'
+        }
+    }
+    Swal.fire(options)
+}
+
+let runQuickCommand = () => {
+    var cmd = window.editor.getValue()
+    var program = $("#program").val()
+    var output = $("#output").val()
+    var terminal = false
+    var raw = true
+    switch (output) {
+        case "html":
+            raw = false
             break;
-        case 'simulation':
-            $('.varoutput').hide();
-            $('.simulation').show();
-            $('.customscript').hide();
-            mode = 'javascript';
+        case "terminal":
+            terminal = true
             break;
-        default:
-            $('.customscript').hide();
-            $('.simulation').hide();
-            $('.varoutput').show();
+        case "ignore":
+            if(program != "simulation") utools.hideMainWindow() // todo 模拟操作选择输出方式
             break;
     }
-    if('applescript') mode = 'shell';
-    if('cmd') mode = 'powershell';
-    window.editor.setOption("mode", mode);
+    if (program == "simulation") {
+        runCodeInVm(cmd, (stdout, stderr) => {
+            if (stderr) return showResult(stderr, raw, false)
+            showResult(stdout, raw, true)
+        });
+    } else {
+        var option = programs[program]
+        runCodeFile(cmd, option, terminal, (stdout, stderr) => { 
+            if(terminal) return
+            if (stderr) return showResult(stderr, raw, false)
+            showResult(stdout, raw, true)
+        })
+    }
 }
+
+let quitQuickCommand = () => {
+    $("#customize").animate({ top: '100%'});
+}
+
+// 运行
+$("#options").on('click', '.cmdBtn.run', function () {
+    runQuickCommand()
+})
+
+// 取消
+$("#options").on('click', '.cmdBtn.cancel', function () {
+    quitQuickCommand()
+})
+
+// 保存
+$("#options").on('click', '.cmdBtn.save', function () {
+    SaveQuickCommand()
+})
 
 // 语言选项改变时
 $("#options").on('change', '#program', function () {
@@ -754,7 +874,6 @@ $("#options").on('change', '#output', function () {
     resetVars();
     outputCheck();
 })
-
 
 // 方式选项改变时
 $("#options").on('change', '#type', function () {
