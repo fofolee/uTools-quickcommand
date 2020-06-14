@@ -51,6 +51,7 @@ const QuickCommandActions = [
         simulatePaste();
     },
 
+    // setTimout 不能在 vm2 中使用，同时在 electron 中有 bug
     sleep = ms => {
         var start = new Date().getTime()
         var cmd, tempFilePath
@@ -130,37 +131,18 @@ runCodeInVm = (cmd, cb) => {
         return item.toString()
     }
     
-    var chunks = [], err_chunks = []
-
-    var callBackResult = () => {
-        cb(chunks.join("\n"), err_chunks.join("\n"))
-    }
-
-    vm.on('console.log', chunk => {
-        console.log(chunk);
-        chunks.push(parseItem(chunk))
+    vm.on('console.log', stdout => {
+        cb(parseItem(stdout), null)
     });
 
-    vm.on('console.error', err_chunk => {
-        err_chunks.push(err_chunk.toString())
-    });
-
-    var timer = setInterval(() => {
-        if (process.exitcode == 1) {
-            console.log('done');
-            clearInterval(timer)
-            callBackResult()
-        }
-    }, 100);
-
-    vm.run(`
-        try {
+    try {
+        vm.run(`
             ${cmd}
-        } catch(e) {
-            console.error(e)
-        }
-        process.exitcode = 1
-    `, path.join(__dirname, 'preload.js'));
+            process.exitcode = 1
+        `, path.join(__dirname, 'preload.js'));
+    } catch (error) {
+        cb(null, error.toString())
+    }
 }
 
 // shell 以环境变量下命令作为代码提示
