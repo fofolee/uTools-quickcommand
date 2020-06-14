@@ -1,61 +1,227 @@
 const fs = require('fs');
 const os = require('os');
-const { spawn, exec, execSync } = require("child_process")
+const child_process = require("child_process")
 const iconv = require('iconv-lite')
-const { clipboard } = require('electron')
-
+const electron = require('electron')
+const { NodeVM } = require('vm2')
 const path = require("path")
 
-pluginInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')));
+if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
-process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
+const QuickCommandActions = [
 
-window.require = require // 😈😈
+    open = path => {
+        utools.shellOpenItem(path)
+    },
 
-open = path => {
-    utools.shellOpenItem(path)
+    locate = path => {
+        utools.shellShowItemInFolder(path);
+    },
+
+    visit = url => {
+        utools.shellOpenExternal(url);
+    },
+
+    system = cmd => {
+        return child_process.execSync(cmd);
+    },
+
+    message = msg => {
+        utools.showNotification(msg)
+    },
+
+    keyTap = (key, ...modifier) => utools.simulateKeyboardTap(key, ...modifier),
+
+    simulateCopy = () => {
+        var ctlKey = utools.isMacOs() ? 'command' : 'control';
+        utools.simulateKeyboardTap('c', ctlKey);
+    },
+    
+    copyTo = text => {
+        electron.clipboard.writeText(text)
+    },
+    
+    simulatePaste = () => {
+        var ctlKey = utools.isMacOs() ? 'command' : 'control';
+        utools.simulateKeyboardTap('v', ctlKey);
+    },
+    
+    send = text => {
+        copyTo(text);
+        simulatePaste();
+    },
+
+    sleep = ms => {
+        var start = new Date().getTime()
+        var cmd, tempFilePath
+        if (utools.isWindows()) {
+            tempFilePath = getQuickCommandScriptFile('vbs')
+            cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
+        } else {
+            cmd = `sleep ${ms / 1000}`
+        }
+        try {
+            child_process.execSync(cmd, { timeout: ms, })
+        } catch (ex) {
+            if (ex.code !== 'ETIMEDOUT') {
+              throw ex;
+            }
+          }
+        var end = new Date().getTime()
+        return (end - start)
+    }
+]
+
+var getSandboxFuns = () => {
+    var sandbox = {
+        utools: utools,
+        process: process,
+        electron: electron,
+        fs: fs,
+        path: path,
+        os: os,
+        child_process: child_process,
+        alert: alert,
+        $: {
+            get: $.get,
+            post: $.post,
+            ajax: $.ajax
+        }
+    }
+    QuickCommandActions.forEach(f => {
+        sandbox[f.name] = f
+    })
+    return sandbox
 }
 
-locate = path => {
-    utools.shellShowItemInFolder(path);
+runCodeInVm = (cmd, cb) => {
+    const vm = new NodeVM({
+        require: {
+            external: true,
+            builtin: ["*"],
+        },
+        console: 'redirect',
+        env: process.env,
+        sandbox: getSandboxFuns()
+    });
+
+    var parseItem = item => {
+        if (typeof (item) == "object") {
+            if (Buffer.isBuffer(item)) {
+                var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
+                if (item.length > 50) bufferString += `... ${(item.length/1000).toFixed(2)}kb`
+                return bufferString + ']'
+            } else {
+                try {
+                    var cache = [];
+                    var string = JSON.stringify(item, (key, value) => {
+                        if (typeof value === 'object' && value !== null) {
+                            if (cache.indexOf(value) !== -1) return
+                            cache.push(value);
+                        }
+                        return value;
+                    }, '\t')
+                    if (string != "{}") return string
+                } catch (error) { }
+            }
+        } else if (typeof (item) == "undefined") {
+            return "undefined"
+        }
+        return item.toString()
+    }
+    
+    var chunks = [], err_chunks = []
+
+    var callBackResult = () => {
+        cb(chunks.join("\n"), err_chunks.join("\n"))
+    }
+
+    vm.on('console.log', chunk => {
+        console.log(chunk);
+        chunks.push(parseItem(chunk))
+    });
+
+    vm.on('console.error', err_chunk => {
+        err_chunks.push(err_chunk.toString())
+    });
+
+    var timer = setInterval(() => {
+        if (process.exitcode == 1) {
+            console.log('done');
+            clearInterval(timer)
+            callBackResult()
+        }
+    }, 100);
+
+    vm.run(`
+        try {
+            ${cmd}
+        } catch(e) {
+            console.error(e)
+        }
+        process.exitcode = 1
+    `, path.join(__dirname, 'preload.js'));
 }
 
-visit = url => {
-    utools.shellOpenExternal(url);
+// shell 以环境变量下命令作为代码提示
+getShellCommand = () => {
+    var bin = []
+    if (!utools.isWindows()) {
+        process.env.PATH.split(':').forEach(d => {
+            try {
+                bin = bin.concat(fs.readdirSync(d).filter(x => x[0] != "."))
+            } catch (e) { }
+        }) 
+    }
+    return bin
 }
 
-system = cmd => {
-    return execSync(cmd);
+// cmd 以环境变量下命令作为代码提示
+getCmdCommand = () => {
+    var bin = []
+    if (utools.isWindows()) {
+        process.env.Path.split(';').forEach(d => {
+            try {
+                bin = bin.concat(fs.readdirSync(d).filter(x => x.length > 4 && x.slice(-4) == '.exe'))
+            } catch (e) { }
+        })  
+        bin = bin.concat(bin).join("|").replace(/\.exe/g, '').split("|")
+    }
+    return bin
 }
 
-message = msg => {
-    utools.showNotification(msg)
+// NodeJs 代码提示
+getNodeJsCommand = () => {
+    var obj = getSandboxFuns()
+    obj.Buffer = Buffer
+    return obj
 }
 
-keyTap = utools.simulateKeyboardTap
+// isDev = /[a-zA-Z0-9\-]+\.asar/.test(__dirname) ? false : true
+// readFile = fs.readFileSync
+// writeFile = fs.writeFileSync
+// dirname = __dirname;
+// resolve = path.resolve;
+// tmpdir = os.tmpdir(),
+// exists = fs.existsSync;
 
-sleep = ms => new Promise((r, j) => setTimeout(r, ms))
-
-readFile = fs.readFileSync
-
-writeFile = fs.writeFileSync
-
-isWin = os.platform() == 'win32' ? true : false;
-
-isDev = /[a-zA-Z0-9\-]+\.asar/.test(__dirname) ? false : true
-
-basename = path.basename;
-dirname = __dirname;
-resolve = path.resolve;
-exists = fs.existsSync;
-tmpdir = os.tmpdir(),
+getQuickCommandScriptFile = ext => {
+    return path.join(os.tmpdir(), `QuickCommandTempScript.${ext}`)
+}
 
 getBase64Ico = path => {
     return fs.readFileSync(path, 'base64');
 }
 
-openFolder = options => {
-    return utools.showOpenDialog(options);
+openFileInDialog = (options, readfile) => {
+    var file = utools.showOpenDialog(options)[0];
+    if (!file) return false
+    var information = {
+        name: path.basename(file),
+        path: file
+    }
+    if(readfile) information.data = fs.readFileSync(file)
+    return information
 }
 
 saveFile = (options, content) => {
@@ -65,45 +231,21 @@ saveFile = (options, content) => {
     })
 }
 
-copy = () => {
-    var ctlKey = isWin ? 'control' : 'command';
-    utools.simulateKeyboardTap('c', ctlKey);
-}
-
-copyTo = text => {
-    clipboard.writeText(text)
-}
-
-paste = () => {
-    var ctlKey = isWin ? 'control' : 'command';
-    utools.simulateKeyboardTap('v', ctlKey);
-}
-
-send = text => {
-    var historyData = storeClip();
-    copyTo(text);
-    paste();
-    setTimeout(() => {
-        restoreClip(historyData);
-    }, 500);
-}
-
-
 // 保存剪贴板
 storeClip = () => {
-    var formats = clipboard.availableFormats("clipboard");
+    var formats = electron.clipboard.availableFormats("clipboard");
     if (formats.includes("text/plain")) {
-        return ['text', clipboard.readText()]
+        return ['text', electron.clipboard.readText()]
     }
     if (formats.includes("image/png") || formats.includes("image/jpeg")) {
-        return ['image', clipboard.readImage()]
+        return ['image', electron.clipboard.readImage()]
     }
     var file;
-    if (isWin) {
-        file = clipboard.readBuffer('FileNameW').toString('ucs2').replace(/\\/g, '/');
+    if (utools.isWindows()) {
+        file = electron.clipboard.readBuffer('FileNameW').toString('ucs2').replace(/\\/g, '/');
         file = file.replace(new RegExp(String.fromCharCode(0), 'g'), '');
     } else {
-        file = clipboard.read('public.file-url').replace('file://', '');
+        file = electron.clipboard.read('public.file-url').replace('file://', '');
     }
     if (file) {
         return ['file', file]
@@ -114,25 +256,25 @@ storeClip = () => {
 // 恢复剪贴板
 restoreClip = historyData => {
     if (historyData[0] == 'text') {
-        clipboard.writeText(historyData[1]);
+        electron.clipboard.writeText(historyData[1]);
         return
     }
     if (historyData[0] == 'image') {
-        clipboard.writeImage(historyData[1]);
+        electron.clipboard.writeImage(historyData[1]);
         return
     }
     if (historyData[0] == 'file') {
         utools.copyFile(historyData[1])
         return
     }
-    clipboard.writeText('')
+    electron.clipboard.writeText('')
 }
 
 getSelectText = () => {
     var historyData = storeClip();
-    clipboard.writeText('');
-    copy();
-    var selectText = clipboard.readText()
+    electron.clipboard.writeText('');
+    simulateCopy();
+    var selectText = electron.clipboard.readText()
     setTimeout(() => {
         restoreClip(historyData)
     }, 500);
@@ -141,9 +283,9 @@ getSelectText = () => {
 
 getSelectFile = hwnd =>
     new Promise((reslove, reject) => {
-        if (isWin) {
+        if (utools.isWindows()) {
             var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
-            exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
+            child_process.exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
                 if (err) reject(stderr)
                 reslove(iconv.decode(stdout, 'GBK').trim().replace(/\\/g, '/'));
             })
@@ -157,7 +299,7 @@ getSelectFile = hwnd =>
             end repeat
             '
             `
-            exec(cmd, (err, stdout, stderr) => {
+            child_process.exec(cmd, (err, stdout, stderr) => {
                 if (err) reject(stderr)
                 reslove(stdout.trim());
             });
@@ -167,7 +309,7 @@ getSelectFile = hwnd =>
 special = cmd => {
     // 判断是否 windows 系统
     if (cmd.includes('{{isWin}}')) {
-        let repl = isWin ? 1 : 0;
+        let repl = utools.isWindows() ? 1 : 0;
         cmd = cmd.replace(/\{\{isWin\}\}/mg, repl)
     }
 
@@ -185,7 +327,7 @@ special = cmd => {
 
     // 获取剪切板的文本
     if (cmd.includes('{{ClipText}}')) {
-        let repl = clipboard.readText();
+        let repl = electron.clipboard.readText();
         cmd = cmd.replace(/\{\{ClipText\}\}/mg, repl)
     }
 
@@ -197,11 +339,11 @@ special = cmd => {
     return cmd;
 }
 
-run = (cmd, option, terminal, callback) => {
+runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,
         argv = option.argv,
         ext = option.ext;
-    let script = path.join(tmpdir, `QuickCommandTempScript.${ext}`)
+    let script = getQuickCommandScriptFile(ext)
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), 'GBK');
     fs.writeFileSync(script, cmd);
@@ -214,9 +356,9 @@ run = (cmd, option, terminal, callback) => {
     if (bin) {
         // 在终端中输出
         if (terminal) {
-            if (isWin) {
-                child = spawn('cmd', ['/c', 'start', 'cmd', '/k', bin].concat(argvs), { encoding: 'buffer' })
-            } else {
+            if (utools.isWindows()) {
+                child = child_process.spawn(`start cmd /k ${bin} ${argv} "${script}"`, { encoding: 'buffer', shell: true })
+            } else if(utools.isMacOs()){
                 var appleScript = `if application "Terminal" is running then 
                 tell application "Terminal"   
                     # do script without "in window" will open a new window        
@@ -230,16 +372,18 @@ run = (cmd, option, terminal, callback) => {
                     activate
                 end tell
             end if`;
-                child = spawn('osascript', ['-e', appleScript], { encoding: 'buffer' })
+                child = child_process.spawn('osascript', ['-e', appleScript], { encoding: 'buffer' })
+            } else {
+                return utools.showNotification('Linux 不支持在终端输出')
             }
         } else {
-            child = spawn(bin, argvs, { encoding: 'buffer' })            
+            child = child_process.spawn(bin, argvs, { encoding: 'buffer' })            
         }
     } else {
         if (terminal) {
-            child = spawn('cmd', ['/c', 'start', 'cmd', '/k', script], { encoding: 'buffer' })
+            child = child_process.spawn(`start cmd /k "${script}"`, { encoding: 'buffer', shell: true })
         } else {
-            child = spawn(script, { encoding: 'buffer' })             
+            child = child_process.spawn(script, { encoding: 'buffer' })             
         }
     }
     var chunks = [],
