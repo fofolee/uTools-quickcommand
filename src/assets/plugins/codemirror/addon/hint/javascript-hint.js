@@ -54,9 +54,31 @@
       if (!context) var context = [];
       context.push(tprop);
     }
-    return {list: getCompletions(token, context, keywords, options),
-            from: Pos(cur.line, token.start),
-            to: Pos(cur.line, token.end)};
+    // -----------------------------------------------------------------------
+    var hints = getCompletions(token, context, keywords, options)
+    if (token.string == "") {
+      if (!token.type) return { list: {} }
+    } else {
+      // add anyword
+      var anyword = CodeMirror.hint.anyword(editor, options).list
+      if (anyword[0] != token.string) {
+        anyword.forEach(a => {
+          if (!hints.includes(a)) hints.push(a)
+        })
+      }
+      // add specialVars
+      var specialVars = localStorage['specialVars'].split(',')
+      specialVars.forEach(s => {
+        if (s.toUpperCase().slice(2, token.string.length + 2) == token.string.toUpperCase()) hints.push(s)
+      })
+    }
+    // -----------------------------------------------------------------------
+    return {
+      list: hints,
+      from: Pos(cur.line, token.start),
+      to: Pos(cur.line, token.end)
+    };
+
   }
 
   function javascriptHint(editor, options) {
@@ -95,10 +117,32 @@
                     "lastIndexOf every some filter forEach map reduce reduceRight ").split(" ");
   var funcProps = "prototype apply call bind".split(" ");
   var javascriptKeywords = ("break case catch class const continue debugger default delete do else export extends false finally for function " +
-                  "if in import instanceof new null return super switch this throw true try typeof var void while with yield").split(" ");
-  var coffeescriptKeywords = ("and break catch class continue delete do else extends false finally for " +
+                  "if in import instanceof new null return super switch this throw true try typeof var void while with yield await async").split(" ");
+  var coffeescriptKeywords = ("and break catch class continue delete do else extends false finally for" +
                   "if in instanceof isnt new no not null of off on or return switch then throw true try typeof until void while with yes").split(" ");
-
+  
+  // builtInFns and builtInObjs
+  var builtInFns = ["Infinity", "NaN", "undefined", "globalThis", "eval", "isFinite", "isNaN", "parseFloat", "parseInt", "decodeURI", "decodeURIComponent",
+      "encodeURI", "encodeURIComponent", "escape", "unescape", "RegExp", "Promise", "Generator", "GeneratorFunction", "AsyncFunction", "arguments", "require"]
+  var builtInObjs = {
+    Object: Object,
+    Function: Function,
+    Boolean: Boolean,
+    Symbol: Symbol,
+    Number: Number,
+    BigInt: BigInt,
+    Math: Math,
+    Date: Date,
+    ArrayBuffer: ArrayBuffer,
+    SharedArrayBuffer: SharedArrayBuffer,
+    Atomics: Atomics,
+    DataView: DataView,
+    JSON: JSON,
+    String: String,
+    Array: Array,
+    console: {log: ()=>{}}
+  }
+    
   function forAllProps(obj, callback) {
     if (!Object.getOwnPropertyNames || !Object.getPrototypeOf) {
       for (var name in obj) callback(name)
@@ -109,9 +153,17 @@
   }
 
   function getCompletions(token, context, keywords, options) {
-    var found = [], start = token.string, global = options && options.globalScope || window;
+    var found = [], start = token.string, //global = options && options.globalScope || window;
+        global = getNodeJsCommand()
+    builtInFns.forEach(b => {
+        global[b] = b
+    })
+    Object.assign(global, builtInObjs)
     function maybeAdd(str) {
-      if (str.lastIndexOf(start, 0) == 0 && !arrayContains(found, str)) found.push(str);
+      // fix 2
+      if (str.lastIndexOf(start, 0) == 0 && !arrayContains(found, str)) { 
+        if(token.string != str) found.push(str);
+      }  
     }
     function gatherCompletions(obj) {
       if (typeof obj == "string") forEach(stringProps, maybeAdd);
