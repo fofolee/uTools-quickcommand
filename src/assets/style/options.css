@@ -449,29 +449,80 @@ input::-webkit-input-placeholder {
     cursor: pointer;
     outline: none;
     color: white;
+    width: 60px;
 }
 
-#options #customize button.cancelBtn {
+#options #customize button.cmdBtn {
     float: right;
-    margin-right: 30px;
+    margin: 0px 10px;
+}
+
+#options #customize button.cancel {
     background: #808080c9;
 }
 
-#options #customize button.saveBtn {
-    float: right;
+#options #customize button.cancel:hover {
+    background: #a5a2a2c9;
+    transition: 0.5s;
+}
+
+#options #customize button.save {
     background: #1E90FF;
 }
 
-#options #customize button.saveBtn:hover {
+#options #customize button.save:hover {
     background: #5599FF;
     transition: 0.5s;
 }
 
-#options #customize button.cancelBtn:hover {
-    background: #a5a2a2c9;
+#options #customize button.run {
+    background: #15a86bc9;
+}
+
+#options #customize button.run:hover {
+    background: #27c583c9;
     transition: 0.5s;
 }
 
 ::-webkit-scrollbar {
     height: 0;
+}
+
+li.CodeMirror-hint {
+    min-width: 200px;
+    font-size: 13px;
+    padding: 3px 4px;
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateZ(0)
+    }
+}
+
+.fadeInDownWindow {
+    animation-name: fadeInDown;
+    animation-duration: 0.3s;
+}
+
+@keyframes fadeOutUp {
+    0% {
+        opacity: 1
+    }
+
+    to {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0)
+    }
+}
+
+.fadeOutUpWindow {
+    animation-name: fadeOutUp;
+    animation-duration: 0.3s;
 }
