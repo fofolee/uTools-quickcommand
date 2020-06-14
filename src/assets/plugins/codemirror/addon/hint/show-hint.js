@@ -104,14 +104,9 @@
         this.debounce = 0;
       }
 
-      var identStart = this.startPos;
-      if(this.data) {
-        identStart = this.data.from;
-      }
-
       var pos = this.cm.getCursor(), line = this.cm.getLine(pos.line);
       if (pos.line != this.startPos.line || line.length - pos.ch != this.startLen - this.startPos.ch ||
-          pos.ch < identStart.ch || this.cm.somethingSelected() ||
+          pos.ch < this.startPos.ch || this.cm.somethingSelected() ||
           (!pos.ch || this.options.closeCharacters.test(line.charAt(pos.ch - 1)))) {
         this.close();
       } else {
@@ -173,7 +168,7 @@
       PageDown: function() {handle.moveFocus(handle.menuSize() - 1, true);},
       Home: function() {handle.setFocus(0);},
       End: function() {handle.setFocus(handle.length - 1);},
-      Enter: handle.pick,
+    //   Enter: handle.pick,
       Tab: handle.pick,
       Esc: handle.close
     };
@@ -449,12 +444,31 @@
       term = ""
       from = cur
     }
+    // -------------------------------------------------------
+    var tokenstring = token.string.trim()
     var found = [];
     for (var i = 0; i < options.words.length; i++) {
       var word = options.words[i];
-      if (word.slice(0, term.length) == term)
-        found.push(word);
+      if (word.slice(0, tokenstring.length) == tokenstring)
+      if(word != tokenstring && !found.includes(word)) found.push(word);
     }
+    if (!term) {
+      if (!tokenstring) return { list: {} }
+    } else {
+      // add anyword
+      var anyword = CodeMirror.hint.anyword(cm, options).list
+      if (anyword[0] != tokenstring) {
+        anyword.forEach(a => {
+          if (!found.includes(a)) found.push(a)
+        })
+      }
+      // add specialVars
+      var specialVars = localStorage['specialVars'].split(',')
+      specialVars.forEach(s => {
+        if (s.toUpperCase().slice(2, tokenstring.length + 2) == tokenstring.toUpperCase()) found.push(s)
+      })
+    }
+    // --------------------------------------------------------
 
     if (found.length) return {list: found, from: from, to: to};
   });
