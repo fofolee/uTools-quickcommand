@@ -309,7 +309,7 @@ let showCustomize = () => {
         lineWrapping: true,
         autoCloseBrackets: true,
         styleActiveLine: true,
-        keyMap: "vscode",
+        keyMap: "sublime",
         theme: "mdn-like",
         extraKeys: {
             "Alt-Enter": cm => {
@@ -324,7 +324,9 @@ let showCustomize = () => {
             "Ctrl-Q": () => {
                 quitQuickCommand()
             },
-            "Ctrl-F": "findPersistent",
+            "Alt-Up": "swapLineUp",
+            "Alt-Down": "swapLineDown",
+            "Shift-Alt-Down": "duplicateLine"
           }
     });
 
@@ -776,31 +778,40 @@ let SaveQuickCommand = async () => {
 // 显示运行结果
 let showResult = (content, raw, success) => {
     var options
-    var htmlEncode = value => {
-        return !value ? value : String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
+    var maxlength = raw ? 1000 : 100000
+    var htmlEncode = (value, raw) => {
+        return raw ? String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;") : value
     }
     var preView = () => {
         var result = $('#swal2-content').text()
         var style = "text-align: left; padding: 0px 10px; white-space: pre-wrap; word-break: break-all;"
-        if (raw) result = htmlEncode(result)
+        result = htmlEncode(result, raw)
+        $(".swal2-content").css("width", "100%")
         $('#swal2-content').html(`<pre style="${style}">${result}</pre>`)
         $('.swal2-popup').addClass('swal2-toast')
     }
-    options = {
-        onBeforeOpen: preView,
-        icon: success ? "success" : "error",
-        text: content,
-        position: 'top',
-        width: 800,
-        showConfirmButton: false,
-        showClass: {
-            popup: 'fadeInDownWindow'
-        },
-        hideClass: {
-            popup: 'fadeOutUpWindow'
+    var contlength = content.length
+    if(contlength > maxlength) content = content.slice(0, maxlength - 100) + `\n\n...\n${contlength - maxlength - 100} 字省略\n...\n\n` + content.slice(contlength - 100)
+    content += '\n'
+    if (Swal.isVisible()) {
+        $("#swal2-content > pre").append(htmlEncode(content, raw))
+    } else {
+        options = {
+            onBeforeOpen: preView,
+            icon: success ? "success" : "error",
+            text: content,
+            position: 'top',
+            width: 800,
+            showConfirmButton: false,
+            showClass: {
+                popup: 'fadeInDownWindow'
+            },
+            hideClass: {
+                popup: 'fadeOutUpWindow'
+            }
         }
+        Swal.fire(options)
     }
-    Swal.fire(options)
 }
 
 let runQuickCommand = () => {
