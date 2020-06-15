@@ -117,7 +117,7 @@
                     "lastIndexOf every some filter forEach map reduce reduceRight ").split(" ");
   var funcProps = "prototype apply call bind".split(" ");
   var javascriptKeywords = ("break case catch class const continue debugger default delete do else export extends false finally for function " +
-                  "if in import instanceof new null return super switch this throw true try typeof var void while with yield await async").split(" ");
+                  "if in import instanceof new null return super switch this throw true try typeof var void while with yield await async then").split(" ");
   var coffeescriptKeywords = ("and break catch class continue delete do else extends false finally for" +
                   "if in instanceof isnt new no not null of off on or return switch then throw true try typeof until void while with yes").split(" ");
   
@@ -140,7 +140,7 @@
     JSON: JSON,
     String: String,
     Array: Array,
-    console: {log: ()=>{}}
+    console: { log: () => { }, error: () => { }}
   }
     
   function forAllProps(obj, callback) {
