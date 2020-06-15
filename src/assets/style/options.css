@@ -1,9 +1,14 @@
-#out {
+.output {
     padding: 0px 10px;
     font-size: 13px;
-    line-height: 26px;
     font-family: Monaco, consolas;
     white-space: pre-wrap;
+    word-break: break-all;
+    text-align: left;
+}
+
+.error {
+    color: #d0021b;
 }
 
 #options {
@@ -188,14 +193,24 @@
     width: 16%;
 }
 
-#options #customize .robot.footBtn{
+#options #customize .robot{
     background:#3085d6;
-    float: none;
+    padding: 5px;
 }
 
-#options #customize .robot.footBtn:hover{
+#options #customize .robot:hover{
     background:#55aafa;
 }
+
+#options #customize .record{
+    background:#ff3b4e;
+    transition: 0.5s;
+}
+
+#options #customize .record:hover{
+    background:#ff3b4e;
+}
+
 
 #options .footBtn {
     /* right: 5px;
@@ -207,6 +222,7 @@
     padding: 2px 5px;
     margin: 0px 5px;
     cursor: pointer;
+    user-select: none;
 }
 
 #options .footBtn.danger {
@@ -248,6 +264,7 @@
 
 #options span.Btn {
     font-size: 16px;
+    user-select: none;
     cursor: pointer;
 }
 
@@ -279,10 +296,13 @@
     color: #bd3523;
 }
 
-#options #customize input.customscript {
+#options #customize span.customscript {
+    display: none;
+}
+
+#options #customize span.customscript > input {
     margin-left: 5px;
     width: 20%;
-    display: none;
 }
 
 #options #customize {
@@ -298,10 +318,6 @@
     background: white;
 }
 
-#options .varoutput{
-    display: none;
-}
-
 #options #customize p {
     line-height: 1.25rem;
 }
@@ -315,6 +331,7 @@
     line-height: 22px;
     padding: 0 5px;
     background-color: #E3F2FD;
+    user-select: none;
 }
 
 #options #customize input {
@@ -387,7 +404,9 @@ input::-webkit-input-placeholder {
     outline: none;
     font-size: 15px;
     background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJAgMAAAB71iXHAAAADFBMVEUAAAAqPz8rN0csOEgGlpD7AAAAA3RSTlMABvwYJ91vAAAAGklEQVQI12OAgQNAaMDMwMAjw8DAVAAWgAEAPFADDsXseo4AAAAASUVORK5CYII=") no-repeat scroll right center transparent;
-    -webkit-appearance: none
+    -webkit-appearance: none;
+    user-select: none;
+
 }
 
 #options #customize select:hover {
@@ -455,6 +474,7 @@ input::-webkit-input-placeholder {
 #options #customize button.cmdBtn {
     float: right;
     margin: 0px 10px;
+    user-select: none;
 }
 
 #options #customize button.cancel {
