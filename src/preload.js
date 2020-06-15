@@ -5,8 +5,11 @@ const iconv = require('iconv-lite')
 const electron = require('electron')
 const { NodeVM } = require('vm2')
 const path = require("path")
+const util = require("util")
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
+
+// window.startTime = new Date().getTime()
 
 const QuickCommandActions = [
 
@@ -82,7 +85,9 @@ var getSandboxFuns = () => {
         path: path,
         os: os,
         child_process: child_process,
+        util: util,
         alert: alert,
+        // Swal: Swal,
         $: {
             get: $.get,
             post: $.post,
@@ -133,6 +138,10 @@ runCodeInVm = (cmd, cb) => {
     
     vm.on('console.log', stdout => {
         cb(parseItem(stdout), null)
+    });
+
+    vm.on('console.error', stderr => {
+        cb(null, stderr.toString())
     });
 
     try {
@@ -186,6 +195,10 @@ getNodeJsCommand = () => {
 // resolve = path.resolve;
 // tmpdir = os.tmpdir(),
 // exists = fs.existsSync;
+
+htmlEncode = (value, raw) => {
+    return raw ? String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;") : value
+}
 
 getQuickCommandScriptFile = ext => {
     return path.join(os.tmpdir(), `QuickCommandTempScript.${ext}`)
@@ -356,7 +369,7 @@ runCodeFile = (cmd, option, terminal, callback) => {
             end if`;
                 child = child_process.spawn('osascript', ['-e', appleScript], { encoding: 'buffer' })
             } else {
-                return utools.showNotification('Linux 不支持在终端输出')
+                return message('Linux 不支持在终端输出')
             }
         } else {
             child = child_process.spawn(bin, argvs, { encoding: 'buffer' })            
@@ -368,19 +381,21 @@ runCodeFile = (cmd, option, terminal, callback) => {
             child = child_process.spawn(script, { encoding: 'buffer' })             
         }
     }
-    var chunks = [],
-        err_chunks = [];
+    // var chunks = [],
+    //     err_chunks = [];
     child.stdout.on('data', chunk => {
         if (option.codec) chunk = iconv.decode(chunk, option.codec)
-        chunks.push(chunk)
+        callback(chunk, null)
+        // chunks.push(chunk)
     })
-    child.stderr.on('data', err_chunk => {
-        if (option.codec) err_chunk = iconv.decode(err_chunk, option.codec)
-        err_chunks.push(err_chunk)
+    child.stderr.on('data', stderr => {
+        if (option.codec) stderr = iconv.decode(stderr, option.codec)
+        callback(null, stderr)
+        // err_chunks.push(err_chunk)
     })
-    child.on('close', code => {
-        let stdout = chunks.join("");
-        let stderr = err_chunks.join("");
-        callback(stdout, stderr)
-    })
+    // child.on('close', code => {
+    //     let stdout = chunks.join("");
+    //     let stderr = err_chunks.join("");
+    //     callback(stdout, stderr)
+    // })
 }
