@@ -205,6 +205,7 @@ let showOptions = () => {
 
 let showCustomize = () => {
     $("#customize").remove();
+    $("#featureList").fadeOut()
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
     customWindow = `<div id="customize">
     <p><input type="text" id="code" style="display: none">
@@ -219,7 +220,7 @@ let showCustomize = () => {
     <p>
         <span class="word">类&#12288;型</span>
         <select id="program">
-        <option value="simulation">模拟操作</option>
+        <option value="simulation">内置环境</option>
         ${options}
         </select>
         <span class="word">图&#12288;标</span><input type="text" readonly id="iconame" placeholder="更改图标">
@@ -237,60 +238,31 @@ let showCustomize = () => {
             <option value="{{WindowInfo}}" class="var window">当前窗口信息(JSON格式)</option>
             <option value="{{BrowserUrl}}">浏览器当前链接</option>
             <option value="{{ClipText}}">剪切板的文本</option>
-            aa<option value="{{SelectText}}" class="selectText">选中的文本</option>
             <option value="{{SelectFile}}" class="var window">选中的文件</option>
         </select>
         <span class="word">输&#12288;出</span>
         <select id="output">
-            <option value="ignore">忽略输出</option>
+            <option value="ignore">隐藏并忽略输出</option>
             <option value="text">显示纯文本输出</option>
             <option value="html">显示html格式的输出</option>
+            <option value="terminal" id="showInTerm">在终端显示输出</option>
             <option value="clip">复制到剪贴板</option>
             <option value="send">发送到活动窗口</option>
             <option value="notice">发送系统通知</option>
-            <option value="terminal">在终端显示</option>
         </select>
-    </p>
-    <p class="simulation">
-        <span class="word">操&#12288;作</span>
-        <select id="modifier1" class="robot keys">
-            <option value=""></option>
-            <option value="control">control</option>
-            <option value="alt">alt</option>
-            <option value="shift">shift</option>
-            <option value="command">⌘/win</option>
-        </select>
-        <select id="modifier2" class="robot keys">
-            <option value=""></option>
-            <option value="control">control</option>
-            <option value="alt">alt</option>
-            <option value="shift">shift</option>
-            <option value="command">⌘/win</option>
-        </select>
-        <input type="text" id="presskey" class="robot keys" placeholder="模拟按键">
-        <span id="addKey" class="robot footBtn">﹢按键</span>
-        <select id="action" class="robot keys">
-            <option value="" style="display:none">预设动作</option>
-            <option value="sleep">添加延时</option>
-            <option value="open">打开文件</option>
-            <option value="visit">打开网址</option>
-            <option value="locate">定位文件</option>
-            <option value="system">执行命令</option>
-            <option value="copyTo">写剪贴板</option>
-            <option value="message">系统消息</option>
-            <option value="alert">弹窗显示</option>
-            <option value="send">发送文本</option>
-            <option value="ubrowser">ubrowser打开</option>
-        </select>
-        <span id="addAction" class="robot footBtn">﹢动作</span>
     </p>
     <p>
         <span class="word">脚&#12288;本</span>
-        <span>
-            <input type="text" id="custombin" class="customscript" placeholder="解释器绝对路径">
-            <input type="text" id="customarg" class="customscript" placeholder="参数">
-            <input type="text" id="customext" class="customscript" placeholder="后缀,不含.">
-            <input type="text" id="customcodec" class="customscript" placeholder="输出编码">
+        <span class="customscript">
+            <input type="text" id="custombin" placeholder="解释器绝对路径">
+            <input type="text" id="customarg" placeholder="参数">
+            <input type="text" id="customext" placeholder="后缀,不含.">
+            <input type="text" id="customcodec" placeholder="输出编码">
+        </span>
+        <span class="simulation">
+            <span id="addAction" class="footBtn robot">﹢动作</span>
+            <span id="addKey" class="footBtn robot">﹢按键</span>
+            <span id="showHelp" class="footBtn robot">？帮助</span>
         </span>
     </p>
     <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+S 保存\nCtrl+Q 取消\nCtrl+F 搜索"></textarea></p>
@@ -316,13 +288,13 @@ let showCustomize = () => {
               cm.setOption("fullScreen", !cm.getOption("fullScreen"));
             },
             "Ctrl-B": () => {
-                runQuickCommand()
+                runCurrentCommand()
             },
             "Ctrl-S": () => {
-                SaveQuickCommand()
+                SaveCurrentCommand()
             },
             "Ctrl-Q": () => {
-                quitQuickCommand()
+                quitCurrentCommand()
             },
             "Alt-Up": "swapLineUp",
             "Alt-Down": "swapLineDown",
@@ -418,18 +390,18 @@ let programCheck = () => {
         case 'custom':
             $('.customscript').show();
             $('.simulation').hide();
-            $('.varoutput').show();
+            $('#showInTerm').show()
             break;
         case 'simulation':
-            $('.varoutput').hide();
             $('.simulation').show();
             $('.customscript').hide();
+            $('#showInTerm').hide()
             mode = 'javascript';
             break;
         default:
             $('.customscript').hide();
             $('.simulation').hide();
-            $('.varoutput').show();
+            $('#showInTerm').show()
             break;
     }
     window.editor.setOption("mode", mode);
@@ -501,41 +473,30 @@ $("#options").on('click', '.editBtn', function () {
 
 // 添加模拟按键
 $("#options").on('click', '#addKey', function () {
-    var m1 = $('#modifier1').val();
-    var m2 = $('#modifier2').val();
-    var k = $('#presskey').val();
-    var code = 'keyTap';
-    if (/^(\S|f1[0-2]|f[1-9]|backspace|delete|enter|tab|escape|up|down|right|left|home|end|pageup|pagedown|command|alt|control|shift|right_shift|space|printscreen|insert')$/.test(k)) {
-        if (!m1 && !m2) {
-            code += `('${k}');\n`;
-        } else if(m1 && m2){
-            code += `('${k}', '${m1}', '${m2}');\n`
-        } else {
-            code += `('${k}', '${m1}${m2}');\n`
-        }
-        window.editor.replaceSelection(code);
-    } else {
-        Swal.fire({
-            text: '请输入正确的按键',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '帮助',
-            cancelButtonText: '确定',
-          }).then((result) => {
-            if (result.value) {
-                visit('https://robotjs.io/docs/syntax#keys');
-              }
-          })
-    }
+    $("#addKey").text("▶ 录制中").addClass('record')
+    message('开始录制按键，可连续录制')
+    Mousetrap.record(sequence => {
+        sequence.forEach(s => {
+            var keys = s
+            if (s.includes('+') && s.length > 1) keys = s.split('+').reverse().map(x=>x.trim()).join(`", "`)
+            window.editor.replaceSelection(`keyTap("${keys}")\n`)
+        })
+        $("#addKey").text("﹢按键").removeClass('record')
+    });
+})
+
+// 内置环境的帮助
+$("#options").on('click', '#showHelp', function () {
+    $.get('./HELP.md', r => {
+        utools.ubrowser.goto(r).run()
+    })
 })
 
 // 添加延时
 $("#options").on('click', '#addDelay', function () {
     var t = $('#keydelay').val();
     if (/\d+/.test(t)) {
-        window.editor.replaceSelection(`await sleep(${t});\n`)
+        window.editor.replaceSelection(`sleep(${t});\n`)
     } else {
         Swal.fire({
             icon: 'warning',
@@ -545,61 +506,36 @@ $("#options").on('click', '#addDelay', function () {
 })
 
 // 添加动作
-$("#options").on('click', '#addAction', async function () {
-    var a = $('#action').val();
-    var text;
-    switch (a) {
-        case 'await sleep':
-            text = '要延时的毫秒';
-            break;
-        case 'open':
-            text = '要打开的文件';
-            break;
-        case 'visit':
-            text = '要访问的网址';
-            break;
-        case 'locate':
-            text = '要定位的文件'
-            break;
-        case 'system':
-            text = '要执行的命令'
-            break;
-        case 'message':
-            text = '要发送的消息'
-            break;
-        case 'copyTo':
-            text = '要写入的内容'
-            break;
-        case 'send':
-            text = '要发送的文本'
-            break;
-        case 'alert':
-            text = '要弹窗的消息'
-            break;
-        case 'ubrowser':
-            text = '要访问的网站'
-            break;
-        default:
-            Swal.fire({
-                icon: 'warning',
-                text: '未选中任何动作',
-              })
-            return;
-    }
-    const { value: content } = await Swal.fire({
-        title: text,
-        input: 'text',
+$("#options").on('click', '#addAction', function () {
+    var html = `
+    <select id="actionType" class="swal2-select" style="width: 80%; height: 3rem;">
+        <option value="open">打开文件/文件夹</option>
+        <option value="locate">在文件管理器中定位文件</option>
+        <option value="visit">用默认浏览器打开网址</option>
+        <option value="utools.ubrowser.goto">用ubrowser打开网址</option>
+        <option value="system">执行系统命令</option>
+        <option value="copyTo">将内容写入剪贴板</option>
+        <option value="message">发送系统消息</option>
+        <option value="alert">弹窗显示消息</option>
+        <option value="send">发送文本到活动窗口</option>
+        <option value="sleep">添加延时（毫秒）</option>
+    </select>
+    <input placeholder="动作的参数" id="actionArgs" class="swal2-input" style="width: 80%; height: 3rem;">
+    <input type="checkbox" checked id="isString" style="margin-left: 60%;">加引号
+    `
+    Swal.fire({
+        title: "预设动作",
+        html: html,
         showCancelButton: true,
-      })
-    if (content) {
-        if (a == 'ubrowser') {
-            window.editor.replaceSelection(`utools.ubrowser.goto("${content}")\n  .run()\n`)
-        } else if (a == 'await sleep') {
-            window.editor.replaceSelection(`${a}(${content})\n`)
-        } else {
-            window.editor.replaceSelection(`${a}("${content.replace(/\\/g, '\\\\')}");\n`)
+        preConfirm: () => {
+            var actionType = $("#actionType").val()
+            var actionArgs = $("#actionArgs").val()
+            if ($("#isString").is(':checked')) actionArgs = "String.raw\`" + actionArgs + "\`"
+            var action = `${actionType}(${actionArgs})`
+            if (actionType == 'utools.ubrowser.goto') action += `.run()`
+            window.editor.replaceSelection(`${action}\n`)
         }
-      }
+    })
 })
 
 // 导出
@@ -642,7 +578,7 @@ $("#options").on('click', '#icon, #iconame', function () {
     }
 })
 
-let SaveQuickCommand = async () => {
+let SaveCurrentCommand = async () => {
     var type = $('#type').val();
     var code = $("#code").val();
     if (!code) {
@@ -655,36 +591,16 @@ let SaveQuickCommand = async () => {
     // 合规性校验
     if (type == 'key'
         && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}'].map(x => cmd.includes(x)).includes(true)) {
-            Swal.fire({
-                icon: 'error',
-                title: '啊嘞?!',
-                text: '关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!',
-              })
+            Swal.fire('关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
     } else if (type == 'regex'
         && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
-            Swal.fire({
-                icon: 'error',
-                title: '啊嘞?!',
-                text: '正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!',
-              })
+            Swal.fire('正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
     } else if (type == 'window' && cmd.includes('{{input}}')) {
-        Swal.fire({
-            icon: 'error',
-            title: '啊嘞?!',
-            text: '窗口模式无法使用{{input}}!',
-          })
+        Swal.fire('窗口模式无法使用{{input}}!')
     } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
-        Swal.fire({
-            icon: 'error',
-            title: '啊嘞?!',
-            text: '显示文本或html输出时无法使用{{SelectText}}!',
-          })
+        Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
     } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
-        Swal.fire({
-            icon: 'error',
-            title: '啊嘞?!',
-            text: '正则匹配 .* 和 .+ 已被uTools禁用！',
-          })
+        Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
      }
     else {
         var program = $('#program').val(),
@@ -763,11 +679,12 @@ let SaveQuickCommand = async () => {
                 'codec': $('#customcodec').val()
             }
         }
-        if (program == 'simulation') {
-            $('#output').val('');
-        }
+        // if (program == 'simulation') {
+        //     $('#output').val('');
+        // }
         putCustomFts(code, pushData);
         showOptions();
+        $("#customize").empty()
         $(`#${code}`).click();
         if (!$(`#${code}`).is(':checked')) {
             $(`#${code}`).click();
@@ -776,25 +693,22 @@ let SaveQuickCommand = async () => {
 }
 
 // 显示运行结果
-let showResult = (content, raw, success) => {
+let showRunResult = (content, raw, success) => {
     var options
-    var maxlength = raw ? 1000 : 100000
-    var htmlEncode = (value, raw) => {
-        return raw ? String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;") : value
-    }
+    var maxlength = raw ? 5000 : 100000
     var preView = () => {
         var result = $('#swal2-content').text()
-        var style = "text-align: left; padding: 0px 10px; white-space: pre-wrap; word-break: break-all;"
         result = htmlEncode(result, raw)
         $(".swal2-content").css("width", "100%")
-        $('#swal2-content').html(`<pre style="${style}">${result}</pre>`)
+        $('#swal2-content').html(`<pre class="output ${success ? "" : "error"}">${result}</pre>`)
         $('.swal2-popup').addClass('swal2-toast')
     }
     var contlength = content.length
-    if(contlength > maxlength) content = content.slice(0, maxlength - 100) + `\n\n...\n${contlength - maxlength - 100} 字省略\n...\n\n` + content.slice(contlength - 100)
+    if (contlength > maxlength) content = content.slice(0, maxlength - 100) + `\n\n...\n${contlength - maxlength - 100} 字省略\n...\n\n` + content.slice(contlength - 100)
     content += '\n'
-    if (Swal.isVisible()) {
-        $("#swal2-content > pre").append(htmlEncode(content, raw))
+    var outputchannel = $("#swal2-content > pre")
+    if (outputchannel.is(":parent")) {
+        outputchannel.append(htmlEncode(content, raw))
     } else {
         options = {
             onBeforeOpen: preView,
@@ -814,8 +728,9 @@ let showResult = (content, raw, success) => {
     }
 }
 
-let runQuickCommand = () => {
+let runCurrentCommand = () => {
     var cmd = window.editor.getValue()
+    cmd = special(cmd)
     var program = $("#program").val()
     var output = $("#output").val()
     var terminal = false
@@ -828,41 +743,43 @@ let runQuickCommand = () => {
             terminal = true
             break;
         case "ignore":
-            if(program != "simulation") utools.hideMainWindow() // todo 模拟操作选择输出方式
+            utools.hideMainWindow()
             break;
     }
     if (program == "simulation") {
         runCodeInVm(cmd, (stdout, stderr) => {
-            if (stderr) return showResult(stderr, raw, false)
-            showResult(stdout, raw, true)
+            if (stderr) return showRunResult(stderr, raw, false)
+            showRunResult(stdout, raw, true)
         });
     } else {
         var option = programs[program]
         runCodeFile(cmd, option, terminal, (stdout, stderr) => { 
             if(terminal) return
-            if (stderr) return showResult(stderr, raw, false)
-            showResult(stdout, raw, true)
+            if (stderr) return showRunResult(stderr, raw, false)
+            showRunResult(stdout, raw, true)
         })
     }
 }
 
-let quitQuickCommand = () => {
-    $("#customize").animate({ top: '100%'});
+let quitCurrentCommand = () => {
+    $("#customize").animate({ top: '100%' });
+    $("#featureList").fadeIn()
+    $("#customize").empty()
 }
 
 // 运行
 $("#options").on('click', '.cmdBtn.run', function () {
-    runQuickCommand()
+    runCurrentCommand()
 })
 
 // 取消
 $("#options").on('click', '.cmdBtn.cancel', function () {
-    quitQuickCommand()
+    quitCurrentCommand()
 })
 
 // 保存
 $("#options").on('click', '.cmdBtn.save', function () {
-    SaveQuickCommand()
+    SaveCurrentCommand()
 })
 
 // 语言选项改变时
@@ -891,3 +808,24 @@ $("#options").on('change', '#type', function () {
     resetVars();
     typeCheck();
 })
+
+Mousetrap.bind('ctrl+s', () => {
+    if ($("#customize").is(":parent")) {
+        SaveCurrentCommand()
+    }
+    return false
+});
+
+Mousetrap.bind('ctrl+q', () => {
+    if ($("#customize").is(":parent")) {
+        quitCurrentCommand()
+    }
+    return false
+});
+
+Mousetrap.bind('ctrl+b', () => {
+    if ($("#customize").is(":parent")) {
+        runCurrentCommand()
+    }
+    return false
+});
