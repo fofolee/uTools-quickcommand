@@ -2,13 +2,12 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
     // 配置页面
     if (code == 'options') {
         utools.setExpendHeight(600);
-        $("#out").hide().html('');
-        $("#options").show();
+        // $("#options").show();
         showOptions();
     } else {
+        // console.log(new Date().getTime() - window.startTime);
         utools.setExpendHeight(0);
-        $("#options").hide();
-        $("#out").show().text('');
+        // $("#options").hide();
         var db = utools.db.get('customFts').data[code],
             cmd = db.cmd;
         if (db.program == "custom") {
@@ -18,7 +17,7 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
         }else{
             option = programs[db.program];
         }
-        cmd = await special(cmd);
+        cmd = special(cmd);
         // 正则
         if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
         // 窗口
@@ -44,7 +43,7 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
         if (db.hasSubInput) {
             // 启动子命令输入
             // 清空输出
-            $("#out").text('');
+            $("#out").empty();
             var subinput = '';
             var setSubInput = () => {
                 utools.setSubInput(({text}) => {
@@ -53,9 +52,9 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
             }
             var handleEnter = (event) => {
                 if (event.keyCode == 13) {
-                    $("#out").text('');
+                    $("#out").empty();
                     var execmd = cmd.replace(/\{\{subinput\}\}/mg, subinput);
-                    runCmd(execmd, option, db.output);
+                    runQuickCommand(execmd, option, db.output);
                 }
             };
             setSubInput();
@@ -65,35 +64,43 @@ utools.onPluginEnter( async ({ code, type, payload }) => {
                 document.removeEventListener('keydown', handleEnter);
               })
         } else {
-            runCmd(cmd, option, db.output);
+            runQuickCommand(cmd, option, db.output);
         }
     }
 });
 
-function runCmd(cmd, option, output) {
-    if (option == "simulation") {
-        utools.setExpendHeight(0);
-        utools.hideMainWindow();
-        eval(`(async () => { 
-            ${cmd}
-        })()`);
-        utools.outPlugin();
-        return;
-    }
+
+let runQuickCommand = (cmd, option, output) => {
     // 不需要输出的，提前关闭窗口
     if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1) {
-        utools.setExpendHeight(0);
         utools.hideMainWindow();
         setTimeout(() => {
             utools.outPlugin();
-        }, 10);
+        }, 500);
     }
-    var terminal = false;
-    if(output == 'terminal') terminal = true;
-    // 运行脚本
-    window.run(cmd, option, terminal, (stdout, stderr) => {
-        if (stderr) {
-            // 报错
+    if (option == "simulation") {
+        // 内置环境
+        runCodeInVm(cmd, (stdout, stderr) => {
+            switchQuickCommandResult(stdout, stderr, output)
+        })
+    } else {
+        var terminal = output == 'terminal' ? true : false
+        // 执行脚本
+        runCodeFile(cmd, option, terminal, (stdout, stderr) => {
+            switchQuickCommandResult(stdout, stderr, output)
+        })
+    }
+}
+
+switchQuickCommandResult = (stdout, stderr, output) => {
+    if (stderr) {
+        $("#out").addClass('error')
+        // 报错
+        if (output == 'text' || output == 'html')
+        {
+            utools.setExpendHeight(600);
+            $("#out").append(stderr)
+        } else {
             var index = utools.showMessageBox({
                 type: 'error',
                 title: '啊嘞?!',
@@ -101,40 +108,46 @@ function runCmd(cmd, option, output) {
                 buttons: ['转至脚本目录', '退出']
             })
             if (index == 0) {
-                locate(resolve(tmpdir, `QuickCommandTempScript.${option.ext}`));
+                locate(getQuickCommandScriptFile(option.ext));
             }
             copyTo(stderr);
             message("已复制报错信息");
-            utools.outPlugin();
-        } else if (stdout) {
-            // 有输出
-            switch (output) {
-                case "text":
-                    utools.setExpendHeight(600);
-                    $("#out").text(stdout);
-                    break;
-                case "html":
-                    utools.setExpendHeight(600);
-                    $("#out").html(stdout);
-                    break;
-                case "clip":
-                    copyTo(stdout);
-                    break;
-                case "send":
-                    send(stdout)
-                    break;
-                case "notice":
-                    // 发送系统通知
-                    message(stdout);
-                    break;
-                case "ignore":
-                    break;
-                default:
-                    break;
-            }
-        } else {
-            // 无输出
-            utools.outPlugin()
+            utools.outPlugin();  
         }
-    })
+    } else if (stdout) {
+        $("#out").removeClass("error")
+        // 有输出
+        switch (output) {
+            case "text":
+                utools.setExpendHeight(600);
+                $("#out").append(htmlEncode(stdout, true))
+                break;
+            case "html":
+                utools.setExpendHeight(600);
+                $("#out").append(stdout)
+                break;
+            case "clip":
+                copyTo(stdout)
+                break;
+            case "send":
+                send(stdout)
+                break;
+            case "notice":
+                // 发送系统通知
+                message(stdout)
+                break;
+            case "ignore":
+                break;
+            default:
+                break;
+        }
+    } else {
+        // 无输出
+        utools.outPlugin()
+    }
 }
+
+utools.outPlugin(() => {
+    $("#options").empty()
+    $("#out").empty()
+})
