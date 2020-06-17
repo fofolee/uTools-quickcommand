@@ -6,6 +6,8 @@ const electron = require('electron')
 const { NodeVM } = require('vm2')
 const path = require("path")
 const util = require("util")
+fofoCommon = require('./common').fofo
+
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
@@ -79,7 +81,7 @@ const QuickCommandActions = [
 var getSandboxFuns = () => {
     var sandbox = {
         utools: utools,
-        process: process,
+        // process: process,
         electron: electron,
         fs: fs,
         path: path,
@@ -188,16 +190,19 @@ getNodeJsCommand = () => {
     return obj
 }
 
-// isDev = /[a-zA-Z0-9\-]+\.asar/.test(__dirname) ? false : true
-// readFile = fs.readFileSync
-// writeFile = fs.writeFileSync
-// dirname = __dirname;
-// resolve = path.resolve;
-// tmpdir = os.tmpdir(),
-// exists = fs.existsSync;
-
 htmlEncode = (value, raw) => {
     return raw ? String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;") : value
+}
+
+py_beautify = (code, cb) => {
+    var file = getQuickCommandScriptFile('py')
+    fs.writeFile(file, code, { encoding: 'utf8' }, err => {
+        var cmd = `python "${fofoCommon.GetFilePath('assets/plugins', 'autopep8.py')}" "${file}"`
+        child_process.exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
+            var codec = utools.isWindows() ? 'cp936' : 'utf8'
+            cb(iconv.decode(stdout, codec).trim())
+        })
+    })
 }
 
 getQuickCommandScriptFile = ext => {
