@@ -291,7 +291,7 @@
       menuSize: function() { return widget.screenAmount(); },
       length: completions.length,
       close: function() { completion.close(); },
-      pick: function() { widget.pick(); },
+      pick: function() { window.editor.off("change", showHint); widget.pick(); window.editor.on("change", showHint);},
       data: data
     }));
 
@@ -320,7 +320,11 @@
       var t = getHintElement(hints, e.target || e.srcElement);
       if (t && t.hintId != null) {
         widget.changeActive(t.hintId);
-        if (completion.options.completeOnSingleClick) widget.pick();
+          if (completion.options.completeOnSingleClick) {
+            window.editor.off("change", showHint);
+            widget.pick();
+            window.editor.on("change", showHint);
+          }
       }
     });
 
@@ -450,7 +454,7 @@
     for (var i = 0; i < options.words.length; i++) {
       var word = options.words[i];
       if (word.slice(0, tokenstring.length) == tokenstring)
-      if(word != tokenstring && !found.includes(word)) found.push(word);
+      if(!found.includes(word)) found.push(word);
     }
     if (!term) {
       if (!tokenstring) return { list: {} }
@@ -463,8 +467,8 @@
         })
       }
       // add specialVars
-      var specialVars = localStorage['specialVars'].split(',')
-      specialVars.forEach(s => {
+      var specialVars = localStorage['specialVars']
+      if(specialVars) specialVars.split(',').forEach(s => {
         if (s.toUpperCase().slice(2, tokenstring.length + 2) == tokenstring.toUpperCase()) found.push(s)
       })
     }

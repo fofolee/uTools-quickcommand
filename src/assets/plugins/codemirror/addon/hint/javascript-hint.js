@@ -67,8 +67,8 @@
         })
       }
       // add specialVars
-      var specialVars = localStorage['specialVars'].split(',')
-      specialVars.forEach(s => {
+      var specialVars = localStorage['specialVars']
+      if(specialVars) specialVars.split(',').forEach(s => {
         if (s.toUpperCase().slice(2, token.string.length + 2) == token.string.toUpperCase()) hints.push(s)
       })
     }
@@ -123,7 +123,8 @@
   
   // builtInFns and builtInObjs
   var builtInFns = ["Infinity", "NaN", "undefined", "globalThis", "eval", "isFinite", "isNaN", "parseFloat", "parseInt", "decodeURI", "decodeURIComponent",
-      "encodeURI", "encodeURIComponent", "escape", "unescape", "RegExp", "Promise", "Generator", "GeneratorFunction", "AsyncFunction", "arguments", "require"]
+      "encodeURI", "encodeURIComponent", "escape", "unescape", "RegExp", "Promise", "Generator", "GeneratorFunction", "AsyncFunction", "arguments", "require",
+  "console.log", "console.error"]
   var builtInObjs = {
     Object: Object,
     Function: Function,
@@ -140,7 +141,6 @@
     JSON: JSON,
     String: String,
     Array: Array,
-    console: { log: () => { }, error: () => { }}
   }
     
   function forAllProps(obj, callback) {
@@ -162,7 +162,7 @@
     function maybeAdd(str) {
       // fix 2
       if (str.lastIndexOf(start, 0) == 0 && !arrayContains(found, str)) { 
-        if(token.string != str) found.push(str);
+        found.push(str);
       }  
     }
     function gatherCompletions(obj) {
