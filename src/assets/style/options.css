@@ -302,7 +302,7 @@
 
 #options #customize span.customscript > input {
     margin-left: 5px;
-    width: 20%;
+    width: 16%;
 }
 
 #options #customize {
@@ -366,7 +366,7 @@ input::-webkit-input-placeholder {
 }
 
 #options #customize .CodeMirror {
-    font-size: 13px;
+    font-size: 14px;
     font-family: "Monaco", "consolas";
     width: 100%;
     height: 23rem;
