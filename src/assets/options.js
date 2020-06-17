@@ -1,20 +1,20 @@
-let getCustomFts = () => {
-    var db = utools.db.get("customFts"),
-        customFts = db ? db.data : {};
-    return customFts;
+let getDB = id => {
+    var db = utools.db.get(id),
+        dbData = db ? db.data : {};
+    return dbData;
 }
 
-let putCustomFts = (code, pushData) => {
-    var db = utools.db.get("customFts");
+let putDB = (code, pushData, id) => {
+    var db = utools.db.get(id);
     if (db) {
         var rev = db._rev
         var data = db.data
         data[code] = pushData;
-        utools.db.put({ _id: "customFts", data: data, _rev: rev });
+        utools.db.put({ _id: id, data: data, _rev: rev });
     } else {
         var data = {};
         data[code] = pushData;
-        utools.db.put({ _id: "customFts", data: data });
+        utools.db.put({ _id: id, data: data });
     }
 }
 
@@ -38,13 +38,13 @@ let importCommand = () => {
         // 单个命令导入
         if (typeof(pushData.features)=='object') {
             var code = pushData.features.code;
-            putCustomFts(code, pushData);
+            putDB(code, pushData, 'customFts');
             showOptions();
         // 多个命令导入
         } else {
             if (typeof (Object.values(pushData)[0].features) == 'object') {
                 for (var code of Object.keys(pushData)){
-                    putCustomFts(code, pushData[code]);
+                    putDB(code, pushData[code], 'customFts');
                 }
                 showOptions();
             } else {
@@ -154,7 +154,7 @@ let programs = {
 let showOptions = () => {
     $("#featureList").remove();
     var currentFts = utools.getFeatures(),
-        customFts = getCustomFts();
+        customFts = getDB('customFts');
     let featureList = '<div id="featureList"><table><tr><td width="40"></td><td width="240">模式</td><td width="270">说明</td><td>启用</td></tr>';
     for (var fts in customFts) {
         let features = customFts[fts].features;
@@ -207,7 +207,7 @@ let showCustomize = () => {
     $("#customize").remove();
     $("#featureList").fadeOut()
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
-    customWindow = `<div id="customize">
+    let customWindow = `<div id="customize">
     <p><input type="text" id="code" style="display: none">
     <span class="word">模&#12288;式</span>
     <select id="type">
@@ -256,16 +256,17 @@ let showCustomize = () => {
         <span class="customscript">
             <input type="text" id="custombin" placeholder="解释器绝对路径">
             <input type="text" id="customarg" placeholder="参数">
-            <input type="text" id="customext" placeholder="后缀,不含.">
+            <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
             <input type="text" id="customcodec" placeholder="输出编码">
-        </span>
-        <span class="simulation">
+            </span>
+            <span class="simulation">
             <span id="addAction" class="footBtn robot">﹢动作</span>
             <span id="addKey" class="footBtn robot">﹢按键</span>
             <span id="showHelp" class="footBtn robot">？帮助</span>
-        </span>
+            </span>
+            <span id="beautifyCode" class="footBtn robot">格式化</span>
     </p>
-    <p><textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+S 保存\nCtrl+Q 取消\nCtrl+F 搜索"></textarea></p>
+    <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     <p>
         <button class="cmdBtn save">保存</button>
         <button class="cmdBtn run">运行</button>
@@ -274,7 +275,11 @@ let showCustomize = () => {
     $("#options").append(customWindow)
     $("#icon").attr('src', 'logo/simulation.png');
     getSpecialVars()
+    createEditor()
+    $("#customize").animate({ top: '0px' });
+}
 
+createEditor = () => {
     window.editor = CodeMirror.fromTextArea(document.getElementById("cmd"), {
         lineNumbers: true,
         matchBrackets: true,
@@ -296,20 +301,41 @@ let showCustomize = () => {
             "Ctrl-Q": () => {
                 quitCurrentCommand()
             },
+            "Shift-Alt-F": () => {
+                beautifyCode()
+            },
             "Alt-Up": "swapLineUp",
             "Alt-Down": "swapLineDown",
             "Shift-Alt-Down": "duplicateLine"
           }
     });
 
-    window.editor.on("cursorActivity", function () {
-        editor.showHint({
-            completeSingle: false
-        });
-    });
+    window.editor.on("change", showHint);
     window.editor.setOption("mode", 'javascript');
+}
 
-    $("#customize").animate({ top: '0px' });
+let showHint = () => {
+    editor.showHint({ completeSingle: false });
+}
+
+let beautifyCode = () => {
+    if ($("#customize").is(":parent")) {
+        var cmd = window.editor.getValue()
+        switch ($("#program").val()) {
+            case "simulation":
+            case "javascript":
+                window.editor.setValue(js_beautify(cm))
+                break;
+            case "python":
+                py_beautify(cmd, data => {
+                    window.editor.setValue(data)
+                })
+                break;
+            default:
+                message('暂不支持该语言的格式化')
+                break;
+        }
+    }
 }
 
 
@@ -409,7 +435,7 @@ let programCheck = () => {
 
 // 开关
 $("#options").on('change', 'input[type=checkbox]', function () {
-    var customFts = getCustomFts(),
+    var customFts = getDB('customFts'),
         code = $(this).attr('id');
     if (!utools.removeFeature(code)) {
         utools.setFeature(customFts[code].features);
@@ -541,7 +567,7 @@ $("#options").on('click', '#addAction', function () {
 // 导出
 $("#options").on('click', '.exportBtn', function () {
     var code = $(this).attr('code'),
-        json = getCustomFts()[code],
+        json = getDB('customFts')[code],
         options = {
             title: '选择保存位置',
             filters: [
@@ -579,115 +605,117 @@ $("#options").on('click', '#icon, #iconame', function () {
 })
 
 let SaveCurrentCommand = async () => {
-    var type = $('#type').val();
-    var code = $("#code").val();
-    if (!code) {
-        // 生成唯一code
-        var uid = Number(Math.random().toString().substr(3, 3) + Date.now()).toString(36);
-        var code = `${type}_${uid}`;
-    }
-    var output = $('#output').val();
-    var cmd = window.editor.getValue();
-    // 合规性校验
-    if (type == 'key'
-        && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}'].map(x => cmd.includes(x)).includes(true)) {
-            Swal.fire('关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
-    } else if (type == 'regex'
-        && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
-            Swal.fire('正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
-    } else if (type == 'window' && cmd.includes('{{input}}')) {
-        Swal.fire('窗口模式无法使用{{input}}!')
-    } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
-        Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
-    } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
-        Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
-     }
-    else {
-        var program = $('#program').val(),
-            desc = $('#desc').val(),
-            iconame = $("#iconame").val(),
-            iconpath = $("#icon").attr('src'),
-            icon,
-            base64ico,
-            hasSubInput;
-        if (!desc) desc = ' ';
-        // 选择了图标的情况下
-        if (iconame) {
-            base64ico = window.getBase64Ico(iconpath);
-            icon = "data:image/png;base64," + base64ico;
-        // 未自定义使用默认
-        } else {
-            icon = iconpath;
+    if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
+        var type = $('#type').val();
+        var code = $("#code").val();
+        if (!code) {
+            // 生成唯一code
+            var uid = Number(Math.random().toString().substr(3, 3) + Date.now()).toString(36);
+            var code = `${type}_${uid}`;
         }
-        var rule = $('#rule').val();
-        if (type == 'key') {
-            cmds = rule.split(',')
-        } else if (type == 'regex') {
-            if (rule[0] != '/' || rule[rule.length - 1] != '/') {
-                await Swal.fire({
-                    icon: 'info',
-                    text: '亲，是不是忘了正则表达式两边的"/"了？正确的写法是/xxxx/,不过作者会很贴心地帮你自动加上哟',
-                })
-                rule = "/" + rule + "/"
+        var output = $('#output').val();
+        var cmd = window.editor.getValue();
+        // 合规性校验
+        if (type == 'key'
+            && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}'].map(x => cmd.includes(x)).includes(true)) {
+                Swal.fire('关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
+        } else if (type == 'regex'
+            && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
+                Swal.fire('正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
+        } else if (type == 'window' && cmd.includes('{{input}}')) {
+            Swal.fire('窗口模式无法使用{{input}}!')
+        } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
+            Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
+        } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
+            Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
+         }
+        else {
+            var program = $('#program').val(),
+                desc = $('#desc').val(),
+                iconame = $("#iconame").val(),
+                iconpath = $("#icon").attr('src'),
+                icon,
+                base64ico,
+                hasSubInput;
+            if (!desc) desc = ' ';
+            // 选择了图标的情况下
+            if (iconame) {
+                base64ico = window.getBase64Ico(iconpath);
+                icon = "data:image/png;base64," + base64ico;
+            // 未自定义使用默认
+            } else {
+                icon = iconpath;
             }
-            cmds = [{
-                "label": desc,
-                "type": "regex",
-                "match": rule,
-                "minNum": 1
-            }];
-        } else if (type == 'window') {
-            cmds = [{
-                "label": desc,
-                "type": "window",
-                "match": {
-                    "app": rule.split(',')
+            var rule = $('#rule').val();
+            if (type == 'key') {
+                cmds = rule.split(',')
+            } else if (type == 'regex') {
+                if (rule[0] != '/' || rule[rule.length - 1] != '/') {
+                    await Swal.fire({
+                        icon: 'info',
+                        text: '亲，是不是忘了正则表达式两边的"/"了？正确的写法是/xxxx/,不过作者会很贴心地帮你自动加上哟',
+                    })
+                    rule = "/" + rule + "/"
                 }
-            }];
-        }
-        // 需要子输入框
-        if (cmd.includes('{{subinput}}')) {
-            hasSubInput = true;
-        } else {
-            hasSubInput = false;
-        }
-        $("#customize").animate({ top: '100%' });
-        // if (type == "robotjs") {
-        //     program = "";
-        //     output = "";
-        //     robotjs = true;
-        // }
-        // 添加特性
-        pushData = {
-            features: {
-                "code": code,
-                "explain": desc,
-                "cmds": cmds,
-                "icon": icon
-            },
-            program: program,
-            cmd: cmd,
-            output: output,
-            hasSubInput: hasSubInput
-            // robotjs: robotjs
-        }
-        if (program == 'custom') {
-            pushData.customOptions = {
-                "bin": $('#custombin').val(),
-                "argv": $('#customarg').val(),
-                "ext": $('#customext').val(),
-                'codec': $('#customcodec').val()
+                cmds = [{
+                    "label": desc,
+                    "type": "regex",
+                    "match": rule,
+                    "minNum": 1
+                }];
+            } else if (type == 'window') {
+                cmds = [{
+                    "label": desc,
+                    "type": "window",
+                    "match": {
+                        "app": rule.split(',')
+                    }
+                }];
             }
-        }
-        // if (program == 'simulation') {
-        //     $('#output').val('');
-        // }
-        putCustomFts(code, pushData);
-        showOptions();
-        $("#customize").empty()
-        $(`#${code}`).click();
-        if (!$(`#${code}`).is(':checked')) {
+            // 需要子输入框
+            if (cmd.includes('{{subinput}}')) {
+                hasSubInput = true;
+            } else {
+                hasSubInput = false;
+            }
+            $("#customize").animate({ top: '100%' });
+            // if (type == "robotjs") {
+            //     program = "";
+            //     output = "";
+            //     robotjs = true;
+            // }
+            // 添加特性
+            pushData = {
+                features: {
+                    "code": code,
+                    "explain": desc,
+                    "cmds": cmds,
+                    "icon": icon
+                },
+                program: program,
+                cmd: cmd,
+                output: output,
+                hasSubInput: hasSubInput
+                // robotjs: robotjs
+            }
+            if (program == 'custom') {
+                pushData.customOptions = {
+                    "bin": $('#custombin').val(),
+                    "argv": $('#customarg').val(),
+                    "ext": $('#customext').val(),
+                    'codec': $('#customcodec').val()
+                }
+            }
+            // if (program == 'simulation') {
+            //     $('#output').val('');
+            // }
+            putDB(code, pushData, 'customFts');
+            showOptions();
+            $("#customize").empty()
             $(`#${code}`).click();
+            if (!$(`#${code}`).is(':checked')) {
+                $(`#${code}`).click();
+            }
         }
     }
 }
@@ -695,7 +723,8 @@ let SaveCurrentCommand = async () => {
 // 显示运行结果
 let showRunResult = (content, raw, success) => {
     var options
-    var maxlength = raw ? 5000 : 100000
+    var maxlength = 100000
+    var position = $("#varoutput").is(":parent") ? 'top' : 'bottom'
     var preView = () => {
         var result = $('#swal2-content').text()
         result = htmlEncode(result, raw)
@@ -714,7 +743,7 @@ let showRunResult = (content, raw, success) => {
             onBeforeOpen: preView,
             icon: success ? "success" : "error",
             text: content,
-            position: 'top',
+            position: position,
             width: 800,
             showConfirmButton: false,
             showClass: {
@@ -728,48 +757,126 @@ let showRunResult = (content, raw, success) => {
     }
 }
 
-let runCurrentCommand = () => {
-    var cmd = window.editor.getValue()
-    cmd = special(cmd)
-    var program = $("#program").val()
-    var output = $("#output").val()
-    var terminal = false
-    var raw = true
-    switch (output) {
-        case "html":
-            raw = false
-            break;
-        case "terminal":
-            terminal = true
-            break;
-        case "ignore":
-            utools.hideMainWindow()
-            break;
+let runCurrentCommand = async () => {
+    if ($("#customize").is(":parent")) {
+        var cmd = window.editor.getValue()
+        cmd = special(cmd)
+        var requireInputVal = ['{{input}}', '{{subinput}}', '{{pwd}}', '{{SelectFile}}']
+            .filter(x => cmd.includes(x));
+        if (requireInputVal.length) {
+            var html = requireInputVal
+                .map(r => `<input id="${r}" class="swal2-input" style="text-align: center; margin: 0.5rem auto" placeholder="${r}">`)
+                .join("")
+            await Swal.fire({
+                title: "需要临时为以下变量赋值",
+                html: html,
+                preConfirm: () => {
+                    requireInputVal.forEach(r => {
+                        cmd = cmd.replace(new RegExp(r, 'g'), document.getElementById(r).value)
+                    })
+                }
+            })
+        }
+        var program = $("#program").val()
+        var output = $("#output").val()
+        var terminal = false
+        var raw = true
+        switch (output) {
+            case "html":
+                raw = false
+                break;
+            case "terminal":
+                terminal = true
+                break;
+            case "ignore":
+                utools.hideMainWindow()
+                break;
+        }
+        if (program == "simulation") {
+            runCodeInVm(cmd, (stdout, stderr) => {
+                if (stderr) return showRunResult(stderr, raw, false)
+                showRunResult(stdout, raw, true)
+            });
+        } else {
+            var option = programs[program]
+            if (program == "custom") option = {
+                "bin": $('#custombin').val(),
+                "argv": $('#customarg').val(),
+                "ext": $('#customext').val(),
+                'codec': $('#customcodec').val()
+            }
+            runCodeFile(cmd, option, terminal, (stdout, stderr) => {
+                if (terminal) return
+                if (stderr) return showRunResult(stderr, raw, false)
+                showRunResult(stdout, raw, true)
+            })
+        }
     }
-    if (program == "simulation") {
-        runCodeInVm(cmd, (stdout, stderr) => {
-            if (stderr) return showRunResult(stderr, raw, false)
-            showRunResult(stdout, raw, true)
-        });
-    } else {
-        var option = programs[program]
-        runCodeFile(cmd, option, terminal, (stdout, stderr) => { 
-            if(terminal) return
-            if (stderr) return showRunResult(stderr, raw, false)
-            showRunResult(stdout, raw, true)
-        })
-    }
+}
+
+let killCurrentCommand = () => {
+    
 }
 
 let quitCurrentCommand = () => {
-    $("#customize").animate({ top: '100%' });
-    $("#featureList").fadeIn()
-    $("#customize").empty()
+    if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
+        $("#customize").animate({ top: '100%' });
+        $("#featureList").fadeIn()
+        $("#customize").empty()
+    }
+}
+
+let highlightIfKnown = ext => {
+    // 未设置后缀时有自动补全bug
+    var lang = Object.keys(programs).filter(p => programs[p].ext == ext)
+    if (lang.length) window.editor.setOption("mode", lang[0])
+}
+
+showCodeEditor = () => {
+    let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
+    var customWindow = `<div id="customize">
+        <select id="program">
+        <option value="simulation">内置环境</option>
+        ${options}
+        </select>
+        <span class="customscript">
+        <input type="text" id="custombin" placeholder="解释器绝对路径">
+        <input type="text" id="customarg" placeholder="参数">
+        <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
+        <input type="text" id="customcodec" placeholder="输出编码">
+    </span>
+    <span id="runCode" class="footBtn robot">运  行</span>
+    <span id="beautifyCode" class="footBtn robot">格式化</span>
+    <span class="simulation">
+    <span id="addAction" class="footBtn robot">﹢动作</span>
+    <span id="addKey" class="footBtn robot">﹢按键</span>
+    <span id="showHelp" class="footBtn robot">？帮助</span>
+    </span>
+    <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+    `
+    $("#options").html(customWindow)
+    createEditor()
+    $(".CodeMirror").css({ height: '41rem' })
+    $("#customize").css({ top: '0px', padding: '0px' });
+    $("#program").css({ width: '90px', "margin-bottom": "5px", "height": "30px"})
+    $("span.customscript > input").css({"height": "30px"})
+    var db = getDB('codeHistory')
+    window.editor.setOption("theme", "ambiance")
+    if (db.history) {
+        $('#program').val(db.history.program)
+        window.editor.setValue(db.history.cmd)
+    }
+    programCheck()
 }
 
 // 运行
-$("#options").on('click', '.cmdBtn.run', function () {
+$("#options").on('click', '.cmdBtn.run, #runCode', function () {
     runCurrentCommand()
+})
+
+// 格式化
+$("#options").on('click', '#beautifyCode', function () {
+    beautifyCode()
 })
 
 // 取消
@@ -810,22 +917,16 @@ $("#options").on('change', '#type', function () {
 })
 
 Mousetrap.bind('ctrl+s', () => {
-    if ($("#customize").is(":parent")) {
-        SaveCurrentCommand()
-    }
+    SaveCurrentCommand()
     return false
 });
 
 Mousetrap.bind('ctrl+q', () => {
-    if ($("#customize").is(":parent")) {
-        quitCurrentCommand()
-    }
+    quitCurrentCommand()
     return false
 });
 
 Mousetrap.bind('ctrl+b', () => {
-    if ($("#customize").is(":parent")) {
-        runCurrentCommand()
-    }
+    runCurrentCommand()
     return false
 });
