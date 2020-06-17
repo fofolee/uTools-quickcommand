@@ -1,13 +1,25 @@
-utools.onPluginEnter( async ({ code, type, payload }) => {
+utools.onPluginEnter(async ({ code, type, payload }) => {
+    utools.onPluginOut(() => {
+        var program = $('#program').val();
+        $("#options").empty().show()
+        $("#out").empty()
+        if (code == "code") {
+            var cmd = window.editor.getValue();
+            putDB('history', { cmd: cmd, program: program }, 'codeHistory')
+        }
+    })
     // 配置页面
     if (code == 'options') {
         utools.setExpendHeight(600);
         // $("#options").show();
         showOptions();
+    } else if (code == 'code') {
+        utools.setExpendHeight(600);
+        showCodeEditor()
     } else {
         // console.log(new Date().getTime() - window.startTime);
         utools.setExpendHeight(0);
-        // $("#options").hide();
+        $("#options").hide();
         var db = utools.db.get('customFts').data[code],
             cmd = db.cmd;
         if (db.program == "custom") {
@@ -78,21 +90,23 @@ let runQuickCommand = (cmd, option, output) => {
             utools.outPlugin();
         }, 500);
     }
+    var maxheight = true
     if (option == "simulation") {
         // 内置环境
         runCodeInVm(cmd, (stdout, stderr) => {
-            switchQuickCommandResult(stdout, stderr, output)
+            if (cmd.includes("utools.setExpendHeight")) maxheight = false
+            switchQuickCommandResult(stdout, stderr, output, maxheight)
         })
     } else {
         var terminal = output == 'terminal' ? true : false
         // 执行脚本
         runCodeFile(cmd, option, terminal, (stdout, stderr) => {
-            switchQuickCommandResult(stdout, stderr, output)
+            switchQuickCommandResult(stdout, stderr, output, maxheight)
         })
     }
 }
 
-switchQuickCommandResult = (stdout, stderr, output) => {
+switchQuickCommandResult = (stdout, stderr, output, maxheight) => {
     if (stderr) {
         $("#out").addClass('error')
         // 报错
@@ -119,11 +133,11 @@ switchQuickCommandResult = (stdout, stderr, output) => {
         // 有输出
         switch (output) {
             case "text":
-                utools.setExpendHeight(600);
+                if(maxheight) utools.setExpendHeight(600);
                 $("#out").append(htmlEncode(stdout, true))
                 break;
             case "html":
-                utools.setExpendHeight(600);
+                if(maxheight) utools.setExpendHeight(600);
                 $("#out").append(stdout)
                 break;
             case "clip":
@@ -146,8 +160,3 @@ switchQuickCommandResult = (stdout, stderr, output) => {
         utools.outPlugin()
     }
 }
-
-utools.outPlugin(() => {
-    $("#options").empty()
-    $("#out").empty()
-})
