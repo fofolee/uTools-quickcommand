@@ -12,7 +12,12 @@
         {
             "code": "options",
             "explain": "自定义在 uTools 中快速执行的命令或脚本",
-            "cmds": [ "快捷命令", "QuickCommand" ]
+            "cmds": [ "快捷命令", "QuickCommand"]
+        },
+        {
+            "code": "code",
+            "explain": "无需打开编辑器，快速运行临时代码",
+            "cmds": [ "运行代码", "RunCode"]
         }
     ]
 }
