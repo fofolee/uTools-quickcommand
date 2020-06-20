@@ -239,6 +239,11 @@ let showCustomize = () => {
     $("#customize").remove();
     // $("#featureList").fadeOut()
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
+    let allTags = []
+    $('.sidebar li').each(function () {
+        let val = $(this).text()
+        if (val != "默认" && val != "未分类") allTags.push(`<option value=${val}>${val}</option>`)
+    })
     let customWindow = `<div id="customize">
     <p><input type="text" id="code" style="display: none">
     <span class="word">模&#12288;式</span>
@@ -248,8 +253,8 @@ let showCustomize = () => {
             <option value="window">窗口匹配</option>
             <option value="files">文件匹配</option>
         </select>
-    <span class="word" id="ruleWord">关键字</span><input type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
-    <p><span class="word">说&#12288;明</span><input type="text" id="desc" placeholder="命令功能的描述">
+    <span class="word" id="ruleWord">关键字</span><input class="customize" type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
+    <p><span class="word">说&#12288;明</span><input class="customize" type="text" id="desc" placeholder="命令功能的描述">
     <img id="icon" src="">
     </p>
     <p>
@@ -258,23 +263,26 @@ let showCustomize = () => {
             <option value="simulation">内置环境</option>
             ${options}
         </select>
-        <span class="word">标&#12288;签</span><input type="text" id="tags" placeholder="添加标签，多个标签逗号隔开">
+        <span class="word">标&#12288;签</span>
+        <select id="tags" multiple="multiple">
+            ${allTags.join("")}
+        </select>
         <input type="text" readonly id="iconame" placeholder="更改图标">
     </p>
     <p class="varoutput">
         <span class="word">变&#12288;量</span>
         <select id="vars">
-            <option value="" style="display:none">插入特殊变量</option>
+            <option value="" style="display:none"></option>
             <option value="{{isWin}}">是否Window系统, 返回1或0</option>
             <option value="{{LocalId}}">本机唯一ID</option>
-            <option value="{{input}}" class="var regex">主输入框的文本</option>
-            <option value="{{subinput}}">子输入框的文本</option>
-            <option value="{{pwd}}" class="var window">文件管理器当前目录</option>
-            <option value="{{WindowInfo}}" class="var window">当前窗口信息，返回JSON格式字符串</option>
             <option value="{{BrowserUrl}}">浏览器当前链接</option>
             <option value="{{ClipText}}">剪切板的文本</option>
-            <option value="{{MatchedFiles}}" class="var files">匹配的文件，返回JSON格式字符串</option>
+            <option value="{{subinput}}">子输入框的文本</option>
+            <option value="{{input}}" class="var regex">主输入框的文本</option>
+            <option value="{{pwd}}" class="var window">文件管理器当前目录</option>
+            <option value="{{WindowInfo}}" class="var window">当前窗口信息，返回JSON格式字符串</option>
             <option value="{{SelectFile}}" class="var window">文件管理器选中的文件，不支持Linux</option>
+            <option value="{{MatchedFiles}}" class="var files">匹配的文件，返回JSON格式字符串</option>
         </select>
         <span class="word">输&#12288;出</span>
         <select id="output">
@@ -307,14 +315,31 @@ let showCustomize = () => {
         <img id="win32" class="platform" src="./img/windows.svg">
         <img id="darwin" class="platform" src="./img/macos.svg">
         <img id="linux" class="platform" src="./img/linux.svg">
-        <button class="cmdBtn save">保存</button>
-        <button class="cmdBtn run">运行</button>
-        <button class="cmdBtn cancel">取消</button>
+        <button class="button cmdBtn save">保存</button>
+        <button class="button cmdBtn run">运行</button>
+        <button class="button cmdBtn cancel">取消</button>
     </p>`
     $("#options").append(customWindow)
     $("#icon").attr('src', 'logo/simulation.png');
     getSpecialVars()
     createEditor()
+    $('#program, #type, #output').select2({
+        width: '40%',
+        minimumResultsForSearch: Infinity
+    });
+    $('#vars').select2({
+        width: '40%',
+        placeholder: "插入特殊变量",
+        minimumResultsForSearch: Infinity
+    });
+    $('#tags').select2({
+        width: '40%',
+        placeholder: "选择或添加标签, 最多3个",
+        tags: true,
+        allowClear: true,
+        tokenSeparators: [',', ' '],
+        maximumSelectionLength: 3
+    });
     $("#customize").animate({ top: '0px' });
 }
 
@@ -389,20 +414,20 @@ let getSpecialVars = () => {
 }
 
 // 重置变量下拉框
-let resetVars = () => {
-    $('#vars').val("");
-    $("#vars").css({ 'color': '#999' });
-}
+// let resetVars = () => {
+//     $('#vars').val("");
+//     $("#vars").css({ 'color': '#999' });
+// }
 
 // 检查输出选项
-let outputCheck = () => {
-    var output = $("#output").val()
-    if (output == 'text' || output == 'html') {
-        $(".selectText").hide()
-    } else {
-        $(".selectText").show()
-    }
-}
+// let outputCheck = () => {
+//     var output = $("#output").val()
+//     if (output == 'text' || output == 'html') {
+//         $(".selectText").hide()
+//     } else {
+//         $(".selectText").show()
+//     }
+// }
 
 // 检查模式选项
 let typeCheck = () => {
@@ -414,25 +439,25 @@ let typeCheck = () => {
     switch (type) {
         case 'key':
             $("#ruleWord").html("关键字");
-            $(".var.regex, .var.window, .var.files").hide()
+            $(".var.regex, .var.window, .var.files").prop("disabled", true)
             $("#rule").prop("placeholder", '多个关键字用逗号隔开');
             break;
         case 'regex':
             $("#ruleWord").html("正&#12288;则");
-            $(".var.window, .var.files").hide()
-            $(".var.regex").show()
+            $(".var.window, .var.files").prop("disabled", true)
+            $(".var.regex").prop("disabled", false)
             $("#rule").prop("placeholder", '匹配文本的正则，如 /.*?\\.exe$/i');
             break;
         case 'files':
             $("#ruleWord").html("正&#12288;则");
-            $(".var.regex, .var.window").hide()
-            $(".var.files").show()
+            $(".var.regex, .var.window").prop("disabled", true)
+            $(".var.files").prop("disabled", false)
             $("#rule").prop("placeholder", '匹配文件的正则，如 /.*?\\.exe$/i');
             break;
         case 'window':
             $("#ruleWord").html("进&#12288;程");
-            $(".var.regex, .var.files").hide()
-            $(".var.window").show()
+            $(".var.regex, .var.files").prop("disabled", true)
+            $(".var.window").prop("disabled", false)
             $("#rule").prop("placeholder", '窗口的进程名，多个用逗号隔开');
             break;
         default:
@@ -511,22 +536,22 @@ $("#options").on('click', '.editBtn', function () {
     var code = $(this).attr('code');
     var data = utools.db.get("customFts").data[code];
     showCustomize();
-    data.tags && $('#tags').val(data.tags.join(","))
+    data.tags && $('#tags').val(data.tags).trigger('change')
     var cmds = data.features.cmds[0]
     var platform = data.features.platform
     if (platform) ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
-    $('#type').val(cmds.type)
+    $('#type').val(cmds.type).trigger("change")
     if (cmds.type == 'regex' || cmds.type == 'files') {
         $('#rule').val(cmds.match);
     } else if (cmds.type == 'window') {
         $('#rule').val(cmds.match.app);
     } else {
-        $('#type').val('key')
+        $('#type').val('key').trigger("change")
         $('#rule').val(data.features.cmds.toString());
     }
     $('#code').val(code);
-    $('#program').val(data.program);
-    $('#output').val(data.output);
+    $('#program').val(data.program).trigger("change");
+    $('#output').val(data.output).trigger("change");
     $('#desc').val(data.features.explain);
     $("#icon").attr('src', data.features.icon);
     let mode = data.program;
@@ -537,10 +562,10 @@ $("#options").on('click', '.editBtn', function () {
         $('#customcodec').show().val(data.customOptions.codec);
     }
     window.editor.setValue(data.cmd);
-    resetVars();
+    // resetVars();
     typeCheck();
     programCheck();
-    outputCheck();
+    // outputCheck();
 })
 
 // 添加模拟按键
@@ -674,8 +699,8 @@ let SaveCurrentCommand = async () => {
             Swal.fire('窗口模式无法使用{{input}}、{{MatchedFiles}}!')
         } else if (type == 'files' && cmd.includes('{{input}}', '{{MatchedFiles}}')) {
             Swal.fire('窗口模式无法使用{{input}}、{{MatchedFiles}}!')
-        } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
-            Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
+        // } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
+        //     Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
         } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
             Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
          }
@@ -758,7 +783,7 @@ let SaveCurrentCommand = async () => {
                 output: output,
                 hasSubInput: hasSubInput
             }
-            if (tags) pushData.tags = tags.split(",").map(x => x.trim())
+            if (tags) pushData.tags = tags
             if (program == 'custom') {
                 pushData.customOptions = {
                     "bin": $('#custombin').val(),
@@ -930,7 +955,6 @@ showCodeEditor = () => {
     createEditor()
     $(".CodeMirror").css({ height: '41rem' })
     $("#customize").css({ top: '0px', padding: '0px' });
-    $("#program").css({ width: '90px', "margin-bottom": "5px", "height": "30px"})
     $("span.customscript > input").css({"height": "30px"})
     var db = getDB('codeHistory')
     window.editor.setOption("theme", "ambiance")
@@ -939,6 +963,10 @@ showCodeEditor = () => {
         window.editor.setValue(db.history.cmd)
     }
     programCheck()
+    $('#program').select2({
+        width: 140,
+        minimumResultsForSearch: Infinity
+    });
     $("#options").show()
 }
 
@@ -983,14 +1011,14 @@ $("#options").on('change', '#action', function () {
 })
 
 // 输出选项改变时
-$("#options").on('change', '#output', function () {
-    resetVars();
-    outputCheck();
-})
+// $("#options").on('change', '#output', function () {
+//     resetVars();
+//     outputCheck();
+// })
 
 // 方式选项改变时
 $("#options").on('change', '#type', function () {
-    resetVars();
+    // resetVars();
     typeCheck();
 })
 

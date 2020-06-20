@@ -329,7 +329,7 @@
 
 #options #customize span.customscript > input {
     margin-left: 5px;
-    width: 16%;
+    width: 15%;
 }
 
 #options #featureList {
@@ -351,6 +351,7 @@
 
 #options #customize p {
     line-height: 1.25rem;
+    margin: 13px 0;
 }
 
 #options #customize .word {
@@ -365,28 +366,30 @@
     user-select: none;
 }
 
-#options #customize input {
+#options #customize input.customize,
+#options #customize .customscript input {
     width: 84%;
-    height: 25px;
+    height: 28px;
     border-bottom: 1px solid #dbdbdb;
     border-top: 0px;
     border-left: 0px;
     border-right: 0px;
     font-size: 15px;
-    margin-left: 13px
+    margin-left: 10px;
+    padding-left: 8px;
+    outline: none;
 }
 
-#options #customize input#rule,
-#options #customize input#tags {
+#options #customize input#rule{
     width: 40%;
 }
 
-#options #customize input:hover {
+#options #customize input.customize:hover{
     border-bottom-color: #9e9e9ec7;
     transition: 0.25s;
 }
 
-#options #customize input:focus {
+#options #customize input.customize:focus {
     outline: none;
     border-bottom-color: #0277BD;
     transition: 0.5s;
@@ -423,25 +426,62 @@ input::-webkit-input-placeholder {
     font-size: 15px
 }
 
-#options #customize select {
+/* #options #customize select {
     width: 40%;
     height: 25px;
     margin-left: 3px;
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid #dbdbdb !important;
     border-top: 0px;
     border-left: 0px;
     border-right: 0px;
     background-color: #ffffff;
     border-radius: 0px;
     outline: none;
-    font-size: 15px;
+    
     background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJAgMAAAB71iXHAAAADFBMVEUAAAAqPz8rN0csOEgGlpD7AAAAA3RSTlMABvwYJ91vAAAAGklEQVQI12OAgQNAaMDMwMAjw8DAVAAWgAEAPFADDsXseo4AAAAASUVORK5CYII=") no-repeat scroll right center transparent;
     -webkit-appearance: none;
     user-select: none;
+} */
 
+/* select2 fix */
+#options #customize .select2-container .select2-selection--single,
+#options #customize .select2-container .select2-selection--multiple {
+    border-bottom: 1px solid #dbdbdb;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+    border-radius: 0px;
+    outline: none;
 }
 
-#options #customize select:hover {
+#options #customize .select2-container .select2-selection--multiple {
+    min-height: 28px;
+}
+
+#options #customize .select2-container--default .select2-selection--multiple {
+    padding-bottom: 3px;
+}
+
+#options #customize .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #3085d6;
+    border: 1px solid #f1f1f1;
+    color: white;
+    margin-top: 0;
+    text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.03);
+}
+
+#options #customize .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: white;
+}
+
+#options #customize .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover,
+#options #customize .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:focus {
+    background-color: #5da6eb;
+}
+/* select2 fix */
+
+/* #options #customize select:hover {
     border-bottom-color: #9e9e9ec7;
     transition: 0.25s;
 }
@@ -462,7 +502,7 @@ input::-webkit-input-placeholder {
 #options #customize select option.var {
     display: none;
     color: rgb(129, 76, 226);
-}
+} */
 
 #options #customize input#iconame {
     width: 35%;
@@ -512,7 +552,7 @@ input::-webkit-input-placeholder {
     filter: grayscale();
 }
 
-#options #customize button {
+#options #customize .button {
     width: 150px;
     height: 30px;
     border-width: 0px;
@@ -523,35 +563,35 @@ input::-webkit-input-placeholder {
     width: 60px;
 }
 
-#options #customize button.cmdBtn {
+#options #customize .button.cmdBtn {
     float: right;
     margin: 0px 10px;
     user-select: none;
 }
 
-#options #customize button.cancel {
+#options #customize .button.cancel {
     background: #808080c9;
 }
 
-#options #customize button.cancel:hover {
+#options #customize .button.cancel:hover {
     background: #a5a2a2c9;
     transition: 0.5s;
 }
 
-#options #customize button.save {
+#options #customize .button.save {
     background: #1E90FF;
 }
 
-#options #customize button.save:hover {
+#options #customize .button.save:hover {
     background: #5599FF;
     transition: 0.5s;
 }
 
-#options #customize button.run {
+#options #customize .button.run {
     background: #15a86bc9;
 }
 
-#options #customize button.run:hover {
+#options #customize .button.run:hover {
     background: #27c583c9;
     transition: 0.5s;
 }
