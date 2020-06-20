@@ -185,6 +185,10 @@ let showOptions = (tag = "默认") => {
             var app = features.cmds[0].match.app
             if (app.length > 10) app = app.slice(0, 10) + '...';
             cmds = `<span class="keyword win">窗口: ${app}</span>`;
+        } else if (features.cmds[0].type == 'files') {
+            var app = features.cmds[0].match
+            if (app.length > 10) app = app.slice(0, 10) + '...';
+            cmds = `<span class="keyword fil">文件: ${app}</span>`;
         } else {
             features.cmds.forEach(cmd => {
                 cmds += `<span class="keyword">${cmd}</span>`;
@@ -239,9 +243,10 @@ let showCustomize = () => {
     <p><input type="text" id="code" style="display: none">
     <span class="word">模&#12288;式</span>
     <select id="type">
-            <option value="key">通过输入关键字进入插件</option>
-            <option value="regex">通过正则匹配主输入框文本</option>
-            <option value="window">通过呼出uTools前的活动窗口匹配</option>
+            <option value="key">通过关键字进入插件</option>
+            <option value="regex">正则匹配主输入框文本</option>
+            <option value="window">窗口匹配</option>
+            <option value="files">文件匹配</option>
         </select>
     <span class="word" id="ruleWord">关键字</span><input type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
     <p><span class="word">说&#12288;明</span><input type="text" id="desc" placeholder="命令功能的描述">
@@ -260,15 +265,16 @@ let showCustomize = () => {
         <span class="word">变&#12288;量</span>
         <select id="vars">
             <option value="" style="display:none">插入特殊变量</option>
-            <option value="{{isWin}}">是否Window系统</option>
+            <option value="{{isWin}}">是否Window系统, 返回1或0</option>
             <option value="{{LocalId}}">本机唯一ID</option>
             <option value="{{input}}" class="var regex">主输入框的文本</option>
             <option value="{{subinput}}">子输入框的文本</option>
             <option value="{{pwd}}" class="var window">文件管理器当前目录</option>
-            <option value="{{WindowInfo}}" class="var window">当前窗口信息(JSON格式)</option>
+            <option value="{{WindowInfo}}" class="var window">当前窗口信息，返回JSON格式字符串</option>
             <option value="{{BrowserUrl}}">浏览器当前链接</option>
             <option value="{{ClipText}}">剪切板的文本</option>
-            <option value="{{SelectFile}}" class="var window">选中的文件</option>
+            <option value="{{MatchedFiles}}" class="var files">匹配的文件，返回JSON格式字符串</option>
+            <option value="{{SelectFile}}" class="var window">文件管理器选中的文件，不支持Linux</option>
         </select>
         <span class="word">输&#12288;出</span>
         <select id="output">
@@ -298,6 +304,9 @@ let showCustomize = () => {
     </p>
     <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     <p>
+        <img id="win32" class="platform" src="./img/windows.svg">
+        <img id="darwin" class="platform" src="./img/macos.svg">
+        <img id="linux" class="platform" src="./img/linux.svg">
         <button class="cmdBtn save">保存</button>
         <button class="cmdBtn run">运行</button>
         <button class="cmdBtn cancel">取消</button>
@@ -405,19 +414,24 @@ let typeCheck = () => {
     switch (type) {
         case 'key':
             $("#ruleWord").html("关键字");
-            $(".var.regex").hide()
-            $(".var.window").hide()
+            $(".var.regex, .var.window, .var.files").hide()
             $("#rule").prop("placeholder", '多个关键字用逗号隔开');
             break;
         case 'regex':
             $("#ruleWord").html("正&#12288;则");
+            $(".var.window, .var.files").hide()
             $(".var.regex").show()
-            $(".var.window").hide()
-            $("#rule").prop("placeholder", '匹配的正则规则，如 /.*?\\.exe$/i');
+            $("#rule").prop("placeholder", '匹配文本的正则，如 /.*?\\.exe$/i');
+            break;
+        case 'files':
+            $("#ruleWord").html("正&#12288;则");
+            $(".var.regex, .var.window").hide()
+            $(".var.files").show()
+            $("#rule").prop("placeholder", '匹配文件的正则，如 /.*?\\.exe$/i');
             break;
         case 'window':
             $("#ruleWord").html("进&#12288;程");
-            $(".var.regex").hide()
+            $(".var.regex, .var.files").hide()
             $(".var.window").show()
             $("#rule").prop("placeholder", '窗口的进程名，多个用逗号隔开');
             break;
@@ -499,11 +513,12 @@ $("#options").on('click', '.editBtn', function () {
     showCustomize();
     data.tags && $('#tags').val(data.tags.join(","))
     var cmds = data.features.cmds[0]
-    if (cmds.type == 'regex') {
-        $('#type').val('regex')
+    var platform = data.features.platform
+    if (platform) ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
+    $('#type').val(cmds.type)
+    if (cmds.type == 'regex' || cmds.type == 'files') {
         $('#rule').val(cmds.match);
     } else if (cmds.type == 'window') {
-        $('#type').val('window');
         $('#rule').val(cmds.match.app);
     } else {
         $('#type').val('key')
@@ -650,13 +665,15 @@ let SaveCurrentCommand = async () => {
         var cmd = window.editor.getValue();
         // 合规性校验
         if (type == 'key'
-            && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}'].map(x => cmd.includes(x)).includes(true)) {
-                Swal.fire('关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
+            && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}', '{{MatchedFiles}}'].map(x => cmd.includes(x)).includes(true)) {
+            Swal.fire('关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}、{{MatchedFiles}}!')
         } else if (type == 'regex'
-            && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}'].map(x => cmd.includes(x)).includes(true)) {
-                Swal.fire('正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}!')
-        } else if (type == 'window' && cmd.includes('{{input}}')) {
-            Swal.fire('窗口模式无法使用{{input}}!')
+            && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}', '{{MatchedFiles}}'].map(x => cmd.includes(x)).includes(true)) {
+            Swal.fire('正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}、{{MatchedFiles}}!')
+        } else if (type == 'window' && cmd.includes('{{input}}', '{{MatchedFiles}}')) {
+            Swal.fire('窗口模式无法使用{{input}}、{{MatchedFiles}}!')
+        } else if (type == 'files' && cmd.includes('{{input}}', '{{MatchedFiles}}')) {
+            Swal.fire('窗口模式无法使用{{input}}、{{MatchedFiles}}!')
         } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
             Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
         } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
@@ -684,10 +701,6 @@ let SaveCurrentCommand = async () => {
                 cmds = rule.split(",").map(x => x.trim())
             } else if (type == 'regex') {
                 if (!/^\/.*?\/[igm]*$/.test(rule)) {
-                    await Swal.fire({
-                        icon: 'info',
-                        text: '亲，是不是忘了正则表达式两边的"/"了？正确的写法是/xxxx/,不过作者会很贴心地帮你自动加上哟',
-                    })
                     rule = "/" + rule + "/"
                 }
                 cmds = [{
@@ -711,6 +724,16 @@ let SaveCurrentCommand = async () => {
                     }
                 }
                 cmds = [cmdOfWin];
+            } else if (type == 'files') {
+                if (!/^\/.*?\/[igm]*$/.test(rule)) {
+                    rule = "/" + rule + "/"
+                }
+                cmds = [{
+                    "label": desc,
+                    "type": "files",
+                    "match": rule,
+                    "minNum": 1
+                }];
             }
             // 需要子输入框
             if (cmd.includes('{{subinput}}')) {
@@ -718,13 +741,17 @@ let SaveCurrentCommand = async () => {
             } else {
                 hasSubInput = false;
             }
+            // platform
+            var platform = []
+            $('.platform').not('.disabled').each(function() { platform.push($(this).attr('id')) })
             // 添加特性
             pushData = {
                 features: {
                     "code": code,
                     "explain": desc,
                     "cmds": cmds,
-                    "icon": icon
+                    "icon": icon,
+                    "platform": platform
                 },
                 program: program,
                 cmd: cmd,
@@ -965,6 +992,16 @@ $("#options").on('change', '#output', function () {
 $("#options").on('change', '#type', function () {
     resetVars();
     typeCheck();
+})
+
+// 平台按钮
+$("#options").on('click', '.platform', function () {
+    if ($(this).hasClass('disabled')){
+        $(this).removeClass('disabled')
+    } else {
+        if ($('.disabled').length == 2) message('至少保留一个平台')
+        else $(this).addClass('disabled')
+    } 
 })
 
 Mousetrap.bind('ctrl+s', () => {
