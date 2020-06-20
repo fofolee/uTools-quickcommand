@@ -151,21 +151,39 @@ let programs = {
     }
 }
 
-let showOptions = () => {
-    $("#featureList").remove();
+let showOptions = (tag = "默认") => {
+    $("#options").empty().fadeIn();
     var currentFts = utools.getFeatures(),
         customFts = getDB('customFts');
-    let featureList = '<div id="featureList"><table><tr><td width="40"></td><td width="240">模式</td><td width="270">说明</td><td>启用</td></tr>';
-    for (var fts in customFts) {
-        let features = customFts[fts].features;
+    var allTags = ["默认"]
+    var featureList = `
+    <div id="featureList">
+        <table>
+            <tr>
+                <td width="40"></td>
+                <td width="200">模式</td>
+                <td width="260">说明</td>
+                <td>启用</td>
+            </tr>`;
+    Object.values(customFts).some(fts => {
+        var features = fts.features;
+        if (fts.tags) {
+            fts.tags.map(t => !allTags.includes(t) && allTags.push(t))
+        }
+        if (tag == "未分类") {
+            if (fts.tags && fts.tags.length) return false
+        } else {
+            if (!fts.tags) return false
+            if (!fts.tags.includes(tag)) return false
+        }
         var cmds = '';
         if (features.cmds[0].type == 'regex') {
             var reg = features.cmds[0].match;
-            if (reg.length > 15) reg = reg.slice(0, 15) + '...';
+            if (reg.length > 10) reg = reg.slice(0, 10) + '...';
             cmds = `<span class="keyword re">正则: ${reg}</span>`;
         } else if (features.cmds[0].type == 'window') {
             var app = features.cmds[0].match.app
-            if (app.length > 15) app = app.slice(0, 15) + '...';
+            if (app.length > 10) app = app.slice(0, 10) + '...';
             cmds = `<span class="keyword win">窗口: ${app}</span>`;
         } else {
             features.cmds.forEach(cmd => {
@@ -179,33 +197,43 @@ let showOptions = () => {
                 break;
             }
         }
-        featureList += `<tr><td><img class="logo" src="${features.icon}"></td>
-        <td>${cmds}</td><td>${features.explain}</td><td>
-        <label class="switch-btn">
-        <input class="checked-switch" id="${features.code}" type="checkbox" ${isChecked}>
-        <span class="text-switch"></span>
-        <span class="toggle-btn"></span>
-        </label>
-        <span class="Btn editBtn" code="${features.code}"><img src="img/edit.svg"></span>
-        <span class="Btn exportBtn" code="${features.code}"><img src="img/export.svg"></span>
-        <span class="Btn delBtn" code="${features.code}"><img src="img/del.svg"></span>
+        featureList += `<tr>
+        <td><img class="logo" src="${features.icon}"></td>
+        <td>${cmds}</td>
+        <td>${features.explain}</td>
+        <td>
+            <label class="switch-btn">
+                <input class="checked-switch" id="${features.code}" type="checkbox" ${isChecked}>
+                <span class="text-switch"></span>
+                <span class="toggle-btn"></span>
+            </label>
+            <span class="Btn editBtn" code="${features.code}"><img src="img/edit.svg"></span>
+            <span class="Btn exportBtn" code="${features.code}"><img src="img/export.svg"></span>
+            <span class="Btn delBtn" code="${features.code}"><img src="img/del.svg"></span>
         </td>`
-    };
-    featureList += `</tr></table><div class="foot">
-    <div id="add" class="footBtn">添加命令</div>
-    <div id="import" class="footBtn">导入命令</div>
-    <div id="exportAll" class="footBtn">全部导出</div>
-    <div id="clear" class="footBtn danger">全部删除</div>
-    <div id="disableAll" class="footBtn danger">全部禁用</div>
-    <div id="enableAll" class="footBtn">全部启用</div>
-    <div id="sample" class="footBtn">下载命令</div>
-    </div></div>`
-    $("#options").append(featureList);
+    })
+    featureList += `</tr></table></div>`
+    var sidebar = `
+    <div class="sidebar">
+        ${allTags.map(a => (a == tag ? '<li class="currentTag">' : '<li>') + a + '</li>').join('')}
+        <li ${tag == '未分类' ? 'class="currentTag"' : ''}>未分类</li>
+    </div>`
+    var footer = `
+    <div class="foot">
+        <div id="add" class="footBtn">添加命令</div>
+        <div id="import" class="footBtn">导入命令</div>
+        <div id="exportAll" class="footBtn">全部导出</div>
+        <div id="clear" class="footBtn danger">全部删除</div>
+        <div id="disableAll" class="footBtn danger">全部禁用</div>
+        <div id="enableAll" class="footBtn">全部启用</div>
+        <div id="sample" class="footBtn">下载命令</div>
+    </div>`
+    $("#options").append(sidebar + featureList + footer)
 }
 
 let showCustomize = () => {
     $("#customize").remove();
-    $("#featureList").fadeOut()
+    // $("#featureList").fadeOut()
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
     let customWindow = `<div id="customize">
     <p><input type="text" id="code" style="display: none">
@@ -216,15 +244,17 @@ let showCustomize = () => {
             <option value="window">通过呼出uTools前的活动窗口匹配</option>
         </select>
     <span class="word" id="ruleWord">关键字</span><input type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
-    <p><span class="word">说&#12288;明</span><input type="text" id="desc" placeholder="命令功能的描述"></p>
+    <p><span class="word">说&#12288;明</span><input type="text" id="desc" placeholder="命令功能的描述">
+    <img id="icon" src="">
+    </p>
     <p>
         <span class="word">类&#12288;型</span>
         <select id="program">
-        <option value="simulation">内置环境</option>
-        ${options}
+            <option value="simulation">内置环境</option>
+            ${options}
         </select>
-        <span class="word">图&#12288;标</span><input type="text" readonly id="iconame" placeholder="更改图标">
-        <img id="icon" src="">
+        <span class="word">标&#12288;签</span><input type="text" id="tags" placeholder="添加标签，多个标签逗号隔开">
+        <input type="text" readonly id="iconame" placeholder="更改图标">
     </p>
     <p class="varoutput">
         <span class="word">变&#12288;量</span>
@@ -258,13 +288,13 @@ let showCustomize = () => {
             <input type="text" id="customarg" placeholder="参数">
             <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
             <input type="text" id="customcodec" placeholder="输出编码">
-            </span>
+        </span>
             <span class="simulation">
             <span id="addAction" class="footBtn robot">﹢动作</span>
             <span id="addKey" class="footBtn robot">﹢按键</span>
             <span id="showHelp" class="footBtn robot">？帮助</span>
-            </span>
-            <span id="beautifyCode" class="footBtn robot">格式化</span>
+        </span>
+        <span id="beautifyCode" class="footBtn robot">格式化</span>
     </p>
     <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     <p>
@@ -324,7 +354,7 @@ let beautifyCode = () => {
         switch ($("#program").val()) {
             case "simulation":
             case "javascript":
-                window.editor.setValue(js_beautify(cm))
+                window.editor.setValue(js_beautify(cmd, { brace_style: "collapse,preserve-inline" }))
                 break;
             case "python":
                 py_beautify(cmd, data => {
@@ -467,6 +497,7 @@ $("#options").on('click', '.editBtn', function () {
     var code = $(this).attr('code');
     var data = utools.db.get("customFts").data[code];
     showCustomize();
+    data.tags && $('#tags').val(data.tags.join(","))
     var cmds = data.features.cmds[0]
     if (cmds.type == 'regex') {
         $('#type').val('regex')
@@ -518,19 +549,6 @@ $("#options").on('click', '#showHelp', function () {
     })
 })
 
-// 添加延时
-$("#options").on('click', '#addDelay', function () {
-    var t = $('#keydelay').val();
-    if (/\d+/.test(t)) {
-        window.editor.replaceSelection(`sleep(${t});\n`)
-    } else {
-        Swal.fire({
-            icon: 'warning',
-            text: '请输入正确的时间, 单位 ms',
-          })
-    }
-})
-
 // 添加动作
 $("#options").on('click', '#addAction', function () {
     var html = `
@@ -544,7 +562,7 @@ $("#options").on('click', '#addAction', function () {
         <option value="message">发送系统消息</option>
         <option value="alert">弹窗显示消息</option>
         <option value="send">发送文本到活动窗口</option>
-        <option value="sleep">添加延时（毫秒）</option>
+        <option value="quickcommand.sleep">添加延时（毫秒）</option>
     </select>
     <input placeholder="动作的参数" id="actionArgs" class="swal2-input" style="width: 80%; height: 3rem;">
     <input type="checkbox" checked id="isString" style="margin-left: 60%;">加引号
@@ -579,13 +597,27 @@ $("#options").on('click', '.exportBtn', function () {
 
 // 删除
 $("#options").on('click', '.delBtn', function () {
-    var code = $(this).attr('code'),
-        db = utools.db.get("customFts"),
-        data = db.data;
-    delete data[code];
-    utools.removeFeature(code);
-    utools.db.put({ _id: "customFts", data: data, _rev: db._rev });
-    showOptions();
+    Swal.fire({
+        text: '删除这个快捷命令',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '确定！',
+        cancelButtonText: '手抖...',
+      }).then((result) => {
+        if (result.value) {
+            var code = $(this).attr('code'),
+            db = utools.db.get("customFts"),
+            data = db.data;
+            delete data[code];
+            utools.removeFeature(code);
+            utools.db.put({ _id: "customFts", data: data, _rev: db._rev });
+            var currentTag = $('.currentTag').text()
+            if ($('#featureList tr').length == 2) currentTag = "默认"
+            showOptions(currentTag);
+          }
+      })
 })
 
 // 选择图标
@@ -608,6 +640,7 @@ let SaveCurrentCommand = async () => {
     if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
         var type = $('#type').val();
         var code = $("#code").val();
+        var tags = $('#tags').val()
         if (!code) {
             // 生成唯一code
             var uid = Number(Math.random().toString().substr(3, 3) + Date.now()).toString(36);
@@ -648,9 +681,9 @@ let SaveCurrentCommand = async () => {
             }
             var rule = $('#rule').val();
             if (type == 'key') {
-                cmds = rule.split(',')
+                cmds = rule.split(",").map(x => x.trim())
             } else if (type == 'regex') {
-                if (rule[0] != '/' || rule[rule.length - 1] != '/') {
+                if (!/^\/.*?\/[igm]*$/.test(rule)) {
                     await Swal.fire({
                         icon: 'info',
                         text: '亲，是不是忘了正则表达式两边的"/"了？正确的写法是/xxxx/,不过作者会很贴心地帮你自动加上哟',
@@ -664,13 +697,20 @@ let SaveCurrentCommand = async () => {
                     "minNum": 1
                 }];
             } else if (type == 'window') {
-                cmds = [{
+                var cmdOfWin = {
                     "label": desc,
-                    "type": "window",
-                    "match": {
-                        "app": rule.split(',')
+                    "type": "window"
+                }
+                if (rule) { 
+                    try {
+                        cmdOfWin.match = JSON.parse(rule)
+                    } catch (error) {
+                        cmdOfWin.match = {
+                            "app": rule.split(',')
+                        }
                     }
-                }];
+                }
+                cmds = [cmdOfWin];
             }
             // 需要子输入框
             if (cmd.includes('{{subinput}}')) {
@@ -678,12 +718,6 @@ let SaveCurrentCommand = async () => {
             } else {
                 hasSubInput = false;
             }
-            $("#customize").animate({ top: '100%' });
-            // if (type == "robotjs") {
-            //     program = "";
-            //     output = "";
-            //     robotjs = true;
-            // }
             // 添加特性
             pushData = {
                 features: {
@@ -696,8 +730,8 @@ let SaveCurrentCommand = async () => {
                 cmd: cmd,
                 output: output,
                 hasSubInput: hasSubInput
-                // robotjs: robotjs
             }
+            if (tags) pushData.tags = tags.split(",").map(x => x.trim())
             if (program == 'custom') {
                 pushData.customOptions = {
                     "bin": $('#custombin').val(),
@@ -706,16 +740,26 @@ let SaveCurrentCommand = async () => {
                     'codec': $('#customcodec').val()
                 }
             }
-            // if (program == 'simulation') {
-            //     $('#output').val('');
-            // }
             putDB(code, pushData, 'customFts');
-            showOptions();
-            $("#customize").empty()
-            $(`#${code}`).click();
-            if (!$(`#${code}`).is(':checked')) {
+            $("#customize").animate({ top: '100%' }, () => {
+                // 保存后标签跳转处理
+                var redirectTag, currentTag = $('.currentTag').text()
+                if (tags) {
+                    if (pushData.tags.includes(currentTag)) {
+                        redirectTag = currentTag
+                    } else {
+                        redirectTag = pushData.tags[0]
+                    }
+                } else {
+                    redirectTag = "未分类"
+                }
+                showOptions(redirectTag);
+                $("#customize").empty()
                 $(`#${code}`).click();
-            }
+                if (!$(`#${code}`).is(':checked')) {
+                    $(`#${code}`).click();
+                }
+            });
         }
     }
 }
@@ -724,7 +768,7 @@ let SaveCurrentCommand = async () => {
 let showRunResult = (content, raw, success) => {
     var options
     var maxlength = 100000
-    var position = $("#varoutput").is(":parent") ? 'top' : 'bottom'
+    var position = $(".varoutput").is(":parent") ? 'top' : 'bottom'
     var preView = () => {
         var result = $('#swal2-content').text()
         result = htmlEncode(result, raw)
@@ -745,7 +789,7 @@ let showRunResult = (content, raw, success) => {
             text: content,
             position: position,
             width: 800,
-            showConfirmButton: false,
+            showConfirmButton: true,
             showClass: {
                 popup: 'fadeInDownWindow'
             },
@@ -753,7 +797,7 @@ let showRunResult = (content, raw, success) => {
                 popup: 'fadeOutUpWindow'
             }
         }
-        Swal.fire(options)
+        swalOneByOne(options)
     }
 }
 
@@ -770,6 +814,7 @@ let runCurrentCommand = async () => {
             await Swal.fire({
                 title: "需要临时为以下变量赋值",
                 html: html,
+                focusConfirm: false,
                 preConfirm: () => {
                     requireInputVal.forEach(r => {
                         cmd = cmd.replace(new RegExp(r, 'g'), document.getElementById(r).value)
@@ -867,7 +912,13 @@ showCodeEditor = () => {
         window.editor.setValue(db.history.cmd)
     }
     programCheck()
+    $("#options").show()
 }
+
+// 切换TAGS
+$("#options").on('click', '.sidebar li', function () {
+    showOptions($(this).text());
+})
 
 // 运行
 $("#options").on('click', '.cmdBtn.run, #runCode', function () {
