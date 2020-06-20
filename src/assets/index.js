@@ -32,6 +32,8 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
         cmd = special(cmd);
         // 正则
         if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
+        // 文件
+        if (type == 'files') cmd = cmd.replace(/\{\{MatchedFiles\}\}/mg, JSON.stringify(payload));
         // 窗口
         if (type == 'window') {
             // 获取选中的文件
