@@ -105,7 +105,7 @@ const quickcommand = {
         var html = `<select id="selectBox" class="swal2-select">`
         var selectBoxNumbers = selects.length
         for (let i = 0; i < selectBoxNumbers; i++) {
-            html += `<option>${selects[i]}</option>`
+            html += `<option value="${selects[i]}">${selects[i]}</option>`
         }
         html += `</select>`
         var options = {
