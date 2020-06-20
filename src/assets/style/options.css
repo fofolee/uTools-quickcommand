@@ -252,10 +252,33 @@
     height: 30px;
     right: 0px;
     bottom: 0px;
-    left: 0px;
+    left: 80px;
     background: #f3f3f3;
     box-shadow: 0px 0px 9px 0px #00000030;
     padding: 3px;
+}
+
+#options .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 80px;
+    background: #f3f3f3;
+    box-shadow: 0px 0px 9px 0px #00000030;
+}
+
+#options .sidebar li{
+    padding: 10px;
+    list-style-type: none;
+    cursor: pointer;
+    user-select: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#options .sidebar .currentTag{
+    background-color: #c7c5c5;
 }
 
 #options td span {
@@ -305,6 +328,10 @@
     width: 16%;
 }
 
+#options #featureList {
+    padding-left: 80px;
+}
+
 #options #customize {
     position: fixed;
     z-index: 9;
@@ -335,7 +362,7 @@
 }
 
 #options #customize input {
-    width: 90%;
+    width: 84%;
     height: 25px;
     border-bottom: 1px solid #dbdbdb;
     border-top: 0px;
@@ -345,7 +372,8 @@
     margin-left: 13px
 }
 
-#options #customize input#rule {
+#options #customize input#rule,
+#options #customize input#tags {
     width: 40%;
 }
 
@@ -435,12 +463,18 @@ input::-webkit-input-placeholder {
 #options #customize input#iconame {
     width: 35%;
     cursor: pointer;
+    display: none;
 }
 
 #options #customize #icon {
     float: right;
-    width: 28px;
+    width: 40px;
     cursor: pointer;
+}
+
+#options #customize #icon:hover {
+    transform: rotate(360deg);
+    transition: 0.3s;
 }
 
 #options #customize .selectBtn {

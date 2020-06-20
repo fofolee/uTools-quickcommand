@@ -1,7 +1,7 @@
 utools.onPluginEnter(async ({ code, type, payload }) => {
     utools.onPluginOut(() => {
         var program = $('#program').val();
-        $("#options").empty().show()
+        $("#options").empty()
         $("#out").empty()
         if (code == "code") {
             var cmd = window.editor.getValue();
