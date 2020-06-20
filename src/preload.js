@@ -13,7 +13,7 @@ if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
 // window.startTime = new Date().getTime()
 
-const QuickCommandActions = [
+const shortCodes = [
 
     open = path => {
         utools.shellOpenItem(path)
@@ -36,28 +36,30 @@ const QuickCommandActions = [
     },
 
     keyTap = (key, ...modifier) => utools.simulateKeyboardTap(key, ...modifier),
-
-    simulateCopy = () => {
-        var ctlKey = utools.isMacOs() ? 'command' : 'control';
-        utools.simulateKeyboardTap('c', ctlKey);
-    },
     
     copyTo = text => {
         electron.clipboard.writeText(text)
     },
-    
-    simulatePaste = () => {
+        
+    send = text => {
+        copyTo(text);
+        quickcommand.simulatePaste();
+    }
+]
+
+const quickcommand = {
+    simulateCopy: function() {
+        var ctlKey = utools.isMacOs() ? 'command' : 'control';
+        utools.simulateKeyboardTap('c', ctlKey);
+    },
+
+    simulatePaste: function() {
         var ctlKey = utools.isMacOs() ? 'command' : 'control';
         utools.simulateKeyboardTap('v', ctlKey);
     },
-    
-    send = text => {
-        copyTo(text);
-        simulatePaste();
-    },
 
     // setTimout 不能在 vm2 中使用，同时在 electron 中有 bug
-    sleep = ms => {
+    sleep: function(ms) {
         var start = new Date().getTime()
         var cmd, tempFilePath
         if (utools.isWindows()) {
@@ -75,12 +77,77 @@ const QuickCommandActions = [
           }
         var end = new Date().getTime()
         return (end - start)
+    },
+
+    showInputBox: function (callback = () => { }, placeHolders = [""]) {
+        if(typeof callback != 'function') return
+        var html = ""
+        var inputBoxNumbers = placeHolders.length
+        for (let i = 0; i < inputBoxNumbers; i++) {
+            html += `<input class="swal2-input" id="inputBox${i}" placeholder="${placeHolders[i]}">`
+        }
+        var result = []
+        var options = {
+            html: html,
+            focusConfirm: false,
+            preConfirm: () => {
+                for (let i = 0; i < inputBoxNumbers; i++) {
+                    result.push(document.getElementById(`inputBox${i}`).value)
+                }
+                callback(result)
+            }
+        }
+        swalOneByOne(options)
+    },
+
+    showSelectBox: function (callback = () => { }, selects = [""]) {
+        if(typeof callback != 'function') return
+        var html = `<select id="selectBox" class="swal2-select">`
+        var selectBoxNumbers = selects.length
+        for (let i = 0; i < selectBoxNumbers; i++) {
+            html += `<option>${selects[i]}</option>`
+        }
+        html += `</select>`
+        var options = {
+            html: html,
+            focusConfirm: false,
+            preConfirm: () => {
+                callback(document.getElementById('selectBox').value)
+            }
+        }
+        swalOneByOne(options)
+    },
+
+    showButtonBox: function (callback = () => { }, buttons = [""]) {
+        if(typeof callback != 'function') return
+        var html = ``
+        var buttonBoxNumbers = buttons.length
+        for (let i = 0; i < buttonBoxNumbers; i++) {
+            html += `<button class="swal2-confirm swal2-styled" style="width: 80%" onclick="clickButton(${i})">${buttons[i]}</button>`
+        }
+        var options = {
+            onBeforeOpen: () => {
+                clickButton = i => {
+                    callback({ index: i, text: buttons[i] })
+                    swal.clickConfirm()
+                }
+            },
+            html: html,
+            showConfirmButton: false
+        }
+        swalOneByOne(options)
     }
-]
+
+}
+
+swalOneByOne = options => {
+    swal.getQueueStep() && Swal.insertQueueStep(options) || Swal.queue([options])
+}
 
 var getSandboxFuns = () => {
     var sandbox = {
         utools: utools,
+        quickcommand: quickcommand,
         // process: process,
         electron: electron,
         fs: fs,
@@ -89,14 +156,13 @@ var getSandboxFuns = () => {
         child_process: child_process,
         util: util,
         alert: alert,
-        // Swal: Swal,
         $: {
             get: $.get,
             post: $.post,
             ajax: $.ajax
         }
     }
-    QuickCommandActions.forEach(f => {
+    shortCodes.forEach(f => {
         sandbox[f.name] = f
     })
     return sandbox
@@ -214,8 +280,9 @@ getBase64Ico = path => {
 }
 
 openFileInDialog = (options, readfile) => {
-    var file = utools.showOpenDialog(options)[0];
-    if (!file) return false
+    var dialog = utools.showOpenDialog(options);
+    if (!dialog) return false
+    var file = dialog[0]
     var information = {
         name: path.basename(file),
         path: file
@@ -273,7 +340,7 @@ restoreClip = historyData => {
 getSelectText = () => {
     var historyData = storeClip();
     electron.clipboard.writeText('');
-    simulateCopy();
+    quickcommand.simulateCopy();
     var selectText = electron.clipboard.readText()
     setTimeout(() => {
         restoreClip(historyData)
