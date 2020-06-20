@@ -185,6 +185,10 @@
     color: rgb(48, 21, 122);
 }
 
+#options .keyword.fil {
+    color: rgb(12, 95, 9);
+}
+
 #options .logo {
     width: 32px;
 }
@@ -492,6 +496,20 @@ input::-webkit-input-placeholder {
     border-color: #78C3F3;
     color: #004974;
     transition: 0.5s;
+}
+
+#options #customize .platform {
+    max-width: 30px;
+    cursor: pointer;
+}
+
+#options #customize .platform:hover{
+    box-shadow: 0px 1px 1px 0px #3085d6;
+    transition: 0.1s;
+}
+
+#options #customize .disabled{
+    filter: grayscale();
 }
 
 #options #customize button {
