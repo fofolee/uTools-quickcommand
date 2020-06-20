@@ -299,54 +299,54 @@ saveFile = (options, content) => {
 }
 
 // 保存剪贴板
-storeClip = () => {
-    var formats = electron.clipboard.availableFormats("clipboard");
-    if (formats.includes("text/plain")) {
-        return ['text', electron.clipboard.readText()]
-    }
-    if (formats.includes("image/png") || formats.includes("image/jpeg")) {
-        return ['image', electron.clipboard.readImage()]
-    }
-    var file;
-    if (utools.isWindows()) {
-        file = electron.clipboard.readBuffer('FileNameW').toString('ucs2').replace(/\\/g, '/');
-        file = file.replace(new RegExp(String.fromCharCode(0), 'g'), '');
-    } else {
-        file = electron.clipboard.read('public.file-url').replace('file://', '');
-    }
-    if (file) {
-        return ['file', file]
-    }
-    return []
-}
+// storeClip = () => {
+//     var formats = electron.clipboard.availableFormats("clipboard");
+//     if (formats.includes("text/plain")) {
+//         return ['text', electron.clipboard.readText()]
+//     }
+//     if (formats.includes("image/png") || formats.includes("image/jpeg")) {
+//         return ['image', electron.clipboard.readImage()]
+//     }
+//     var file;
+//     if (utools.isWindows()) {
+//         file = electron.clipboard.readBuffer('FileNameW').toString('ucs2').replace(/\\/g, '/');
+//         file = file.replace(new RegExp(String.fromCharCode(0), 'g'), '');
+//     } else {
+//         file = electron.clipboard.read('public.file-url').replace('file://', '');
+//     }
+//     if (file) {
+//         return ['file', file]
+//     }
+//     return []
+// }
 
 // 恢复剪贴板
-restoreClip = historyData => {
-    if (historyData[0] == 'text') {
-        electron.clipboard.writeText(historyData[1]);
-        return
-    }
-    if (historyData[0] == 'image') {
-        electron.clipboard.writeImage(historyData[1]);
-        return
-    }
-    if (historyData[0] == 'file') {
-        utools.copyFile(historyData[1])
-        return
-    }
-    electron.clipboard.writeText('')
-}
+// restoreClip = historyData => {
+//     if (historyData[0] == 'text') {
+//         electron.clipboard.writeText(historyData[1]);
+//         return
+//     }
+//     if (historyData[0] == 'image') {
+//         electron.clipboard.writeImage(historyData[1]);
+//         return
+//     }
+//     if (historyData[0] == 'file') {
+//         utools.copyFile(historyData[1])
+//         return
+//     }
+//     electron.clipboard.writeText('')
+// }
 
-getSelectText = () => {
-    var historyData = storeClip();
-    electron.clipboard.writeText('');
-    quickcommand.simulateCopy();
-    var selectText = electron.clipboard.readText()
-    setTimeout(() => {
-        restoreClip(historyData)
-    }, 500);
-    return selectText
-}
+// getSelectText = () => {
+//     var historyData = storeClip();
+//     electron.clipboard.writeText('');
+//     quickcommand.simulateCopy();
+//     var selectText = electron.clipboard.readText()
+//     setTimeout(() => {
+//         restoreClip(historyData)
+//     }, 500);
+//     return selectText
+// }
 
 getSelectFile = hwnd =>
     new Promise((reslove, reject) => {
@@ -399,11 +399,11 @@ special = cmd => {
     }
 
     // 获取选中的文本
-    if (cmd.includes('{{SelectText}}')) {
-        let repl = getSelectText();
-        cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
-    }
-    return cmd;
+    // if (cmd.includes('{{SelectText}}')) {
+    //     let repl = getSelectText();
+    //     cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
+    // }
+    // return cmd;
 }
 
 runCodeFile = (cmd, option, terminal, callback) => {
