@@ -448,45 +448,51 @@ runCodeFile = (cmd, option, terminal, callback) => {
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), 'GBK');
     fs.writeFileSync(script, cmd);
-    var argvs = [script]
-    if (argv) {
-        argvs = argv.split(' ')
-        argvs.push(script);
-    }
-    var child;
-    if (bin) {
-        // 在终端中输出
-        if (terminal) {
-            if (utools.isWindows()) {
-                child = child_process.spawn(`start cmd /k ${bin} ${argv} "${script}"`, { encoding: 'buffer', shell: true })
-            } else if(utools.isMacOs()){
-                var appleScript = `if application "Terminal" is running then 
-                tell application "Terminal"   
-                    # do script without "in window" will open a new window        
-                    do script "clear;${bin} ${argv} ${script}"             
-                    activate                          
-                end tell                              
-            else                                      
-                tell application "Terminal"   
-                    # window 1 is guaranteed to be recently opened window        
-                    do script "clear;${bin} ${argv} ${script}" in window 1 
-                    activate
-                end tell
-            end if`;
-                child = child_process.spawn('osascript', ['-e', appleScript], { encoding: 'buffer' })
-            } else {
-                return message('Linux 不支持在终端输出')
-            }
-        } else {
-            child = child_process.spawn(bin, argvs, { encoding: 'buffer' })            
-        }
+    // var argvs = [script]
+    // if (argv) {
+    //     argvs = argv.split(' ')
+    //     argvs.push(script);
+    // }
+    var child, cmdline
+    if (bin.slice(-7) == 'csc.exe') {
+        cmdline = `pushd "${path.dirname(script)}" && ${bin} ${argv} "${script}" && "${script.slice(0, -2) + 'exe'}"`
+    } else if (bin == 'gcc') {
+        var suffix = utools.isWindows() ? '.exe' : ''
+        cmdline = `pushd "${path.dirname(script)}" && ${bin} ${argv} ${script.slice(0, -2)} "${script}" && "${script.slice(0, -2) + suffix}"`
+    } else if (utools.isWindows() && bin == 'bash') {
+        cmdline = `${bin} ${argv} "${script.replace(/\\/g, '/').replace(/C:/i, '/mnt/c')}"`
     } else {
-        if (terminal) {
-            child = child_process.spawn(`start cmd /k "${script}"`, { encoding: 'buffer', shell: true })
+        cmdline = `${bin} ${argv} "${script}"`
+    }
+    // 在终端中输出
+    if (terminal) {
+        if (utools.isWindows()) {
+            if (bin.slice(-7) == 'csc.exe' || bin == 'gcc') {
+                cmdline = cmdline.split("&&")
+                cmdline = cmdline[0] + "&&" + cmdline[1] + "&& start cmd /k " + cmdline[2]
+            } else {
+                cmdline = `start cmd /k ${cmdline}`
+            }
+        } else if(utools.isMacOs()){
+            var appleScript = `if application "Terminal" is running then 
+            tell application "Terminal"   
+                # do script without "in window" will open a new window        
+                do script "clear;${bin} ${argv} ${script}"             
+                activate                          
+            end tell                              
+        else                                      
+            tell application "Terminal"   
+                # window 1 is guaranteed to be recently opened window        
+                do script "clear;${bin} ${argv} ${script}" in window 1 
+                activate
+            end tell
+        end if`;
+            cmdline = `osascript -e '${appleScript}'`
         } else {
-            child = child_process.spawn(script, { encoding: 'buffer' })             
+            return message('Linux 不支持在终端输出')
         }
     }
+    child = child_process.spawn(cmdline, { encoding: 'buffer', shell: true })            
     // var chunks = [],
     //     err_chunks = [];
     child.stdout.on('data', chunk => {

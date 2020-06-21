@@ -133,6 +133,18 @@ let programs = {
             argv: '',
             ext: 'php'
         },
+        c: {
+            bin: 'gcc',
+            argv: '-o',
+            ext: 'c',
+            codec: utools.isWindows() ? 'gbk' : ''
+        },
+        csharp: {
+            bin: 'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\csc.exe',
+            argv: '/Nologo',
+            ext: 'cs',
+            codec: 'gbk'
+        },
         lua: {
             bin: 'lua',
             argv: '',
@@ -289,7 +301,7 @@ let showCustomize = () => {
             <option value="ignore">隐藏并忽略输出</option>
             <option value="text">显示纯文本输出</option>
             <option value="html">显示html格式的输出</option>
-            <option value="terminal" id="showInTerm">在终端显示输出</option>
+            <option value="terminal" id="showInTerm" disabled>在终端显示输出</option>
             <option value="clip">复制到剪贴板</option>
             <option value="send">发送到活动窗口</option>
             <option value="notice">发送系统通知</option>
@@ -485,18 +497,19 @@ let programCheck = () => {
         case 'custom':
             $('.customscript').show();
             $('.simulation').hide();
-            $('#showInTerm').show()
+            $('#showInTerm').prop("disabled", false);
             break;
         case 'simulation':
             $('.simulation').show();
             $('.customscript').hide();
-            $('#showInTerm').hide()
+            $('#showInTerm').prop("disabled", true);
             mode = 'javascript';
             break;
         default:
             $('.customscript').hide();
             $('.simulation').hide();
-            $('#showInTerm').show()
+            $('#showInTerm').prop("disabled", false);
+            (mode == 'csharp' || mode == 'c') && (mode = 'text/x-' + mode)
             break;
     }
     window.editor.setOption("mode", mode);
