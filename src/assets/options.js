@@ -310,7 +310,7 @@ let showCustomize = () => {
         </span>
         <span id="beautifyCode" class="footBtn robot">格式化</span>
     </p>
-    <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+    <textarea id="cmd" placeholder="◆基础◆\n内置环境模式下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\n内置环境模式：可使用nodejs、electron、uTools的api及本插件封装的一些命令，详情查看帮助\n其他脚本模式：本机装了相应环境即可执行，可以直接拖放脚本文件至此处\n列表里没有的语言，可以选择custom手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     <p>
         <img id="win32" class="platform" src="./img/windows.svg">
         <img id="darwin" class="platform" src="./img/macos.svg">
@@ -593,22 +593,28 @@ $("#options").on('click', '#showHelp', function () {
 $("#options").on('click', '#addAction', function () {
     var html = `
     <select id="actionType" class="swal2-select" style="width: 80%; height: 3rem;">
-        <option value="open">打开文件/文件夹</option>
-        <option value="locate">在文件管理器中定位文件</option>
-        <option value="visit">用默认浏览器打开网址</option>
-        <option value="utools.ubrowser.goto">用ubrowser打开网址</option>
-        <option value="system">执行系统命令</option>
-        <option value="copyTo">将内容写入剪贴板</option>
-        <option value="message">发送系统消息</option>
-        <option value="alert">弹窗显示消息</option>
-        <option value="send">发送文本到活动窗口</option>
-        <option value="quickcommand.sleep">添加延时（毫秒）</option>
+        <option value="open" args="文件、文件夹或软件的绝对路径">打开文件/文件夹/软件</option>
+        <option value="locate" args="要在文件管理器里显示的文件路径">在文件管理器中定位文件</option>
+        <option value="visit" args="要访问的网址链接">用默认浏览器打开网址</option>
+        <option value="utools.ubrowser.goto" args="要访问的网址链接">用ubrowser打开网址</option>
+        <option value="system" args="要执行的命令行">执行系统命令</option>
+        <option value="copyTo" args="要写入剪切板的内容">将内容写入剪贴板</option>
+        <option value="message" args="要发送的系统消息文本">发送系统消息</option>
+        <option value="alert" args="要弹窗显示的消息文本">弹窗显示消息</option>
+        <option value="send" args="要发送到窗口的文本内容">发送文本到活动窗口</option>
+        <option value="utools.redirect" args="要跳转至的插件名称">跳转到指定插件</option>
+        <option value="quickcommand.sleep" args="延迟的毫秒数，不要勾选“加引号”">添加延时</option>
     </select>
-    <input placeholder="动作的参数" id="actionArgs" class="swal2-input" style="width: 80%; height: 3rem;">
+    <input placeholder="文件、文件夹或软件的绝对路径" id="actionArgs" class="swal2-input" style="width: 80%; height: 3rem;">
     <input type="checkbox" checked id="isString" style="margin-left: 60%;">加引号
     `
     Swal.fire({
         title: "预设动作",
+        onBeforeOpen: () => {
+            $('#actionType').change(function () {
+                $('#actionArgs').attr('placeholder', $(this).find(`[value=${$(this).val().replace('.', '\\.')}]`).attr('args'))      
+            })
+        },
         html: html,
         showCancelButton: true,
         preConfirm: () => {
@@ -964,7 +970,7 @@ showCodeEditor = () => {
     }
     programCheck()
     $('#program').select2({
-        width: 140,
+        width: 100,
         minimumResultsForSearch: Infinity
     });
     $("#options").show()
