@@ -28,7 +28,7 @@ const shortCodes = [
     },
 
     system = cmd => {
-        return child_process.execSync(cmd);
+        child_process.exec(cmd);
     },
 
     message = msg => {
@@ -80,8 +80,13 @@ const quickcommand = {
     },
 
     showInputBox: function (callback, placeHolders) {
-        if (typeof callback != 'function') return
+        let helps = `正确用法：
+        showInputBox(yourinput => {
+            do something...
+        }, [placeholder of input1, placeholder of input2...])`
+        if (!(callback instanceof Function)) throw helps
         placeHolders || (placeHolders = [""])
+        if (!(placeHolders instanceof Array)) throw helps
         utools.setExpendHeight(600)
         var html = ""
         var inputBoxNumbers = placeHolders.length
@@ -103,11 +108,15 @@ const quickcommand = {
     },
 
     showSelectBox: function (callback, selects) {
-        if (typeof callback != 'function') return
-        selects || (selects = [""])
+        let helps = `正确用法：
+        showSelectBox(yourchoise => {
+            do something...
+        }, [option1, option2...])`
+        if (!(callback instanceof Function)) throw helps
+        if (!(selects instanceof Array) || (selects && !selects.length)) throw helps
         // 调整插件高度
         let modWindowHeight = num => {
-            utools.setExpendHeight(num > 11 ? 600 : 50 * (num + 1));
+            if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 11 ? 600 : 50 * (num + 1));
         }
         var html = `<div id="quickselect"><select id="selectBox">`
         var selectBoxNumbers = selects.length
@@ -121,11 +130,12 @@ const quickcommand = {
             width: "100%",
             dropdownParent: $("#quickselect")
         })
+        $('#selectBox').val(null).trigger('change');
         $('#selectBox').select2('open')
         $('#quickselect .select2').hide()
         $('#selectBox').on('select2:select', function (e) {
+            $('#selectBox').off('select2:select');
             callback($(this).val())
-            $('#selectBox').select2('destroy')
             $("#quickselect").remove()
         })
         $('#quickselect .select2-search__field').bind("input propertychange change",function(event){  
@@ -134,8 +144,12 @@ const quickcommand = {
     },
 
     showButtonBox: function (callback, buttons) {
-        if (typeof callback != 'function') return
-        buttons || (buttons = [""])
+        let helps = `正确用法：
+        showButtonBox(yourchoise => {
+            do something...
+        }, [button1, button2...])`
+        if (!(callback instanceof Function)) throw helps
+        if (!(buttons instanceof Array) || (buttons && !buttons.length)) throw helps
         utools.setExpendHeight(600)
         var html = ``
         var buttonBoxNumbers = buttons.length
@@ -164,7 +178,6 @@ var getSandboxFuns = () => {
     var sandbox = {
         utools: utools,
         quickcommand: quickcommand,
-        // process: process,
         electron: electron,
         fs: fs,
         path: path,
@@ -199,7 +212,7 @@ runCodeInVm = (cmd, cb) => {
         if (typeof (item) == "object") {
             if (Buffer.isBuffer(item)) {
                 var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
-                if (item.length > 50) bufferString += `... ${(item.length/1000).toFixed(2)}kb`
+                if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
                 return bufferString + ']'
             } else {
                 try {
@@ -229,13 +242,18 @@ runCodeInVm = (cmd, cb) => {
     });
 
     try {
-        vm.run(`
-            ${cmd}
-            process.exitcode = 1
-        `, path.join(__dirname, 'preload.js'));
+        vm.run(cmd, path.join(__dirname, 'preload.js'));
     } catch (error) {
         cb(null, error.toString())
     }
+    
+    let cbUnhandledError = e => {
+        window.removeEventListener('error', cbUnhandledError)
+        cb(null, e.error.toString())
+    }
+    
+    // 捕捉渲染进程异常
+    window.addEventListener('error', cbUnhandledError)
 }
 
 // shell 以环境变量下命令作为代码提示
