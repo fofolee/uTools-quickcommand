@@ -310,7 +310,7 @@ let showCustomize = () => {
         </span>
         <span id="beautifyCode" class="footBtn robot">格式化</span>
     </p>
-    <textarea id="cmd" placeholder="◆基础◆\n内置环境模式下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\n内置环境模式：可使用nodejs、electron、uTools的api及本插件封装的一些命令，详情查看帮助\n其他脚本模式：本机装了相应环境即可执行，可以直接拖放脚本文件至此处\n列表里没有的语言，可以选择custom手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+    <textarea id="cmd" placeholder="◆基础◆\n内置环境模式下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\n内置环境模式：可使用nodejs、electron、uTools的api、$.ajax以及本插件封装的用户交互命令，详情查看帮助\n其他脚本模式：本机装了相应环境即可执行，可以直接拖放脚本文件至此处\n列表里没有的语言，可以选择custom手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     <p>
         <img id="win32" class="platform" src="./img/windows.svg">
         <img id="darwin" class="platform" src="./img/macos.svg">
