@@ -141,6 +141,7 @@
     JSON: JSON,
     String: String,
     Array: Array,
+    process: { "argv": null, "title": null, "version": null, "versions": null, "arch": null, "platform": null, "env": null, "pid": null, "features": { "inspector": null, "debug": null, "uv": null, "ipv6": null, "tls_alpn": null, "tls_sni": null, "tls_ocsp": null, "tls": null, "cached_builtins": null, } }
   }
     
   function forAllProps(obj, callback) {
