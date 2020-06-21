@@ -278,11 +278,11 @@ let showCustomize = () => {
             <option value="{{BrowserUrl}}">浏览器当前链接</option>
             <option value="{{ClipText}}">剪切板的文本</option>
             <option value="{{subinput}}">子输入框的文本</option>
-            <option value="{{input}}" class="var regex">主输入框的文本</option>
-            <option value="{{pwd}}" class="var window">文件管理器当前目录</option>
-            <option value="{{WindowInfo}}" class="var window">当前窗口信息，返回JSON格式字符串</option>
-            <option value="{{SelectFile}}" class="var window">文件管理器选中的文件，不支持Linux</option>
-            <option value="{{MatchedFiles}}" class="var files">匹配的文件，返回JSON格式字符串</option>
+            <option value="{{input}}" disabled class="var regex">主输入框的文本</option>
+            <option value="{{pwd}}" disabled class="var window">文件管理器当前目录</option>
+            <option value="{{WindowInfo}}" disabled class="var window">当前窗口信息，返回JSON格式字符串</option>
+            <option value="{{SelectFile}}" disabled class="var window">文件管理器选中的文件，不支持Linux</option>
+            <option value="{{MatchedFiles}}" disabled class="var files">匹配的文件，返回JSON格式字符串</option>
         </select>
         <span class="word">输&#12288;出</span>
         <select id="output">
@@ -796,7 +796,7 @@ let SaveCurrentCommand = async () => {
             $("#customize").animate({ top: '100%' }, () => {
                 // 保存后标签跳转处理
                 var redirectTag, currentTag = $('.currentTag').text()
-                if (tags) {
+                if (tags.length) {
                     if (pushData.tags.includes(currentTag)) {
                         redirectTag = currentTag
                     } else {
