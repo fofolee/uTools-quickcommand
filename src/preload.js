@@ -79,8 +79,10 @@ const quickcommand = {
         return (end - start)
     },
 
-    showInputBox: function (callback = () => { }, placeHolders = [""]) {
-        if(typeof callback != 'function') return
+    showInputBox: function (callback, placeHolders) {
+        if (typeof callback != 'function') return
+        placeHolders || (placeHolders = [""])
+        utools.setExpendHeight(600)
         var html = ""
         var inputBoxNumbers = placeHolders.length
         for (let i = 0; i < inputBoxNumbers; i++) {
@@ -100,26 +102,41 @@ const quickcommand = {
         swalOneByOne(options)
     },
 
-    showSelectBox: function (callback = () => { }, selects = [""]) {
-        if(typeof callback != 'function') return
-        var html = `<select id="selectBox" class="swal2-select">`
+    showSelectBox: function (callback, selects) {
+        if (typeof callback != 'function') return
+        selects || (selects = [""])
+        // 调整插件高度
+        let modWindowHeight = num => {
+            utools.setExpendHeight(num > 11 ? 600 : 50 * (num + 1));
+        }
+        var html = `<div id="quickselect"><select id="selectBox">`
         var selectBoxNumbers = selects.length
+        modWindowHeight(selectBoxNumbers)
         for (let i = 0; i < selectBoxNumbers; i++) {
             html += `<option value="${selects[i]}">${selects[i]}</option>`
         }
-        html += `</select>`
-        var options = {
-            html: html,
-            focusConfirm: false,
-            preConfirm: () => {
-                callback(document.getElementById('selectBox').value)
-            }
-        }
-        swalOneByOne(options)
+        html += `</select></div>`
+        $("body").append(html)
+        $('#selectBox').select2({
+            width: "100%",
+            dropdownParent: $("#quickselect")
+        })
+        $('#selectBox').select2('open')
+        $('#quickselect .select2').hide()
+        $('#selectBox').on('select2:select', function (e) {
+            callback($(this).val())
+            $('#selectBox').select2('destroy')
+            $("#quickselect").remove()
+        })
+        $('#quickselect .select2-search__field').bind("input propertychange change",function(event){  
+            modWindowHeight($('.select2-results__option').length)
+        });  
     },
 
-    showButtonBox: function (callback = () => { }, buttons = [""]) {
-        if(typeof callback != 'function') return
+    showButtonBox: function (callback, buttons) {
+        if (typeof callback != 'function') return
+        buttons || (buttons = [""])
+        utools.setExpendHeight(600)
         var html = ``
         var buttonBoxNumbers = buttons.length
         for (let i = 0; i < buttonBoxNumbers; i++) {
@@ -137,7 +154,6 @@ const quickcommand = {
         }
         swalOneByOne(options)
     }
-
 }
 
 swalOneByOne = options => {
@@ -403,7 +419,7 @@ special = cmd => {
     //     let repl = getSelectText();
     //     cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
     // }
-    // return cmd;
+    return cmd;
 }
 
 runCodeFile = (cmd, option, terminal, callback) => {
