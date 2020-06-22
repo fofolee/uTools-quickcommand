@@ -337,12 +337,14 @@ let showCustomize = () => {
     createEditor()
     $('#program, #type, #output').select2({
         width: '40%',
-        minimumResultsForSearch: Infinity
+        minimumResultsForSearch: Infinity,
+        dropdownParent: $("#customize")
     });
     $('#vars').select2({
         width: '40%',
         placeholder: "插入特殊变量",
-        minimumResultsForSearch: Infinity
+        minimumResultsForSearch: Infinity,
+        dropdownParent: $("#customize")
     });
     $('#tags').select2({
         width: '40%',
@@ -350,7 +352,8 @@ let showCustomize = () => {
         tags: true,
         allowClear: true,
         tokenSeparators: [',', ' '],
-        maximumSelectionLength: 3
+        maximumSelectionLength: 3,
+        dropdownParent: $("#customize")
     });
     $("#customize").animate({ top: '0px' });
 }
@@ -972,7 +975,8 @@ showCodeEditor = () => {
     `
     $("#options").html(customWindow)
     createEditor()
-    $(".CodeMirror").css({ height: '41rem' })
+    $(".CodeMirror").css({ height: '580px' })
+    $(".robot").css({ "margin-bottom": "5px" });
     $("#customize").css({ top: '0px', padding: '0px' });
     $("span.customscript > input").css({"height": "30px"})
     var db = getDB('codeHistory')
@@ -984,7 +988,8 @@ showCodeEditor = () => {
     programCheck()
     $('#program').select2({
         width: 100,
-        minimumResultsForSearch: Infinity
+        minimumResultsForSearch: Infinity,
+        dropdownParent: $("#customize")
     });
     $("#options").show()
 }

@@ -523,9 +523,9 @@ input::-webkit-input-placeholder {
     transition: 0.5s;
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
     height: 0;
-}
+} */
 
 li.CodeMirror-hint {
     min-width: 200px;

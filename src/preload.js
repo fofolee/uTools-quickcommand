@@ -81,7 +81,7 @@ const quickcommand = {
 
     showInputBox: function (callback, placeHolders) {
         let helps = `正确用法：
-        showInputBox(yourinput => {
+        quickcommand.showInputBox(yourinput => {
             do something...
         }, [placeholder of input1, placeholder of input2...])`
         if (!(callback instanceof Function)) throw helps
@@ -109,8 +109,10 @@ const quickcommand = {
 
     showSelectBox: function (callback, selects) {
         let helps = `正确用法：
-        showSelectBox(yourchoise => {
-            do something...
+        quickcommand.showSelectBox(choise => {
+            var index = choise.index
+            var text = choise.text
+            //do something...
         }, [option1, option2...])`
         if (!(callback instanceof Function)) throw helps
         if (!(selects instanceof Array) || (selects && !selects.length)) throw helps
@@ -122,7 +124,7 @@ const quickcommand = {
         var selectBoxNumbers = selects.length
         modWindowHeight(selectBoxNumbers)
         for (let i = 0; i < selectBoxNumbers; i++) {
-            html += `<option value="${selects[i]}">${selects[i]}</option>`
+            html += `<option value="${i}">${selects[i]}</option>`
         }
         html += `</select></div>`
         $("body").append(html)
@@ -135,7 +137,7 @@ const quickcommand = {
         $('#quickselect .select2').hide()
         $('#selectBox').on('select2:select', function (e) {
             $('#selectBox').off('select2:select');
-            callback($(this).val())
+            callback({ index: $(this).val(), text: selects[$(this).val()] })
             $("#quickselect").remove()
         })
         $('#quickselect .select2-search__field').bind("input propertychange change",function(event){  
@@ -145,8 +147,10 @@ const quickcommand = {
 
     showButtonBox: function (callback, buttons) {
         let helps = `正确用法：
-        showButtonBox(yourchoise => {
-            do something...
+        quickcommand.showButtonBox(yourchoise => {
+            var index = choise.index
+            var text = choise.text
+            //do something...
         }, [button1, button2...])`
         if (!(callback instanceof Function)) throw helps
         if (!(buttons instanceof Array) || (buttons && !buttons.length)) throw helps
@@ -258,27 +262,39 @@ runCodeInVm = (cmd, cb) => {
 
 // shell 以环境变量下命令作为代码提示
 getShellCommand = () => {
-    var bin = []
-    if (!utools.isWindows()) {
-        process.env.PATH.split(':').forEach(d => {
-            try {
-                bin = bin.concat(fs.readdirSync(d).filter(x => x[0] != "."))
-            } catch (e) { }
-        }) 
+    var bin = localStorage['shellcommand']
+    if (bin) {
+        bin = JSON.parse(bin)
+    } else {
+        bin = []
+        if (!utools.isWindows()) {
+            process.env.PATH.split(':').forEach(d => {
+                try {
+                    bin = bin.concat(fs.readdirSync(d).filter(x => x[0] != "."))
+                } catch (e) { }
+            }) 
+            localStorage['shellcommand'] = JSON.stringify(bin)
+        }
     }
     return bin
 }
 
 // cmd 以环境变量下命令作为代码提示
 getCmdCommand = () => {
-    var bin = []
-    if (utools.isWindows()) {
-        process.env.Path.split(';').forEach(d => {
-            try {
-                bin = bin.concat(fs.readdirSync(d).filter(x => x.length > 4 && x.slice(-4) == '.exe'))
-            } catch (e) { }
-        })  
-        bin = bin.concat(bin).join("|").replace(/\.exe/g, '').split("|")
+    var bin = localStorage['cmdcommand']
+    if (bin) {
+        bin = JSON.parse(bin)
+    } else {
+        bin = []
+        if (utools.isWindows()) {
+            process.env.Path.split(';').forEach(d => {
+                try {
+                    bin = bin.concat(fs.readdirSync(d).filter(x => x.length > 4 && x.slice(-4) == '.exe'))
+                } catch (e) { }
+            })
+            bin = bin.concat(bin).join("|").replace(/\.exe/g, '').split("|")
+            localStorage['cmdcommand'] = JSON.stringify(bin)
+        }
     }
     return bin
 }
@@ -455,10 +471,10 @@ runCodeFile = (cmd, option, terminal, callback) => {
     // }
     var child, cmdline
     if (bin.slice(-7) == 'csc.exe') {
-        cmdline = `pushd "${path.dirname(script)}" && ${bin} ${argv} "${script}" && "${script.slice(0, -2) + 'exe'}"`
+        cmdline = `${bin} ${argv} /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}"`
     } else if (bin == 'gcc') {
         var suffix = utools.isWindows() ? '.exe' : ''
-        cmdline = `pushd "${path.dirname(script)}" && ${bin} ${argv} ${script.slice(0, -2)} "${script}" && "${script.slice(0, -2) + suffix}"`
+        cmdline = `${bin} ${argv} "${script.slice(0, -2)}" "${script}" && "${script.slice(0, -2) + suffix}"`
     } else if (utools.isWindows() && bin == 'bash') {
         cmdline = `${bin} ${argv} "${script.replace(/\\/g, '/').replace(/C:/i, '/mnt/c')}"`
     } else {
@@ -469,21 +485,19 @@ runCodeFile = (cmd, option, terminal, callback) => {
         if (utools.isWindows()) {
             if (bin.slice(-7) == 'csc.exe' || bin == 'gcc') {
                 cmdline = cmdline.split("&&")
-                cmdline = cmdline[0] + "&&" + cmdline[1] + "&& start cmd /k " + cmdline[2]
+                cmdline = cmdline[0] + "&& start cmd /k " + cmdline[1]
             } else {
                 cmdline = `start cmd /k ${cmdline}`
             }
         } else if(utools.isMacOs()){
             var appleScript = `if application "Terminal" is running then 
             tell application "Terminal"   
-                # do script without "in window" will open a new window        
-                do script "clear;${bin} ${argv} ${script}"             
+                do script "clear;${cmdline.replace(/"/g, `\\"`)}"             
                 activate                          
             end tell                              
         else                                      
             tell application "Terminal"   
-                # window 1 is guaranteed to be recently opened window        
-                do script "clear;${bin} ${argv} ${script}" in window 1 
+                do script "clear;${cmdline.replace(/"/g, `\\"`)}" in window 1 
                 activate
             end tell
         end if`;
@@ -495,6 +509,7 @@ runCodeFile = (cmd, option, terminal, callback) => {
     child = child_process.spawn(cmdline, { encoding: 'buffer', shell: true })            
     // var chunks = [],
     //     err_chunks = [];
+    console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (option.codec) chunk = iconv.decode(chunk, option.codec)
         callback(chunk, null)
