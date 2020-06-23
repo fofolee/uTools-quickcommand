@@ -237,6 +237,7 @@ runCodeInVm = (cmd, cb) => {
         return item.toString()
     }
     
+    //重定向 console 
     vm.on('console.log', stdout => {
         cb(parseItem(stdout), null)
     });
@@ -245,6 +246,7 @@ runCodeInVm = (cmd, cb) => {
         cb(null, stderr.toString())
     });
 
+    // 错误处理
     try {
         vm.run(cmd, path.join(__dirname, 'preload.js'));
     } catch (error) {
@@ -255,9 +257,14 @@ runCodeInVm = (cmd, cb) => {
         window.removeEventListener('error', cbUnhandledError)
         cb(null, e.error.toString())
     }
+
+    let cbUnhandledRejection = e => {
+        window.removeEventListener('unhandledrejection', cbUnhandledRejection)
+        cb(null, e.reason.toString())
+    }
     
-    // 捕捉渲染进程异常
     window.addEventListener('error', cbUnhandledError)
+    window.addEventListener('unhandledrejection', cbUnhandledRejection);
 }
 
 // shell 以环境变量下命令作为代码提示

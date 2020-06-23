@@ -319,8 +319,8 @@ let showCustomize = () => {
             <span id="addAction" class="footBtn robot">﹢动作</span>
             <span id="addKey" class="footBtn robot">﹢按键</span>
             <span id="showHelp" class="footBtn robot">？帮助</span>
+            <span id="beautifyCode" class="footBtn robot">格式化</span>
         </span>
-        <span id="beautifyCode" class="footBtn robot">格式化</span>
     </p>
     <textarea id="cmd" placeholder="◆基础◆\n内置环境模式下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\n内置环境模式：可使用nodejs、electron、uTools的api、$.ajax以及本插件封装的用户交互命令，详情查看帮助\n其他脚本模式：本机装了相应环境即可执行，可以直接拖放脚本文件至此处\n列表里没有的语言，可以选择custom手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     <p>
@@ -871,7 +871,7 @@ let showRunResult = (content, raw, success) => {
                 popup: 'fadeOutUpWindow'
             }
         }
-        swalOneByOne(options)
+        success ? swalOneByOne(options) : Swal.fire(options)
     }
 }
 
@@ -965,18 +965,19 @@ showCodeEditor = () => {
         <input type="text" id="customcodec" placeholder="输出编码">
     </span>
     <span id="runCode" class="footBtn robot">运  行</span>
-    <span id="beautifyCode" class="footBtn robot">格式化</span>
     <span class="simulation">
+    <span id="beautifyCode" class="footBtn robot">格式化</span>
     <span id="addAction" class="footBtn robot">﹢动作</span>
     <span id="addKey" class="footBtn robot">﹢按键</span>
     <span id="showHelp" class="footBtn robot">？帮助</span>
     </span>
     <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+    </div>
     `
     $("#options").html(customWindow)
     createEditor()
-    $(".CodeMirror").css({ height: '580px' })
-    $(".robot").css({ "margin-bottom": "5px" });
+    $(".CodeMirror").css({ height: '100%' })
+    $(".robot").css({ "margin-bottom": "2.5px" });
     $("#customize").css({ top: '0px', padding: '0px' });
     $("span.customscript > input").css({"height": "30px"})
     var db = getDB('codeHistory')
@@ -987,7 +988,7 @@ showCodeEditor = () => {
     }
     programCheck()
     $('#program').select2({
-        width: 100,
+        width: 120,
         minimumResultsForSearch: Infinity,
         dropdownParent: $("#customize")
     });
