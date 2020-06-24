@@ -267,46 +267,66 @@ runCodeInVm = (cmd, cb) => {
     window.addEventListener('unhandledrejection', cbUnhandledRejection);
 }
 
-// shell 以环境变量下命令作为代码提示
+// shell代码提示，当前环境变量下的所有命令
 getShellCommand = () => {
-    var bin = localStorage['shellcommand']
-    if (bin) {
-        bin = JSON.parse(bin)
-    } else {
-        bin = []
-        if (!utools.isWindows()) {
-            process.env.PATH.split(':').forEach(d => {
-                try {
-                    bin = bin.concat(fs.readdirSync(d).filter(x => x[0] != "."))
-                } catch (e) { }
-            }) 
-            localStorage['shellcommand'] = JSON.stringify(bin)
-        }
-    }
-    return bin
+    var shellCommands = localStorage['shellCommands']
+    if (shellCommands) return
+    localStorage['shellCommands'] = '[]'
+    if(utools.isWindows()) return
+    process.env.PATH.split(':').forEach(d => {
+        fs.readdir(d, (err, files) => {
+            if (!err) {
+                var commands = files.filter(x => x[0] != "." || x[0] != '[')
+                localStorage['shellCommands'] = JSON.stringify(JSON.parse(localStorage['shellCommands']).concat(commands))                    
+            }
+        })
+    })
 }
 
-// cmd 以环境变量下命令作为代码提示
+// cmd代码提示，当前环境变量下的所有命令
 getCmdCommand = () => {
-    var bin = localStorage['cmdcommand']
-    if (bin) {
-        bin = JSON.parse(bin)
-    } else {
-        bin = []
-        if (utools.isWindows()) {
-            process.env.Path.split(';').forEach(d => {
-                try {
-                    bin = bin.concat(fs.readdirSync(d).filter(x => x.length > 4 && x.slice(-4) == '.exe'))
-                } catch (e) { }
-            })
-            bin = bin.concat(bin).join("|").replace(/\.exe/g, '').split("|")
-            localStorage['cmdcommand'] = JSON.stringify(bin)
-        }
-    }
-    return bin
+    var cmdCommands = localStorage['cmdCommands']
+    if (cmdCommands) return
+    localStorage['cmdCommands'] = '[]'
+    if(!utools.isWindows()) return
+    process.env.Path.split(';').forEach(d => {
+        fs.readdir(d, (err, files) => {
+            if (!err) {
+                var commands = []
+                files.forEach(x => (x.length > 4 && x.slice(-4) == '.exe') && commands.push(x.slice(0, -4)))
+                localStorage['cmdCommands'] = JSON.stringify(JSON.parse(localStorage['cmdCommands']).concat(commands))                    
+            }
+        })
+    })
 }
 
-// NodeJs 代码提示
+// python 代码提示，已安装的模块以及脚本内导入的模块的属性（方法）
+getPythonMods = () => {
+    var pyModules = localStorage['pyModules']
+    if (pyModules) return
+    localStorage['pyModules'] = '[]'
+    child_process.exec(`python -c "print(__import__('sys').path)"`, (err, stdout, stderr) => {
+        if (err) return
+        stdout = JSON.parse(stdout.replace(/'/g, `"`)).forEach(s => {
+            fs.readdir(s, (err, m) => {
+                if (!err) {
+                    var mods = []
+                    m.forEach(d => (/\.py$|^[^-.]+$/.test(d)) && (d = d.split('.py')[0]) && (!mods.includes(d)) && mods.push(d))
+                    localStorage['pyModules'] = JSON.stringify(JSON.parse(localStorage['pyModules']).concat(mods))                    
+                }
+            })
+        })
+    })
+}
+
+dirPythonMod = (mod, cb) => {
+    child_process.exec(`python -c "print(dir(__import__('${mod}')))"`, (err, stdout, stderr) => {
+        if (err) return cb([])
+        cb(JSON.parse(stdout.replace(/'/g, `"`)).filter(x => x.slice(0, 2) != '__'))
+    })
+}
+
+// NodeJs 代码提示，所有在沙箱内支持的对象
 getNodeJsCommand = () => {
     var obj = getSandboxFuns()
     obj.Buffer = Buffer

@@ -495,24 +495,33 @@ let hasCustomIcon = () => {
 
 let programCheck = () => {
     let mode = $('#program').val();
+    $('.customscript').hide();
+    $('.simulation').hide();
+    $('#showInTerm').prop("disabled", false);
     if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
     switch (mode) {
         case 'custom':
             $('.customscript').show();
-            $('.simulation').hide();
-            $('#showInTerm').prop("disabled", false);
             break;
         case 'simulation':
             $('.simulation').show();
-            $('.customscript').hide();
             $('#showInTerm').prop("disabled", true);
             mode = 'javascript';
             break;
+        case 'csharp':
+        case 'c':
+            mode = 'text/x-' + mode
+            break;
+        case 'python':
+            getPythonMods()
+            break;
+        case 'cmd':
+            getCmdCommand()
+            break;
+        case 'shell':
+            getShellCommand()
+            break;
         default:
-            $('.customscript').hide();
-            $('.simulation').hide();
-            $('#showInTerm').prop("disabled", false);
-            (mode == 'csharp' || mode == 'c') && (mode = 'text/x-' + mode)
             break;
     }
     window.editor.setOption("mode", mode);
