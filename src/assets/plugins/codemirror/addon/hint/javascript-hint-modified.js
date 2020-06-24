@@ -61,11 +61,9 @@
     } else {
       // add anyword
       var anyword = CodeMirror.hint.anyword(editor, options).list
-      if (anyword[0] != token.string) {
-        anyword.forEach(a => {
+      anyword.forEach(a => {
           if (!hints.includes(a)) hints.push(a)
-        })
-      }
+      })
       // add specialVars
       var specialVars = localStorage['specialVars']
       if(specialVars) specialVars.split(',').forEach(s => {
