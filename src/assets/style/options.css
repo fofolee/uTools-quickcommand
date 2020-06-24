@@ -270,6 +270,7 @@
     width: 80px;
     background: #f3f3f3;
     box-shadow: 0px 0px 9px 0px #00000030;
+    overflow-y: auto;
 }
 
 #options .sidebar li{
@@ -278,7 +279,8 @@
     cursor: pointer;
     user-select: none;
     text-overflow: ellipsis;
-    overflow: hidden;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 
 #options .sidebar .currentTag{
