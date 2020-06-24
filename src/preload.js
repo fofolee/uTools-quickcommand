@@ -356,15 +356,26 @@ getBase64Ico = path => {
     return fs.readFileSync(path, 'base64');
 }
 
-openFileInDialog = (options, readfile) => {
-    var dialog = utools.showOpenDialog(options);
-    if (!dialog) return false
-    var file = dialog[0]
+getFileInfo = options => {
+    var file
+    if (options.type == 'file') {
+        file = options.argvs
+    } else if (options.type == 'dialog') {
+        var dialog = utools.showOpenDialog(options.argvs);
+        if (!dialog) return false
+        file = dialog[0]
+    } else {
+        return false
+    }
     var information = {
         name: path.basename(file),
+        ext: path.extname(file),
         path: file
     }
-    if(readfile) information.data = fs.readFileSync(file)
+    if (options.readfile) {
+        var codec = (information.ext == '.bat' || information == '.ps1') ? 'gbk' : 'utf8'
+        information.data = iconv.decode(fs.readFileSync(file), codec)
+    }
     return information
 }
 

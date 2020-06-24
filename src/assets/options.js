@@ -23,7 +23,7 @@ let importCommand = () => {
     var options = {
         filters: [{ name: 'json', extensions: ['json'] }, ]
     }
-    var file = openFileInDialog(options, true)
+    var file = getFileInfo({ type: 'dialog', argvs: options, readfile: true })
     if (file) {
         try {
             var pushData = JSON.parse(file.data);
@@ -700,7 +700,7 @@ $("#options").on('click', '#icon, #iconame', function () {
             extensions: ['png']
         }, ]
     }
-    var file = openFileInDialog(options, false)
+    var file = getFileInfo({ type: 'dialog', argvs: options, readfile: false })
     if (file) {
         $("#iconame").val(file.name);
         $("#icon").attr('src', file.path); 
@@ -960,7 +960,7 @@ let highlightIfKnown = ext => {
     if (lang.length) window.editor.setOption("mode", lang[0])
 }
 
-showCodeEditor = () => {
+showCodeEditor = file => {
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
     var customWindow = `<div id="customize">
         <select id="program">
@@ -991,9 +991,15 @@ showCodeEditor = () => {
     $("span.customscript > input").css({"height": "30px"})
     var db = getDB('codeHistory')
     window.editor.setOption("theme", "ambiance")
-    if (db.history) {
-        $('#program').val(db.history.program)
-        window.editor.setValue(db.history.cmd)
+    if (file) {
+        var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
+        console.log(fileinfo);
+        window.editor.setValue(fileinfo.data)
+        var program = Object.keys(programs).filter(x => `.${programs[x].ext}` == fileinfo.ext)[0]
+        $('#program').val(program)
+        runCurrentCommand()
+    } else {
+        db.history && $('#program').val(db.history.program) && window.editor.setValue(db.history.cmd)
     }
     programCheck()
     $('#program').select2({

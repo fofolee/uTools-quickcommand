@@ -17,7 +17,13 @@
         {
             "code": "code",
             "explain": "无需打开编辑器，快速运行临时代码",
-            "cmds": [ "运行代码", "RunCode"]
+            "cmds": [ "运行代码", "RunCode", {
+                "type": "files",
+                "label": "运行代码",
+                "fileType": "file",
+                "match": "/\\.(sh|scpt|bat|ps1|py|js|rb|php|c|cs|lua|pl)$/i",
+                "maxNum": 1
+            }]
         }
     ]
 }

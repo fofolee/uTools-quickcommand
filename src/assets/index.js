@@ -14,8 +14,10 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
         // $("#options").show();
         showOptions();
     } else if (code == 'code') {
+        var file = ""
         utools.setExpendHeight(600);
-        showCodeEditor()
+        if (type == 'files') file = payload[0].path
+        showCodeEditor(file)
     } else {
         // console.log(new Date().getTime() - window.startTime);
         utools.setExpendHeight(0);
