@@ -107,18 +107,18 @@ const quickcommand = {
         swalOneByOne(options)
     },
 
-    showSelectBox: function (callback, selects) {
+    showSelectBox: function (callback, selects, placeholder = "搜索") {
         let helps = `正确用法：
         quickcommand.showSelectBox(choise => {
             var index = choise.index
             var text = choise.text
             //do something...
-        }, [option1, option2...])`
+        }, [option1, option2...], placeholder)`
         if (!(callback instanceof Function)) throw helps
         if (!(selects instanceof Array) || (selects && !selects.length)) throw helps
         // 调整插件高度
         let modWindowHeight = num => {
-            if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 11 ? 600 : 50 * (num + 1));
+            if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
         }
         var html = `<div id="quickselect"><select id="selectBox">`
         var selectBoxNumbers = selects.length
@@ -132,17 +132,19 @@ const quickcommand = {
             width: "100%",
             dropdownParent: $("#quickselect")
         })
-        $('#selectBox').val(null).trigger('change');
+        $('#selectBox').val(null).trigger('change')
         $('#selectBox').select2('open')
         $('#quickselect .select2').hide()
+        utools.setSubInput(({text})=>{
+            $("#quickselect .select2-search__field").val(text).trigger('input')
+            modWindowHeight($('#quickselect .select2-results__option').length)
+        }, placeholder)
         $('#selectBox').on('select2:select', function (e) {
-            $('#selectBox').off('select2:select');
+            $('#selectBox').off('select2:select')
+            utools.removeSubInput()
             callback({ index: $(this).val(), text: selects[$(this).val()] })
             $("#quickselect").remove()
         })
-        $('#quickselect .select2-search__field').bind("input propertychange change",function(event){  
-            modWindowHeight($('.select2-results__option').length)
-        });  
     },
 
     showButtonBox: function (callback, buttons) {
@@ -171,6 +173,21 @@ const quickcommand = {
             showConfirmButton: false
         }
         swalOneByOne(options)
+    },
+
+    showMessageBox: function (title, icon = "success") {
+        var options = {
+            icon: icon,
+            title: title,
+            toast: true,
+            position: 'top',
+            timer: 3000,
+            onOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        }
+        swalOneByOne(options)
     }
 }
 
@@ -181,19 +198,18 @@ swalOneByOne = options => {
 var getSandboxFuns = () => {
     var sandbox = {
         utools: utools,
-        quickcommand: quickcommand,
+        quickcommand: Object.assign(quickcommand, {
+            get: $.get,
+            post: $.post,
+            ajax: $.ajax
+        }),
         electron: electron,
         fs: fs,
         path: path,
         os: os,
         child_process: child_process,
         util: util,
-        alert: alert,
-        $: {
-            get: $.get,
-            post: $.post,
-            ajax: $.ajax
-        }
+        alert: alert
     }
     shortCodes.forEach(f => {
         sandbox[f.name] = f
