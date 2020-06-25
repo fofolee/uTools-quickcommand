@@ -335,7 +335,7 @@
 
 #options #customize span.customscript > input {
     margin-left: 5px;
-    width: 16%;
+    width: 12%;
 }
 
 #options #featureList {
@@ -389,6 +389,20 @@
 
 #options #customize input#rule{
     width: 40%;
+}
+
+#options #customize input#scptarg{
+    width: 170px;
+    float: right;
+    background: white;
+    outline: none;
+    border: 2px solid #3085d6;
+    height: 30px;
+    border-radius: 4px;
+    padding: 2px 5px;
+    margin: 0px 5px;
+    text-align: center;
+    display: none
 }
 
 #options #customize input.customize:hover{

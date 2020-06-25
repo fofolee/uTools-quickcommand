@@ -1,12 +1,20 @@
 utools.onPluginEnter(async ({ code, type, payload }) => {
     utools.onPluginOut(() => {
-        var program = $('#program').val();
-        $("#options").empty()
-        $("#out").empty()
         if (code == "code") {
             var cmd = window.editor.getValue();
-            putDB('history', { cmd: cmd, program: program }, 'codeHistory')
+            var program = $('#program').val(),
+            scptarg = $('#scptarg').val(),
+            customoptions;
+            if (program == 'custom') customoptions = {
+                custombin: $('#custombin').val(),
+                customarg: $('#customarg').val(),
+                customext: $('#customext').val(),
+                customcodec: $('#customcodec').val()
+            }
+            putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
         }
+        $("#options").empty()
+        $("#out").empty()
     })
     // 配置页面
     if (code == 'options') {
@@ -31,6 +39,7 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
         }else{
             option = programs[db.program];
         }
+        option.scptarg = db.scptarg
         cmd = special(cmd);
         // 正则
         if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);

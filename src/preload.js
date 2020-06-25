@@ -497,7 +497,8 @@ special = cmd => {
 runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,
         argv = option.argv,
-        ext = option.ext;
+        ext = option.ext,
+        scptarg = option.scptarg || "";
     let script = getQuickCommandScriptFile(ext)
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), 'GBK');
@@ -509,14 +510,14 @@ runCodeFile = (cmd, option, terminal, callback) => {
     // }
     var child, cmdline
     if (bin.slice(-7) == 'csc.exe') {
-        cmdline = `${bin} ${argv} /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}"`
+        cmdline = `${bin} ${argv} /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}" ${scptarg}`
     } else if (bin == 'gcc') {
         var suffix = utools.isWindows() ? '.exe' : ''
-        cmdline = `${bin} ${argv} "${script.slice(0, -2)}" "${script}" && "${script.slice(0, -2) + suffix}"`
+        cmdline = `${bin} ${argv} "${script.slice(0, -2)}" "${script}" && "${script.slice(0, -2) + suffix}" ${scptarg}`
     } else if (utools.isWindows() && bin == 'bash') {
-        cmdline = `${bin} ${argv} "${script.replace(/\\/g, '/').replace(/C:/i, '/mnt/c')}"`
+        cmdline = `${bin} ${argv} "${script.replace(/\\/g, '/').replace(/C:/i, '/mnt/c')}" ${scptarg}`
     } else {
-        cmdline = `${bin} ${argv} "${script}"`
+        cmdline = `${bin} ${argv} "${script}" ${scptarg}`
     }
     // 在终端中输出
     if (terminal) {

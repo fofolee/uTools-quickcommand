@@ -309,9 +309,10 @@ let showCustomize = () => {
     </p>
     <p>
         <span class="word">脚&#12288;本</span>
+        <span><input type="text" id="scptarg" placeholder="脚本参数"></span>
         <span class="customscript">
-            <input type="text" id="custombin" placeholder="解释器绝对路径">
-            <input type="text" id="customarg" placeholder="参数">
+            <input type="text" id="custombin" placeholder="解释器路径">
+            <input type="text" id="customarg" placeholder="解释器参数">
             <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
             <input type="text" id="customcodec" placeholder="输出编码">
         </span>
@@ -497,14 +498,18 @@ let programCheck = () => {
     let mode = $('#program').val();
     $('.customscript').hide();
     $('.simulation').hide();
+    $('#scptarg').show();
     $('#showInTerm').prop("disabled", false);
     if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
     switch (mode) {
         case 'custom':
             $('.customscript').show();
+            var customext = $('#customext').val()
+            customext && (mode = highlightIfKnown(customext))
             break;
         case 'simulation':
             $('.simulation').show();
+            $('#scptarg').hide();
             $('#showInTerm').prop("disabled", true);
             mode = 'javascript';
             break;
@@ -578,6 +583,7 @@ $("#options").on('click', '.editBtn', function () {
     $('#program').val(data.program).trigger("change");
     $('#output').val(data.output).trigger("change");
     $('#desc').val(data.features.explain);
+    $('#scptarg').val(data.scptarg);
     $("#icon").attr('src', data.features.icon);
     let mode = data.program;
     if (mode == 'custom') {
@@ -718,6 +724,7 @@ let SaveCurrentCommand = async () => {
             var code = `${type}_${uid}`;
         }
         var output = $('#output').val();
+        var scptarg = $('#scptarg').val();
         var cmd = window.editor.getValue();
         // 合规性校验
         if (type == 'key'
@@ -812,7 +819,8 @@ let SaveCurrentCommand = async () => {
                 program: program,
                 cmd: cmd,
                 output: output,
-                hasSubInput: hasSubInput
+                hasSubInput: hasSubInput,
+                scptarg: scptarg
             }
             if (tags) pushData.tags = tags
             if (program == 'custom') {
@@ -933,6 +941,7 @@ let runCurrentCommand = async () => {
                 "ext": $('#customext').val(),
                 'codec': $('#customcodec').val()
             }
+            option.scptarg = $('#scptarg').val()
             runCodeFile(cmd, option, terminal, (stdout, stderr) => {
                 if (terminal) return
                 if (stderr) return showRunResult(stderr, raw, false)
@@ -955,30 +964,35 @@ let quitCurrentCommand = () => {
 }
 
 let highlightIfKnown = ext => {
-    // 未设置后缀时有自动补全bug
     var lang = Object.keys(programs).filter(p => programs[p].ext == ext)
-    if (lang.length) window.editor.setOption("mode", lang[0])
+    if (lang.length) {
+        if (lang[0] == 'python') getPythonMods()
+        window.editor.setOption("mode", lang[0])
+        return lang[0]
+    }
 }
 
 showCodeEditor = file => {
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
-    var customWindow = `<div id="customize">
-        <select id="program">
+    var customWindow = `
+    <div id="customize">
+    <select id="program">
         <option value="simulation">内置环境</option>
         ${options}
         </select>
-        <span class="customscript">
-        <input type="text" id="custombin" placeholder="解释器绝对路径">
-        <input type="text" id="customarg" placeholder="参数">
+    <span class="customscript">
+        <input type="text" id="custombin" placeholder="解释器路径">
+        <input type="text" id="customarg" placeholder="解释器参数">
         <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
         <input type="text" id="customcodec" placeholder="输出编码">
     </span>
     <span id="runCode" class="footBtn robot">运  行</span>
+    <input type="text" id="scptarg" placeholder="脚本参数">
     <span class="simulation">
-    <span id="beautifyCode" class="footBtn robot">格式化</span>
-    <span id="addAction" class="footBtn robot">﹢动作</span>
-    <span id="addKey" class="footBtn robot">﹢按键</span>
-    <span id="showHelp" class="footBtn robot">？帮助</span>
+        <span id="beautifyCode" class="footBtn robot">格式化</span>
+        <span id="addAction" class="footBtn robot">﹢动作</span>
+        <span id="addKey" class="footBtn robot">﹢按键</span>
+        <span id="showHelp" class="footBtn robot">？帮助</span>
     </span>
     <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     </div>
@@ -995,11 +1009,20 @@ showCodeEditor = file => {
         var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
         console.log(fileinfo);
         window.editor.setValue(fileinfo.data)
-        var program = Object.keys(programs).filter(x => `.${programs[x].ext}` == fileinfo.ext)[0]
-        $('#program').val(program)
+        var program = Object.keys(programs).filter(x => `.${programs[x].ext}` == fileinfo.ext)
+        if (program) $('#program').val(program[0])
         runCurrentCommand()
-    } else {
-        db.history && $('#program').val(db.history.program) && window.editor.setValue(db.history.cmd)
+    } else if(db.history){
+        window.editor.setValue(db.history.cmd)
+        $('#program').val(db.history.program)
+        $('#scptarg').val(db.history.scptarg)
+        var custom = db.history.customoptions
+        if (db.history.program = 'custom' && custom) {
+            $('#custombin').val(custom.custombin)
+            $('#customarg').val(custom.customarg)
+            $('#customext').val(custom.customext)
+            $('#customcodec').val(custom.customcodec)
+        }
     }
     programCheck()
     $('#program').select2({
