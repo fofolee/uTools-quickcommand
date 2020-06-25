@@ -606,7 +606,7 @@ $("#options").on('click', '#addKey', function () {
     Mousetrap.record(sequence => {
         sequence.forEach(s => {
             var keys = s
-            if (s.includes('+') && s.length > 1) keys = s.split('+').reverse().map(x=>x.trim()).join(`", "`)
+            if (s.includes('+') && s.length > 1) keys = s.split('+').reverse().map(x=>x.trim().replace('meta', 'command')).join(`", "`)
             window.editor.replaceSelection(`keyTap("${keys}")\n`)
         })
         $("#addKey").text("﹢按键").removeClass('record')
@@ -857,9 +857,16 @@ let SaveCurrentCommand = async () => {
 
 // 显示运行结果
 let showRunResult = (content, raw, success) => {
-    var options
-    var maxlength = 100000
-    var position = $(".varoutput").is(":parent") ? 'top' : 'bottom'
+    var options, position, showClass, hideClass, maxlength = 100000
+    if ($("#vars").is(":parent")) {
+        position = 'top'
+        showClass = 'fadeInDownWindow'
+        hideClass = 'fadeOutUpWindow'
+    } else {
+        position = 'bottom'
+        showClass = 'fadeInUpWindow'
+        hideClass = 'fadeOutDownWindow'
+    }
     var preView = () => {
         var result = $('#swal2-content').text()
         result = htmlEncode(result, raw)
@@ -881,12 +888,8 @@ let showRunResult = (content, raw, success) => {
             position: position,
             width: 800,
             showConfirmButton: true,
-            showClass: {
-                popup: 'fadeInDownWindow'
-            },
-            hideClass: {
-                popup: 'fadeOutUpWindow'
-            }
+            showClass: { popup: showClass },
+            hideClass: { popup: hideClass }
         }
         success ? swalOneByOne(options) : Swal.fire(options)
     }
@@ -994,13 +997,12 @@ showCodeEditor = file => {
         <span id="addKey" class="footBtn robot">﹢按键</span>
         <span id="showHelp" class="footBtn robot">？帮助</span>
     </span>
-    <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+    <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
     </div>
     `
     $("#options").html(customWindow)
     createEditor()
-    $(".CodeMirror").css({ height: '100%' })
-    $(".robot").css({ "margin-bottom": "2.5px" });
+    $(".CodeMirror").css({ position: "fixed", bottom: "0", top: "33px", height: "auto" })
     $("#customize").css({ top: '0px', padding: '0px' });
     $("span.customscript > input").css({"height": "30px"})
     var db = getDB('codeHistory')
@@ -1011,7 +1013,7 @@ showCodeEditor = file => {
         window.editor.setValue(fileinfo.data)
         var program = Object.keys(programs).filter(x => `.${programs[x].ext}` == fileinfo.ext)
         if (program) $('#program').val(program[0])
-        runCurrentCommand()
+        // runCurrentCommand()
     } else if(db.history){
         window.editor.setValue(db.history.cmd)
         $('#program').val(db.history.program)
@@ -1028,7 +1030,8 @@ showCodeEditor = file => {
     $('#program').select2({
         width: 120,
         minimumResultsForSearch: Infinity,
-        dropdownParent: $("#customize")
+        dropdownParent: $("#customize"),
+        dropdownAutoWidth: true
     });
     $("#options").show()
 }
