@@ -1,4 +1,5 @@
 utools.onPluginEnter(async ({ code, type, payload }) => {
+    var handleEnter
     utools.onPluginOut(() => {
         if (code == "code") {
             var cmd = window.editor.getValue();
@@ -13,8 +14,12 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
             }
             putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
         }
+        // 初始化
         $("#options").empty()
         $("#out").empty()
+        $("#quickselect").remove()
+        swal.close()
+        if(handleEnter) document.removeEventListener('keydown', handleEnter)
     })
     // 配置页面
     if (code == 'options') {
@@ -23,7 +28,7 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
         showOptions();
     } else if (code == 'code') {
         var file = ""
-        utools.setExpendHeight(600);
+        // utools.setExpendHeight(600);
         if (type == 'files') file = payload[0].path
         showCodeEditor(file)
     } else {
@@ -75,58 +80,57 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
                     subinput = text;
                 }, '');
             }
-            var handleEnter = (event) => {
+            handleEnter = (event) => {
                 if (event.keyCode == 13) {
-                    $("#out").empty();
+                    $("#out").append('\n-------------------------------------\n\n');
                     var execmd = cmd.replace(/\{\{subinput\}\}/mg, subinput);
-                    runQuickCommand(execmd, option, db.output);
+                    runQuickCommand(execmd, option, db.output, true);
                 }
             };
             setSubInput();
             document.addEventListener('keydown', handleEnter);
-            // 移除监听
-            utools.onPluginOut(() => {
-                document.removeEventListener('keydown', handleEnter);
-              })
         } else {
-            runQuickCommand(cmd, option, db.output);
+            runQuickCommand(cmd, option, db.output, false);
         }
     }
 });
 
 
-let runQuickCommand = (cmd, option, output) => {
+let runQuickCommand = (cmd, option, output, autoScroll = false, autoHeight = true) => {
     // 不需要输出的，提前关闭窗口
     if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1) {
         utools.hideMainWindow();
-        setTimeout(() => {
-            utools.outPlugin();
-        }, 500);
+        setTimeout(() => { utools.outPlugin(); }, 500);
     }
-    var maxheight = true
     if (option == "simulation") {
         // 内置环境
         runCodeInVm(cmd, (stdout, stderr) => {
-            if (cmd.includes("utools.setExpendHeight")) maxheight = false
-            switchQuickCommandResult(stdout, stderr, output, maxheight)
+            if (cmd.includes("utools.setExpendHeight")) autoHeight = false
+            switchQuickCommandResult(stdout, stderr, output, autoScroll, autoHeight)
         })
     } else {
         var terminal = output == 'terminal' ? true : false
         // 执行脚本
         runCodeFile(cmd, option, terminal, (stdout, stderr) => {
-            switchQuickCommandResult(stdout, stderr, output, maxheight)
+            switchQuickCommandResult(stdout, stderr, output, autoScroll, autoHeight)
         })
     }
 }
 
-switchQuickCommandResult = (stdout, stderr, output, maxheight) => {
+switchQuickCommandResult = (stdout, stderr, output, autoScroll, autoHeight) => {
+    var outputAutoFix = (autoScroll, autoHeight) => {
+        var outputHeight = $("#out").height() + 26
+        if (outputHeight > 600) outputHeight = 600
+        if (autoHeight) utools.setExpendHeight(outputHeight);
+        if (outputHeight == 600 && autoScroll) $(document).scrollTop($(document).height());
+    }
     if (stderr) {
         $("#out").addClass('error')
         // 报错
         if (output == 'text' || output == 'html')
         {
-            utools.setExpendHeight(600);
             $("#out").append(stderr)
+            outputAutoFix(autoScroll, autoHeight)
         } else {
             var index = utools.showMessageBox({
                 type: 'error',
@@ -146,12 +150,12 @@ switchQuickCommandResult = (stdout, stderr, output, maxheight) => {
         // 有输出
         switch (output) {
             case "text":
-                if(maxheight) utools.setExpendHeight(600);
                 $("#out").append(htmlEncode(stdout, true))
+                outputAutoFix(autoScroll, autoHeight)
                 break;
             case "html":
-                if(maxheight) utools.setExpendHeight(600);
                 $("#out").append(stdout)
+                outputAutoFix(autoScroll, autoHeight)
                 break;
             case "clip":
                 copyTo(stdout)
