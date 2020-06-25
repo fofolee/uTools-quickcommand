@@ -405,6 +405,11 @@
     display: none
 }
 
+#options #customize input#scptarg:hover{
+    border: 2px solid #55aafa;
+    transition: 0.2s;
+}
+
 #options #customize input.customize:hover{
     border-bottom-color: #9e9e9ec7;
     transition: 0.25s;
@@ -428,6 +433,10 @@ input::-webkit-input-placeholder {
     height: 23rem;
     border: 1px solid #dbdbdb;
     border-radius: 3px;
+}
+
+#options #customize .CodeMirror-scroll{
+    box-sizing: unset;
 }
 
 
@@ -549,39 +558,43 @@ li.CodeMirror-hint {
     padding: 3px 4px;
 }
 
+/*---------------animate.css---------------*/
 @keyframes fadeInDown {
-    0% {
-        opacity: 0;
-        transform: translate3d(0, -100%, 0)
-    }
-
-    to {
-        opacity: 1;
-        transform: translateZ(0)
-    }
+    0% { opacity: 0; transform: translate3d(0, -100%, 0) }
+    to { opacity: 1; transform: translateZ(0) }
 }
 
 .fadeInDownWindow {
-    animation-name: fadeInDown;
-    animation-duration: 0.3s;
+    animation: fadeInDown 0.3s
 }
 
 @keyframes fadeOutUp {
-    0% {
-        opacity: 1
-    }
-
-    to {
-        opacity: 0;
-        transform: translate3d(0, -100%, 0)
-    }
+    0% { opacity: 1 }
+    to { opacity: 0; transform: translate3d(0, -100%, 0) }
 }
 
 .fadeOutUpWindow {
-    animation-name: fadeOutUp;
-    animation-duration: 0.3s;
+    animation: fadeOutUp 0.3s
 }
 
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translate3d(0, 100%, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.fadeInUpWindow {
+    animation: fadeInUp 0.3s
+}
+
+@keyframes fadeOutDown {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translate3d(0, 100%, 0); }
+}
+
+.fadeOutDownWindow {
+    animation: fadeOutDown 0.3s;
+}
+/*---------------animate.css---------------*/
 
 /*---------------select2---------------*/
 #options #customize .select2-selection--single,
@@ -627,7 +640,7 @@ li.CodeMirror-hint {
 #quickselect .select2-dropdown {
     position: fixed;
     font-size: 14px;
-    top: 0
+    top: -50px
 }
 
 #quickselect .select2-results__options {
@@ -637,7 +650,10 @@ li.CodeMirror-hint {
 #quickselect .select2-results__option {
     padding: 10px;
     height: 30px;
-    line-height: 30px
+    line-height: 30px;
+    white-space: pre;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 #quickselect .select2-search__field {
@@ -647,3 +663,8 @@ li.CodeMirror-hint {
 }
 
 /*---------------select2---------------*/
+
+.darktheme {
+    background: #282c34;
+    color: wheat;
+}
