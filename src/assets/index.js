@@ -17,7 +17,7 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
         // 初始化
         $("#options").empty()
         $("#out").empty()
-        $("#quickselect").remove()
+        $("[id^=quick").remove()
         swal.close()
         if(handleEnter) document.removeEventListener('keydown', handleEnter)
     })
@@ -102,22 +102,25 @@ let runQuickCommand = (cmd, option, output, autoScroll = false, autoHeight = tru
         utools.hideMainWindow();
         setTimeout(() => { utools.outPlugin(); }, 500);
     }
+    var outputOpts = { type: output, autoScroll: autoScroll, autoHeight: autoHeight }
     if (option == "simulation") {
         // 内置环境
         runCodeInVm(cmd, (stdout, stderr) => {
-            if (cmd.includes("utools.setExpendHeight")) autoHeight = false
-            switchQuickCommandResult(stdout, stderr, output, autoScroll, autoHeight)
+            if (cmd.includes("utools.setExpendHeight")) outputOpts.autoHeight = false
+            switchQuickCommandResult(stdout, stderr, outputOpts)
         })
     } else {
         var terminal = output == 'terminal' ? true : false
+        outputOpts.scriptPath = getQuickCommandScriptFile(option.ext)
         // 执行脚本
         runCodeFile(cmd, option, terminal, (stdout, stderr) => {
-            switchQuickCommandResult(stdout, stderr, output, autoScroll, autoHeight)
+            switchQuickCommandResult(stdout, stderr, outputOpts)
         })
     }
 }
 
-switchQuickCommandResult = (stdout, stderr, output, autoScroll, autoHeight) => {
+switchQuickCommandResult = (stdout, stderr, outputOpts) => {
+    var output = outputOpts.output, autoScroll = outputOpts.autoScroll, autoHeight = outputOpts.autoHeight;
     var outputAutoFix = (autoScroll, autoHeight) => {
         var outputHeight = $("#out").height() + 26
         if (outputHeight > 600) outputHeight = 600
@@ -136,10 +139,10 @@ switchQuickCommandResult = (stdout, stderr, output, autoScroll, autoHeight) => {
                 type: 'error',
                 title: '啊嘞?!',
                 message: stderr,
-                buttons: ['转至脚本目录', '退出']
+                buttons: outputOpts.scriptPath ? ['转至脚本目录', '退出'] : ['退出']
             })
-            if (index == 0) {
-                locate(getQuickCommandScriptFile(option.ext));
+            if (outputOpts.scriptPath && index == 0) {
+                locate(outputOpts.scriptPath );
             }
             copyTo(stderr);
             message("已复制报错信息");
