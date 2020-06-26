@@ -19,55 +19,45 @@ let putDB = (code, pushData, id) => {
 }
 
 // 导入
-let importCommand = () => {
-    var options = {
-        filters: [{ name: 'json', extensions: ['json'] }, ]
+let importCommand = file => {
+    var options = file ? { type: 'file', argvs: file } : { type: 'dialog', argvs: { filters: [{ name: 'json', extensions: ['json'] }] } }
+    options.readfile = true
+    var fileinfo = getFileInfo(options)
+    if (!fileinfo) return
+    try {
+        var pushData = JSON.parse(fileinfo.data);
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: '啊嘞?!', text: '格式错误!', })
+        return
     }
-    var file = getFileInfo({ type: 'dialog', argvs: options, readfile: true })
-    if (file) {
-        try {
-            var pushData = JSON.parse(file.data);
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: '啊嘞?!',
-                text: '格式错误!',
-              })
-            return
-        }
-        // 单个命令导入
-        if (typeof(pushData.features)=='object') {
-            var code = pushData.features.code;
-            putDB(code, pushData, 'customFts');
-            showOptions();
-        // 多个命令导入
-        } else {
-            if (typeof (Object.values(pushData)[0].features) == 'object') {
-                for (var code of Object.keys(pushData)){
-                    putDB(code, pushData[code], 'customFts');
-                }
-                showOptions();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: '啊嘞?!',
-                    text: '格式错误!',
-                  })
+    // 单个命令导入
+    if (typeof(pushData.features) == 'object') {
+        var code = pushData.features.code;
+        putDB(code, pushData, 'customFts');
+        showOptions();
+    // 多个命令导入
+    } else {
+        if (typeof(Object.values(pushData)[0].features) == 'object') {
+            for (var code of Object.keys(pushData)) {
+                putDB(code, pushData[code], 'customFts');
             }
+            showOptions();
+        } else {
+            Swal.fire({ icon: 'error', title: '啊嘞?!', text: '格式错误!', })
         }
     }
 }
 
 let exportAll = () => {
     json = utools.db.get('customFts').data,
-    options = {
-        title: '选择保存位置',
-        defaultPath: 'quickCommand',
-        filters: [
-            { name: 'json', extensions: ['json'] },
-        ]
-    };
-window.saveFile(options, JSON.stringify(json));
+        options = {
+            title: '选择保存位置',
+            defaultPath: 'quickCommand',
+            filters: [
+                { name: 'json', extensions: ['json'] },
+            ]
+        };
+    window.saveFile(options, JSON.stringify(json));
 }
 
 
@@ -90,76 +80,89 @@ let clearAll = () => {
 }
 
 let programs = {
-        shell: {
-            bin: 'bash',
-            argv: '',
-            ext: 'sh'
-        },
-        applescript: {
-            bin: 'osascript',
-            argv: '',
-            ext: 'scpt'
-        },
-        cmd: {
-            bin: '',
-            argv: '',
-            ext: 'bat',
-            codec: 'gbk'
-        },
-        powershell: {
-            bin: 'powershell',
-            argv: '-NoProfile -File',
-            ext: 'ps1',
-            codec: utools.isWindows() ? 'gbk' : ''
-        },
-        python: {
-            bin: 'python',
-            argv: '-u',
-            ext: 'py',
-            codec: utools.isWindows() ? 'gbk' : ''
-        },
-        javascript: {
-            bin: 'node',
-            argv: '',
-            ext: 'js'
-        },
-        ruby: {
-            bin: 'ruby',
-            argv: '',
-            ext: 'rb'
-        },
-        php: {
-            bin: 'php',
-            argv: '',
-            ext: 'php'
-        },
-        c: {
-            bin: 'gcc',
-            argv: '-o',
-            ext: 'c',
-            codec: utools.isWindows() ? 'gbk' : ''
-        },
-        csharp: {
-            bin: 'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\csc.exe',
-            argv: '/Nologo',
-            ext: 'cs',
-            codec: 'gbk'
-        },
-        lua: {
-            bin: 'lua',
-            argv: '',
-            ext: 'lua'
-        },
-        perl: {
-            bin: 'perl',
-            argv: '',
-            ext: 'pl'
+    shell: {
+        bin: 'bash',
+        argv: '',
+        ext: 'sh',
+        color: '#89e051'
     },
-        custom: {
-            bin: '',
-            argv: '',
-            ext: '',
-            codec: ''
+    applescript: {
+        bin: 'osascript',
+        argv: '',
+        ext: 'scpt',
+        color: '#101F1F'
+    },
+    cmd: {
+        bin: '',
+        argv: '',
+        ext: 'bat',
+        codec: 'gbk',
+        color: '#C1F12E'
+    },
+    powershell: {
+        bin: 'powershell',
+        argv: '-NoProfile -File',
+        ext: 'ps1',
+        codec: utools.isWindows() ? 'gbk' : '',
+        color: '#012456'
+    },
+    python: {
+        bin: 'python',
+        argv: '-u',
+        ext: 'py',
+        codec: utools.isWindows() ? 'gbk' : '',
+        color: '#3572A5'
+    },
+    javascript: {
+        bin: 'node',
+        argv: '',
+        ext: 'js',
+        color: '#f1e05a'
+    },
+    ruby: {
+        bin: 'ruby',
+        argv: '',
+        ext: 'rb',
+        color: '#701516'
+    },
+    php: {
+        bin: 'php',
+        argv: '',
+        ext: 'php',
+        color: '#4F5D95'
+    },
+    c: {
+        bin: 'gcc',
+        argv: '-o',
+        ext: 'c',
+        codec: utools.isWindows() ? 'gbk' : '',
+        color: '#555555'
+    },
+    csharp: {
+        bin: 'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\csc.exe',
+        argv: '/Nologo',
+        ext: 'cs',
+        codec: 'gbk',
+        color: '#178600'
+    },
+    lua: {
+        bin: 'lua',
+        argv: '',
+        ext: 'lua',
+        color: '#000080'
+    },
+    perl: {
+        bin: 'perl',
+        argv: '',
+        ext: 'pl',
+        color: '#0298c3'
+    },
+    custom: {
+        bin: '',
+        argv: '',
+        ext: '',
+        codec: '',
+        color: '#438eff'
     }
 }
 
@@ -170,13 +173,7 @@ let showOptions = (tag = "默认") => {
     var allTags = ["默认"]
     var featureList = `
     <div id="featureList">
-        <table>
-            <tr>
-                <td width="40"></td>
-                <td width="200">模式</td>
-                <td width="260">说明</td>
-                <td>启用</td>
-            </tr>`;
+        <table>`;
     Object.values(customFts).some(fts => {
         var features = fts.features;
         if (fts.tags) {
@@ -188,23 +185,31 @@ let showOptions = (tag = "默认") => {
             if (!fts.tags) return false
             if (!fts.tags.includes(tag)) return false
         }
-        var cmds = '';
+        var cmds = '', rules;
         if (features.cmds[0].type == 'regex') {
-            var reg = features.cmds[0].match;
-            if (reg.length > 10) reg = reg.slice(0, 10) + '...';
-            cmds = `<span class="keyword re">正则: ${reg}</span>`;
+            rules = features.cmds[0].match;
+            if (rules.length > 15) rules = rules.slice(0, 15) + '...';
+            cmds = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
         } else if (features.cmds[0].type == 'window') {
-            var app = features.cmds[0].match.app
-            if (app.length > 10) app = app.slice(0, 10) + '...';
-            cmds = `<span class="keyword win">窗口: ${app}</span>`;
-        } else if (features.cmds[0].type == 'files') {
-            var app = features.cmds[0].match
-            if (app.length > 10) app = app.slice(0, 10) + '...';
-            cmds = `<span class="keyword fil">文件: ${app}</span>`;
-        } else {
-            features.cmds.forEach(cmd => {
-                cmds += `<span class="keyword">${cmd}</span>`;
+            rules = features.cmds[0].match.app.join(",")
+            if(rules.length > 15) rules = rules.slice(0, 15) + '...';
+            cmds += `<div class="topchild">窗口</div><div>`
+            rules.split(',').forEach(r => {
+                cmds += `<span class="keyword win">${r}</span>`;
             });
+            cmds += `</div>`
+        } else if (features.cmds[0].type == 'files') {
+            rules = features.cmds[0].match
+            if (rules.length > 15) rules = rules.slice(0, 15) + '...';
+            cmds = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
+        } else {
+            rules = features.cmds.join(",")
+            if(rules.length > 15) rules = rules.slice(0, 15) + '...';
+            cmds += `<div class="topchild">关键字</div><div>`
+            rules.split(',').forEach(r => {
+                cmds += `<span class="keyword">${r}</span>`;
+            });
+            cmds += `</div>`
         }
         var isChecked = '';
         for(var c of currentFts){
@@ -213,19 +218,31 @@ let showOptions = (tag = "默认") => {
                 break;
             }
         }
+        var platformIcons
+        if (features.platform) platformIcons = features.platform.map(x => `<img src="img/${x}.svg">`)
+        else platformIcons = ['<img src="img/win32.svg">', '<img src="img/darwin.svg">', '<img src="img/linux.svg">']
         featureList += `<tr>
         <td><img class="logo" src="${features.icon}"></td>
+        <td>
+            <div class="topchild">${features.explain}</div>
+            <div>      
+                <span class="info">
+                <span style="margin: 0; color: ${fts.program == 'quickcommand' ? "#00af2c;" : programs[fts.program].color}">●</span>
+                ${fts.program} | ${platformIcons.join('')}
+            </div>  
+        </td>
         <td>${cmds}</td>
-        <td>${features.explain}</td>
         <td>
             <label class="switch-btn">
                 <input class="checked-switch" id="${features.code}" type="checkbox" ${isChecked}>
                 <span class="text-switch"></span>
                 <span class="toggle-btn"></span>
             </label>
-            <span class="Btn editBtn" code="${features.code}"><img src="img/edit.svg"></span>
+        </td>
+        <td>
+            <span class="Btn editBtn" code="${features.code}"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
             <span class="Btn exportBtn" code="${features.code}"><img src="img/export.svg"></span>
-            <span class="Btn delBtn" code="${features.code}"><img src="img/del.svg"></span>
+            ${tag == "默认" ? "" : `<span class="Btn delBtn" code="${features.code}"><img src="img/del.svg"></span>`}
         </td>`
     })
     featureList += `</tr></table></div>`
@@ -247,9 +264,8 @@ let showOptions = (tag = "默认") => {
     $("#options").append(sidebar + featureList + footer)
 }
 
-let showCustomize = () => {
+let showCustomize = (readonly = false) => {
     $("#customize").remove();
-    // $("#featureList").fadeOut()
     let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
     let allTags = []
     $('.sidebar li').each(function () {
@@ -270,13 +286,14 @@ let showCustomize = () => {
     <img id="icon" src="">
     </p>
     <p>
-        <span class="word">类&#12288;型</span>
+        <span class="word">环&#12288;境</span>
         <select id="program">
-            <option value="simulation">内置环境</option>
+            <option value="quickcommand">quickcommand</option>
             ${options}
         </select>
         <span class="word">标&#12288;签</span>
         <select id="tags" multiple="multiple">
+            ${readonly ? '<option>默认</option>' : ''}
             ${allTags.join("")}
         </select>
         <input type="text" readonly id="iconame" placeholder="更改图标">
@@ -316,24 +333,24 @@ let showCustomize = () => {
             <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
             <input type="text" id="customcodec" placeholder="输出编码">
         </span>
-            <span class="simulation">
+            <span class="quickactions">
             <span id="addAction" class="footBtn robot">﹢动作</span>
             <span id="addKey" class="footBtn robot">﹢按键</span>
             <span id="showHelp" class="footBtn robot">？帮助</span>
             <span id="beautifyCode" class="footBtn robot">格式化</span>
         </span>
     </p>
-    <textarea id="cmd" placeholder="◆基础◆\n内置环境模式下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\n内置环境模式：可使用nodejs、electron、uTools的api、$.ajax以及本插件封装的用户交互命令，详情查看帮助\n其他脚本模式：本机装了相应环境即可执行，可以直接拖放脚本文件至此处\n列表里没有的语言，可以选择custom手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
-    <p>
-        <img id="win32" class="platform" src="./img/windows.svg">
-        <img id="darwin" class="platform" src="./img/macos.svg">
+    <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看帮助\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递给脚本的参数\ncustom：列表里没有的语言，可以手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+    <p class="bottom">
+        <img id="win32" class="platform" src="./img/win32.svg">
+        <img id="darwin" class="platform" src="./img/darwin.svg">
         <img id="linux" class="platform" src="./img/linux.svg">
-        <button class="button cmdBtn save">保存</button>
+        ${readonly ? '' : '<button class="button cmdBtn save">保存</button>'}
         <button class="button cmdBtn run">运行</button>
         <button class="button cmdBtn cancel">取消</button>
     </p>`
     $("#options").append(customWindow)
-    $("#icon").attr('src', 'logo/simulation.png');
+    $("#icon").attr('src', 'logo/quickcommand.png');
     getSpecialVars()
     createEditor()
     $('#program, #type, #output').select2({
@@ -355,8 +372,11 @@ let showCustomize = () => {
         tokenSeparators: [',', ' '],
         maximumSelectionLength: 3,
         dropdownParent: $("#customize")
-    });
-    $("#customize").animate({ top: '0px' });
+    }).on("select2:unselecting", e => {
+        (e.params.args.data.text == "默认") && e.preventDefault();
+    }).on("select2:selecting", e => {
+        (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && e.preventDefault();
+    })
 }
 
 createEditor = () => {
@@ -370,7 +390,7 @@ createEditor = () => {
         theme: "mdn-like",
         extraKeys: {
             "Alt-Enter": cm => {
-              cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+                cm.setOption("fullScreen", !cm.getOption("fullScreen"));
             },
             "Ctrl-B": () => {
                 runCurrentCommand()
@@ -387,7 +407,7 @@ createEditor = () => {
             "Alt-Up": "swapLineUp",
             "Alt-Down": "swapLineDown",
             "Shift-Alt-Down": "duplicateLine"
-          }
+        }
     });
 
     window.editor.on("change", showHint);
@@ -402,7 +422,7 @@ let beautifyCode = () => {
     if ($("#customize").is(":parent")) {
         var cmd = window.editor.getValue()
         switch ($("#program").val()) {
-            case "simulation":
+            case "quickcommand":
             case "javascript":
                 window.editor.setValue(js_beautify(cmd, { brace_style: "collapse,preserve-inline" }))
                 break;
@@ -429,29 +449,8 @@ let getSpecialVars = () => {
     localStorage['specialVars'] = specialVars
 }
 
-// 重置变量下拉框
-// let resetVars = () => {
-//     $('#vars').val("");
-//     $("#vars").css({ 'color': '#999' });
-// }
-
-// 检查输出选项
-// let outputCheck = () => {
-//     var output = $("#output").val()
-//     if (output == 'text' || output == 'html') {
-//         $(".selectText").hide()
-//     } else {
-//         $(".selectText").show()
-//     }
-// }
-
-// 检查模式选项
 let typeCheck = () => {
     var type = $("#type").val();
-    // $("#output, #program, #vars").prop("disabled", false);
-    // $('.varoutput').show()
-    // $(".simulation").hide()
-    // $("#program").prop("disabled", false)
     switch (type) {
         case 'key':
             $("#ruleWord").html("关键字");
@@ -497,7 +496,7 @@ let hasCustomIcon = () => {
 let programCheck = () => {
     let mode = $('#program').val();
     $('.customscript').hide();
-    $('.simulation').hide();
+    $('.quickactions').hide();
     $('#scptarg').show();
     $('#showInTerm').prop("disabled", false);
     if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
@@ -507,8 +506,8 @@ let programCheck = () => {
             var customext = $('#customext').val()
             customext && (mode = highlightIfKnown(customext))
             break;
-        case 'simulation':
-            $('.simulation').show();
+        case 'quickcommand':
+            $('.quickactions').show();
             $('#scptarg').hide();
             $('#showInTerm').prop("disabled", true);
             mode = 'javascript';
@@ -532,6 +531,34 @@ let programCheck = () => {
     window.editor.setOption("mode", mode);
 }
 
+// 合规性校验  
+let cmdCheck = (type, cmd) => {
+    var blacklist
+    switch (type) {
+        case 'key':
+            blacklist = cmd.match(/{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo}}|{{MatchedFiles}}/g)
+            break;
+        case 'regex':
+            blacklist = cmd.match(/{{SelectFile}}|{{WindowInfo}}|{{pwd}}|{{MatchedFiles}}/g)
+            if (/^(|\/)\.[*+](|\/)$/.test($('#rule').val())) return Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
+            break;
+        case 'window':
+            blacklist = cmd.match(/{{input}}|{{MatchedFiles}}/g)
+            break;
+        case 'files':
+            blacklist = cmd.match(/{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo}}/g)
+            break;
+        default:
+            break;
+        }
+    if (blacklist) {
+        Swal.fire(`当前模式无法使用${Array.from(new Set(blacklist)).join("、")}`)
+        return false
+    } else {
+        return true
+    }
+}
+
 // 开关
 $("#options").on('change', 'input[type=checkbox]', function () {
     var customFts = getDB('customFts'),
@@ -547,6 +574,7 @@ $("#options").on('click', '.footBtn', function () {
         case 'sample': visit('https://github.com/fofolee/uTools-QuickerCommand/tree/master/CommandCollections');
             break;
         case 'add': showCustomize();
+            $("#customize").animate({ top: '0px' });
             break;
         case 'import': importCommand();
             break;
@@ -563,13 +591,15 @@ $("#options").on('click', '.footBtn', function () {
 
 // 编辑
 $("#options").on('click', '.editBtn', function () {
-    var code = $(this).attr('code');
-    var data = utools.db.get("customFts").data[code];
-    showCustomize();
+    var readonly = false,
+        code = $(this).attr('code'),
+        data = utools.db.get("customFts").data[code],
+        cmds = data.features.cmds[0],
+        platform = data.features.platform;
+    if (data.tags && data.tags.includes("默认")) readonly = true
+    showCustomize(readonly);
     data.tags && $('#tags').val(data.tags).trigger('change')
-    var cmds = data.features.cmds[0]
-    var platform = data.features.platform
-    if (platform) ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
+    platform && ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
     $('#type').val(cmds.type).trigger("change")
     if (cmds.type == 'regex' || cmds.type == 'files') {
         $('#rule').val(cmds.match);
@@ -592,11 +622,13 @@ $("#options").on('click', '.editBtn', function () {
         $('#customext').show().val(data.customOptions.ext);
         $('#customcodec').show().val(data.customOptions.codec);
     }
-    window.editor.setValue(data.cmd);
-    // resetVars();
     typeCheck();
     programCheck();
-    // outputCheck();
+    // 分段载入，保障动画流畅
+    window.editor.setValue(data.cmd.slice(0, 2000));
+    $("#customize").animate({ top: '0px' }, () => {
+        window.editor.replaceRange(data.cmd.slice(2000), {line: Infinity});
+    });
 })
 
 // 添加模拟按键
@@ -613,7 +645,7 @@ $("#options").on('click', '#addKey', function () {
     });
 })
 
-// 内置环境的帮助
+// quickCommand的帮助
 $("#options").on('click', '#showHelp', function () {
     $.get('./HELP.md', r => {
         utools.ubrowser.goto(r).run()
@@ -712,146 +744,131 @@ $("#options").on('click', '#icon, #iconame', function () {
         $("#icon").attr('src', file.path); 
     }
 })
-
-let SaveCurrentCommand = async () => {
-    if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
-        var type = $('#type').val();
-        var code = $("#code").val();
-        var tags = $('#tags').val()
+    
+let SaveCurrentCommand = async (debug = false) => {
+    if ($('#tags').is(":parent")) {
+        var type = $('#type').val(),
+            code = $("#code").val(),
+            tags = $('#tags').val(),
+            rule = $('#rule').val(),
+            cmd = window.editor.getValue();
+        if (tags && tags.includes("默认") && !debug) return
+        if (!rule) return swal.fire(`${$('#ruleWord').text().replace("　", "")} 不能留空！`)
+        if (!cmdCheck(type, cmd)) return
         if (!code) {
             // 生成唯一code
             var uid = Number(Math.random().toString().substr(3, 3) + Date.now()).toString(36);
             var code = `${type}_${uid}`;
         }
-        var output = $('#output').val();
-        var scptarg = $('#scptarg').val();
-        var cmd = window.editor.getValue();
-        // 合规性校验
-        if (type == 'key'
-            && ['{{input}}', '{{SelectFile}}', '{{pwd}}', '{{WindowInfo}}', '{{MatchedFiles}}'].map(x => cmd.includes(x)).includes(true)) {
-            Swal.fire('关键字模式无法使用{{input}}、{{SelectFile}}、{{WindowInfo}}、{{pwd}}、{{MatchedFiles}}!')
-        } else if (type == 'regex'
-            && ['{{SelectFile}}', '{{WindowInfo}}', '{{pwd}}', '{{MatchedFiles}}'].map(x => cmd.includes(x)).includes(true)) {
-            Swal.fire('正则模式无法使用{{SelectFile}}、{{WindowInfo}}、{{pwd}}、{{MatchedFiles}}!')
-        } else if (type == 'window' && cmd.includes('{{input}}', '{{MatchedFiles}}')) {
-            Swal.fire('窗口模式无法使用{{input}}、{{MatchedFiles}}!')
-        } else if (type == 'files' && cmd.includes('{{input}}', '{{MatchedFiles}}')) {
-            Swal.fire('窗口模式无法使用{{input}}、{{MatchedFiles}}!')
-        // } else if (['text', 'html'].includes($('#output').val()) && cmd.includes('{{SelectText}}')) {
-        //     Swal.fire('显示文本或html输出时无法使用{{SelectText}}!')
-        } else if (type == 'regex' && /^(|\/)\.[*+](|\/)$/.test($('#rule').val())) {
-            Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
-         }
-        else {
-            var program = $('#program').val(),
-                desc = $('#desc').val(),
-                iconame = $("#iconame").val(),
-                iconpath = $("#icon").attr('src'),
-                icon,
-                base64ico,
-                hasSubInput;
-            if (!desc) desc = ' ';
-            // 选择了图标的情况下
-            if (iconame) {
-                base64ico = window.getBase64Ico(iconpath);
-                icon = "data:image/png;base64," + base64ico;
-            // 未自定义使用默认
-            } else {
-                icon = iconpath;
-            }
-            var rule = $('#rule').val();
-            if (type == 'key') {
-                cmds = rule.split(",").map(x => x.trim())
-            } else if (type == 'regex') {
-                if (!/^\/.*?\/[igm]*$/.test(rule)) {
-                    rule = "/" + rule + "/"
-                }
-                cmds = [{
-                    "label": desc,
-                    "type": "regex",
-                    "match": rule,
-                    "minNum": 1
-                }];
-            } else if (type == 'window') {
-                var cmdOfWin = {
-                    "label": desc,
-                    "type": "window"
-                }
-                if (rule) { 
-                    try {
-                        cmdOfWin.match = JSON.parse(rule)
-                    } catch (error) {
-                        cmdOfWin.match = {
-                            "app": rule.split(',')
-                        }
-                    }
-                }
-                cmds = [cmdOfWin];
-            } else if (type == 'files') {
-                if (!/^\/.*?\/[igm]*$/.test(rule)) {
-                    rule = "/" + rule + "/"
-                }
-                cmds = [{
-                    "label": desc,
-                    "type": "files",
-                    "match": rule,
-                    "minNum": 1
-                }];
-            }
-            // 需要子输入框
-            if (cmd.includes('{{subinput}}')) {
-                hasSubInput = true;
-            } else {
-                hasSubInput = false;
-            }
-            // platform
-            var platform = []
-            $('.platform').not('.disabled').each(function() { platform.push($(this).attr('id')) })
-            // 添加特性
-            pushData = {
-                features: {
-                    "code": code,
-                    "explain": desc,
-                    "cmds": cmds,
-                    "icon": icon,
-                    "platform": platform
-                },
-                program: program,
-                cmd: cmd,
-                output: output,
-                hasSubInput: hasSubInput,
-                scptarg: scptarg
-            }
-            if (tags) pushData.tags = tags
-            if (program == 'custom') {
-                pushData.customOptions = {
-                    "bin": $('#custombin').val(),
-                    "argv": $('#customarg').val(),
-                    "ext": $('#customext').val(),
-                    'codec': $('#customcodec').val()
-                }
-            }
-            putDB(code, pushData, 'customFts');
-            $("#customize").animate({ top: '100%' }, () => {
-                // 保存后标签跳转处理
-                var redirectTag, currentTag = $('.currentTag').text()
-                if (tags.length) {
-                    if (pushData.tags.includes(currentTag)) {
-                        redirectTag = currentTag
-                    } else {
-                        redirectTag = pushData.tags[0]
-                    }
-                } else {
-                    redirectTag = "未分类"
-                }
-                showOptions(redirectTag);
-                $("#customize").empty()
-                $(`#${code}`).click();
-                if (!$(`#${code}`).is(':checked')) {
-                    $(`#${code}`).click();
-                }
-            });
+        var output = $('#output').val(),
+            scptarg = $('#scptarg').val(),
+            program = $('#program').val(),
+            desc = $('#desc').val(),
+            iconame = $("#iconame").val(),
+            iconpath = $("#icon").attr('src'),
+            icon,
+            base64ico,
+            hasSubInput;
+        if (!desc) desc = ' ';
+        // 选择了图标的情况下
+        if (iconame) {
+            base64ico = window.getBase64Ico(iconpath);
+            icon = "data:image/png;base64," + base64ico;
+        // 未自定义使用默认
+        } else {
+            icon = iconpath;
         }
+        if (type == 'key') {
+            cmds = rule.split(",").map(x => x.trim())
+        } else if (type == 'regex') {
+            if (!/^\/.*?\/[igm]*$/.test(rule)) {
+                rule = "/" + rule + "/"
+            }
+            cmds = [{
+                "label": desc,
+                "type": "regex",
+                "match": rule,
+                "minNum": 1
+            }];
+        } else if (type == 'window') {
+            var cmdOfWin = {
+                "label": desc,
+                "type": "window"
+            }
+            if (rule) { 
+                try {
+                    cmdOfWin.match = JSON.parse(rule)
+                } catch (error) {
+                    cmdOfWin.match = {
+                        "app": rule.split(',')
+                    }
+                }
+            }
+            cmds = [cmdOfWin];
+        } else if (type == 'files') {
+            if (!/^\/.*?\/[igm]*$/.test(rule)) {
+                rule = "/" + rule + "/"
+            }
+            cmds = [{
+                "label": desc,
+                "type": "files",
+                "match": rule,
+                "minNum": 1
+            }];
+        }
+        // 需要子输入框
+        if (cmd.includes('{{subinput}}')) {
+            hasSubInput = true;
+        } else {
+            hasSubInput = false;
+        }
+        // platform
+        var platform = []
+        $('.platform').not('.disabled').each(function() { platform.push($(this).attr('id')) })
+        // 添加特性
+        pushData = {
+            features: {
+                "code": code,
+                "explain": desc,
+                "cmds": cmds,
+                "icon": icon,
+                "platform": platform
+            },
+            program: program,
+            cmd: cmd,
+            output: output,
+            hasSubInput: hasSubInput,
+            scptarg: scptarg
+        }
+        if (tags) pushData.tags = tags
+        if (program == 'custom') {
+            pushData.customOptions = {
+                "bin": $('#custombin').val(),
+                "argv": $('#customarg').val(),
+                "ext": $('#customext').val(),
+                'codec': $('#customcodec').val()
+            }
+        }
+        putDB(code, pushData, 'customFts');
+        $("#customize").animate({ top: '100%' }, () => {
+            // 保存后标签跳转处理
+            var redirectTag, currentTag = $('.currentTag').text()
+            if (tags.length) {
+                if (pushData.tags.includes(currentTag)) {
+                    redirectTag = currentTag
+                } else {
+                    redirectTag = pushData.tags[0]
+                }
+            } else {
+                redirectTag = "未分类"
+            }
+            showOptions(redirectTag);
+            $("#customize").empty()
+            $(`#${code}`).click();
+            if (!$(`#${code}`).is(':checked')) {
+                $(`#${code}`).click();
+            }
+        });
     }
 }
 
@@ -931,7 +948,7 @@ let runCurrentCommand = async () => {
                 utools.hideMainWindow()
                 break;
         }
-        if (program == "simulation") {
+        if (program == "quickcommand") {
             runCodeInVm(cmd, (stdout, stderr) => {
                 if (stderr) return showRunResult(stderr, raw, false)
                 showRunResult(stdout, raw, true)
@@ -961,7 +978,6 @@ let killCurrentCommand = () => {
 let quitCurrentCommand = () => {
     if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
         $("#customize").animate({ top: '100%' });
-        $("#featureList").fadeIn()
         $("#customize").empty()
     }
 }
@@ -980,7 +996,7 @@ showCodeEditor = file => {
     var customWindow = `
     <div id="customize">
     <select id="program">
-        <option value="simulation">内置环境</option>
+        <option value="quickcommand">quickcommand</option>
         ${options}
         </select>
     <span class="customscript">
@@ -991,7 +1007,7 @@ showCodeEditor = file => {
     </span>
     <span id="runCode" class="footBtn robot">运  行</span>
     <input type="text" id="scptarg" placeholder="脚本参数">
-    <span class="simulation">
+    <span class="quickactions">
         <span id="beautifyCode" class="footBtn robot">格式化</span>
         <span id="addAction" class="footBtn robot">﹢动作</span>
         <span id="addKey" class="footBtn robot">﹢按键</span>
@@ -1002,7 +1018,7 @@ showCodeEditor = file => {
     `
     $("#options").html(customWindow)
     createEditor()
-    $(".CodeMirror").css({ position: "fixed", bottom: "0", top: "33px", height: "auto" })
+    $(".CodeMirror").css({ bottom: "0", top: "33px", left: "0", right: "0" })
     $("#customize").css({ top: '0px', padding: '0px' });
     $("span.customscript > input").css({"height": "30px"})
     var db = getDB('codeHistory')
@@ -1028,7 +1044,7 @@ showCodeEditor = file => {
     }
     programCheck()
     $('#program').select2({
-        width: 120,
+        width: 130,
         minimumResultsForSearch: Infinity,
         dropdownParent: $("#customize"),
         dropdownAutoWidth: true
@@ -1075,12 +1091,6 @@ $("#options").on('change', '#vars', function () {
 $("#options").on('change', '#action', function () {
     $("#action").css({ 'color': 'black' })
 })
-
-// 输出选项改变时
-// $("#options").on('change', '#output', function () {
-//     resetVars();
-//     outputCheck();
-// })
 
 // 方式选项改变时
 $("#options").on('change', '#type', function () {

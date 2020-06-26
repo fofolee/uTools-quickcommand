@@ -11,14 +11,20 @@
     color: #d0021b;
 }
 
+body {
+    overflow: hidden;
+    margin: 0px;
+}
+
 #options {
-    font-size: 15px;
     color: #595959;
-    font-family: consolas, monaco, "微软雅黑";
     padding-bottom: 30px;
+    user-select: none;
 }
 
 #options * {
+    font-size: 15px;
+    font-family: consolas, monaco, "微软雅黑";
     box-sizing: border-box;
 }
 
@@ -26,7 +32,7 @@
     position: relative;
     display: inline-block;
     vertical-align: top;
-    width: 80px;
+    width: 65px;
     height: 30px;
     border-radius: 5px;
     cursor: pointer;
@@ -142,7 +148,7 @@
 
 #options table {
     border-collapse: collapse;
-    table-layout:fixed;
+    table-layout:absolute;
     width: 100%;
 }
 
@@ -150,24 +156,44 @@
     border-collapse: collapse;
     padding: 3px;
     margin-right: 15px;
-    word-break:keep-all;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
 }
 
-#options table tr:nth-child(odd) {
-    background-color: #fff !important;
+#options table td:first-child {
+    width: 7%;
+}
+
+#options table td:first-child+td {
+    width: 40%;
+}
+
+#options table td:first-child+td+td {
+    width: 28%;
+}
+
+#options table td .topchild{
+    margin: 0 0 5px 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 95%;
+}
+
+#options table tr {
+    height: 70px;
 }
 
 #options table tr:nth-child(even) {
+    background-color: #fff !important;
+}
+
+#options table tr:nth-child(odd) {
     background-color: #f8f8f8 !important;
 }
 
 #options .keyword {
     display: inline-block;
     font-size: 14px;
-    color: #333;
+    color: rgb(12, 67, 131);
     border: 1px solid #eee;
     border-radius: 12px;
     height: 24px;
@@ -190,7 +216,19 @@
 }
 
 #options .logo {
-    width: 32px;
+    max-width: 40px;
+}
+
+#options .info{
+    padding: 0 5px;
+    font-size: 10px;
+}
+
+#options .info img{
+    max-width: 13px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 1px;
 }
 
 #options #customize .keys{
@@ -215,10 +253,15 @@
     background:#ff3b4e;
 }
 
+#options #customize .bottom {
+    position: absolute;
+    bottom: 0;
+    left: 30px;
+    right: 30px;
+}
+
 
 #options .footBtn {
-    /* right: 5px;
-    bottom: 2px; */
     float: right;
     background: #00af2c;
     border-radius: 4px;
@@ -226,7 +269,6 @@
     padding: 2px 5px;
     margin: 0px 5px;
     cursor: pointer;
-    user-select: none;
 }
 
 #options .footBtn.danger {
@@ -252,7 +294,7 @@
 }
 
 #options .foot {
-    position: fixed;
+    position: absolute;
     height: 30px;
     right: 0px;
     bottom: 0px;
@@ -263,7 +305,7 @@
 }
 
 #options .sidebar {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
@@ -277,7 +319,6 @@
     padding: 10px;
     list-style-type: none;
     cursor: pointer;
-    user-select: none;
     text-overflow: ellipsis;
     overflow-x: hidden;
     white-space: nowrap;
@@ -287,13 +328,12 @@
     background-color: #c7c5c5;
 }
 
-#options td span {
+/* #options td span {
     margin-right: 10px;
-}
+} */
 
 #options span.Btn {
     font-size: 16px;
-    user-select: none;
     cursor: pointer;
 }
 
@@ -339,11 +379,16 @@
 }
 
 #options #featureList {
-    padding-left: 80px;
+    position: absolute;
+    left: 85px;
+    right: 0;
+    top: 0;
+    bottom: 30px;
+    overflow-y: auto;
 }
 
 #options #customize {
-    position: fixed;
+    position: absolute;
     z-index: 9;
     height: 100%;
     top: 100%;
@@ -370,7 +415,6 @@
     line-height: 22px;
     padding: 0 5px;
     background-color: #E3F2FD;
-    user-select: none;
 }
 
 #options #customize input.customize,
@@ -392,7 +436,7 @@
 }
 
 #options #customize input#scptarg{
-    width: 170px;
+    width: 160px;
     float: right;
     background: white;
     outline: none;
@@ -429,10 +473,15 @@ input::-webkit-input-placeholder {
 #options #customize .CodeMirror {
     font-size: 14px;
     font-family: "Monaco", "consolas";
-    width: 100%;
-    height: 23rem;
     border: 1px solid #dbdbdb;
     border-radius: 3px;
+    position: absolute;
+    top: 216px;
+    bottom: 54px;
+    left: 30px;
+    right: 30px;
+    width: auto;
+    height: auto;
 }
 
 #options #customize .CodeMirror-scroll{
@@ -518,7 +567,6 @@ input::-webkit-input-placeholder {
 #options #customize .button.cmdBtn {
     float: right;
     margin: 0px 10px;
-    user-select: none;
 }
 
 #options #customize .button.cancel {
@@ -640,7 +688,7 @@ li.CodeMirror-hint {
 #quickselect .select2-dropdown {
     position: fixed;
     font-size: 14px;
-    top: -50px
+    top: -58px
 }
 
 #quickselect .select2-results__options {
@@ -668,7 +716,7 @@ li.CodeMirror-hint {
 
 #quicktextarea {
     z-index: 10;
-    position: fixed;
+    position: absolute;
     top: 0px;
     bottom: 0px;
     left: 0px;
@@ -689,7 +737,7 @@ li.CodeMirror-hint {
 }
 
 #quicktextarea button {
-    position: fixed;
+    position: absolute;
     right: 20px;
     bottom: 20px;
     height: 40px;
