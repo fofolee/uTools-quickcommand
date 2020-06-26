@@ -664,6 +664,51 @@ li.CodeMirror-hint {
 
 /*---------------select2---------------*/
 
+/*---------------quicktextarea---------------*/
+
+#quicktextarea {
+    z-index: 10;
+    position: fixed;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+}
+
+#quicktextarea > * {
+    font-size: 16px;
+    outline: none;
+    padding: 10px;
+}
+
+#quicktextarea textarea {
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+    border: 2px solid #2196F3;
+    border-radius: 6px;
+}
+
+#quicktextarea button {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    height: 40px;
+    width: 40px;
+    border: 0;
+    box-shadow: 0 0 16px 0 #607D8B;
+    border-radius: 50%;
+    background: #2196F3;
+    color: white;
+    cursor: pointer;
+}
+
+#quicktextarea button:hover{
+    background: #6ab4f0;
+}
+
+/*---------------quicktextarea---------------*/
+
+
 .darktheme {
     background: #282c34;
     color: wheat;

@@ -82,7 +82,7 @@ const quickcommand = {
     showInputBox: function (callback, placeHolders) {
         let helps = `正确用法：
         quickcommand.showInputBox(yourinput => {
-            do something...
+            //do something...
         }, [placeholder of input1, placeholder of input2...])`
         if (!(callback instanceof Function)) throw helps
         placeHolders || (placeHolders = [""])
@@ -105,46 +105,6 @@ const quickcommand = {
             }
         }
         swalOneByOne(options)
-    },
-
-    showSelectBox: function (callback, selects, placeholder = "搜索") {
-        let helps = `正确用法：
-        quickcommand.showSelectBox(choise => {
-            var index = choise.index
-            var text = choise.text
-            //do something...
-        }, [option1, option2...], placeholder)`
-        if (!(callback instanceof Function)) throw helps
-        if (!(selects instanceof Array) || (selects && !selects.length)) throw helps
-        // 调整插件高度
-        let modWindowHeight = num => {
-            if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
-        }
-        var html = `<div id="quickselect"><select id="selectBox">`
-        var selectBoxNumbers = selects.length
-        modWindowHeight(selectBoxNumbers)
-        for (let i = 0; i < selectBoxNumbers; i++) {
-            html += `<option value="${i}">${selects[i]}</option>`
-        }
-        html += `</select></div>`
-        $("body").append(html)
-        $('#selectBox').select2({
-            width: "100%",
-            dropdownParent: $("#quickselect")
-        })
-        $('#selectBox').val(null).trigger('change')
-        $('#selectBox').select2('open')
-        $('#quickselect .select2').hide()
-        utools.setSubInput(({text})=>{
-            $("#quickselect .select2-search__field").val(text).trigger('input')
-            modWindowHeight($('#quickselect .select2-results__option').length)
-        }, placeholder)
-        $('#selectBox').on('select2:select', function (e) {
-            $('#selectBox').off('select2:select')
-            utools.removeSubInput()
-            callback({ index: $(this).val(), text: selects[$(this).val()] })
-            $("#quickselect").remove()
-        })
     },
 
     showButtonBox: function (callback, buttons) {
@@ -188,6 +148,67 @@ const quickcommand = {
             }
         }
         swalOneByOne(options)
+    },
+
+    showSelectList: function (callback, selects, placeholder = "搜索") {
+        let helps = `正确用法：
+        quickcommand.showSelectList(choise => {
+            var index = choise.index
+            var text = choise.text
+            //do something...
+        }, [option1, option2...], placeholder)`
+        if (!(callback instanceof Function)) throw helps
+        if (!(selects instanceof Array) || (selects && !selects.length)) throw helps
+        // 调整插件高度
+        let modWindowHeight = num => {
+            if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
+        }
+        var html = `<div id="quickselect"><select id="selectBox">`
+        var selectBoxNumbers = selects.length
+        modWindowHeight(selectBoxNumbers)
+        for (let i = 0; i < selectBoxNumbers; i++) {
+            html += `<option value="${i}">${selects[i]}</option>`
+        }
+        html += `</select></div>`
+        $("body").append(html)
+        $('#selectBox').select2({
+            width: "100%",
+            dropdownParent: $("#quickselect")
+        })
+        $('#selectBox').val(null).trigger('change')
+        $('#selectBox').select2('open')
+        $('#quickselect .select2').hide()
+        utools.setSubInput(({text})=>{
+            $("#quickselect .select2-search__field").val(text).trigger('input')
+            modWindowHeight($('#quickselect .select2-results__option').length)
+        }, placeholder)
+        $('#selectBox').on('select2:select', function (e) {
+            $('#selectBox').off('select2:select')
+            utools.removeSubInput()
+            callback({ index: $(this).val(), text: selects[$(this).val()] })
+            $("#quickselect").remove()
+        })
+    },
+
+    showTextAera: function (callback, placeholder = "") {
+        let helps = `正确用法：
+        quickcommand.showTextAera(text => {
+            //do something...
+        }, placeholder)`
+        if (!(callback instanceof Function)) throw helps
+        utools.setExpendHeight(600)
+        var html = `
+        <div id="quicktextarea">
+            <textarea placeholder="${placeholder}"></textarea>
+            <button>✔</button>
+        </div>`
+        $("body").append(html)
+        $("#quicktextarea").addClass("fadeInUpWindow")
+        $("#quicktextarea > button").click(function () {
+            $("#quicktextarea").addClass("fadeOutDownWindow")
+            setTimeout(() => { $("#quicktextarea").remove() }, 300);
+            callback($("#quicktextarea > textarea").val())
+        })
     }
 }
 
