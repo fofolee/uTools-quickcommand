@@ -46,7 +46,7 @@
             if (db.program == "custom") {
                 option = db.customOptions;
             } else if(db.program == "quickcommand"){
-                option = "quickcommand";
+                option = { mode: "quickcommand", payload: payload };
             }else{
                 option = programs[db.program];
             }
@@ -109,12 +109,12 @@
             setTimeout(() => { utools.outPlugin(); }, 500);
         }
         var outputOpts = { type: output, autoScroll: autoScroll, autoHeight: autoHeight }
-        if (option == "quickcommand") {
+        if (option.mode) {
             // 内置环境
             runCodeInVm(cmd, (stdout, stderr) => {
                 if (cmd.includes("utools.setExpendHeight")) outputOpts.autoHeight = false
                 switchQuickCommandResult(stdout, stderr, outputOpts)
-            })
+            }, option.payload)
         } else {
             var terminal = output == 'terminal' ? true : false
             outputOpts.scriptPath = getQuickCommandScriptFile(option.ext)
@@ -200,9 +200,11 @@
     // 兼容暗黑模式
     let adaptDarkMode = () => {
         if (utools.isDarkColors()) {
-            !$('#darkmode').length && $('head').append('<link id="darkmode" rel="stylesheet" href="assets/style/darkmode.css">')
+            !$('#darkmode').length && $('head').append(`
+            <link id="darkmode" rel="stylesheet" href="assets/style/darkmode.css">
+            <link id="darkswal" rel="stylesheet" href="assets/plugins/sweetalert2/dark.min.css">`)
         } else {
-            $('#darkmode').length && $('#darkmode').remove()
+            $('#darkmode').length && $('#darkmode, #darkswal').remove()
         }
     }
 }()

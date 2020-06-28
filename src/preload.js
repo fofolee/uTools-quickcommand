@@ -105,7 +105,7 @@ quickcommand = {
         var options = {
             html: html,
             focusConfirm: false,
-            backdrop: '#bbb',
+            backdrop: utools.isDarkColors() ? '#464646' : '#bbb',
             preConfirm: () => {
                 for (let i = 0; i < inputBoxNumbers; i++) {
                     result.push(document.getElementById(`inputBox${i}`).value)
@@ -139,7 +139,7 @@ quickcommand = {
                 }
             },
             html: html,
-            backdrop: '#bbb',
+            backdrop: utools.isDarkColors() ? '#464646' : '#bbb',
             showConfirmButton: false
         }
         swalOneByOne(options)
@@ -263,7 +263,9 @@ var getSandboxFuns = () => {
     return sandbox
 }
 
-runCodeInVm = (cmd, cb) => {
+runCodeInVm = (cmd, cb, payload = "") => {
+    var sandbox = getSandboxFuns()
+    sandbox.quickcommand.payload = payload
     const vm = new NodeVM({
         require: {
             external: true,
@@ -271,7 +273,7 @@ runCodeInVm = (cmd, cb) => {
         },
         console: 'redirect',
         env: process.env,
-        sandbox: getSandboxFuns(),
+        sandbox: sandbox,
     });
 
     var parseItem = item => {
@@ -392,6 +394,7 @@ dirPythonMod = (mod, cb) => {
 getNodeJsCommand = () => {
     var obj = getSandboxFuns()
     obj.Buffer = Buffer
+    obj.quickcommand.payload = ''
     return obj
 }
 
