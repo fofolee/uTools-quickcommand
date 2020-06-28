@@ -39,6 +39,11 @@ body {
     zoom: 0.7;
 }
 
+#options .switch-btn:hover {
+    filter: drop-shadow(0 0 5px black);
+    transition: 0.2s;
+}
+
 #options .checked-switch {
     position: absolute;
     top: 0;
@@ -148,7 +153,7 @@ body {
 
 #options table {
     border-collapse: collapse;
-    table-layout:absolute;
+    table-layout: fixed;
     width: 100%;
 }
 
@@ -170,7 +175,11 @@ body {
     width: 28%;
 }
 
-#options table td .topchild{
+#options table td:first-child+td+td+td {
+    width: 10%;
+}
+
+#options table td .topchild {
     margin: 0 0 5px 5px;
     overflow: hidden;
     white-space: nowrap;
@@ -182,12 +191,9 @@ body {
     height: 70px;
 }
 
-#options table tr:nth-child(even) {
-    background-color: #fff !important;
-}
-
 #options table tr:nth-child(odd) {
-    background-color: #f8f8f8 !important;
+    background: #fff;
+    filter: contrast(0.9);
 }
 
 #options .keyword {
@@ -219,38 +225,38 @@ body {
     max-width: 40px;
 }
 
-#options .info{
+#options .info {
     padding: 0 5px;
     font-size: 10px;
 }
 
-#options .info img{
+#options .info img {
     max-width: 13px;
     display: inline-block;
     vertical-align: middle;
     margin: 0 1px;
 }
 
-#options #customize .keys{
+#options #customize .keys {
     width: 16%;
 }
 
-#options #customize .robot{
-    background:#3085d6;
+#options #customize .robot {
+    background: #3085d6;
     padding: 5px;
 }
 
-#options #customize .robot:hover{
-    background:#55aafa;
+#options #customize .robot:hover {
+    background: #55aafa;
 }
 
-#options #customize .record{
-    background:#ff3b4e;
+#options #customize .record {
+    background: #ff3b4e;
     transition: 0.5s;
 }
 
-#options #customize .record:hover{
-    background:#ff3b4e;
+#options #customize .record:hover {
+    background: #ff3b4e;
 }
 
 #options #customize .bottom {
@@ -315,7 +321,7 @@ body {
     overflow-y: auto;
 }
 
-#options .sidebar li{
+#options .sidebar li {
     padding: 10px;
     list-style-type: none;
     cursor: pointer;
@@ -324,7 +330,7 @@ body {
     white-space: nowrap;
 }
 
-#options .sidebar .currentTag{
+#options .sidebar .currentTag {
     background-color: #c7c5c5;
 }
 
@@ -342,7 +348,8 @@ body {
 }
 
 #options span.Btn img:hover {
-    filter: drop-shadow(0 0 5px black)
+    filter: drop-shadow(0 0 5px black);
+    transition: 0.2s;
 }
 
 #options span.editBtn {
@@ -373,17 +380,18 @@ body {
     display: none;
 }
 
-#options #customize span.customscript > input {
+#options #customize span.customscript>input {
     margin-left: 5px;
     width: 12%;
 }
 
 #options #featureList {
     position: absolute;
-    left: 85px;
+    left: 80px;
     right: 0;
     top: 0;
     bottom: 30px;
+    padding-left: 5px;
     overflow-y: auto;
 }
 
@@ -431,12 +439,12 @@ body {
     outline: none;
 }
 
-#options #customize input#rule{
+#options #customize input#rule {
     width: 40%;
 }
 
-#options #customize input#scptarg{
-    width: 160px;
+#options #customize input#scptarg {
+    width: 150px;
     float: right;
     background: white;
     outline: none;
@@ -449,12 +457,12 @@ body {
     display: none
 }
 
-#options #customize input#scptarg:hover{
+#options #customize input#scptarg:hover {
     border: 2px solid #55aafa;
     transition: 0.2s;
 }
 
-#options #customize input.customize:hover{
+#options #customize input.customize:hover {
     border-bottom-color: #9e9e9ec7;
     transition: 0.25s;
 }
@@ -484,7 +492,23 @@ input::-webkit-input-placeholder {
     height: auto;
 }
 
-#options #customize .CodeMirror-scroll{
+#options #customize .CodeMirror-coderunner {
+    top: 33px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#options #customize .CodeMirror-fullscreen {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9;
+}
+  
+
+#options #customize .CodeMirror-scroll {
     box-sizing: unset;
 }
 
@@ -544,12 +568,12 @@ input::-webkit-input-placeholder {
     cursor: pointer;
 }
 
-#options #customize .platform:hover{
+#options #customize .platform:hover {
     box-shadow: 0px 1px 1px 0px #3085d6;
     transition: 0.1s;
 }
 
-#options #customize .disabled{
+#options #customize .disabled {
     filter: grayscale();
 }
 
@@ -608,8 +632,15 @@ li.CodeMirror-hint {
 
 /*---------------animate.css---------------*/
 @keyframes fadeInDown {
-    0% { opacity: 0; transform: translate3d(0, -100%, 0) }
-    to { opacity: 1; transform: translateZ(0) }
+    0% {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateZ(0)
+    }
 }
 
 .fadeInDownWindow {
@@ -617,8 +648,14 @@ li.CodeMirror-hint {
 }
 
 @keyframes fadeOutUp {
-    0% { opacity: 1 }
-    to { opacity: 0; transform: translate3d(0, -100%, 0) }
+    0% {
+        opacity: 1
+    }
+
+    to {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0)
+    }
 }
 
 .fadeOutUpWindow {
@@ -626,8 +663,15 @@ li.CodeMirror-hint {
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translate3d(0, 100%, 0); }
-    to { opacity: 1; transform: translate3d(0, 0, 0); }
+    from {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
 }
 
 .fadeInUpWindow {
@@ -635,13 +679,20 @@ li.CodeMirror-hint {
 }
 
 @keyframes fadeOutDown {
-    from { opacity: 1; }
-    to { opacity: 0; transform: translate3d(0, 100%, 0); }
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+    }
 }
 
 .fadeOutDownWindow {
     animation: fadeOutDown 0.3s;
 }
+
 /*---------------animate.css---------------*/
 
 /*---------------select2---------------*/
@@ -664,7 +715,7 @@ li.CodeMirror-hint {
 }
 
 #select2-tags-results .select2-results__option--selected {
-	display: none ;
+    display: none;
 }
 
 #options #customize .select2-selection__choice {
@@ -723,7 +774,7 @@ li.CodeMirror-hint {
     right: 0px;
 }
 
-#quicktextarea > * {
+#quicktextarea>* {
     font-size: 16px;
     outline: none;
     padding: 10px;
@@ -750,7 +801,7 @@ li.CodeMirror-hint {
     cursor: pointer;
 }
 
-#quicktextarea button:hover{
+#quicktextarea button:hover {
     background: #6ab4f0;
 }
 
