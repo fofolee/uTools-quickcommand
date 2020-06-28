@@ -391,7 +391,7 @@
             autoCloseBrackets: true,
             styleActiveLine: true,
             keyMap: "sublime",
-            theme: "mdn-like",
+            theme: utools.isDarkColors() ? 'material-darker' : "mdn-like",
             extraKeys: {
                 "Alt-Enter": () => {
                     $('.CodeMirror').hasClass('CodeMirror-fullscreen') &&
@@ -1030,7 +1030,6 @@
         $("#customize").css({ top: '0px', padding: '0px' });
         $("span.customscript > input").css({"height": "30px"})
         var db = getDB('codeHistory')
-        window.editor.setOption("theme", "ambiance")
         if (file) {
             var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
             console.log(fileinfo);
