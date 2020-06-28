@@ -32,7 +32,6 @@ addons = [
     "./assets/plugins/codemirror/addon/search/search.js",
     "./assets/plugins/codemirror/addon/search/searchcursor.js",
     "./assets/plugins/codemirror/addon/dialog/dialog.js",
-    "./assets/plugins/codemirror/addon/display/fullscreen.js",
     "./assets/plugins/codemirror/keymap/sublime.js"
 
 ]
