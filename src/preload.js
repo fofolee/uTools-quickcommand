@@ -47,7 +47,18 @@ const shortCodes = [
     }
 ]
 
-const quickcommand = {
+let getSleepCodeByShell = ms => {
+    var cmd, tempFilePath
+    if (utools.isWindows()) {
+        tempFilePath = getQuickCommandScriptFile('vbs')
+        cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
+    } else {
+        cmd = `sleep ${ms / 1000}`
+    }
+    return cmd
+}
+
+quickcommand = {
     simulateCopy: function() {
         var ctlKey = utools.isMacOs() ? 'command' : 'control';
         utools.simulateKeyboardTap('c', ctlKey);
@@ -61,22 +72,19 @@ const quickcommand = {
     // setTimout 不能在 vm2 中使用，同时在 electron 中有 bug
     sleep: function(ms) {
         var start = new Date().getTime()
-        var cmd, tempFilePath
-        if (utools.isWindows()) {
-            tempFilePath = getQuickCommandScriptFile('vbs')
-            cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
-        } else {
-            cmd = `sleep ${ms / 1000}`
-        }
         try {
-            child_process.execSync(cmd, { timeout: ms, })
-        } catch (ex) {
-            if (ex.code !== 'ETIMEDOUT') {
-              throw ex;
-            }
-          }
+            child_process.execSync(getSleepCodeByShell(ms), { timeout: ms })
+        } catch (ex) { }
         var end = new Date().getTime()
         return (end - start)
+    },
+
+    setTimeout: function(callback, ms) {
+        var start = new Date().getTime()
+        child_process.exec(getSleepCodeByShell(ms), { timeout: ms }, (err, stdout, stderr) => {
+            var end = new Date().getTime()
+            callback(end - start)
+        })
     },
 
     showInputBox: function (callback, placeHolders) {
@@ -97,6 +105,7 @@ const quickcommand = {
         var options = {
             html: html,
             focusConfirm: false,
+            backdrop: '#bbb',
             preConfirm: () => {
                 for (let i = 0; i < inputBoxNumbers; i++) {
                     result.push(document.getElementById(`inputBox${i}`).value)
@@ -115,7 +124,7 @@ const quickcommand = {
             //do something...
         }, [button1, button2...])`
         if (!(callback instanceof Function)) throw helps
-        if (!(buttons instanceof Array) || (buttons && !buttons.length)) throw helps
+        if (!(buttons instanceof Array)) throw helps
         utools.setExpendHeight(600)
         var html = ``
         var buttonBoxNumbers = buttons.length
@@ -130,6 +139,7 @@ const quickcommand = {
                 }
             },
             html: html,
+            backdrop: '#bbb',
             showConfirmButton: false
         }
         swalOneByOne(options)
@@ -150,15 +160,15 @@ const quickcommand = {
         swalOneByOne(options)
     },
 
-    showSelectList: function (callback, selects, placeholder = "搜索") {
+    showSelectList: function (callback, selects, placeholder = "搜索", closeOnSelect = true) {
         let helps = `正确用法：
         quickcommand.showSelectList(choise => {
             var index = choise.index
             var text = choise.text
             //do something...
-        }, [option1, option2...], placeholder)`
+        }, [option1, option2...], placeholder, closeOnSelect)`
         if (!(callback instanceof Function)) throw helps
-        if (!(selects instanceof Array) || (selects && !selects.length)) throw helps
+        if (!(selects instanceof Array)) throw helps
         // 调整插件高度
         let modWindowHeight = num => {
             if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
@@ -173,7 +183,8 @@ const quickcommand = {
         $("body").append(html)
         $('#selectBox').select2({
             width: "100%",
-            dropdownParent: $("#quickselect")
+            dropdownParent: $("#quickselect"),
+            closeOnSelect: closeOnSelect
         })
         $('#selectBox').val(null).trigger('change')
         $('#selectBox').select2('open')
@@ -183,11 +194,21 @@ const quickcommand = {
             modWindowHeight($('#quickselect .select2-results__option').length)
         }, placeholder)
         $('#selectBox').on('select2:select', function (e) {
-            $('#selectBox').off('select2:select')
-            utools.removeSubInput()
-            callback({ index: $(this).val(), text: selects[$(this).val()] })
-            $("#quickselect").remove()
+            callback({ index: $(this).val(), text: $(`option[value="${$(this).val()}"]`).text() })
+            if (closeOnSelect) {
+                $('#selectBox').off('select2:select')
+                utools.removeSubInput()
+                $("#quickselect").remove()
+            }
         })
+    },
+
+    updateSelectList: function (opt, selected = false) {
+        if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
+        var num = $('#quickselect .select2-results__option').length
+        $('#selectBox').append(new Option(opt, num, selected, selected)).trigger('change')
+        $("#quickselect .select2-search__field").trigger('input')
+        if (!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
     },
 
     showTextAera: function (callback, placeholder = "") {
@@ -209,6 +230,10 @@ const quickcommand = {
             setTimeout(() => { $("#quicktextarea").remove() }, 300);
             callback($("#quicktextarea > textarea").val())
         })
+    },
+
+    kill: function (pid) {
+        process.kill(pid)
     }
 }
 
@@ -246,7 +271,7 @@ runCodeInVm = (cmd, cb) => {
         },
         console: 'redirect',
         env: process.env,
-        sandbox: getSandboxFuns()
+        sandbox: getSandboxFuns(),
     });
 
     var parseItem = item => {
@@ -588,12 +613,12 @@ runCodeFile = (cmd, option, terminal, callback) => {
     console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (option.codec) chunk = iconv.decode(chunk, option.codec)
-        callback(chunk, null)
+        callback(chunk.toString(), null)
         // chunks.push(chunk)
     })
     child.stderr.on('data', stderr => {
         if (option.codec) stderr = iconv.decode(stderr, option.codec)
-        callback(null, stderr)
+        callback(null, stderr.toString())
         // err_chunks.push(err_chunk)
     })
     // child.on('close', code => {
