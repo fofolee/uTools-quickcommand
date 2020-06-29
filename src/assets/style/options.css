@@ -749,12 +749,17 @@ li.CodeMirror-hint {
 }
 
 #quickselect .select2-results__option {
-    padding: 10px;
-    height: 30px;
-    line-height: 30px;
+    padding: 5px 10px;
+    max-height: 50px;
+    /* line-height: 50px; */
     white-space: pre;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+#quickselect .select2-results__option--highlighted {
+    background-color: #ebebeb;
+    color: unset;
 }
 
 #quickselect .select2-search__field {

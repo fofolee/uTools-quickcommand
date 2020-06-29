@@ -7,6 +7,10 @@
     color: #e4e4e4;
 }
 
+.error {
+    color: #fbbac2;
+}
+
 /*配置界面*/
 
 #options .keyword {
@@ -97,6 +101,14 @@
     background: #46474a;
     color: #e4e4e4;
     border: 1px solid #565656;
+}
+
+#quickselect .select2-results__option--highlighted {
+    background: #585958;
+}
+
+#quickselect .select2-results__option--selected {
+    background-color: #3e3e3e;
 }
 
 /*滚动条*/
