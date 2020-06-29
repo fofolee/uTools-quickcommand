@@ -6,6 +6,7 @@ const electron = require('electron')
 const { NodeVM } = require('vm2')
 const path = require("path")
 const util = require("util")
+const PinyinMatch = require('pinyin-match');
 fofoCommon = require('./common').fofo
 
 
@@ -59,11 +60,13 @@ let getSleepCodeByShell = ms => {
 }
 
 quickcommand = {
+    // 模拟复制操作
     simulateCopy: function() {
         var ctlKey = utools.isMacOs() ? 'command' : 'control';
         utools.simulateKeyboardTap('c', ctlKey);
     },
 
+    // 模拟粘贴操作
     simulatePaste: function() {
         var ctlKey = utools.isMacOs() ? 'command' : 'control';
         utools.simulateKeyboardTap('v', ctlKey);
@@ -79,6 +82,7 @@ quickcommand = {
         return (end - start)
     },
 
+    // 重写 setTimeout
     setTimeout: function(callback, ms) {
         var start = new Date().getTime()
         child_process.exec(getSleepCodeByShell(ms), { timeout: ms }, (err, stdout, stderr) => {
@@ -87,6 +91,7 @@ quickcommand = {
         })
     },
 
+    // 显示输入框
     showInputBox: function (callback, placeHolders) {
         let helps = `正确用法：
         quickcommand.showInputBox(yourinput => {
@@ -116,6 +121,7 @@ quickcommand = {
         swalOneByOne(options)
     },
 
+    // 显示选项按钮
     showButtonBox: function (callback, buttons) {
         let helps = `正确用法：
         quickcommand.showButtonBox(yourchoise => {
@@ -145,6 +151,7 @@ quickcommand = {
         swalOneByOne(options)
     },
 
+    // 显示自动消失的提示框
     showMessageBox: function (title, icon = "success") {
         var options = {
             icon: icon,
@@ -160,42 +167,66 @@ quickcommand = {
         swalOneByOne(options)
     },
 
-    showSelectList: function (callback, selects, placeholder = "搜索", closeOnSelect = true) {
+    // 显示选项列表
+    showSelectList: function (callback, selects, opt = {}) {
         let helps = `正确用法：
         quickcommand.showSelectList(choise => {
             var index = choise.index
             var text = choise.text
             //do something...
-        }, [option1, option2...], placeholder, closeOnSelect)`
+        }, [option1, option2...], { placeholder, enableHTML, closeOnSelect })`
         if (!(callback instanceof Function)) throw helps
         if (!(selects instanceof Array)) throw helps
+        opt.placeholder || (opt.placeholder = "搜索，支持拼音")
+        opt.enableHTML || (opt.enableHTML = false)
+        typeof opt.closeOnSelect == 'undefined' && (opt.closeOnSelect = true)
         // 调整插件高度
-        let modWindowHeight = num => {
-            if(!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
+        let modWindowHeight = () => {
+            var height = $('.select2-results').height()
+            if (!$("#customize").is(":parent")) utools.setExpendHeight(height > 600 ? 600 : height);
         }
-        var html = `<div id="quickselect"><select id="selectBox">`
+        if ($('#quickselect').length) $('#quickselect').remove()
+        $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
         var selectBoxNumbers = selects.length
-        modWindowHeight(selectBoxNumbers)
+        var data = []
         for (let i = 0; i < selectBoxNumbers; i++) {
-            html += `<option value="${i}">${selects[i]}</option>`
+            data.push({ id: i, text: selects[i] })
         }
-        html += `</select></div>`
-        $("body").append(html)
-        $('#selectBox').select2({
+        var prefer = {
+            data: data,
             width: "100%",
             dropdownParent: $("#quickselect"),
-            closeOnSelect: closeOnSelect
-        })
+            closeOnSelect: opt.closeOnSelect,
+            // 支持无限滚动
+            ajax: {
+                transport: (params, success, failure) => {
+                    let pageSize = 50
+                    let term = (params.data.term || '').toLowerCase()
+                    let page = (params.data.page || 1)
+                    let results = data.filter(x => {
+                        cont = opt.enableHTML ? x.text.replace(/<[^<>]+>/g, '') : x.text
+                        return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
+                    })
+                    let paged = results.slice((page -1) * pageSize, page * pageSize)
+                    let options = { results: paged, pagination: { more: results.length >= page * pageSize } }
+                    success(options)
+                }
+            },
+        }
+        // 显示html时不转义标签
+        if (opt.enableHTML) prefer.escapeMarkup = markup => markup
+        $('#selectBox').select2(prefer)
         $('#selectBox').val(null).trigger('change')
         $('#selectBox').select2('open')
         $('#quickselect .select2').hide()
+        modWindowHeight()
         utools.setSubInput(({text})=>{
             $("#quickselect .select2-search__field").val(text).trigger('input')
-            modWindowHeight($('#quickselect .select2-results__option').length)
-        }, placeholder)
+            modWindowHeight()
+        }, opt.placeholder)
         $('#selectBox').on('select2:select', function (e) {
             callback({ index: $(this).val(), text: $(`option[value="${$(this).val()}"]`).text() })
-            if (closeOnSelect) {
+            if (opt.closeOnSelect) {
                 $('#selectBox').off('select2:select')
                 utools.removeSubInput()
                 $("#quickselect").remove()
@@ -203,14 +234,16 @@ quickcommand = {
         })
     },
 
-    updateSelectList: function (opt, selected = false) {
-        if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
-        var num = $('#quickselect .select2-results__option').length
-        $('#selectBox').append(new Option(opt, num, selected, selected)).trigger('change')
-        $("#quickselect .select2-search__field").trigger('input')
-        if (!$("#customize").is(":parent")) utools.setExpendHeight(num > 10 ? 550 : 50 * num);
-    },
+    // 更新选项列表，暂时禁用
+    // updateSelectList: function (opt, selected = false) {
+    //     if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
+    //     var num = $('#quickselect .select2-results__option').length
+    //     $('#selectBox').append(new Option(opt, num, selected, selected)).trigger('change')
+    //     $("#quickselect .select2-search__field").trigger('input')
+    //     if (!$("#customize").is(":parent")) utools.setExpendHeight($('.select2-results').height() > 600 ? 600 : $('.select2-results').height());
+    // },
 
+    // 显示文本输入框
     showTextAera: function (callback, placeholder = "") {
         let helps = `正确用法：
         quickcommand.showTextAera(text => {
@@ -232,8 +265,14 @@ quickcommand = {
         })
     },
 
+    // 关闭进程
     kill: function (pid) {
         process.kill(pid)
+    },
+
+    // dom 解析
+    htmlParse: function (html) {
+        return new DOMParser().parseFromString(html, 'text/html')
     }
 }
 
@@ -318,17 +357,26 @@ runCodeInVm = (cmd, cb, payload = "") => {
     }
     
     let cbUnhandledError = e => {
-        window.removeEventListener('error', cbUnhandledError)
+        removeAllListener()
         cb(null, e.error.toString())
     }
 
     let cbUnhandledRejection = e => {
-        window.removeEventListener('unhandledrejection', cbUnhandledRejection)
+        removeAllListener()
         cb(null, e.reason.toString())
     }
     
-    window.addEventListener('error', cbUnhandledError)
-    window.addEventListener('unhandledrejection', cbUnhandledRejection);
+    let removeAllListener = () => {
+        window.removeEventListener('error', cbUnhandledError)
+        window.removeEventListener('unhandledrejection', cbUnhandledRejection)
+        delete window.isWatchingError
+    }
+
+    if (!window.isWatchingError) {
+        window.addEventListener('error', cbUnhandledError)
+        window.addEventListener('unhandledrejection', cbUnhandledRejection)
+        window.isWatchingError = true
+    }
 }
 
 // shell代码提示，当前环境变量下的所有命令
