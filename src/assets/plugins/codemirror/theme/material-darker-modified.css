@@ -16,9 +16,14 @@
 }
 
 .cm-s-material-darker .CodeMirror-guttermarker,
-.cm-s-material-darker .CodeMirror-guttermarker-subtle,
-.cm-s-material-darker .CodeMirror-linenumber {
+.cm-s-material-darker .CodeMirror-guttermarker-subtle {
   color: #545454;
+}
+
+.cm-s-material-darker  .CodeMirror-linenumber {
+    text-shadow: 0px 1px 1px #4d4d4d;
+    color: #545454;
+    padding: 0 5px;
 }
 
 .cm-s-material-darker .CodeMirror-cursor {

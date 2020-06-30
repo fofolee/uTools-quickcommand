@@ -89,16 +89,12 @@
     color: #e4e4e4;
 }
 
-#options #customize .select2-results__option--selected {
-    background: #7d7f86;
-}
-
 #options #customize .select2-selection__choice {
     border: 1px solid #717171
 }
 
 #options #customize .select2-dropdown {
-    background: #46474a;
+    background: #303133;
     color: #e4e4e4;
     border: 1px solid #565656;
 }
@@ -107,6 +103,7 @@
     background: #585958;
 }
 
+#options #customize .select2-results__option--selected,
 #quickselect .select2-results__option--selected {
     background-color: #3e3e3e;
 }

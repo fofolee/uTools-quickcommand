@@ -709,6 +709,30 @@ li.CodeMirror-hint {
     outline: none;
 }
 
+#options #customize .select2-results__option img {
+    max-width: 25px;
+    max-height: 25px;
+    vertical-align: middle;
+}
+
+#options #customize .select2-results__option span {
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+#options #customize .select2-results__option div {
+    color: #9e9e9e;
+    font-size: small;
+}
+
+#options #customize .select2-results__option.select2-results__option--highlighted div {
+    color: #f1f1f1
+}
+
+#options #customize .select2-results>.select2-results__options {
+    max-height: 300px;
+}
+
 #options #customize .select2-selection--single:hover,
 #options #customize .select2-selection--multiple:hover {
     border-bottom-color: #9e9e9ec7;
