@@ -278,13 +278,8 @@
         })
         let customWindow = `<div id="customize">
         <p><input type="text" id="code" style="display: none">
-        <span class="word">模&#12288;式</span>
-        <select id="type">
-                <option value="key">通过关键字进入插件</option>
-                <option value="regex">正则匹配主输入框文本</option>
-                <option value="window">窗口匹配</option>
-                <option value="files">文件匹配</option>
-            </select>
+        <span class="word">匹&#12288;配</span>
+        <select id="type"></select>
         <span class="word" id="ruleWord">关键字</span><input class="customize" type="text" id="rule" placeholder="多个关键字用逗号隔开"></p>
         <p><span class="word">说&#12288;明</span><input class="customize" type="text" id="desc" placeholder="命令功能的描述">
         <img id="icon" src="">
@@ -357,17 +352,12 @@
         $("#icon").attr('src', 'logo/quickcommand.png');
         getSpecialVars()
         createEditor()
-        $('#program, #type, #output').select2({
-            width: '40%',
-            minimumResultsForSearch: Infinity,
-            dropdownParent: $("#customize")
-        });
-        $('#vars').select2({
-            width: '40%',
-            placeholder: "插入特殊变量",
-            minimumResultsForSearch: Infinity,
-            dropdownParent: $("#customize")
-        });
+        createProgramSelect2('40%')
+        createTypeSelect2('40%')
+        var singleSelectOpt = { width: '40%', minimumResultsForSearch: Infinity, dropdownParent: $("#customize") }
+        $('#output').select2(singleSelectOpt);
+        singleSelectOpt.placeholder = "插入特殊变量"
+        $('#vars').select2(singleSelectOpt);
         $('#tags').select2({
             width: '40%',
             placeholder: "选择或添加标签, 最多3个",
@@ -381,6 +371,53 @@
         }).on("select2:selecting", e => {
             (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !fofoCommon.isDev() && e.preventDefault();
         })
+    }
+
+    let getSelect2Option = (data, width, dropdownAutoWidth = false) => {
+        var options = {
+            data: data,
+            minimumResultsForSearch: Infinity,
+            dropdownParent: $("#customize"),
+            dropdownAutoWidth: dropdownAutoWidth,
+            escapeMarkup: markup => markup,
+            templateSelection: data => data.text,
+            templateResult: data => data.html
+        }
+        if (width) options.width = width
+        return options
+    }
+    
+    let createTypeSelect2 = (width = false) => {
+        var data = [
+            {
+                id: "key",
+                text: "关键字",
+                html: "<img src='img/key.svg'><span>关键字</span><div>在主输入框输入对应关键字进入插件，最通用的一种模式，关键字可以设置多个</div>"
+            },
+            {
+                id: "regex",
+                text: "正则/划词",
+                html: "<img src='img/regex.svg'><span>正则/划词</span><div>正则匹配主输入框文本或唤出语音面板时选中的文本，可以获取输入框文本或选中文本作为变量</div>"
+            },
+            {
+                id: "window",
+                text: "窗口/进程",
+                html: "<img src='img/window.svg'><span>窗口/进程</span><div>匹配呼出uTools前或唤出语音面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量</div>"
+            },
+            {
+                id: "files",
+                text: "复制/选中文件",
+                html: "<img src='img/file.svg'><span>复制/选中文件</span><div>匹配拖入主输入框的文件或唤出语音面板时选中的文件，可以获取复制及选中的文件信息作为变量</div>"
+            }
+        ]
+        $('#type').select2(getSelect2Option(data, width));
+    }
+   
+    let createProgramSelect2 = (width, dropdownAutoWidth = false) => {
+        var programStyled = p => `<img src="logo/${p}.png"><span>${p}</span>`
+        var data = [{ id: "quickcommand", text: 'quickcommand', html: programStyled('quickcommand') }]
+        data = data.concat(Object.keys(programs).map(x => { return { id: x, text: x, html: programStyled(x) } }))
+        $('#program').select2(getSelect2Option(data, width, dropdownAutoWidth));
     }
     
     let createEditor = () => {
@@ -673,7 +710,7 @@
             <option value="message" args="要发送的系统消息文本">发送系统消息</option>
             <option value="alert" args="要弹窗显示的消息文本">弹窗显示消息</option>
             <option value="send" args="要发送到窗口的文本内容">发送文本到活动窗口</option>
-            <option value="utools.redirect" args="要跳转至的插件名称">跳转到指定插件</option>
+            <option value="utools.redirect" args="要跳转至的插件名称">转至指定插件(自定义关键字)</option>
             <option value="quickcommand.sleep" args="延迟的毫秒数，不要勾选“加引号”">添加延时</option>
         </select>
         <input placeholder="文件、文件夹或软件的绝对路径" id="actionArgs" class="swal2-input" style="width: 80%; height: 3rem;">
@@ -705,6 +742,7 @@
             json = getDB('customFts')[code],
             options = {
                 title: '选择保存位置',
+                defaultPath: `${json.features.explain}.json`,
                 filters: [
                     { name: 'json', extensions: ['json'] },
                 ]
@@ -999,14 +1037,9 @@
     }
     
     showCodeEditor = file => {
-        let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
         var customWindow = `
-    
         <div id="customize">
-        <select id="program">
-            <option value="quickcommand">quickcommand</option>
-            ${options}
-            </select>
+        <select id="program"></select>
         <span class="customscript">
             <input type="text" id="custombin" placeholder="解释器路径">
             <input type="text" id="customarg" placeholder="解释器参数">
@@ -1030,16 +1063,16 @@
         $("#customize").css({ top: '0px', padding: '0px' });
         $("span.customscript > input").css({"height": "30px"})
         var db = getDB('codeHistory')
+        createProgramSelect2(140, true)
         if (file) {
             var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
-            console.log(fileinfo);
             window.editor.setValue(fileinfo.data)
             var program = Object.keys(programs).filter(x => `.${programs[x].ext}` == fileinfo.ext)
-            if (program) $('#program').val(program[0])
+            if (program) $('#program').val(program[0]).trigger('change')
             // runCurrentCommand()
         } else if(db.history){
             window.editor.setValue(db.history.cmd)
-            $('#program').val(db.history.program)
+            $('#program').val(db.history.program).trigger('change')
             $('#scptarg').val(db.history.scptarg)
             var custom = db.history.customoptions
             if (db.history.program = 'custom' && custom) {
@@ -1050,12 +1083,6 @@
             }
         }
         programCheck()
-        $('#program').select2({
-            width: 140,
-            minimumResultsForSearch: Infinity,
-            dropdownParent: $("#customize"),
-            dropdownAutoWidth: true
-        });
         $("#options").show()
     }
     
