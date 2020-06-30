@@ -7,8 +7,9 @@ const { NodeVM } = require('vm2')
 const path = require("path")
 const util = require("util")
 const PinyinMatch = require('pinyin-match');
+const axios = require('axios');
+// axios.defaults.adapter = require('axios/lib/adapters/http')
 fofoCommon = require('./common').fofo
-
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
@@ -273,6 +274,26 @@ quickcommand = {
     // dom 解析
     htmlParse: function (html) {
         return new DOMParser().parseFromString(html, 'text/html')
+    },
+
+    // 下载文件
+    downloadFile: function (url, defaultPath = '', showDialog = false) {
+        return new Promise((reslove, reject) => {
+            var filepath = showDialog ? utools.showSaveDialog({ defaultPath: defaultPath }) : defaultPath
+            axios({
+                method: 'get',
+                url: url,
+                responseType: 'arraybuffer'
+            }).then(res => {
+                var filebuffer = Buffer.from(res.data)
+                if (!filepath) reslove(filebuffer)
+                fs.writeFile(filepath, filebuffer, err => {
+                    err && reject(err) || reslove(filebuffer)
+                })
+            }).catch(err => {
+                reject(err)
+            })
+        })
     }
 }
 
@@ -280,20 +301,26 @@ swalOneByOne = options => {
     swal.getQueueStep() && Swal.insertQueueStep(options) || Swal.queue([options])
 }
 
+// 屏蔽危险函数
+var getuToolsLite = () => {
+    var utoolsLite = Object.assign({}, utools)
+    delete utoolsLite.db
+    delete utoolsLite.removeFeature
+    delete utoolsLite.setFeature
+    return utoolsLite
+}
+
 var getSandboxFuns = () => {
     var sandbox = {
-        utools: utools,
-        quickcommand: Object.assign(quickcommand, {
-            get: $.get,
-            post: $.post,
-            ajax: $.ajax
-        }),
+        utools: getuToolsLite(),
+        quickcommand: quickcommand,
         electron: electron,
         fs: fs,
         path: path,
         os: os,
         child_process: child_process,
         util: util,
+        axios: axios,
         alert: alert
     }
     shortCodes.forEach(f => {
@@ -342,6 +369,7 @@ runCodeInVm = (cmd, cb, payload = "") => {
     
     //重定向 console 
     vm.on('console.log', stdout => {
+        console.log(stdout);
         cb(parseItem(stdout), null)
     });
 
@@ -353,16 +381,19 @@ runCodeInVm = (cmd, cb, payload = "") => {
     try {
         vm.run(cmd, path.join(__dirname, 'preload.js'));
     } catch (error) {
+        console.log(error)
         cb(null, error.toString())
     }
     
     let cbUnhandledError = e => {
         removeAllListener()
+        console.log(e)
         cb(null, e.error.toString())
     }
 
     let cbUnhandledRejection = e => {
         removeAllListener()
+        console.log(e)
         cb(null, e.reason.toString())
     }
     
