@@ -184,7 +184,7 @@ quickcommand = {
         // 调整插件高度
         let modWindowHeight = () => {
             var height = $('.select2-results').height()
-            if (!$("#customize").is(":parent")) utools.setExpendHeight(height > 600 ? 600 : height);
+            if ($('#options').is(':hidden')) utools.setExpendHeight(height > 600 ? 600 : height);
         }
         if ($('#quickselect').length) $('#quickselect').remove()
         $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
