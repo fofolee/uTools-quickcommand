@@ -40,6 +40,7 @@ styles = [
     "./assets/plugins/codemirror/lib/codemirror.css",
     "./assets/plugins/codemirror/addon/hint/show-hint.css",
     "./assets/plugins/codemirror/addon/display/fullscreen.css",
+    "./assets/plugins/codemirror/addon/dialog/dialog.css",
     "./assets/plugins/codemirror/theme/mdn-like-modified.css",
     "./assets/plugins/codemirror/theme/material-darker-modified.css",
 ]
