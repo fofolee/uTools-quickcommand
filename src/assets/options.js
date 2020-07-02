@@ -1085,6 +1085,26 @@
         programCheck()
         $("#options").show()
     }
+
+    // 输出搜索
+    let showSearchBox = () => {
+        if ($('#options').is(':hidden') && $('#out').is(":parent")) {
+            $('#out').append(`<div id="outputSearch"><input autofocus="autofocus"><kbd id="find-next">↓</kbd><kbd id="find-prev">↑</kbd><kbd id="find-close">✕</kbd></div>`)
+            $('#outputSearch').animate({ opacity: 1, top: '10px', })
+            document.getElementById('find-next').onclick = () => {
+                utools.findInPage($('#outputSearch > input').val())
+            }
+            document.getElementById('find-prev').onclick = () => {
+                utools.findInPage($('#outputSearch > input').val(), { forward: false })
+            }
+            document.getElementById('find-close').onclick = () => {
+                utools.stopFindInPage()
+                $('#outputSearch').animate({ opacity: 0, top: '-30px', }, () => {
+                    $('#outputSearch').remove()
+                })
+            }
+        }
+    }
     
     // 切换TAGS
     $("#options").on('click', '.sidebar li', function () {
@@ -1154,6 +1174,11 @@
     
     Mousetrap.bind('ctrl+b', () => {
         runCurrentCommand()
+        return false
+    });
+
+    Mousetrap.bind('ctrl+f', () => {
+        showSearchBox()
         return false
     });
 }()

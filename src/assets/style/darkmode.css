@@ -144,3 +144,14 @@ body .swal2-container.swal2-backdrop-show, body .swal2-container.swal2-noanimati
 body.swal2-no-backdrop .swal2-container > .swal2-modal {
     box-shadow: 0 0 10px rgb(48,49,51,0.75)
 }
+
+/*搜索框*/
+#out > #outputSearch {
+    background: #2d2d2d;
+}
+
+#out > #outputSearch input {
+    background: #242729;
+    color: #e4e4e4;
+    border: 1px solid #403f3f;
+}

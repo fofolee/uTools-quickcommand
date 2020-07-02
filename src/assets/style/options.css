@@ -631,7 +631,7 @@ li.CodeMirror-hint {
     padding: 3px 4px;
 }
 
-/*---------------animate.css---------------*/
+/*animate.css*/
 @keyframes fadeInDown {
     0% {
         opacity: 0;
@@ -694,9 +694,9 @@ li.CodeMirror-hint {
     animation: fadeOutDown 0.3s;
 }
 
-/*---------------animate.css---------------*/
+/*animate.css*/
 
-/*---------------select2---------------*/
+/*select2*/
 #options #customize .select2-selection--single,
 #options #customize .select2-selection--multiple {
     border-bottom: 1px solid #dbdbdb;
@@ -792,9 +792,9 @@ li.CodeMirror-hint {
     outline: none
 }
 
-/*---------------select2---------------*/
+/*select2*/
 
-/*---------------quicktextarea---------------*/
+/*quicktextarea*/
 
 #quicktextarea {
     z-index: 10;
@@ -835,10 +835,34 @@ li.CodeMirror-hint {
     background: #6ab4f0;
 }
 
-/*---------------quicktextarea---------------*/
+/*quicktextarea*/
 
+/*搜索框*/
+#out > #outputSearch {
+    position: fixed;
+    opacity: 0;
+    top: -30px;
+    right: 10px;
+    padding: 5px 10px 5px 10px;
+    background: #ffffff;
+    box-shadow: 2px 1px 3px 0px black;
+}
 
-.darktheme {
-    background: #282c34;
-    color: wheat;
+#out > #outputSearch input {
+    height: 20px;
+    width: 220px;
+    margin-right: 5px;
+    border: 1px solid #e4e3e3;
+    background: #f5f5f5;
+    outline: none;
+}
+
+#out > #outputSearch input:focus {
+    border: 1px solid #03A9F4;
+}
+
+#out > #outputSearch > kbd {
+    cursor: pointer;
+    margin: 5px;
+    user-select: none;
 }
