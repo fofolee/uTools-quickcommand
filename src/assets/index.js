@@ -128,9 +128,9 @@
     let switchQuickCommandResult = (stdout, stderr, outputOpts) => {
         var output = outputOpts.type, autoScroll = outputOpts.autoScroll, autoHeight = outputOpts.autoHeight;
         var outputAutoFix = (autoScroll, autoHeight) => {
-            var outputHeight = $("#out").height() + 26
+            var outputHeight = $("#out").height() + 20
             if (outputHeight > 600) outputHeight = 600
-            if (autoHeight) utools.setExpendHeight(outputHeight);
+            if (autoHeight && $('#options').is(':hidden')) utools.setExpendHeight(outputHeight);
             if (outputHeight == 600 && autoScroll) $(document).scrollTop($(document).height());
         }
         if (stderr) {
