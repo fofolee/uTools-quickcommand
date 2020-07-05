@@ -24,29 +24,29 @@
         var options = file ? { type: 'file', argvs: file } : { type: 'dialog', argvs: { filters: [{ name: 'json', extensions: ['json'] }] } }
         options.readfile = true
         var fileinfo = getFileInfo(options)
-        if (!fileinfo) return
+        if (!fileinfo) return false
         try {
             var pushData = JSON.parse(fileinfo.data);
         } catch (error) {
-            Swal.fire({ icon: 'error', title: '啊嘞?!', text: '格式错误!', })
-            return
+            quickcommand.showMessageBox("格式错误", "error")
+            return false
         }
         // 单个命令导入
         if (typeof(pushData.features) == 'object') {
             var code = pushData.features.code;
             putDB(code, pushData, 'customFts');
-            showOptions();
+            return true
         // 多个命令导入
         } else {
             if (typeof(Object.values(pushData)[0].features) == 'object') {
                 for (var code of Object.keys(pushData)) {
                     putDB(code, pushData[code], 'customFts');
                 }
-                showOptions();
-            } else {
-                Swal.fire({ icon: 'error', title: '啊嘞?!', text: '格式错误!', })
+                return true
             }
         }
+        quickcommand.showMessageBox("格式错误", "error")
+        return false
     }
     
     let exportAll = () => {
@@ -329,13 +329,13 @@
             <span class="customscript">
                 <input type="text" id="custombin" placeholder="解释器路径">
                 <input type="text" id="customarg" placeholder="解释器参数">
-                <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
+                <input type="text" id="customext" placeholder="后缀,不含.">
                 <input type="text" id="customcodec" placeholder="输出编码">
             </span>
                 <span class="quickactions">
                 <span id="addAction" class="footBtn robot">﹢动作</span>
                 <span id="addKey" class="footBtn robot">﹢按键</span>
-                <span id="showHelp" class="footBtn robot">？帮助</span>
+                <span id="showHelp" class="footBtn robot">？文档</span>
                 <span id="beautifyCode" class="footBtn robot">格式化</span>
             </span>
         </p>
@@ -475,7 +475,7 @@
                     })
                     break;
                 default:
-                    message('暂不支持该语言的格式化')
+                    quickcommand.showMessageBox('暂不支持该语言的格式化', 'error')
                     break;
             }
         }
@@ -583,7 +583,7 @@
                 break;
             case 'regex':
                 blacklist = cmd.match(/{{SelectFile}}|{{WindowInfo}}|{{pwd}}|{{MatchedFiles}}/g)
-                if (/^(|\/)\.[*+](|\/)$/.test($('#rule').val())) return Swal.fire('正则匹配 .* 和 .+ 已被uTools禁用！')
+                if (/^(|\/)\.[*+](|\/)$/.test($('#rule').val())) return quickcommand.showMessageBox('正则匹配 .* 和 .+ 已被uTools禁用！', 'error')
                 break;
             case 'window':
                 blacklist = cmd.match(/{{input}}|{{MatchedFiles}}/g)
@@ -595,7 +595,7 @@
                 break;
             }
         if (blacklist) {
-            Swal.fire(`当前模式无法使用${Array.from(new Set(blacklist)).join("、")}`)
+            quickcommand.showMessageBox(`当前模式无法使用${Array.from(new Set(blacklist)).join("、")}`, 'error')
             return false
         } else {
             return true
@@ -619,7 +619,7 @@
             case 'add': showCustomize();
                 $("#customize").animate({ top: '0px' });
                 break;
-            case 'import': importCommand();
+            case 'import': importCommand() && showOptions();
                 break;
             case 'enableAll': $(".checked-switch:not(:checked)").click();
                 break;
@@ -679,7 +679,7 @@
     // 添加模拟按键
     $("#options").on('click', '#addKey', function () {
         $("#addKey").text("▶ 录制中").addClass('record')
-        message('开始录制按键，可连续录制')
+        quickcommand.showMessageBox('开始录制按键，可连续录制', 'info')
         Mousetrap.record(sequence => {
             sequence.forEach(s => {
                 var keys = s
@@ -692,9 +692,7 @@
     
     // quickCommand的帮助
     $("#options").on('click', '#showHelp', function () {
-        $.get('./HELP.md', r => {
-            utools.ubrowser.goto(r).run()
-        })
+        utools.createBrowserWindow('./helps/quickcommand.html')
     })
     
     // 添加动作
@@ -799,7 +797,7 @@
                 rule = $('#rule').val(),
                 cmd = window.editor.getValue();
             if (tags && tags.includes("默认") && !fofoCommon.isDev()) return
-            if (type != "window" && !rule) return swal.fire(`${$('#ruleWord').text().replace("　", "")} 不能留空！`)
+            if (type != "window" && !rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
             if (!cmdCheck(type, cmd)) return
             if (!code) {
                 // 生成唯一code
@@ -1043,7 +1041,7 @@
         <span class="customscript">
             <input type="text" id="custombin" placeholder="解释器路径">
             <input type="text" id="customarg" placeholder="解释器参数">
-            <input type="text" id="customext" placeholder="后缀,不含." onchange="highlightIfKnown(this.value)">
+            <input type="text" id="customext" placeholder="后缀,不含.">
             <input type="text" id="customcodec" placeholder="输出编码">
         </span>
         <span id="runCode" class="footBtn robot">运  行</span>
@@ -1052,7 +1050,7 @@
             <span id="beautifyCode" class="footBtn robot">格式化</span>
             <span id="addAction" class="footBtn robot">﹢动作</span>
             <span id="addKey" class="footBtn robot">﹢按键</span>
-            <span id="showHelp" class="footBtn robot">？帮助</span>
+            <span id="showHelp" class="footBtn robot">？文档</span>
         </span>
         <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nCtrl+B 运行\nCtrl+F 搜索\nAlt+Enter 全屏\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
         </div>
@@ -1152,12 +1150,16 @@
         typeCheck();
     })
     
+    $("#options").on('change', '#customext', function () {
+        highlightIfKnown($('#customext').val())
+    })
+
     // 平台按钮
     $("#options").on('click', '.platform', function () {
         if ($(this).hasClass('disabled')){
             $(this).removeClass('disabled')
         } else {
-            if ($('.disabled').length == 2) message('至少保留一个平台')
+            if ($('.disabled').length == 2) quickcommand.showMessageBox('至少保留一个平台', 'error')
             else $(this).addClass('disabled')
         } 
     })
