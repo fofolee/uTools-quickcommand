@@ -135,10 +135,16 @@ body .swal2-range,
 body .swal2-radio,
 body .swal2-checkbox {
     background: #303133;
+    /* box-shadow: 0 0 0.625em #0a0a0a; */
 }
 
 body .swal2-container.swal2-backdrop-show, body .swal2-container.swal2-noanimation {
     background: rgb(48,49,51,0.75)
+}
+
+body .swal2-input:focus {
+    border: 1px solid #2196F3;
+    box-shadow: 0 0 3px #03A9F4;
 }
 
 body.swal2-no-backdrop .swal2-container > .swal2-modal {
