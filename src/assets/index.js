@@ -19,11 +19,9 @@
                 putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
             }
             // 初始化
-            $("#options").empty()
-            $("#out").empty()
-            $("[id^=quick").remove()
+            $("#options, #out").empty()
+            $('body').children(':not(#wrapper)').remove()
             $('body').css({overflow: 'hidden'})
-            swal.close()
             if (handleEnter) document.removeEventListener('keydown', handleEnter)
         })
         // 配置页面
@@ -65,7 +63,7 @@
                 }
                 // 获取资源管理器或访达当前目录
                 if (cmd.includes('{{pwd}}')) {
-                    let repl = utools.getCurrentFolderPath().replace(/\\/g, '\\\\');
+                    let repl = getCurrentFolderPathFix();
                     cmd = cmd.replace(/\{\{pwd\}\}/mg, repl)
                 }
                 // 获取窗口信息
@@ -128,7 +126,7 @@
     let switchQuickCommandResult = (stdout, stderr, outputOpts) => {
         var output = outputOpts.type, autoScroll = outputOpts.autoScroll, autoHeight = outputOpts.autoHeight;
         var outputAutoFix = (autoScroll, autoHeight) => {
-            var outputHeight = $("#out").height() + 20
+            var outputHeight = $("#out").outerHeight()
             if (outputHeight > 600) outputHeight = 600
             if (autoHeight && $('#options').is(':hidden')) utools.setExpendHeight(outputHeight);
             if (outputHeight == 600 && autoScroll) $(document).scrollTop($(document).height());
