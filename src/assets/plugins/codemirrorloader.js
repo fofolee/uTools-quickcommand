@@ -42,7 +42,7 @@ styles = [
     "./assets/plugins/codemirror/addon/display/fullscreen.css",
     "./assets/plugins/codemirror/addon/dialog/dialog.css",
     "./assets/plugins/codemirror/theme/mdn-like-modified.css",
-    "./assets/plugins/codemirror/theme/material-darker-modified.css",
+    "./assets/plugins/codemirror/theme/material-darker-modified.css"
 ]
 
 styles.forEach(s => {
