@@ -49,17 +49,6 @@ const shortCodes = [
     }
 ]
 
-let getSleepCodeByShell = ms => {
-    var cmd, tempFilePath
-    if (utools.isWindows()) {
-        tempFilePath = getQuickCommandScriptFile('vbs')
-        cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
-    } else {
-        cmd = `sleep ${ms / 1000}`
-    }
-    return cmd
-}
-
 quickcommand = {
     // 模拟复制操作
     simulateCopy: function() {
@@ -109,9 +98,14 @@ quickcommand = {
         }
         var result = []
         var options = {
+            onBeforeOpen: () => {
+                document.getElementById(`inputBox0`).focus()
+                $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
+            },
             html: html,
             focusConfirm: false,
-            backdrop: utools.isDarkColors() ? '#464646' : '#bbb',
+            showCancelButton: true,
+            backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
             preConfirm: () => {
                 for (let i = 0; i < inputBoxNumbers; i++) {
                     result.push(document.getElementById(`inputBox${i}`).value)
@@ -144,25 +138,28 @@ quickcommand = {
                     callback({ index: i, text: buttons[i] })
                     swal.clickConfirm()
                 }
+                $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
             },
             html: html,
-            backdrop: utools.isDarkColors() ? '#464646' : '#bbb',
+            backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
             showConfirmButton: false
         }
         swalOneByOne(options)
     },
 
     // 显示自动消失的提示框
-    showMessageBox: function (title, icon = "success") {
+    showMessageBox: function (title, icon = "success", time = 3000) {
         var options = {
             icon: icon,
             title: title,
             toast: true,
             position: 'top',
-            timer: 3000,
-            onOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            // timer: time,
+            showConfirmButton: false,
+            onOpen: toast => {
+                // toast.addEventListener('mouseenter', Swal.stopTimer)
+                // toast.addEventListener('mouseleave', Swal.resumeTimer)
+                setTimeout(() => { Swal.clickConfirm() }, time);
             }
         }
         swalOneByOne(options)
@@ -181,11 +178,6 @@ quickcommand = {
         opt.placeholder || (opt.placeholder = "搜索，支持拼音")
         opt.enableHTML || (opt.enableHTML = false)
         typeof opt.closeOnSelect == 'undefined' && (opt.closeOnSelect = true)
-        // 调整插件高度
-        let modWindowHeight = () => {
-            var height = $('.select2-results').height()
-            if ($('#options').is(':hidden')) utools.setExpendHeight(height > 600 ? 600 : height);
-        }
         if ($('#quickselect').length) $('#quickselect').remove()
         $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
         var selectBoxNumbers = selects.length
@@ -220,10 +212,11 @@ quickcommand = {
         $('#selectBox').val(null).trigger('change')
         $('#selectBox').select2('open')
         $('#quickselect .select2').hide()
-        modWindowHeight()
+        opt.enableHTML || $('.select2-results').css({'line-height': '50px'})
+        modWindowHeight($('.select2-results').height())
         utools.setSubInput(({text})=>{
             $("#quickselect .select2-search__field").val(text).trigger('input')
-            modWindowHeight()
+            modWindowHeight($('.select2-results').height())
         }, opt.placeholder)
         $('#selectBox').on('select2:select', function (e) {
             callback({ index: $(this).val(), text: $(`option[value="${$(this).val()}"]`).text() })
@@ -267,8 +260,8 @@ quickcommand = {
     },
 
     // 关闭进程
-    kill: function (pid) {
-        process.kill(pid)
+    kill: function (pid, signal = 'SIGTERM') {
+        process.kill(pid, signal)
     },
 
     // dom 解析
@@ -299,6 +292,21 @@ quickcommand = {
 
 swalOneByOne = options => {
     swal.getQueueStep() && Swal.insertQueueStep(options) || Swal.queue([options])
+}
+
+let getSleepCodeByShell = ms => {
+    var cmd, tempFilePath
+    if (utools.isWindows()) {
+        tempFilePath = getQuickCommandScriptFile('vbs')
+        cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
+    } else {
+        cmd = `sleep ${ms / 1000}`
+    }
+    return cmd
+}
+
+let modWindowHeight = height => {
+    $('#options').is(':hidden') && utools.setExpendHeight(height > 600 ? 600 : height);
 }
 
 // 屏蔽危险函数
@@ -521,6 +529,16 @@ getFileInfo = options => {
         information.data = iconv.decode(fs.readFileSync(file), codec)
     }
     return information
+}
+
+getCurrentFolderPathFix = () => {
+    let pwd = utools.getCurrentFolderPath()
+    if(typeof pwd == 'undefined'){
+        pwd = path.join(utools.getPath('home'), 'desktop')
+      }else{
+        pwd = pwd.replace(/\\/g, '\\\\')
+    }
+    return pwd
 }
 
 saveFile = (options, content) => {
