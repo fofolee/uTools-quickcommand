@@ -196,11 +196,12 @@ quickcommand = {
                     let pageSize = 50
                     let term = (params.data.term || '').toLowerCase()
                     let page = (params.data.page || 1)
-                    let results = data.filter(x => {
+                    let items = $('#selectBox > option').length ? Array.from($('#selectBox > option').map(function (x) { return { id: x, text: $(this).html() } })) : data
+                    let results = items.filter(x => {
                         cont = opt.enableHTML ? x.text.replace(/<[^<>]+>/g, '') : x.text
                         return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
                     })
-                    let paged = results.slice((page -1) * pageSize, page * pageSize)
+                    let paged = results.slice((page - 1) * pageSize, page * pageSize)
                     let options = { results: paged, pagination: { more: results.length >= page * pageSize } }
                     success(options)
                 }
@@ -228,14 +229,17 @@ quickcommand = {
         })
     },
 
-    // 更新选项列表，暂时禁用
-    // updateSelectList: function (opt, selected = false) {
-    //     if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
-    //     var num = $('#quickselect .select2-results__option').length
-    //     $('#selectBox').append(new Option(opt, num, selected, selected)).trigger('change')
-    //     $("#quickselect .select2-search__field").trigger('input')
-    //     if (!$("#customize").is(":parent")) utools.setExpendHeight($('.select2-results').height() > 600 ? 600 : $('.select2-results').height());
-    // },
+    // 更新选项列表
+    updateSelectList: function (opt) {
+        if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
+        var num = $('#quickselect > #selectBox > option').length
+        var newOption
+        if (opt instanceof Array) newOption = opt.map(o => new Option(o, num++, false, false).outerHTML).join('')
+        else newOption = new Option(opt, num, false, false)
+        $('#selectBox').append(newOption).val(null).trigger('change')
+        $("#quickselect .select2-search__field").trigger('input')
+        modWindowHeight($('.select2-results').height())
+    },
 
     // 显示文本输入框
     showTextAera: function (callback, placeholder = "") {
@@ -533,12 +537,8 @@ getFileInfo = options => {
 
 getCurrentFolderPathFix = () => {
     let pwd = utools.getCurrentFolderPath()
-    if(typeof pwd == 'undefined'){
-        pwd = path.join(utools.getPath('home'), 'desktop')
-      }else{
-        pwd = pwd.replace(/\\/g, '\\\\')
-    }
-    return pwd
+    let pwdFix = pwd ? pwd : path.join(utools.getPath('home'), 'desktop')
+    return pwdFix.replace(/\\/g, '\\\\')
 }
 
 saveFile = (options, content) => {
