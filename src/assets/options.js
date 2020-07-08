@@ -263,7 +263,7 @@
             <div id="clear" class="footBtn danger">全部删除</div>
             <div id="disableAll" class="footBtn danger">全部禁用</div>
             <div id="enableAll" class="footBtn">全部启用</div>
-            <div id="sample" class="footBtn">下载命令</div>
+            <!--<div id="viewHelps" class="footBtn">查看帮助</div>-->
         </div>`
         $("#options").append(sidebar + featureList + footer)
     }
@@ -339,7 +339,7 @@
                 <span id="beautifyCode" class="footBtn robot">格式化</span>
             </span>
         </p>
-        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看帮助\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递给脚本的参数\ncustom：列表里没有的语言，可以手动设置解释器路径\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递给脚本的参数\ncustom：可以手动设置解释器路径、参数、脚本后缀及编码方式\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
         <p class="bottom">
             <img id="win32" class="platform" src="./img/win32.svg">
             <img id="darwin" class="platform" src="./img/darwin.svg">
@@ -614,7 +614,7 @@
     // 底部功能按钮
     $("#options").on('click', '.footBtn', function () {
         switch ($(this).attr('id')) {
-            case 'sample': visit('https://github.com/fofolee/uTools-QuickerCommand/tree/master/CommandCollections');
+            case 'viewHelps': utools.createBrowserWindow('./helps/help.html');
                 break;
             case 'add': showCustomize();
                 $("#customize").animate({ top: '0px' });
@@ -1048,8 +1048,8 @@
         <input type="text" id="scptarg" placeholder="脚本参数">
         <span class="quickactions">
             <span id="beautifyCode" class="footBtn robot">格式化</span>
-            <span id="addAction" class="footBtn robot">﹢动作</span>
-            <span id="addKey" class="footBtn robot">﹢按键</span>
+            <!--<span id="addAction" class="footBtn robot">﹢动作</span>
+            <span id="addKey" class="footBtn robot">﹢按键</span>-->
             <span id="showHelp" class="footBtn robot">？文档</span>
         </span>
         <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nCtrl+B 运行\nCtrl+F 搜索\nAlt+Enter 全屏\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
