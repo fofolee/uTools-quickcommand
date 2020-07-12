@@ -172,33 +172,47 @@ quickcommand = {
             var index = choise.index
             var text = choise.text
             //do something...
-        }, [option1, option2...], { placeholder, enableHTML, closeOnSelect })`
+        }, [option1, option2...], { placeholder, optionType, enableSearch, closeOnSelect })`
         if (!(callback instanceof Function)) throw helps
         if (!(selects instanceof Array)) throw helps
-        opt.placeholder || (opt.placeholder = "搜索，支持拼音")
-        opt.enableHTML || (opt.enableHTML = false)
+        opt.optionType || (opt.optionType = 'plaintext')
+        typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
+        typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
         typeof opt.closeOnSelect == 'undefined' && (opt.closeOnSelect = true)
         if ($('#quickselect').length) $('#quickselect').remove()
         $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
-        var selectBoxNumbers = selects.length
-        var data = []
-        for (let i = 0; i < selectBoxNumbers; i++) {
-            data.push({ id: i, text: selects[i] })
-        }
+        let item, data = []
+        selects.forEach((s, i) => {
+            item = {id: i}
+            if (opt.optionType == 'json') {
+                item.text = ''
+                Object.keys(s).forEach(k => item[k] = s[k])
+                s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
+                s.title && (item.text += `<div class="title">${s.title}</div>`)
+                s.description && (item.text += `<div class="description">${s.description}</div>`)
+            } else {
+                item.text = s
+            }
+            data.push(item)
+        })
+        $('#selectBox').data('options', data)
+        $('#selectBox').data('type', opt.optionType)
         var prefer = {
-            data: data,
+            // data: data,
             width: "100%",
             dropdownParent: $("#quickselect"),
             closeOnSelect: opt.closeOnSelect,
             // 支持无限滚动
             ajax: {
                 transport: (params, success, failure) => {
-                    let pageSize = 50
+                    let cont, pageSize = 50
                     let term = (params.data.term || '').toLowerCase()
                     let page = (params.data.page || 1)
-                    let items = $('#selectBox > option').length ? Array.from($('#selectBox > option').map(function (x) { return { id: x, text: $(this).html() } })) : data
+                    let items = $('#selectBox').data('options')
                     let results = items.filter(x => {
-                        cont = opt.enableHTML ? x.text.replace(/<[^<>]+>/g, '') : x.text
+                        if (opt.optionType == 'json') cont = x.title
+                        else if (opt.optionType == 'html') cont = x.text.replace(/<[^<>]+>/g, '')
+                        else cont = x.text
                         return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
                     })
                     let paged = results.slice((page - 1) * pageSize, page * pageSize)
@@ -208,19 +222,22 @@ quickcommand = {
             },
         }
         // 显示html时不转义标签
-        if (opt.enableHTML) prefer.escapeMarkup = markup => markup
+        if (opt.optionType != 'plaintext') prefer.escapeMarkup = markup => markup
         $('#selectBox').select2(prefer)
         $('#selectBox').val(null).trigger('change')
         $('#selectBox').select2('open')
+        $("#quickselect .select2-search__field").focus()
         $('#quickselect .select2').hide()
-        opt.enableHTML || $('.select2-results').css({'line-height': '50px'})
-        modWindowHeight($('.select2-results').height())
-        utools.setSubInput(({text})=>{
+        opt.optionType == 'plaintext' && $('.select2-results').css({'line-height': '40px'})
+        modWindowHeight($('.select2-results').outerHeight())
+        opt.enableSearch && utools.setSubInput(({text})=>{
             $("#quickselect .select2-search__field").val(text).trigger('input')
-            modWindowHeight($('.select2-results').height())
+            modWindowHeight($('.select2-results').outerHeight())
         }, opt.placeholder)
         $('#selectBox').on('select2:select', function (e) {
-            callback({ index: $(this).val(), text: $(`option[value="${$(this).val()}"]`).text() })
+            let result = $('#selectBox').data('options')[$(this).val()]
+            delete result.selected
+            callback(result)
             if (opt.closeOnSelect) {
                 $('#selectBox').off('select2:select')
                 utools.removeSubInput()
@@ -230,15 +247,29 @@ quickcommand = {
     },
 
     // 更新选项列表
-    updateSelectList: function (opt) {
+    updateSelectList: function (selects) {
         if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
-        var num = $('#quickselect > #selectBox > option').length
-        var newOption
-        if (opt instanceof Array) newOption = opt.map(o => new Option(o, num++, false, false).outerHTML).join('')
-        else newOption = new Option(opt, num, false, false)
-        $('#selectBox').append(newOption).val(null).trigger('change')
+        let data = $('#selectBox').data('options')
+        let num = data.length
+        let optionType = $('#selectBox').data('type')
+        selects instanceof Array || (selects = [selects])
+        let item
+        selects.forEach(s => {
+            item = {id: num++}
+            if (optionType == 'json') {
+                item.text = ''
+                Object.keys(s).forEach(k => item[k] = s[k])
+                s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
+                s.title && (item.text += `<div class="title">${s.title}</div>`)
+                s.description && (item.text += `<div class="description">${s.description}</div>`)
+            } else {
+                item.text = s
+            }
+            data.push(item)
+        })
+        $('#selectBox').data('options', data).val(null).trigger('change')
         $("#quickselect .select2-search__field").trigger('input')
-        modWindowHeight($('.select2-results').height())
+        modWindowHeight($('.select2-results').outerHeight())
     },
 
     // 显示文本输入框
