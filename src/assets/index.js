@@ -53,23 +53,37 @@
             // 正则
             if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
             // 文件
-            if (type == 'files') cmd = cmd.replace(/\{\{MatchedFiles\}\}/mg, JSON.stringify(payload));
+            if (type == 'files') { 
+                let MatchedFiles = payload
+                let Matched = cmd.match(/\{\{MatchedFiles.*?\}\}/g)
+                Matched && Matched.forEach(m => {
+                    repl = eval(m.slice(2, -2))
+                    typeof repl == 'object' && (repl = JSON.stringify(repl))
+                    cmd = cmd.replace(m, repl)
+                })
+            }
             // 窗口
+            var repl
             if (type == 'window') {
                 // 获取选中的文件
                 if (cmd.includes('{{SelectFile}}')) {
-                    let repl = await getSelectFile(payload.id);
+                    repl = await getSelectFile(payload.id);
                     cmd = cmd.replace(/\{\{SelectFile\}\}/mg, repl)
                 }
                 // 获取资源管理器或访达当前目录
                 if (cmd.includes('{{pwd}}')) {
-                    let repl = getCurrentFolderPathFix();
+                    repl = getCurrentFolderPathFix();
                     cmd = cmd.replace(/\{\{pwd\}\}/mg, repl)
                 }
                 // 获取窗口信息
-                if (cmd.includes('{{WindowInfo}}')) {
-                    let repl = JSON.stringify(payload);
-                    cmd = cmd.replace(/\{\{WindowInfo\}\}/mg, repl)
+                if (cmd.includes('{{WindowInfo')) {
+                    let WindowInfo = payload
+                    let Matched = cmd.match(/\{\{WindowInfo.*?\}\}/g)
+                    Matched && Matched.forEach(m => {
+                        repl = eval(m.slice(2, -2))
+                        typeof repl == 'Object' && (repl = JSON.stringify(repl))
+                        cmd = cmd.replace(m, repl)
+                    })
                 }
             }
             // 无输出的批处理
@@ -179,9 +193,9 @@
                 default:
                     break;
             }
-        } else {
-            // 无输出
-            utools.outPlugin()
+        // } else {
+        //     // 无输出
+        //     utools.outPlugin()
         }
     }
     
