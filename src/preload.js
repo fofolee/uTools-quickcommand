@@ -82,69 +82,61 @@ quickcommand = {
     },
 
     // 显示输入框
-    showInputBox: function (callback, placeHolders) {
-        let helps = `正确用法：
-        quickcommand.showInputBox(yourinput => {
-            //do something...
-        }, [placeholder of input1, placeholder of input2...])`
-        if (!(callback instanceof Function)) throw helps
-        placeHolders || (placeHolders = [""])
-        if (!(placeHolders instanceof Array)) throw helps
-        utools.setExpendHeight(600)
-        var html = ""
-        var inputBoxNumbers = placeHolders.length
-        for (let i = 0; i < inputBoxNumbers; i++) {
-            html += `<input class="swal2-input" id="inputBox${i}" placeholder="${placeHolders[i]}">`
-        }
-        var result = []
-        var options = {
-            onBeforeOpen: () => {
-                document.getElementById(`inputBox0`).focus()
-                $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
-            },
-            html: html,
-            focusConfirm: false,
-            showCancelButton: true,
-            backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
-            preConfirm: () => {
-                for (let i = 0; i < inputBoxNumbers; i++) {
-                    result.push(document.getElementById(`inputBox${i}`).value)
-                }
-                callback(result)
+    showInputBox: function (placeHolders) {
+        return new Promise((reslove, reject) => {
+            placeHolders || (placeHolders = [""])
+            if (!(placeHolders instanceof Array)) reject("参数类型错误：应为数组")
+            utools.setExpendHeight(600)
+            var html = ""
+            var inputBoxNumbers = placeHolders.length
+            for (let i = 0; i < inputBoxNumbers; i++) {
+                html += `<input class="swal2-input" id="inputBox${i}" placeholder="${placeHolders[i]}">`
             }
-        }
-        swalOneByOne(options)
+            var result = []
+            var options = {
+                onBeforeOpen: () => {
+                    document.getElementById(`inputBox0`).focus()
+                    $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
+                },
+                html: html,
+                focusConfirm: false,
+                showCancelButton: true,
+                backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
+                preConfirm: () => {
+                    for (let i = 0; i < inputBoxNumbers; i++) {
+                        result.push(document.getElementById(`inputBox${i}`).value)
+                    }
+                    reslove(result)
+                }
+            }
+            swalOneByOne(options)
+        });
     },
 
     // 显示选项按钮
-    showButtonBox: function (callback, buttons) {
-        let helps = `正确用法：
-        quickcommand.showButtonBox(yourchoise => {
-            var index = choise.index
-            var text = choise.text
-            //do something...
-        }, [button1, button2...])`
-        if (!(callback instanceof Function)) throw helps
-        if (!(buttons instanceof Array)) throw helps
-        utools.setExpendHeight(600)
-        var html = ``
-        var buttonBoxNumbers = buttons.length
-        for (let i = 0; i < buttonBoxNumbers; i++) {
-            html += `<button class="swal2-confirm swal2-styled" style="width: 80%" onclick="clickButton(${i})">${buttons[i]}</button>`
-        }
-        var options = {
-            onBeforeOpen: () => {
-                clickButton = i => {
-                    callback({ index: i, text: buttons[i] })
-                    swal.clickConfirm()
-                }
-                $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
-            },
-            html: html,
-            backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
-            showConfirmButton: false
-        }
-        swalOneByOne(options)
+    showButtonBox: function (buttons) {
+        return new Promise((reslove, reject) => {
+            if (!(buttons instanceof Array)) reject("参数类型错误：应为数组")
+            utools.setExpendHeight(600)
+            var html = ``
+            var buttonBoxNumbers = buttons.length
+            for (let i = 0; i < buttonBoxNumbers; i++) {
+                html += `<button class="swal2-confirm swal2-styled" style="width: 80%" onclick="clickButton(${i})">${buttons[i]}</button>`
+            }
+            var options = {
+                onBeforeOpen: () => {
+                    clickButton = i => {
+                        setTimeout(() => { swal.clickConfirm() }, 50);
+                        reslove({ id: i, text: buttons[i] })
+                    }
+                    $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
+                },
+                html: html,
+                backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
+                showConfirmButton: false
+            }
+            swalOneByOne(options)
+        });
     },
 
     // 显示自动消失的提示框
@@ -166,84 +158,80 @@ quickcommand = {
     },
 
     // 显示选项列表
-    showSelectList: function (callback, selects, opt = {}) {
-        let helps = `正确用法：
-        quickcommand.showSelectList(choise => {
-            var index = choise.index
-            var text = choise.text
-            //do something...
-        }, [option1, option2...], { placeholder, optionType, enableSearch, closeOnSelect })`
-        if (!(callback instanceof Function)) throw helps
-        if (!(selects instanceof Array)) throw helps
-        opt.optionType || (opt.optionType = 'plaintext')
-        typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
-        typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
-        typeof opt.closeOnSelect == 'undefined' && (opt.closeOnSelect = true)
-        if ($('#quickselect').length) $('#quickselect').remove()
-        $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
-        let item, data = []
-        selects.forEach((s, i) => {
-            item = {id: i}
-            if (opt.optionType == 'json') {
-                item.text = ''
-                Object.keys(s).forEach(k => item[k] = s[k])
-                s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
-                s.title && (item.text += `<div class="title">${s.title}</div>`)
-                s.description && (item.text += `<div class="description">${s.description}</div>`)
-            } else {
-                item.text = s
-            }
-            data.push(item)
-        })
-        $('#selectBox').data('options', data)
-        $('#selectBox').data('type', opt.optionType)
-        var prefer = {
-            // data: data,
-            width: "100%",
-            dropdownParent: $("#quickselect"),
-            closeOnSelect: opt.closeOnSelect,
-            // 支持无限滚动
-            ajax: {
-                transport: (params, success, failure) => {
-                    let cont, pageSize = 50
-                    let term = (params.data.term || '').toLowerCase()
-                    let page = (params.data.page || 1)
-                    let items = $('#selectBox').data('options')
-                    let results = items.filter(x => {
-                        if (opt.optionType == 'json') cont = x.title
-                        else if (opt.optionType == 'html') cont = x.text.replace(/<[^<>]+>/g, '')
-                        else cont = x.text
-                        return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
-                    })
-                    let paged = results.slice((page - 1) * pageSize, page * pageSize)
-                    let options = { results: paged, pagination: { more: results.length >= page * pageSize } }
-                    success(options)
+    showSelectList: function (selects, opt = {}) {
+        return new Promise((reslove, reject) => {
+            if (!(selects instanceof Array)) reject("参数类型错误：应为数组")
+            opt.optionType || (opt.optionType = 'plaintext')
+            typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
+            typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
+            typeof opt.closeOnSelect == 'undefined' && (opt.closeOnSelect = true)
+            if ($('#quickselect').length) $('#quickselect').remove()
+            $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
+            let item, data = []
+            selects.forEach((s, i) => {
+                item = {id: i}
+                if (opt.optionType == 'json') {
+                    item.text = ''
+                    Object.keys(s).forEach(k => item[k] = s[k])
+                    s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
+                    s.title && (item.text += `<div class="title">${s.title}</div>`)
+                    s.description && (item.text += `<div class="description">${s.description}</div>`)
+                } else {
+                    item.text = s
                 }
-            },
-        }
-        // 显示html时不转义标签
-        if (opt.optionType != 'plaintext') prefer.escapeMarkup = markup => markup
-        $('#selectBox').select2(prefer)
-        $('#selectBox').val(null).trigger('change')
-        $('#selectBox').select2('open')
-        $("#quickselect .select2-search__field").focus()
-        $('#quickselect .select2').hide()
-        opt.optionType == 'plaintext' && $('.select2-results').css({'line-height': '40px'})
-        modWindowHeight($('.select2-results').outerHeight())
-        opt.enableSearch && utools.setSubInput(({text})=>{
-            $("#quickselect .select2-search__field").val(text).trigger('input')
-            modWindowHeight($('.select2-results').outerHeight())
-        }, opt.placeholder)
-        $('#selectBox').on('select2:select', function (e) {
-            let result = $('#selectBox').data('options')[$(this).val()]
-            delete result.selected
-            callback(result)
-            if (opt.closeOnSelect) {
-                $('#selectBox').off('select2:select')
-                utools.removeSubInput()
-                $("#quickselect").remove()
+                data.push(item)
+            })
+            $('#selectBox').data('options', data)
+            $('#selectBox').data('type', opt.optionType)
+            var prefer = {
+                // data: data,
+                width: "100%",
+                dropdownParent: $("#quickselect"),
+                closeOnSelect: opt.closeOnSelect,
+                // 支持无限滚动
+                ajax: {
+                    transport: (params, success, failure) => {
+                        let cont, pageSize = 50
+                        let term = (params.data.term || '').toLowerCase()
+                        let page = (params.data.page || 1)
+                        let items = $('#selectBox').data('options')
+                        let results = items.filter(x => {
+                            if (opt.optionType == 'json') cont = x.title
+                            else if (opt.optionType == 'html') cont = x.text.replace(/<[^<>]+>/g, '')
+                            else cont = x.text
+                            return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
+                        })
+                        let paged = results.slice((page - 1) * pageSize, page * pageSize)
+                        let options = { results: paged, pagination: { more: results.length >= page * pageSize } }
+                        success(options)
+                    }
+                },
             }
-        })
+            // 显示html时不转义标签
+            if (opt.optionType != 'plaintext') prefer.escapeMarkup = markup => markup
+            $('#selectBox').select2(prefer)
+            $('#selectBox').val(null).trigger('change')
+            $('#selectBox').select2('open')
+            $("#quickselect .select2-search__field").focus()
+            $('#quickselect .select2').hide()
+            opt.optionType == 'plaintext' && $('.select2-results').css({'line-height': '40px'})
+            modWindowHeight($('.select2-results').outerHeight())
+            opt.enableSearch && utools.setSubInput(({text})=>{
+                $("#quickselect .select2-search__field").val(text).trigger('input')
+                modWindowHeight($('.select2-results').outerHeight())
+            }, opt.placeholder)
+            $('#selectBox').on('select2:select', function (e) {
+                let result = $('#selectBox').data('options')[$(this).val()]
+                delete result.selected
+                reslove(result)
+                if (opt.closeOnSelect) {
+                    $('#selectBox').off('select2:select')
+                    utools.removeSubInput()
+                    $("#quickselect").remove()
+                }
+            })
+          
+        });
     },
 
     // 更新选项列表
@@ -273,25 +261,22 @@ quickcommand = {
     },
 
     // 显示文本输入框
-    showTextAera: function (callback, placeholder = "") {
-        let helps = `正确用法：
-        quickcommand.showTextAera(text => {
-            //do something...
-        }, placeholder)`
-        if (!(callback instanceof Function)) throw helps
-        utools.setExpendHeight(600)
-        var html = `
-        <div id="quicktextarea">
-            <textarea placeholder="${placeholder}"></textarea>
-            <button>✔</button>
-        </div>`
-        $("body").append(html)
-        $("#quicktextarea").addClass("fadeInUpWindow")
-        $("#quicktextarea > button").click(function () {
-            $("#quicktextarea").addClass("fadeOutDownWindow")
-            setTimeout(() => { $("#quicktextarea").remove() }, 300);
-            callback($("#quicktextarea > textarea").val())
-        })
+    showTextAera: function (placeholder = "") {
+        return new Promise((reslove, reject) => {
+            utools.setExpendHeight(600)
+            var html = `
+            <div id="quicktextarea">
+                <textarea placeholder="${placeholder}"></textarea>
+                <button>✔</button>
+            </div>`
+            $("body").append(html)
+            $("#quicktextarea").addClass("fadeInUpWindow")
+            $("#quicktextarea > button").click(function () {
+                $("#quicktextarea").addClass("fadeOutDownWindow")
+                setTimeout(() => { $("#quicktextarea").remove() }, 300);
+                reslove($("#quicktextarea > textarea").val())
+            })
+        });
     },
 
     // 关闭进程
