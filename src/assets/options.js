@@ -225,7 +225,7 @@
             var platformIcons
             if (features.platform) platformIcons = features.platform.map(x => `<img src="img/${x}.svg">`)
             else platformIcons = ['<img src="img/win32.svg">', '<img src="img/darwin.svg">', '<img src="img/linux.svg">']
-            featureList += `<tr>
+            featureList += `<tr id="${features.code}">
             <td><img class="logo" src="${features.icon}"></td>
             <td>
                 <div class="topchild">${features.explain}</div>
@@ -238,15 +238,15 @@
             <td>${cmds}</td>
             <td>
                 <label class="switch-btn">
-                    <input class="checked-switch" id="${features.code}" type="checkbox" ${isChecked}>
+                    <input class="checked-switch" type="checkbox" ${isChecked}>
                     <span class="text-switch"></span>
                     <span class="toggle-btn"></span>
                 </label>
             </td>
             <td>
-                <span class="Btn editBtn" code="${features.code}"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
-                <span class="Btn exportBtn" code="${features.code}"><img src="img/export.svg"></span>
-                ${tag == "默认" ? "" : `<span class="Btn delBtn" code="${features.code}"><img src="img/del.svg"></span>`}
+                <span class="Btn editBtn"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
+                <span class="Btn exportBtn"><img src="img/export.svg"></span>
+                ${tag == "默认" ? "" : `<span class="Btn delBtn"><img src="img/del.svg"></span>`}
             </td>`
         })
         featureList += `</tr></table></div>`
@@ -605,7 +605,7 @@
     // 开关
     $("#options").on('change', 'input[type=checkbox]', function () {
         var customFts = getDB('customFts'),
-            code = $(this).attr('id');
+            code = $(this).parents('tr').attr('id')
         if (!utools.removeFeature(code)) {
             utools.setFeature(customFts[code].features);
         }
@@ -635,7 +635,7 @@
     // 编辑
     $("#options").on('click', '.editBtn', function () {
         var readonly = false,
-            code = $(this).attr('code'),
+            code = $(this).parents('tr').attr('id'),
             data = utools.db.get("customFts").data[code],
             cmds = data.features.cmds[0],
             platform = data.features.platform;
@@ -736,7 +736,7 @@
     
     // 导出
     $("#options").on('click', '.exportBtn', function () {
-        var code = $(this).attr('code'),
+        var code = $(this).parents('tr').attr('id'),
             json = getDB('customFts')[code],
             options = {
                 title: '选择保存位置',
@@ -760,7 +760,7 @@
             cancelButtonText: '手抖...',
           }).then((result) => {
             if (result.value) {
-                var code = $(this).attr('code'),
+                var code = $(this).parents('tr').attr('id'),
                 db = utools.db.get("customFts"),
                 data = db.data;
                 delete data[code];
@@ -774,7 +774,7 @@
     })
     
     // 选择图标
-    $("#options").on('click', '#icon, #iconame', function () {
+    $("#options").on('click', '#icon', function () {
         var options = {
             buttonLabel: '选择',
             filters: [{
@@ -907,11 +907,9 @@
                     redirectTag = "未分类"
                 }
                 showOptions(redirectTag);
+                location.href = '#' + code
                 $("#customize").empty()
-                $(`#${code}`).click();
-                if (!$(`#${code}`).is(':checked')) {
-                    $(`#${code}`).click();
-                }
+                $(`#${code} .checked-switch`).is(':checked') || $(`#${code} .checked-switch`).click()
             });
         }
     }
