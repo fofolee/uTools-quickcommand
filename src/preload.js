@@ -235,26 +235,25 @@ quickcommand = {
     },
 
     // 更新选项列表
-    updateSelectList: function (selects) {
+    updateSelectList: function (opt, id) {
         if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
         let data = $('#selectBox').data('options')
         let num = data.length
+        typeof id == 'undefined' && (id = num)
+        if (id > num) throw 'id 不能大于当前列表数'
         let optionType = $('#selectBox').data('type')
-        selects instanceof Array || (selects = [selects])
-        let item
-        selects.forEach(s => {
-            item = {id: num++}
-            if (optionType == 'json') {
-                item.text = ''
-                Object.keys(s).forEach(k => item[k] = s[k])
-                s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
-                s.title && (item.text += `<div class="title">${s.title}</div>`)
-                s.description && (item.text += `<div class="description">${s.description}</div>`)
-            } else {
-                item.text = s
-            }
-            data.push(item)
-        })
+        let item = { id: id }
+        if (optionType == 'json') {
+            item.text = ''
+            if (!(opt instanceof Object)) throw '更新的选项格式与当前的不一致'
+            Object.keys(opt).forEach(k => item[k] = opt[k])
+            opt.icon && (item.text += `<div class="icon"><img src="${opt.icon}"></div>`)
+            opt.title && (item.text += `<div class="title">${opt.title}</div>`)
+            opt.description && (item.text += `<div class="description">${opt.description}</div>`)
+        } else {
+            item.text = opt
+        }
+        data[id] && (data[id] = item) || data.push(item)
         $('#selectBox').data('options', data).val(null).trigger('change')
         $("#quickselect .select2-search__field").trigger('input')
         modWindowHeight($('.select2-results').outerHeight())
