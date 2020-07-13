@@ -790,6 +790,9 @@ li.CodeMirror-hint {
     color: rgba(0, 0, 0, 0.5);
     line-height: 20px;
     font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 #quickselect .select2-results__option .icon {

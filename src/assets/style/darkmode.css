@@ -103,6 +103,10 @@
     background: #585958;
 }
 
+#quickselect .select2-results__option .description {
+    color: rgba(202, 202, 202, 0.5);
+}
+
 #options #customize .select2-results__option--selected,
 #quickselect .select2-results__option--selected {
     background-color: #3e3e3e;
