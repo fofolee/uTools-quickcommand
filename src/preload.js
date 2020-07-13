@@ -164,7 +164,6 @@ quickcommand = {
             opt.optionType || (opt.optionType = 'plaintext')
             typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
             typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
-            typeof opt.closeOnSelect == 'undefined' && (opt.closeOnSelect = true)
             if ($('#quickselect').length) $('#quickselect').remove()
             $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
             let item, data = []
@@ -187,7 +186,6 @@ quickcommand = {
                 // data: data,
                 width: "100%",
                 dropdownParent: $("#quickselect"),
-                closeOnSelect: opt.closeOnSelect,
                 // 支持无限滚动
                 ajax: {
                     transport: (params, success, failure) => {
@@ -223,12 +221,10 @@ quickcommand = {
             $('#selectBox').on('select2:select', function (e) {
                 let result = $('#selectBox').data('options')[$(this).val()]
                 delete result.selected
+                $('#selectBox').off('select2:select')
+                utools.removeSubInput()
+                $("#quickselect").remove()
                 reslove(result)
-                if (opt.closeOnSelect) {
-                    $('#selectBox').off('select2:select')
-                    utools.removeSubInput()
-                    $("#quickselect").remove()
-                }
             })
           
         });
