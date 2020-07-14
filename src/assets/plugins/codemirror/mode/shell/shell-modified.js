@@ -32,19 +32,21 @@
                 token = editor.getTokenAt(cur);
             if (token.string == "") return
             // 关键字提示
-            var hints = commonAtoms.concat(commonKeywords, commonCommands)
-            var localCommands = JSON.parse(localStorage['shellCommands']).filter(x => !hints.includes(x))
-            hints = hints.concat(localCommands).filter(x => x.slice(0, token.string.length) == token.string)
+            var hints = [], tokenstring = token.string.toUpperCase()
+            var localCommands = JSON.parse(localStorage['shellCommands'])
+            commonAtoms.concat(commonKeywords, commonCommands, localCommands).forEach(x => {
+                if (x.toUpperCase().slice(0, token.string.length) == tokenstring && !hints.includes(x)) hints.push(x)
+            })
             // 特殊变量提示
             var specialVars = localStorage['specialVars']
             if (specialVars) specialVars.split(',').forEach(s => {
-                if (s.toUpperCase().slice(2, token.string.length + 2) == token.string.toUpperCase()) hints.push(s)
+                if (s.toUpperCase().slice(2, token.string.length + 2) == tokenstring) hints.push(s)
             })
             // 本地单词提示
             var anyword = CodeMirror.hint.anyword(editor, options).list
             anyword.forEach(a => {
                 if (!hints.includes(a)) hints.push(a)
-            }) 
+            })
             return {
                 list: hints,
                 from: CodeMirror.Pos(cur.line, token.start),
