@@ -38,11 +38,11 @@ const shortCodes = [
     },
 
     keyTap = (key, ...modifier) => utools.simulateKeyboardTap(key, ...modifier),
-    
+
     copyTo = text => {
         electron.clipboard.writeText(text)
     },
-        
+
     send = text => {
         copyTo(text);
         quickcommand.simulatePaste();
@@ -226,7 +226,7 @@ quickcommand = {
                 $("#quickselect").remove()
                 reslove(result)
             })
-          
+
         });
     },
 
@@ -325,7 +325,7 @@ let modWindowHeight = height => {
 }
 
 // 屏蔽危险函数
-var getuToolsLite = () => {
+let getuToolsLite = () => {
     var utoolsLite = Object.assign({}, utools)
     delete utoolsLite.db
     delete utoolsLite.removeFeature
@@ -333,7 +333,7 @@ var getuToolsLite = () => {
     return utoolsLite
 }
 
-var getSandboxFuns = () => {
+let getSandboxFuns = () => {
     var sandbox = {
         utools: getuToolsLite(),
         quickcommand: quickcommand,
@@ -352,7 +352,7 @@ var getSandboxFuns = () => {
     return sandbox
 }
 
-runCodeInVm = (cmd, cb, payload = "") => {
+let createNodeVM = (payload = "") => {
     var sandbox = getSandboxFuns()
     sandbox.quickcommand.payload = payload
     const vm = new NodeVM({
@@ -364,33 +364,37 @@ runCodeInVm = (cmd, cb, payload = "") => {
         env: process.env,
         sandbox: sandbox,
     });
+    return vm
+}
 
-    var parseItem = item => {
-        if (typeof (item) == "object") {
-            if (Buffer.isBuffer(item)) {
-                var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
-                if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
-                return bufferString + ']'
-            } else {
-                try {
-                    var cache = [];
-                    var string = JSON.stringify(item, (key, value) => {
-                        if (typeof value === 'object' && value !== null) {
-                            if (cache.indexOf(value) !== -1) return
-                            cache.push(value);
-                        }
-                        return value;
-                    }, '\t')
-                    if (string != "{}") return string
-                } catch (error) { }
-            }
-        } else if (typeof (item) == "undefined") {
-            return "undefined"
+let parseItem = item => {
+    if (typeof (item) == "object") {
+        if (Buffer.isBuffer(item)) {
+            var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
+            if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
+            return bufferString + ']'
+        } else {
+            try {
+                var cache = [];
+                var string = JSON.stringify(item, (key, value) => {
+                    if (typeof value === 'object' && value !== null) {
+                        if (cache.indexOf(value) !== -1) return
+                        cache.push(value);
+                    }
+                    return value;
+                }, '\t')
+                if (string != "{}") return string
+            } catch (error) { }
         }
-        return item.toString()
+    } else if (typeof (item) == "undefined") {
+        return "undefined"
     }
-    
-    //重定向 console 
+    return item.toString()
+}
+
+runCodeInVm = (cmd, cb, payload = "") => {
+    const vm = createNodeVM(payload)
+    //重定向 console
     vm.on('console.log', stdout => {
         console.log(stdout);
         cb(parseItem(stdout), null)
@@ -407,7 +411,7 @@ runCodeInVm = (cmd, cb, payload = "") => {
         console.log(error)
         cb(null, error.toString())
     }
-    
+
     let cbUnhandledError = e => {
         removeAllListener()
         console.log(e)
@@ -419,7 +423,7 @@ runCodeInVm = (cmd, cb, payload = "") => {
         console.log(e)
         cb(null, e.reason.toString())
     }
-    
+
     let removeAllListener = () => {
         window.removeEventListener('error', cbUnhandledError)
         window.removeEventListener('unhandledrejection', cbUnhandledRejection)
@@ -443,7 +447,7 @@ getShellCommand = () => {
         fs.readdir(d, (err, files) => {
             if (!err) {
                 var commands = files.filter(x => x[0] != "." || x[0] != '[')
-                localStorage['shellCommands'] = JSON.stringify(JSON.parse(localStorage['shellCommands']).concat(commands))                    
+                localStorage['shellCommands'] = JSON.stringify(JSON.parse(localStorage['shellCommands']).concat(commands))
             }
         })
     })
@@ -460,7 +464,7 @@ getCmdCommand = () => {
             if (!err) {
                 var commands = []
                 files.forEach(x => (x.length > 4 && x.slice(-4) == '.exe') && commands.push(x.slice(0, -4)))
-                localStorage['cmdCommands'] = JSON.stringify(JSON.parse(localStorage['cmdCommands']).concat(commands))                    
+                localStorage['cmdCommands'] = JSON.stringify(JSON.parse(localStorage['cmdCommands']).concat(commands))
             }
         })
     })
@@ -478,7 +482,7 @@ getPythonMods = () => {
                 if (!err) {
                     var mods = []
                     m.forEach(d => (/\.py$|^[^-.]+$/.test(d)) && (d = d.split('.py')[0]) && (!mods.includes(d)) && mods.push(d))
-                    localStorage['pyModules'] = JSON.stringify(JSON.parse(localStorage['pyModules']).concat(mods))                    
+                    localStorage['pyModules'] = JSON.stringify(JSON.parse(localStorage['pyModules']).concat(mods))
                 }
             })
         })
@@ -632,7 +636,7 @@ getSelectFile = hwnd =>
                 reslove(stdout.trim());
             });
         }
-    })   
+    })
 
 special = cmd => {
     // 判断是否 windows 系统
@@ -702,14 +706,14 @@ runCodeFile = (cmd, option, terminal, callback) => {
                 cmdline = `start cmd /k ${cmdline}`
             }
         } else if(utools.isMacOs()){
-            var appleScript = `if application "Terminal" is running then 
-            tell application "Terminal"   
-                do script "clear;${cmdline.replace(/"/g, `\\"`)}"             
-                activate                          
-            end tell                              
-        else                                      
-            tell application "Terminal"   
-                do script "clear;${cmdline.replace(/"/g, `\\"`)}" in window 1 
+            var appleScript = `if application "Terminal" is running then
+            tell application "Terminal"
+                do script "clear;${cmdline.replace(/"/g, `\\"`)}"
+                activate
+            end tell
+        else
+            tell application "Terminal"
+                do script "clear;${cmdline.replace(/"/g, `\\"`)}" in window 1
                 activate
             end tell
         end if`;
@@ -718,7 +722,7 @@ runCodeFile = (cmd, option, terminal, callback) => {
             return message('Linux 不支持在终端输出')
         }
     }
-    child = child_process.spawn(cmdline, { encoding: 'buffer', shell: true })            
+    child = child_process.spawn(cmdline, { encoding: 'buffer', shell: true })
     // var chunks = [],
     //     err_chunks = [];
     console.log('running: ' + cmdline);
