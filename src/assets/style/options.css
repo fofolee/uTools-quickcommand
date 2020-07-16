@@ -273,21 +273,14 @@ body {
     background: #00af2c;
     border-radius: 4px;
     color: white;
-    padding: 2px 5px;
+    padding: 2px 10px;
     margin: 0px 5px;
     cursor: pointer;
 }
 
 #options .footBtn.danger {
     float: left;
-    /* right: 5px;
-    bottom: 2px; */
-    border-radius: 4px;
     background: #df3f54;
-    color: white;
-    padding: 2px 5px;
-    margin: 0px 5px;
-    cursor: pointer;
 }
 
 #options .footBtn:hover {
@@ -507,7 +500,7 @@ input::-webkit-input-placeholder {
     bottom: 0;
     z-index: 9;
 }
-  
+
 
 #options #customize .CodeMirror-scroll {
     box-sizing: unset;
