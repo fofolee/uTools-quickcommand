@@ -4,7 +4,7 @@
             dbData = db ? db.data : {};
         return dbData;
     }
-    
+
     putDB = (code, pushData, id) => {
         var db = utools.db.get(id);
         if (db) {
@@ -18,39 +18,53 @@
             utools.db.put({ _id: id, data: data });
         }
     }
-    
-    // 导入
-    let importCommand = file => {
-        var options = file ? { type: 'file', argvs: file } : { type: 'dialog', argvs: { filters: [{ name: 'json', extensions: ['json'] }] } }
-        options.readfile = true
-        var fileinfo = getFileInfo(options)
-        if (!fileinfo) return false
+
+    let isJsonQc = obj => {
+        var keys = ["features", "program", "cmd", "output"]
+        if (keys.filter(x => typeof obj[x] == 'undefined').length) return false
+        return true
+    }
+
+    // 判断是否为可导入的快捷命令
+    let quickCommandParser = json => {
         try {
-            var pushData = JSON.parse(fileinfo.data);
+            var qc = JSON.parse(json)
         } catch (error) {
-            quickcommand.showMessageBox("格式错误", "error")
             return false
         }
+        console.log(qc);
+        if (isJsonQc(qc)) return { single: true, qc: qc }
+        else if (!Object.values(qc).filter(q => !isJsonQc(q)).length) return { single: false, qc: qc }
+        else return false
+    }
+
+    // 导入
+    importCommand = file => {
+        var pushData, clipboardText = clipboardReadText()
+        if (!file) pushData = quickCommandParser(clipboardText)
+        if (!pushData) {
+            var options = file ? { type: 'file', argvs: file } : { type: 'dialog', argvs: { filters: [{ name: 'json', extensions: ['json'] }] } }
+            options.readfile = true
+            var fileinfo = getFileInfo(options)
+            if (!fileinfo) return
+            pushData = quickCommandParser(fileinfo.data)
+            if (!pushData) return false
+        }
         // 单个命令导入
-        if (typeof(pushData.features) == 'object') {
-            var code = pushData.features.code;
-            putDB(code, pushData, 'customFts');
-            return true
+        if (pushData.single) {
+            var code = pushData.qc.features.code;
+            putDB(code, pushData.qc, 'customFts');
         // 多个命令导入
         } else {
-            if (typeof(Object.values(pushData)[0].features) == 'object') {
-                for (var code of Object.keys(pushData)) {
-                    putDB(code, pushData[code], 'customFts');
-                }
-                return true
+            for (var code of Object.keys(pushData.qc)) {
+                putDB(code, pushData.qc[code], 'customFts');
             }
         }
-        quickcommand.showMessageBox("格式错误", "error")
-        return false
+        return true
     }
-    
+
     let exportAll = () => {
-        json = utools.db.get('customFts').data,
+        let jsonQc = utools.db.get('customFts').data,
             options = {
                 title: '选择保存位置',
                 defaultPath: 'quickCommand',
@@ -58,9 +72,10 @@
                     { name: 'json', extensions: ['json'] },
                 ]
             };
-        window.saveFile(options, JSON.stringify(json));
+        Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
+        window.saveFile(options, JSON.stringify(jsonQc));
     }
-    
+
     let clearAll = () => {
         Swal.fire({
             text: '将会清空所有命令，请确认！',
@@ -78,7 +93,7 @@
               }
           })
     }
-    
+
     programs = {
         shell: {
             bin: 'bash',
@@ -165,7 +180,7 @@
             color: '#438eff'
         }
     }
-    
+
     showOptions = (tag = "默认") => {
         $("#options").empty().fadeIn();
         var currentFts = utools.getFeatures(),
@@ -187,28 +202,28 @@
             }
             var cmds = '', rules = features.cmds[0].match;
             if (features.cmds[0].type == 'regex') {
-                if (rules.length > 15) rules = rules.slice(0, 15) + '...';
+                if (rules.length >  14) rules = rules.slice(0,  14) + '...';
                 cmds = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
             } else if (features.cmds[0].type == 'window') {
                 cmds += `<div class="topchild">窗口</div><div>`
                 if (!rules) {
                     cmds += `<span class="keyword win">所有窗口</span>`
                 } else if (rules.title || rules.class) {
-                    cmds += `<span class="keyword win">${JSON.stringify(rules).slice(0, 15) + '...'}</span>`;
+                    cmds += `<span class="keyword win">${JSON.stringify(rules).slice(0,  14) + '...'}</span>`;
                 } else if (rules.app) {
                     rules = rules.app.join(",")
-                    if(rules.length > 15) rules = rules.slice(0, 15) + '...';
+                    if(rules.length >  14) rules = rules.slice(0,  14) + '...';
                     rules.split(',').forEach(r => {
                         cmds += `<span class="keyword win">${r}</span>`;
-                    });   
-                } 
+                    });
+                }
                 cmds += `</div>`
             } else if (features.cmds[0].type == 'files') {
-                if (rules.length > 15) rules = rules.slice(0, 15) + '...';
+                if (rules.length >  14) rules = rules.slice(0,  14) + '...';
                 cmds = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
             } else {
                 rules = features.cmds.join(",")
-                if(rules.length > 15) rules = rules.slice(0, 15) + '...';
+                if(rules.length >  14) rules = rules.slice(0,  14) + '...';
                 cmds += `<div class="topchild">关键字</div><div>`
                 rules.split(',').forEach(r => {
                     cmds += `<span class="keyword">${r}</span>`;
@@ -229,11 +244,11 @@
             <td><img class="logo" src="${features.icon}"></td>
             <td>
                 <div class="topchild">${features.explain}</div>
-                <div>      
+                <div>
                     <span class="info">
                     <span style="margin: 0; font-size: smaller; color: ${fts.program == 'quickcommand' ? "#00af2c;" : programs[fts.program].color}">●</span>
                     ${fts.program} | ${platformIcons.join('')}
-                </div>  
+                </div>
             </td>
             <td>${cmds}</td>
             <td>
@@ -245,8 +260,7 @@
             </td>
             <td>
                 <span class="Btn editBtn"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
-                <span class="Btn exportBtn"><img src="img/export.svg"></span>
-                ${tag == "默认" ? "" : `<span class="Btn delBtn"><img src="img/del.svg"></span>`}
+                ${(tag == "默认" && !fofoCommon.isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
             </td>`
         })
         featureList += `</tr></table></div>`
@@ -257,17 +271,18 @@
         </div>`
         var footer = `
         <div class="foot">
-            <div id="add" class="footBtn">添加命令</div>
+            <div id="add" class="footBtn">新建命令</div>
             <div id="import" class="footBtn">导入命令</div>
+            <div id="getShares" class="footBtn">获取分享</div>
+            <div id="viewHelps" class="footBtn">查看帮助</div>
             <div id="exportAll" class="footBtn">全部导出</div>
-            <div id="clear" class="footBtn danger">全部删除</div>
-            <div id="disableAll" class="footBtn danger">全部禁用</div>
-            <div id="enableAll" class="footBtn">全部启用</div>
-            <!--<div id="viewHelps" class="footBtn">查看帮助</div>-->
+            <div id="enableAll" class="footBtn">启用本页</div>
+            <div id="clear" class="footBtn danger">清空数据</div>
+            <div id="disableAll" class="footBtn danger">禁用本页</div>
         </div>`
         $("#options").append(sidebar + featureList + footer)
     }
-    
+
     let showCustomize = (readonly = false) => {
         $("#customize").remove();
         let options = `<option>${Object.keys(programs).join('</option><option>')}</option>`
@@ -386,7 +401,7 @@
         if (width) options.width = width
         return options
     }
-    
+
     let createTypeSelect2 = (width = false) => {
         var data = [
             {
@@ -412,14 +427,14 @@
         ]
         $('#type').select2(getSelect2Option(data, width));
     }
-   
+
     let createProgramSelect2 = (width, dropdownAutoWidth = false) => {
         var programStyled = p => `<img src="logo/${p}.png"><span>${p}</span>`
         var data = [{ id: "quickcommand", text: 'quickcommand', html: programStyled('quickcommand') }]
         data = data.concat(Object.keys(programs).map(x => { return { id: x, text: x, html: programStyled(x) } }))
         $('#program').select2(getSelect2Option(data, width, dropdownAutoWidth));
     }
-    
+
     let createEditor = () => {
         window.editor = CodeMirror.fromTextArea(document.getElementById("cmd"), {
             lineNumbers: true,
@@ -452,15 +467,15 @@
                 "Shift-Alt-Down": "duplicateLine"
             }
         });
-    
+
         window.editor.on("change", showHint);
         window.editor.setOption("mode", 'javascript');
     }
-    
+
     showHint = () => {
         editor.showHint({ completeSingle: false });
     }
-    
+
     let beautifyCode = () => {
         if ($("#customize").is(":parent")) {
             var cmd = window.editor.getValue()
@@ -480,8 +495,8 @@
             }
         }
     }
-    
-    
+
+
     // 获取特殊变量
     let getSpecialVars = () => {
         var specialVars = []
@@ -491,7 +506,7 @@
         })
         localStorage['specialVars'] = specialVars
     }
-    
+
     let typeCheck = () => {
         var type = $("#type").val();
         switch (type) {
@@ -523,19 +538,19 @@
         }
         getSpecialVars()
     }
-    
+
     let clearAllFeatures = () => {
         for (var fts of utools.getFeatures()) {
             utools.removeFeature(fts.code)
         }
     }
-    
+
     let hasCustomIcon = () => {
         var src = $("#icon").attr('src');
         var iconame = $("#iconame").val();
         return /data:image\/png;base64,/.test(src) || iconame
     }
-    
+
     let programCheck = () => {
         let mode = $('#program').val();
         $('.customscript').hide();
@@ -573,8 +588,8 @@
         }
         window.editor.setOption("mode", mode);
     }
-    
-    // 合规性校验  
+
+    // 合规性校验
     let cmdCheck = (type, cmd) => {
         var blacklist
         switch (type) {
@@ -601,7 +616,7 @@
             return true
         }
     }
-    
+
     // 开关
     $("#options").on('change', 'input[type=checkbox]', function () {
         var customFts = getDB('customFts'),
@@ -610,16 +625,21 @@
             utools.setFeature(customFts[code].features);
         }
     });
-    
+
     // 底部功能按钮
     $("#options").on('click', '.footBtn', function () {
         switch ($(this).attr('id')) {
-            case 'viewHelps': utools.createBrowserWindow('./helps/help.html');
+            case 'viewHelps': utools.createBrowserWindow('./helps/HELP.html');
+                break;
+            case 'getShares': getSharedQCFromYuQue();
                 break;
             case 'add': showCustomize();
                 $("#customize").animate({ top: '0px' });
                 break;
-            case 'import': importCommand() && showOptions();
+            case 'import':
+                var success = importCommand()
+                if (success) showOptions() || quickcommand.showMessageBox("导入成功")
+                else if (success == false) quickcommand.showMessageBox("导入失败，格式错误", "error")
                 break;
             case 'enableAll': $(".checked-switch:not(:checked)").click();
                 break;
@@ -631,14 +651,18 @@
                 break;
         }
     })
-    
-    // 编辑
-    $("#options").on('click', '.editBtn', function () {
-        var readonly = false,
-            code = $(this).parents('tr').attr('id'),
-            data = utools.db.get("customFts").data[code],
-            cmds = data.features.cmds[0],
-            platform = data.features.platform;
+
+    let editCurrentCommand = data => {
+        let code = data.features.code
+        let cmds = data.features.cmds[0]
+        let platform = data.features.platform
+        let readonly = false
+        let extraInfo = {
+            authorName: data.authorName,
+            authorId: data.authorId,
+            docId: data.docId
+        }
+        $('#options').data('extraInfo', extraInfo)
         if (data.tags && data.tags.includes("默认")) readonly = true
         showCustomize(readonly);
         data.tags && $('#tags').val(data.tags).trigger('change')
@@ -674,8 +698,15 @@
         $("#customize").animate({ top: '0px' }, () => {
             window.editor.replaceRange(data.cmd.slice(2000), {line: Infinity});
         });
+    }
+
+    // 编辑
+    $("#options").on('click', '.editBtn', function () {
+        let code = $(this).parents('tr').attr('id')
+        let data = utools.db.get("customFts").data[code]
+        editCurrentCommand(data)
     })
-    
+
     // 添加模拟按键
     $("#options").on('click', '#addKey', function () {
         $("#addKey").text("▶ 录制中").addClass('record')
@@ -689,12 +720,12 @@
             $("#addKey").text("﹢按键").removeClass('record')
         });
     })
-    
+
     // quickCommand的帮助
     $("#options").on('click', '#showHelp', function () {
         utools.createBrowserWindow('./helps/quickcommand.html')
     })
-    
+
     // 添加动作
     $("#options").on('click', '#addAction', function () {
         var html = `
@@ -718,7 +749,7 @@
             title: "预设动作",
             onBeforeOpen: () => {
                 $('#actionType').change(function () {
-                    $('#actionArgs').attr('placeholder', $(this).find(`[value=${$(this).val().replace('.', '\\.')}]`).attr('args'))      
+                    $('#actionArgs').attr('placeholder', $(this).find(`[value=${$(this).val().replace('.', '\\.')}]`).attr('args'))
                 })
             },
             html: html,
@@ -733,21 +764,140 @@
             }
         })
     })
-    
+
+    let setYuQueToken = async () => {
+        let yuQueToken = await quickcommand.showInputBox(["请输入 Token"])
+        if (!yuQueToken) return
+        yuQueToken = yuQueToken[0]
+        yuQueClient.defaults.headers['X-Auth-Token'] = yuQueToken
+        try {
+            let res = await yuQueClient('user')
+            let authorId = res.data.data.account_id
+            let authorName = res.data.data.name
+            putDB('yuQueToken', yuQueToken, 'extraInfo')
+            putDB('authorName', authorName, 'extraInfo')
+            putDB('authorId', authorId, 'extraInfo')
+            quickcommand.showMessageBox("设置成功~")
+        } catch (e) {
+            quickcommand.showMessageBox('Token 校验失败', "error")
+        }
+    }
+
+    let createShareMenu = jsonQc => {
+        let menu = ['复制到剪贴板', '导出到文件', '', '设置 Token']
+        let extraInfo = getDB('extraInfo')
+        if (jsonQc.authorId) {
+            if (jsonQc.authorId == extraInfo.authorId) menu[2] = '更新分享'
+            else menu[2] = '分享自：' + jsonQc.authorName
+        } else {
+            if (extraInfo.yuQueToken) menu[2] = '分享命令'
+            else menu[2] = '☛ 分享命令'
+        }
+        return menu
+    }
+
     // 导出
-    $("#options").on('click', '.exportBtn', function () {
-        var code = $(this).parents('tr').attr('id'),
-            json = getDB('customFts')[code],
-            options = {
-                title: '选择保存位置',
-                defaultPath: `${json.features.explain}.json`,
-                filters: [
-                    { name: 'json', extensions: ['json'] },
-                ]
-            };
-        window.saveFile(options, JSON.stringify(json));
+    $("#options").on('click', '.exportBtn', async function () {
+        var code = $(this).parents('tr').attr('id')
+        var jsonQc = getDB('customFts')[code]
+        var stringifyQc = JSON.stringify(jsonQc, null, 4)
+        var choise = await quickcommand.showButtonBox(createShareMenu(jsonQc))
+        switch (choise.text) {
+            case '复制到剪贴板':
+                utools.copyText(stringifyQc) && quickcommand.showMessageBox('已复制到剪贴板')
+                break;
+            case '导出到文件':
+                window.saveFile({
+                    title: '选择保存位置',
+                    defaultPath: `${jsonQc.features.explain}.json`,
+                    filters: [ { name: 'json', extensions: ['json'] }, ]
+                }, stringifyQc)
+                break;
+            case '分享命令':
+                var result = await shareQCToYuQue(jsonQc)
+                result && quickcommand.showMessageBox('分享成功')
+                break;
+            case '更新分享':
+                var result = await shareQCToYuQue(jsonQc, true)
+                result && quickcommand.showMessageBox('分享成功')
+                break;
+            case '☛ 分享命令':
+                utools.createBrowserWindow('./helps/HELP.html?#分享命令')
+                break;
+            case '设置 Token':
+                await setYuQueToken()
+                break;
+        }
     })
-    
+
+    // 一键分享到语雀
+    let shareQCToYuQue = async (jsonQc, update = false) => {
+        let extraInfo = getDB('extraInfo')
+        if (!extraInfo.yuQueToken) return quickcommand.showMessageBox("请先设置 Token，点击底部「查看帮助」可查看 Token 设置方法", "error")
+        jsonQc.authorId = extraInfo.authorId
+        jsonQc.authorName = extraInfo.authorName
+        let stringifyQc = JSON.stringify(jsonQc, null, 4)
+        if (stringifyQc.length > 5000000) return quickcommand.showMessageBox('命令大小超过5M无法分享，请检查图标或脚本内容是否过大', "error")
+        let platform = jsonQc.platform ? platform.join(" ") : "win32 darwin linux"
+        let type = jsonQc.features.cmds[0].type
+        let tags = jsonQc.tags ? jsonQc.tags.join(' ') : ""
+        type || (type = 'keywords')
+        let parameters = {
+            title: jsonQc.features.explain,
+            slug: jsonQc.features.code,
+            public: 1,
+            format: "markdown",
+            body: '```json\n' + stringifyQc + '\n```',
+            custom_description: `作者：${jsonQc.authorName} | 环境：${jsonQc.program} | 匹配：${type} | 平台：${platform} | 标签：${tags}`
+        }
+        yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
+        let res
+        try {
+            if (update) res = await yuQueClient.put('repos/fofolee/em2rng/docs/' + jsonQc.docId, parameters)
+            else res = await yuQueClient.post('repos/fofolee/em2rng/docs', parameters)
+            if (res.data.data) {
+                jsonQc.docId = res.data.data.id
+                putDB(jsonQc.features.code, jsonQc, 'customFts');
+                return jsonQc
+            } else {
+                return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
+            }
+        } catch (error) {
+            return quickcommand.showMessageBox(error, "error")
+        }
+    }
+
+    getSharedQCFromYuQue = async () => {
+        $('#options').hide()
+        let extraInfo = getDB('extraInfo')
+        if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
+        let res = await yuQueClient('repos/fofolee/em2rng/docs')
+        let docs = res.data.data.map(d => {
+            return {
+                title: d.title,
+                description: d.custom_description,
+                slug: d.slug,
+                icon: d.last_editor.avatar_url
+            }
+        })
+        let choise = await quickcommand.showSelectList(docs, { optionType: 'json' })
+        let doc = await yuQueClient(`repos/fofolee/em2rng/docs/${choise.slug}?raw=1`)
+        let body = doc.data.data.body
+        let stringifyQc = body.match(/```json([\s\S]*)```/)[1]
+        let qc = JSON.parse(stringifyQc)
+        $('#options').show()
+        qc.docId = doc.data.data.id
+        editCurrentCommand(qc)
+        utools.setExpendHeight(600)
+    }
+
+    $("#out").on('click', '#importSharedQc', function () {
+        importCommand() ? quickcommand.showMessageBox("导入成功") : quickcommand.showMessageBox("导入失败，格式错误", "error")
+        showOptions()
+        utools.setExpendHeight(600)
+        $('#out').empty()
+    })
+
     // 删除
     $("#options").on('click', '.delBtn', function () {
         Swal.fire({
@@ -772,7 +922,7 @@
               }
           })
     })
-    
+
     // 选择图标
     $("#options").on('click', '#icon', function () {
         var options = {
@@ -785,10 +935,10 @@
         var file = getFileInfo({ type: 'dialog', argvs: options, readfile: false })
         if (file) {
             $("#iconame").val(file.name);
-            $("#icon").attr('src', file.path); 
+            $("#icon").attr('src', file.path);
         }
     })
-        
+
     let SaveCurrentCommand = async () => {
         if ($('#tags').is(":parent")) {
             var type = $('#type').val(),
@@ -839,7 +989,7 @@
                     "label": desc,
                     "type": "window"
                 }
-                if (rule) { 
+                if (rule) {
                     try {
                         cmdOfWin.match = JSON.parse(rule)
                     } catch (error) {
@@ -870,7 +1020,8 @@
             var platform = []
             $('.platform').not('.disabled').each(function() { platform.push($(this).attr('id')) })
             // 添加特性
-            pushData = {
+            var extraInfo = $('#options').data('extraInfo')
+            var pushData = {
                 features: {
                     "code": code,
                     "explain": desc,
@@ -882,7 +1033,10 @@
                 cmd: cmd,
                 output: output,
                 hasSubInput: hasSubInput,
-                scptarg: scptarg
+                scptarg: scptarg,
+                authorId: extraInfo.authorId,
+                authorName: extraInfo.authorName,
+                docId: extraInfo.docId
             }
             if (tags) pushData.tags = tags
             if (program == 'custom') {
@@ -909,11 +1063,13 @@
                 showOptions(redirectTag);
                 location.href = '#' + code
                 $("#customize").empty()
-                $(`#${code} .checked-switch`).is(':checked') || $(`#${code} .checked-switch`).click()
+                let checkSwitch = $(`#${code} .checked-switch`)
+                checkSwitch.click()
+                checkSwitch.is(':checked') || checkSwitch.click()
             });
         }
     }
-    
+
     // 显示运行结果
     let showRunResult = (content, raw, success) => {
         var options, position, showClass, hideClass, maxlength = 100000
@@ -953,7 +1109,7 @@
             success ? swalOneByOne(options) : Swal.fire(options)
         }
     }
-    
+
     let runCurrentCommand = async () => {
         if ($("#customize").is(":parent")) {
             var cmd = window.editor.getValue()
@@ -1012,17 +1168,17 @@
             }
         }
     }
-    
+
     let killCurrentCommand = () => {
     }
-    
+
     let quitCurrentCommand = () => {
         if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
             $("#customize").animate({ top: '100%' });
             $("#customize").empty()
         }
     }
-    
+
     let highlightIfKnown = ext => {
         var lang = Object.keys(programs).filter(p => programs[p].ext == ext)
         if (lang.length) {
@@ -1031,7 +1187,7 @@
             return lang[0]
         }
     }
-    
+
     showCodeEditor = file => {
         var customWindow = `
         <div id="customize">
@@ -1101,53 +1257,53 @@
             }
         }
     }
-    
+
     // 切换TAGS
     $("#options").on('click', '.sidebar li', function () {
         showOptions($(this).text());
     })
-    
+
     // 运行
     $("#options").on('click', '.cmdBtn.run, #runCode', function () {
         runCurrentCommand()
     })
-    
+
     // 格式化
     $("#options").on('click', '#beautifyCode', function () {
         beautifyCode()
     })
-    
+
     // 取消
     $("#options").on('click', '.cmdBtn.cancel', function () {
         quitCurrentCommand()
     })
-    
+
     // 保存
     $("#options").on('click', '.cmdBtn.save', function () {
         SaveCurrentCommand()
     })
-    
+
     // 语言选项改变时
     $("#options").on('change', '#program', function () {
         programCheck()
     })
-    
+
     // 变量选项改变时
     $("#options").on('change', '#vars', function () {
         $("#vars").css({'color':'black'})
         window.editor.replaceSelection($("#vars").val());
     })
-    
+
     $("#options").on('change', '#action', function () {
         $("#action").css({ 'color': 'black' })
     })
-    
+
     // 方式选项改变时
     $("#options").on('change', '#type', function () {
         // resetVars();
         typeCheck();
     })
-    
+
     $("#options").on('change', '#customext', function () {
         highlightIfKnown($('#customext').val())
     })
@@ -1159,19 +1315,19 @@
         } else {
             if ($('.disabled').length == 2) quickcommand.showMessageBox('至少保留一个平台', 'error')
             else $(this).addClass('disabled')
-        } 
+        }
     })
-    
+
     Mousetrap.bind('ctrl+s', () => {
         SaveCurrentCommand()
         return false
     });
-    
+
     Mousetrap.bind('ctrl+q', () => {
         quitCurrentCommand()
         return false
     });
-    
+
     Mousetrap.bind('ctrl+b', () => {
         runCurrentCommand()
         return false

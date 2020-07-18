@@ -85,7 +85,7 @@ quickcommand = {
     showInputBox: function (placeHolders) {
         return new Promise((reslove, reject) => {
             placeHolders || (placeHolders = [""])
-            if (!(placeHolders instanceof Array)) reject("参数类型错误：应为数组")
+            if (!(placeHolders instanceof Array)) return reject("参数类型错误：应为数组")
             utools.setExpendHeight(600)
             var html = ""
             var inputBoxNumbers = placeHolders.length
@@ -96,12 +96,15 @@ quickcommand = {
             var options = {
                 onBeforeOpen: () => {
                     document.getElementById(`inputBox0`).focus()
-                    $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
+                    $('.swal2-content').keydown(function (e) {
+                        e.which == 13 && swal.clickConfirm()
+                    })
+                    $(".output").is(":parent") ? utools.setExpendHeight(600) : modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
                 html: html,
                 focusConfirm: false,
                 showCancelButton: true,
-                backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
+                backdrop: utools.isDarkColors() ? '#ffffff26' : '#bbbbbb80',
                 preConfirm: () => {
                     for (let i = 0; i < inputBoxNumbers; i++) {
                         result.push(document.getElementById(`inputBox${i}`).value)
@@ -116,7 +119,7 @@ quickcommand = {
     // 显示选项按钮
     showButtonBox: function (buttons) {
         return new Promise((reslove, reject) => {
-            if (!(buttons instanceof Array)) reject("参数类型错误：应为数组")
+            if (!(buttons instanceof Array)) return reject("参数类型错误：应为数组")
             utools.setExpendHeight(600)
             var html = ``
             var buttonBoxNumbers = buttons.length
@@ -132,7 +135,7 @@ quickcommand = {
                     $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
                 html: html,
-                backdrop: utools.isDarkColors() ? '#fff0' : '#bbb',
+                backdrop: utools.isDarkColors() ? '#ffffff26' : '#bbbbbb80',
                 showConfirmButton: false
             }
             swalOneByOne(options)
@@ -146,21 +149,19 @@ quickcommand = {
             title: title,
             toast: true,
             position: 'top',
-            // timer: time,
+            timer: time,
             showConfirmButton: false,
-            onOpen: toast => {
-                // toast.addEventListener('mouseenter', Swal.stopTimer)
-                // toast.addEventListener('mouseleave', Swal.resumeTimer)
-                setTimeout(() => { Swal.clickConfirm() }, time);
-            }
+            // onBeforeOpen: () => {
+            //     setTimeout(() => { Swal.clickConfirm() }, time);
+            // }
         }
-        swalOneByOne(options)
+        swal.fire(options)
     },
 
     // 显示选项列表
     showSelectList: function (selects, opt = {}) {
         return new Promise((reslove, reject) => {
-            if (!(selects instanceof Array)) reject("参数类型错误：应为数组")
+            if (!(selects instanceof Array)) return reject("参数类型错误：应为数组")
             opt.optionType || (opt.optionType = 'plaintext')
             typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
             typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
@@ -168,15 +169,16 @@ quickcommand = {
             $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
             let item, data = []
             selects.forEach((s, i) => {
-                item = {id: i}
+                item = {}
                 if (opt.optionType == 'json') {
                     item.text = ''
                     Object.keys(s).forEach(k => item[k] = s[k])
+                    item.id = i
                     s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
                     s.title && (item.text += `<div class="title">${s.title}</div>`)
                     s.description && (item.text += `<div class="description">${s.description}</div>`)
                 } else {
-                    item.text = s
+                    item = {id: i, text: s}
                 }
                 data.push(item)
             })
@@ -296,7 +298,8 @@ quickcommand = {
                 var filebuffer = Buffer.from(res.data)
                 if (!filepath) reslove(filebuffer)
                 fs.writeFile(filepath, filebuffer, err => {
-                    err && reject(err) || reslove(filebuffer)
+                    if (err) reject(err)
+                    else reslove(filebuffer)
                 })
             }).catch(err => {
                 reject(err)
@@ -306,7 +309,7 @@ quickcommand = {
 }
 
 swalOneByOne = options => {
-    swal.getQueueStep() && Swal.insertQueueStep(options) || Swal.queue([options])
+    swal.getQueueStep() ? Swal.insertQueueStep(options) : Swal.queue([options])
 }
 
 let getSleepCodeByShell = ms => {
@@ -563,55 +566,13 @@ saveFile = (options, content) => {
     })
 }
 
-// 保存剪贴板
-// storeClip = () => {
-//     var formats = electron.clipboard.availableFormats("clipboard");
-//     if (formats.includes("text/plain")) {
-//         return ['text', electron.clipboard.readText()]
-//     }
-//     if (formats.includes("image/png") || formats.includes("image/jpeg")) {
-//         return ['image', electron.clipboard.readImage()]
-//     }
-//     var file;
-//     if (utools.isWindows()) {
-//         file = electron.clipboard.readBuffer('FileNameW').toString('ucs2').replace(/\\/g, '/');
-//         file = file.replace(new RegExp(String.fromCharCode(0), 'g'), '');
-//     } else {
-//         file = electron.clipboard.read('public.file-url').replace('file://', '');
-//     }
-//     if (file) {
-//         return ['file', file]
-//     }
-//     return []
-// }
-
-// 恢复剪贴板
-// restoreClip = historyData => {
-//     if (historyData[0] == 'text') {
-//         electron.clipboard.writeText(historyData[1]);
-//         return
-//     }
-//     if (historyData[0] == 'image') {
-//         electron.clipboard.writeImage(historyData[1]);
-//         return
-//     }
-//     if (historyData[0] == 'file') {
-//         utools.copyFile(historyData[1])
-//         return
-//     }
-//     electron.clipboard.writeText('')
-// }
-
-// getSelectText = () => {
-//     var historyData = storeClip();
-//     electron.clipboard.writeText('');
-//     quickcommand.simulateCopy();
-//     var selectText = electron.clipboard.readText()
-//     setTimeout(() => {
-//         restoreClip(historyData)
-//     }, 500);
-//     return selectText
-// }
+yuQueClient = axios.create({
+    baseURL: 'https://www.yuque.com/api/v2/',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': 'WNrd0Z4kfCZLFrGLVAaas93DZ7sbG6PirKq7VxBL'
+    }
+});
 
 getSelectFile = hwnd =>
     new Promise((reslove, reject) => {
@@ -619,7 +580,7 @@ getSelectFile = hwnd =>
             var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
             child_process.exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
                 if (err) reject(stderr)
-                reslove(iconv.decode(stdout, 'GBK').trim().replace(/\\/g, '/'));
+                else reslove(iconv.decode(stdout, 'GBK').trim().replace(/\\/g, '/'));
             })
         } else {
             var cmd = `osascript -e 'tell application "Finder" to set selectedItems to selection as alias list
@@ -633,10 +594,14 @@ getSelectFile = hwnd =>
             `
             child_process.exec(cmd, (err, stdout, stderr) => {
                 if (err) reject(stderr)
-                reslove(stdout.trim());
+                else reslove(stdout.trim());
             });
         }
     })
+
+clipboardReadText = () => {
+    return electron.clipboard.readText()
+},
 
 special = cmd => {
     // 判断是否 windows 系统
@@ -659,7 +624,7 @@ special = cmd => {
 
     // 获取剪切板的文本
     if (cmd.includes('{{ClipText}}')) {
-        let repl = electron.clipboard.readText();
+        let repl = clipboardReadText();
         cmd = cmd.replace(/\{\{ClipText\}\}/mg, repl)
     }
 
