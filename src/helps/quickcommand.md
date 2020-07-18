@@ -2,57 +2,80 @@
 
 ## quickcommand
 
-#### `showButtonBox(callback, buttons)`
+#### `showButtonBox(buttons)`
 
 - callback:  Function  回调函数
   - index: Integer  按钮的序号，从0开始
   - text: String  按钮的文本
 - buttons: Array  每一个元素对应一个按钮
+- 返回: Promise
+  - id: Integer  按钮的序号，从0开始
+  - text: String  按钮的文本
 
 显示一个按钮对话框，用来接收用户的输入
 
 **示例**
 
 ```js
-quickcommand.showButtonBox(({index, text})=>{
-  console.log(`选择了第${index+1}个按钮`)
-  console.log(`按钮的文本为${text}`)
-},["按钮1", "按钮2", "按钮3"])
+// then 写法
+quickcommand.showButtonBox(["按钮1", "按钮2", "按钮3"]).then(({ id, text }) => {
+    console.log(`选择了第${id+1}个按钮`)
+    console.log(`按钮的文本为${text}`)
+})
+
+// async 写法
+(async () =>{
+  let button = await quickcommand.showButtonBox(["按钮1", "按钮2", "按钮3"])
+  console.log(`选择了第${button.id+1}个按钮`)
+  console.log(`按钮的文本为${button.text}`)
+})()
+
+// 捕获错误
+quickcommand.showButtonBox().catch(e => {
+    console.log(e)
+})
 ```
 **实例**
 
 ```js
-# 截取自内置快捷命令： 文本处理
-quickcommand.showButtonBox(option => {
-    var i = option.index
-    console.log(textManipulation[i](text))
-    message('结果已复制到剪贴板')
-}, ["字数统计", "词频统计", "文本逆转", "\\和/互转", "全部大写", "全部小写",
-    "去除空格", "十六进制转字符", "字符转十六进制"
-])
-textManipulation = [ ... ]
+// 截取自内置快捷命令： 通过 find 查找文件
+quickcommand.showButtonBox(['打开文件', '在文件管理器中定位', '复制文件路径']).then(x => {
+    switch (x.id) {
+        case 0:
+            utools.shellOpenItem(file);
+            break;
+        case 1:
+            utools.shellShowItemInFolder(file);
+            break;
+        case 2:
+            utools.copyText(file);
+            break;
+        default:
+            break;
+    }
+})
 ```
 
-####`showInputBox(callback, placeHolders)`
+####`showInputBox(placeHolders)`
 
-- callback:  Function  回调函数
-  - values: Array  所以输入框的值
 - placeHolders: Array  每一个占位符对应一个输入框
+- 返回: Promise
+  - values: Array  所以输入框的值
 
 显示一个输入框界面，用来接用户的输入
 
 **示例**
 
 ```js
-quickcommand.showInputBox(values => {
-  console.log(`输入的内容分别为${values}`)
-},["输入框1", "输入框2", "输入框3"])
+quickcommand.showInputBox(["输入框1", "输入框2", "输入框3"]).then(values => {
+    console.log(`输入的内容分别为${values}`)
+})
 ```
 **实例**
 
 ```js
-# 截取自内置快捷命令： 文本替换
-quickcommand.showInputBox(inputs => {
+// 截取自内置快捷命令： 文本替换
+quickcommand.showInputBox(["要替换的内容，两边加 / 使用正则", "替换为的内容"]).then(inputs => {
     var search = inputs[0]
     var repl = inputs[1]
 	...
@@ -63,91 +86,144 @@ quickcommand.showInputBox(inputs => {
     var source = electron.clipboard.readText()
     source = source.replace(search, repl)
 	...
-}, ["要替换的内容，两边加 / 使用正则", "替换为的内容"])
+})
 ```
-####`showSelectList(callback, selects, options)`
+####`showSelectList(selects, options)`
 
-- callback:  Function  回调函数
-  - index: Integer  选择的序号，从0开始
-  - text: String  选择的文本
 - selects: Array  每一个元素对应一个列表选项
 - options: Array | undefined 列表的选项
   - placeholder: String 搜索框占位符
-  - enableHTML:  Boolean 选项是否支持html，默认为false
-  - closeOnSelect：Boolean 选择后是否关闭列表，默认为true
+  - optionType:  String 选项的格式，有`plaintext`、`html`、`json`三种，默认为`plaintext`
+- 返回: Promise
+  - id: Integer  选择的序号，从0开始
+  - text: String  选择的文本
+  - title/description/[…]: 当`optionType`为`json`时，对应`json`里的每一个属性 
 
-显示一个支持搜索的选项列表，类似于列表模式，但原理不同
+显示一个支持搜索的且可以动态更新的选项列表
+
+当指定`optionType`为`json`时，类似于插件开发的`列表模式`，`title`、`description`和`icon`分别表示标题、描述和图标，其中`title`为必备属性
 
 **示例**
 
 ```js
+// plaintext
 var opt = []
 for (var i = 0; i < 15; i++) {
+    // 每一个选项为文本格式
     opt.push(`选项` + i)
 }
-quickcommand.showSelectList(choise => {
+quickcommand.showSelectList(opt).then(choise => {
     console.log(`选择的选项为${choise.text}`)
-}, opt)
+})
+
+// json
+var opt = []
+for (var i = 0; i < 15; i++) {
+    // 每一个选项为 json 格式
+    opt.push({title: `选项${i}`, description: `选项${i}的描述`, abcd: `选项${i}的自定义属性`})
+}
+quickcommand.showSelectList(opt, {optionType: 'json'}).then(choise => {
+    console.log(`选择的选项为${choise.title}`)
+})
+
+// html
+var opt = []
+for (var i = 0; i < 15; i++) {
+    // 每一个选项为 html 格式
+    opt.push(`<div style="color: red">选项${i}</div>`)
+}
+quickcommand.showSelectList(opt, {optionType: 'html'}).then(choise => {
+    console.log(`选择的选项为${quickcommand.htmlParse(choise.text).body.innerText}`)
+})
 ```
 **实例**
 
 ```js
-# 截取自内置快捷命令： 离线插件
-const api = 'https://api.u-tools.cn/Plugins/Developer/allPlugins'
- axios(api).then(res => {
-     var document = quickcommand.htmlParse(res.data)
-     var doms = document.querySelectorAll('div[style]')
-     var divs = []
-     doms.forEach(d => {
-         d.querySelector('a').style.display = 'none'
-         d.querySelector('h3+div').style.color = '#9e9e9e'
-         d.querySelector('h3').style = "margin: 0; font-weight: normal"
-         divs.push(d.innerHTML)
-     })
-     quickcommand.showSelectList(x => {
-         var dom = quickcommand.htmlParse(x.text)
-         var href = dom.querySelector('a').href
-         var file = dom.querySelector('h3').innerText + '.upx'
-         var filepath = path.join(utools.getPath('downloads'), file)
-         quickcommand.downloadFile(href, filepath).then(() => {
-             utools.shellShowItemInFolder(filepath)
-         })
-     }, divs, { enableHTML: true, closeOnSelect: false })
- })
+// 截取自内置快捷命令： 文本处理
+let textManipulation = [ ... ]
+let text = quickcommand.payload
+let options = textManipulation.map(t => {
+    return {
+        title: t.name,
+        description: t.func(text)
+    }
+})
+
+quickcommand.showSelectList(options, { optionType: 'json' })
+    .then(choise => {
+        console.log(choise.description)
+        utools.copyText(choise.description)
+    })
+
+axios.post('http://fy.iciba.com/ajax.php?a=fy', `f=auto&t=auto&w=${text}`)
+    .then(res => {
+        let content = res.data.content
+        let trans = content.out ? content.out : content.word_mean
+        let opt = textManipulation[0]
+        opt.description = trans
+        quickcommand.updateSelectList(opt, 0)
+    })   
 ```
 
-####`showTextAera(callback, placeholder)`
+#### `updateSelectList(opt, id)`
 
-- callback:  Function  回调函数
-  - text: String  文本框的文本
+- opt:  String  要更新的选项
+- id: Integer  | undefined: 要更新的选项的序号，不赋值时则追加到最后一个选项后面
+
+动态更新当前的选项列表的选项。
+
+**示例**
+
+```js
+// 初始状态只有 1、2、3 三个选项
+quickcommand.showSelectList(['1','2','3']).then(x=>{
+  console.log(x)
+})
+
+// 1s 后追加一个选项
+quickcommand.setTimeout(()=>{
+  quickcommand.updateSelectList('4')
+}, 1000)
+
+// 2s 后更新第二个选项的值
+quickcommand.setTimeout(()=>{
+  quickcommand.updateSelectList('updated', 1)
+}, 2000)
+```
+
+####`showTextAera(placeholder)`
+
 - placeholder: String | undefined  文本框占位符
+- 返回: Promise
+  - text: String  文本框的文本
 
 显示一个文本框界面，用来接用户的输入
 
 **示例**
 
 ```js
-quickcommand.showTextAera(text=>{
+quickcommand.showTextAera("请输入文本").then(text=>{
   console.log(`输入的文本为${text}`)
-}, "请输入文本")
+})
 ```
 
  **实例** 
 
 ```js
-# 截取自内置快捷命令： vscode代码片段生成器
+// 截取自内置快捷命令： vscode代码片段生成器
 var snippet = {}
-quickcommand.showTextAera(code => {
+quickcommand.showTextAera("请输入代码片段").then(code => {
     snippet.body = code.split("\n")
-    quickcommand.showInputBox(inputs => {
-        snippet.prefix = inputs[1]
-        snippet.description = inputs[0]
-        var result = `"${inputs[0]}": ` + JSON.stringify(snippet, null, '\t')
-        console.log(result)
-        utools.copyText(result)
-        quickcommand.showMessageBox('已复制')
-    }, ["代码片段的描述", "触发代码片段的关键词"])
-}, ("请输入代码片段"))
+    quickcommand.showInputBox(["代码片段的描述", "触发代码片段的关键词"])
+        .then(inputs => {
+            snippet.prefix = inputs[1]
+            snippet.description = inputs[0]
+            var result = `"${inputs[0]}": ` + JSON.stringify(snippet, null, '\t')
+            console.log(result)
+            utools.copyText(result)
+            quickcommand.showMessageBox('已复制')
+        })
+})
 ```
 ####`showMessageBox(message, icon, time)`
 
@@ -217,15 +293,15 @@ console.log(`解析出来的a标签地址为${href}`)
 下载文件，也可单纯用于`http`请求，无论`defaultPath`是否定义，都将得到响应内容的`Buffer`，当`showDialog`为`false`且定义了`defaultPath`时，会下载文件为``defaultPath`，当`showDialog`为`true`时，会弹出保存文件对话框，`defaultPath`为对话框默认显示的文件名
 
 ```js
-# 返回http响应内容
+// 返回http响应内容
 quickcommand.downloadFile('https://www.baidu.com').then(r=>{
   console.log(r.toString())
 })
 
-# 下载文件到D:/
+// 下载文件到D:/
 quickcommand.downloadFile('https://res.u-tools.cn/currentversion/uTools-1.1.3.exe', 'D:/')
 
-# 下载文件，并弹出对话框询问保存路径
+// 下载文件，并弹出对话框询问保存路径
 quickcommand.downloadFile('https://res.u-tools.cn/currentversion/uTools-1.1.3.exe', 'uTools.exe', true)
 ```
 
@@ -238,7 +314,7 @@ quickcommand.downloadFile('https://res.u-tools.cn/currentversion/uTools-1.1.3.ex
  **示例** 
 
 ```js
-# 匹配模式为正则/划词时
+// 匹配模式为正则/划词时
 var text = quickcommand.payload
 console.log(`主输入框匹配的文本为${text}`)
 ```
@@ -273,7 +349,7 @@ quickcommand.kill(16084)
   - path
   - child_process
   - util
-  - axios [文档]( https://github.com/axios/axios )
+  - axios [文档]( https://www.kancloud.cn/yunye/axios/234845)
 - electron [文档]( http://www.electronjs.org/docs )
   - clipboard
   - contextBridge
@@ -289,18 +365,19 @@ quickcommand.kill(16084)
   - ~~removeFeature~~
   - ~~setFeature~~
 - quickcommand
-  - sleep: *ƒ (ms)*
-  - setTimeout: *ƒ (callback, ms)*
-  - showButtonBox: *ƒ (callback, buttons)*
-  - showInputBox: *ƒ (callback, placeHolders)*
-  - showMessageBox: *ƒ (title, icon = "success", time = 3000)*
-  - showSelectList: *ƒ (callback, selects, opt = {})*
-  - showTextAera: *ƒ (callback, placeholder = "")*
-  - simulateCopy: *ƒ ()*
-  - simulatePaste: *ƒ ()*
   - downloadFile: *ƒ (url, defaultPath = '', showDialog = false)*
   - htmlParse: *ƒ (html)*
-  - kill: *ƒ (pid)*
-  - payload
+  - kill: *ƒ (pid, signal = 'SIGTERM')*
+  - payload: ""
+  - setTimeout: *ƒ (callback, ms)*
+  - showButtonBox: *ƒ (buttons)*
+  - showInputBox: *ƒ (placeHolders)*
+  - showMessageBox: *ƒ (title, icon = "success", time = 3000)*
+  - showSelectList: *ƒ (selects, opt = {})*
+  - showTextAera: *ƒ (placeholder = "")*
+  - simulateCopy: *ƒ ()*
+  - simulatePaste: *ƒ ()*
+  - sleep: *ƒ (ms)*
+  - updateSelectList: *ƒ (opt, id)*
 
 
