@@ -53,7 +53,7 @@
             // 正则
             if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
             // 文件
-            if (type == 'files') { 
+            if (type == 'files') {
                 let MatchedFiles = payload
                 let Matched = cmd.match(/\{\{MatchedFiles.*?\}\}/g)
                 Matched && Matched.forEach(m => {
@@ -91,7 +91,7 @@
             if (db.hasSubInput) {
                 // 启动子命令输入
                 // 清空输出
-                $("#out").empty();
+                // $("#out").empty();
                 var subinput = '';
                 var setSubInput = () => {
                     utools.setSubInput(({text}) => {
@@ -112,8 +112,8 @@
             }
         }
     });
-    
-    
+
+
     let runQuickCommand = (cmd, option, output, autoScroll = false, autoHeight = true) => {
         // 不需要输出的，提前关闭窗口
         if (['ignore', 'clip', 'send', 'notice', 'terminal'].indexOf(output) !== -1) {
@@ -136,7 +136,7 @@
             })
         }
     }
-    
+
     let switchQuickCommandResult = (stdout, stderr, outputOpts) => {
         var output = outputOpts.type, autoScroll = outputOpts.autoScroll, autoHeight = outputOpts.autoHeight;
         var outputAutoFix = (autoScroll, autoHeight) => {
@@ -164,7 +164,7 @@
                 }
                 copyTo(stderr);
                 message("已复制报错信息");
-                utools.outPlugin();  
+                utools.outPlugin();
             }
         } else if (stdout) {
             $("#out").removeClass("error")
@@ -198,13 +198,29 @@
         //     utools.outPlugin()
         }
     }
-    
+
     // 替换上个版本弃用的功能
     let oldVersionFix = () => {
         var customFts = getDB('customFts');
-        Object.keys(customFts).forEach(x => {
+        Object.keys(customFts).forEach((x, i) => {
+            // 旧版的 program
             if (customFts[x].program == 'simulation') customFts[x].program = 'quickcommand';
+            // 旧版的 sleep
             if (customFts[x].cmd.includes('await sleep')) customFts[x].cmd = customFts[x].cmd.replace(/await sleep/g, 'quickcommand.sleep')
+            // 不规范的 code
+            let code = customFts[x].features.code
+            if (!/^(window|key|regex|files|default)_/.test(code)) {
+                console.log(code);
+                utools.removeFeature(code)
+                let uid = Number(Math.random().toString().substr(3, 3) + (Date.now() + i * 10000)).toString(36)
+                let type = customFts[x].features.cmds[0].type
+                type || (type = 'key')
+                let newCode = type + '_' + uid
+                let newFts = customFts[x]
+                newFts.features.code = newCode
+                delete customFts[x]
+                customFts[newCode] = newFts
+            }
             putDB(x, customFts[x], 'customFts');
         })
     }
