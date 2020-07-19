@@ -354,7 +354,7 @@
                 <span id="beautifyCode" class="footBtn robot">格式化</span>
             </span>
         </p>
-        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递给脚本的参数\ncustom：可以手动设置解释器路径、参数、脚本后缀及编码方式\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常\n用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递\n给脚本的参数\ncustom：可以手动设置解释器路径、参数、脚本后缀及编码方式\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
         <p class="bottom">
             <img id="win32" class="platform" src="./img/win32.svg">
             <img id="darwin" class="platform" src="./img/darwin.svg">
@@ -439,7 +439,7 @@
         window.editor = CodeMirror.fromTextArea(document.getElementById("cmd"), {
             lineNumbers: true,
             matchBrackets: true,
-            lineWrapping: true,
+            // lineWrapping: true,
             autoCloseBrackets: true,
             styleActiveLine: true,
             keyMap: "sublime",
@@ -467,7 +467,6 @@
                 "Shift-Alt-Down": "duplicateLine"
             }
         });
-
         window.editor.on("change", showHint);
         window.editor.setOption("mode", 'javascript');
     }

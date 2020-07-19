@@ -505,11 +505,14 @@ input::-webkit-input-placeholder {
     z-index: 9;
 }
 
-
-#options #customize .CodeMirror-scroll {
-    box-sizing: unset;
+#options #customize .CodeMirror-hscrollbar,
+#options #customize .CodeMirror-vscrollbar {
+    outline: none;
 }
 
+#options #customize .CodeMirror * {
+    box-sizing: initial;
+}
 
 #options #customize .CodeMirror:hover {
     border: 1px solid #9e9e9ec7;
@@ -562,7 +565,7 @@ input::-webkit-input-placeholder {
 }
 
 #options #customize .platform {
-    max-width: 30px;
+    max-width: 26px;
     cursor: pointer;
 }
 

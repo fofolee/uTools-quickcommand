@@ -114,18 +114,18 @@
 
 /*滚动条*/
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
+    height: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgb(153, 153, 153);
-    height: 30px;
-    border-radius: 7px;
+    background-color: #616161;
     border: none;
 }
 
-::-webkit-scrollbar-track-piece {
-    background-color: rgb(87, 87, 87);
+::-webkit-scrollbar-track-piece,
+.CodeMirror-scrollbar-filler {
+    background-color: #0000
 }
 
 /*swal2*/
