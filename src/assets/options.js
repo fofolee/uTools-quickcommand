@@ -72,7 +72,7 @@
                     { name: 'json', extensions: ['json'] },
                 ]
             };
-        Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
+        if (!fofoCommon.isDev()) Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
         window.saveFile(options, JSON.stringify(jsonQc));
     }
 
@@ -629,7 +629,7 @@
     // 底部功能按钮
     $("#options").on('click', '.footBtn', function () {
         switch ($(this).attr('id')) {
-            case 'viewHelps': utools.createBrowserWindow('./helps/HELP.html');
+            case 'viewHelps': utools.createBrowserWindow('./helps/HELP.html', {width: 1280, height: 920});
                 break;
             case 'getShares': getSharedQCFromYuQue();
                 break;
@@ -723,7 +723,7 @@
 
     // quickCommand的帮助
     $("#options").on('click', '#showHelp', function () {
-        utools.createBrowserWindow('./helps/quickcommand.html')
+        utools.createBrowserWindow('./helps/quickcommand.html', {width: 1280, height: 920})
     })
 
     // 添加动作
@@ -822,7 +822,7 @@
                 result && quickcommand.showMessageBox('分享成功')
                 break;
             case '☛ 分享命令':
-                utools.createBrowserWindow('./helps/HELP.html?#分享命令')
+                utools.createBrowserWindow('./helps/HELP.html?#分享命令', {width: 1280, height: 920})
                 break;
             case '设置 Token':
                 await setYuQueToken()
