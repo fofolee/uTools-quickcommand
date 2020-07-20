@@ -276,6 +276,23 @@ quickcommand = {
         });
     },
 
+    showConfirmBox: function(title) {
+        return new Promise((reslove, reject) => {
+            let options = {
+                text: title,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '确定！',
+                cancelButtonText: '手抖...',
+            }
+            Swal.fire(options).then(result => {
+                if (result.value) reslove()
+            })
+        });
+    },
+
     // 关闭进程
     kill: function (pid, signal = 'SIGTERM') {
         process.kill(pid, signal)
