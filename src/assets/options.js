@@ -32,7 +32,6 @@
         } catch (error) {
             return false
         }
-        console.log(qc);
         if (isJsonQc(qc)) return { single: true, qc: qc }
         else if (!Object.values(qc).filter(q => !isJsonQc(q)).length) return { single: false, qc: qc }
         else return false
@@ -77,21 +76,15 @@
     }
 
     let clearAll = () => {
-        Swal.fire({
-            text: '将会清空所有命令，请确认！',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '确定！',
-            cancelButtonText: '手抖...',
-          }).then((result) => {
-            if (result.value) {
-                utools.db.remove('customFts');
-                clearAllFeatures();
-                showOptions();
-              }
-          })
+        quickcommand.showConfirmBox('将会清空所有命令，请确认！').then(() => {
+            utools.db.remove('customFts');
+            clearAllFeatures();
+            showOptions();
+        })
+    }
+
+    let overwriteConfirm = () => {
+
     }
 
     programs = {
@@ -273,7 +266,7 @@
         <div class="foot">
             <div id="add" class="footBtn">新建命令</div>
             <div id="import" class="footBtn">导入命令</div>
-            <div id="getShares" class="footBtn">获取分享</div>
+            <div id="getShares" class="footBtn">分享中心</div>
             <div id="viewHelps" class="footBtn">查看帮助</div>
             <div id="exportAll" class="footBtn">全部导出</div>
             <div id="enableAll" class="footBtn">启用本页</div>
@@ -354,7 +347,7 @@
                 <span id="beautifyCode" class="footBtn robot">格式化</span>
             </span>
         </p>
-        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等常\n用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递\n给脚本的参数\ncustom：可以手动设置解释器路径、参数、脚本后缀及编码方式\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等\n常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递\n给脚本的参数\ncustom：可以手动设置解释器路径、参数、脚本后缀及编码方式\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
         <p class="bottom">
             <img id="win32" class="platform" src="./img/win32.svg">
             <img id="darwin" class="platform" src="./img/darwin.svg">
@@ -659,11 +652,11 @@
         let extraInfo = {
             authorName: data.authorName,
             authorId: data.authorId,
-            docId: data.docId
+            fromShare: data.fromShare
         }
-        $('#options').data('extraInfo', extraInfo)
         if (data.tags && data.tags.includes("默认")) readonly = true
         showCustomize(readonly);
+        $('#customize').data('extraInfo', extraInfo)
         data.tags && $('#tags').val(data.tags).trigger('change')
         platform && ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
         $('#type').val(cmds.type).trigger("change")
@@ -787,10 +780,11 @@
         let extraInfo = getDB('extraInfo')
         if (jsonQc.authorId) {
             if (jsonQc.authorId == extraInfo.authorId) menu[2] = '更新分享'
+            else if (jsonQc.fromShare) menu[2] = '评论'
             else menu[2] = '分享自：' + jsonQc.authorName
         } else {
             if (extraInfo.yuQueToken) menu[2] = '分享命令'
-            else menu[2] = '☛ 分享命令'
+            else menu[2] = '我要分享'
         }
         return menu
     }
@@ -813,15 +807,15 @@
                 }, stringifyQc)
                 break;
             case '分享命令':
-                var result = await shareQCToYuQue(jsonQc)
-                result && quickcommand.showMessageBox('分享成功')
-                break;
             case '更新分享':
-                var result = await shareQCToYuQue(jsonQc, true)
-                result && quickcommand.showMessageBox('分享成功')
+                var result = await shareQCToYuQue(jsonQc)
+                result && quickcommand.showMessageBox('分享成功，等待发布后即可在分享中心直接下载')
                 break;
-            case '☛ 分享命令':
+            case '我要分享':
                 utools.createBrowserWindow('./helps/HELP.html?#分享命令', {width: 1280, height: 920})
+                break;
+            case '评论':
+                utools.shellOpenExternal(`https://www.yuque.com/fofolee/qcreleases/${code}`)
                 break;
             case '设置 Token':
                 await setYuQueToken()
@@ -830,7 +824,7 @@
     })
 
     // 一键分享到语雀
-    let shareQCToYuQue = async (jsonQc, update = false) => {
+    let shareQCToYuQue = async jsonQc => {
         let extraInfo = getDB('extraInfo')
         if (!extraInfo.yuQueToken) return quickcommand.showMessageBox("请先设置 Token，点击底部「查看帮助」可查看 Token 设置方法", "error")
         jsonQc.authorId = extraInfo.authorId
@@ -850,42 +844,42 @@
             custom_description: `作者：${jsonQc.authorName} | 环境：${jsonQc.program} | 匹配：${type} | 平台：${platform} | 标签：${tags}`
         }
         yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
-        let res
+        let res, repo = extraInfo.authorId == 1496740 ? 'qcreleases' : 'qcshares'
+        console.log(repo);
         try {
-            if (update) res = await yuQueClient.put('repos/fofolee/em2rng/docs/' + jsonQc.docId, parameters)
-            else res = await yuQueClient.post('repos/fofolee/em2rng/docs', parameters)
-            if (res.data.data) {
-                jsonQc.docId = res.data.data.id
-                putDB(jsonQc.features.code, jsonQc, 'customFts');
-                return jsonQc
-            } else {
-                return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
-            }
+            res = await yuQueClient.post(`repos/fofolee/${repo}/docs`, parameters)
+            if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
+            let docId = res.data.data.id
+            res = await yuQueClient.put(`repos/fofolee/${repo}/docs/${docId}`, parameters)
+            if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
+            putDB(jsonQc.features.code, jsonQc, 'customFts');
+            return jsonQc
         } catch (error) {
             return quickcommand.showMessageBox(error, "error")
         }
     }
 
-    getSharedQCFromYuQue = async () => {
+    let getSharedQCFromYuQue = async () => {
         $('#options').hide()
         let extraInfo = getDB('extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
-        let res = await yuQueClient('repos/fofolee/em2rng/docs')
-        let docs = res.data.data.map(d => {
+        let res = await yuQueClient('repos/fofolee/qcreleases/docs')
+        let program, docs = res.data.data.map(d => {
+            program = d.custom_description.match(/环境：(.*?) /)
             return {
                 title: d.title,
                 description: d.custom_description,
                 slug: d.slug,
-                icon: d.last_editor.avatar_url
+                icon: `logo/${program[1]}.png`
             }
         })
         let choise = await quickcommand.showSelectList(docs, { optionType: 'json' })
-        let doc = await yuQueClient(`repos/fofolee/em2rng/docs/${choise.slug}?raw=1`)
+        let doc = await yuQueClient(`repos/fofolee/qcreleases/docs/${choise.slug}?raw=1`)
         let body = doc.data.data.body
         let stringifyQc = body.match(/```json([\s\S]*)```/)[1]
         let qc = JSON.parse(stringifyQc)
         $('#options').show()
-        qc.docId = doc.data.data.id
+        qc.fromShare = true
         editCurrentCommand(qc)
         utools.setExpendHeight(600)
     }
@@ -899,27 +893,17 @@
 
     // 删除
     $("#options").on('click', '.delBtn', function () {
-        Swal.fire({
-            text: '删除这个快捷命令',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '确定！',
-            cancelButtonText: '手抖...',
-          }).then((result) => {
-            if (result.value) {
-                var code = $(this).parents('tr').attr('id'),
-                db = utools.db.get("customFts"),
-                data = db.data;
-                delete data[code];
-                utools.removeFeature(code);
-                utools.db.put({ _id: "customFts", data: data, _rev: db._rev });
-                var currentTag = $('.currentTag').text()
-                if ($('#featureList tr').length == 2) currentTag = "默认"
-                showOptions(currentTag);
-              }
-          })
+        quickcommand.showConfirmBox('删除这个快捷命令').then(() => {
+            var code = $(this).parents('tr').attr('id'),
+            db = utools.db.get("customFts"),
+            data = db.data;
+            delete data[code];
+            utools.removeFeature(code);
+            utools.db.put({ _id: "customFts", data: data, _rev: db._rev });
+            var currentTag = $('.currentTag').text()
+            if ($('#featureList tr').length == 2) currentTag = "默认"
+            showOptions(currentTag);
+        })
     })
 
     // 选择图标
@@ -967,7 +951,7 @@
             if (iconame) {
                 base64ico = window.getBase64Ico(iconpath);
                 icon = "data:image/png;base64," + base64ico;
-            // 未自定义使用默认
+                // 未自定义使用默认
             } else {
                 icon = iconpath;
             }
@@ -1017,9 +1001,9 @@
             }
             // platform
             var platform = []
-            $('.platform').not('.disabled').each(function() { platform.push($(this).attr('id')) })
+            $('.platform').not('.disabled').each(function () { platform.push($(this).attr('id')) })
             // 添加特性
-            var extraInfo = $('#options').data('extraInfo')
+            var extraInfo = $('#customize').data('extraInfo')
             var pushData = {
                 features: {
                     "code": code,
@@ -1032,11 +1016,9 @@
                 cmd: cmd,
                 output: output,
                 hasSubInput: hasSubInput,
-                scptarg: scptarg,
-                authorId: extraInfo.authorId,
-                authorName: extraInfo.authorName,
-                docId: extraInfo.docId
+                scptarg: scptarg
             }
+            if (extraInfo) Object.assign(pushData, extraInfo)
             if (tags) pushData.tags = tags
             if (program == 'custom') {
                 pushData.customOptions = {
