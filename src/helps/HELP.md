@@ -6,9 +6,9 @@
 
 ####  常用动作
 
-通过点击`+动作`按钮进行添加
+通过点击`+动作`<sup>①</sup>按钮进行添加
 
-- 打开文件/文件夹/软件 （实现在主输入框启动自定义的软件名称及路径 ）
+- 打开文件/文件夹/软件<sup>②</sup> （实现在主输入框启动自定义的软件名称及路径 ）
 - 在文件管理器中定位文件
 - 用默认浏览器打开网址（实现类似网页快开的功能）
 - 用 ubrowser 打开网址
@@ -20,11 +20,11 @@
 - 转至指定插件(实现自定义插件关键字)
 - 添加延时
 
-![](https://i.imgur.com/dnPOyqW.png)
-
 ####  模拟按键
 
-通过点击`+按键`按钮进行添加
+通过点击`+按键`<sup>③</sup>按钮进行添加
+
+![](https://i.imgur.com/SozshQL.png)
 
 ## 进阶
 
@@ -116,18 +116,18 @@
 
 #### 导出命令
 
-点击命令旁的蓝色小箭头即可导出命令，支持
+点击命令旁的蓝色小箭头<sup>①</sup>即可导出命令，支持
 
-- 导出到剪贴板
-- 导出到文件
+- 导出到剪贴板<sup>②</sup>
+- 导出到文件<sup>③</sup>
 
-![](https://i.imgur.com/mnVGx8J.png)
+![](https://i.imgur.com/NoM6y5n.png)
 
 #### 分享命令
 
 点击分享命令即可一键分享当前的命令，初次分享命令，需要按照以下步骤设置 token：
 
-1.通过 [https://www.yuque.com/g/fofolee/em2rng/collaborator/join?token=6LZn2vc34dqfIQdC](https://www.yuque.com/g/fofolee/em2rng/collaborator/join?token=6LZn2vc34dqfIQdC) 成为知识库成员，如果没有语雀账号，需要先注册一个
+1.通过 [https://www.yuque.com/g/fofolee/qcshares/collaborator/join?token=6LZn2vc34dqfIQdC]( https://www.yuque.com/g/fofolee/qcshares/collaborator/join?token=6LZn2vc34dqfIQdC ) 成为知识库成员，如果没有语雀账号，需要先注册一个
 
 ![](https://i.imgur.com/H4Hh781.png)
 
@@ -135,9 +135,17 @@
 
 ![U2Rw0P.png](https://s1.ax1x.com/2020/07/19/U2Rw0P.png)
 
-3.在插件内填入生成的 token，之后就可以尽情地分享命令啦
+3.点击命令旁的蓝色小箭头<sup>①</sup>，填入生成的 token <sup>②</sup> ，之后就可以尽情地分享命令啦
 
-![](https://i.imgur.com/tAXTSi9.png)
+![](https://i.imgur.com/pQbFcvs.png)
+
+**注意：**
+
+1. 为了保证命令的安全和质量，分享后的命令必须经过快捷命令插件作者本人`发布`后才能出现在`分享中心`当中。所有分享而暂未发布的命令在[ https://www.yuque.com/g/fofolee/qcshares/docs ]( https://www.yuque.com/g/fofolee/qcshares/docs )可以查看到（仅知识库成员访问），所有已发布的命令在[ https://www.yuque.com/fofolee/qcreleases ]( https://www.yuque.com/fofolee/qcreleases )可以查看到(所有人均可访问)。
+
+![](https://i.imgur.com/mn1qeTT.png)
+
+2. 请自觉规范自己的行为，所有操作均有日志，所有未发布的命令均视为不安全的命令
 
 #### 导入命令
 
@@ -148,11 +156,15 @@
 
 #### 获取分享
 
-点击设置界面底部的`获取分享`即可获取并导入在线分享的命令啦
+可以通过以下两种方式来获取分享：
 
-![](https://i.imgur.com/rWqQogD.png)
+1. 点击设置界面底部的`分享中心`<sup>①</sup>即可获取并导入在线分享的命令
 
-![](https://i.imgur.com/r3vJWKv.png)
+![UfBox1.png](https://i.imgur.com/pKKWqdT.png)
+
+![UfDkdS.png](https://s1.ax1x.com/2020/07/20/UfDkdS.png)
+
+2. 访问[ https://www.yuque.com/fofolee/qcreleases ]( https://www.yuque.com/fofolee/qcreleases )即可查看发布的命令
 
 # 三、关于
 

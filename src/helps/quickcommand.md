@@ -240,6 +240,19 @@ quickcommand.showMessageBox("这是一段3s后自动消失的成功提示")
 quickcommand.showMessageBox("这是一段3s后自动消失的失败提示", "error")
 ```
 
+#### `showConfirmBox(title)`
+
+- title: String | undefined 提示的标题
+- 返回: Promise
+
+显示一个确认框
+
+```js
+quickcommand.showConfirmBox().then(() => {
+    console.log('点击了确定')
+})
+```
+
 ####`sleep(ms)`
 
 - ms:  Integer 等待的毫秒
@@ -342,42 +355,54 @@ quickcommand.kill(16084)
 
 ## 上下文一览
 
-- nodejs [文档]( http://nodejs.cn/api/ )
-  - require
-  - os
-  - fs
-  - path
-  - child_process
-  - util
-  - axios [文档]( https://www.kancloud.cn/yunye/axios/234845)
-- electron [文档]( http://www.electronjs.org/docs )
-  - clipboard
-  - contextBridge
-  - crashReporter
-  - desktopCapturer
-  - ipcRenderer
-  - nativeImage
-  - shell
-  - webFrame
-- utools [文档]( https://u.tools/docs/developer/api.html )
+#### nodejs
+
+- [文档]( http://nodejs.cn/api/ )
+
+- **require**
+-  **os**: {arch: *ƒ*, cpus: *ƒ*, endianness: *ƒ*, freemem: *ƒ*, getPriority: *ƒ*, …} 
+-  **fs**: {appendFile: *ƒ*, appendFileSync: *ƒ*, access: *ƒ*, accessSync: *ƒ*, chown: *ƒ*, …} 
+-  **path**: {resolve: *ƒ*, normalize: *ƒ*, isAbsolute: *ƒ*, join: *ƒ*, relative: *ƒ*, …} 
+-  **child_process**: {_forkChild: *ƒ*, ChildProcess: *ƒ*, exec: *ƒ*, execFile: *ƒ*, execFileSync: *ƒ*, …} 
+-  **util**: {_errnoException: *ƒ*, _exceptionWithHostPort: *ƒ*, _extend: *ƒ*, callbackify: *ƒ*, debuglog: *ƒ*, …} 
+- **axios** [文档]( https://www.kancloud.cn/yunye/axios/234845)
+
+#### electron
+
+- [文档]( http://www.electronjs.org/docs )
+
+- **clipboard**: Object
+- **contextBridge**: Object
+- **crashReporter**: Object
+- **desktopCapturer**: Object
+- **ipcRenderer**: EventEmitter
+- **nativeImage**: Object
+- **shell**: Object
+- **webFrame**: WebFrame
+####  utools
+
+  - [文档]( https://u.tools/docs/developer/api.html )
   - all except below
   - ~~db~~
   - ~~removeFeature~~
   - ~~setFeature~~
-- quickcommand
-  - downloadFile: *ƒ (url, defaultPath = '', showDialog = false)*
-  - htmlParse: *ƒ (html)*
-  - kill: *ƒ (pid, signal = 'SIGTERM')*
-  - payload: ""
-  - setTimeout: *ƒ (callback, ms)*
-  - showButtonBox: *ƒ (buttons)*
-  - showInputBox: *ƒ (placeHolders)*
-  - showMessageBox: *ƒ (title, icon = "success", time = 3000)*
-  - showSelectList: *ƒ (selects, opt = {})*
-  - showTextAera: *ƒ (placeholder = "")*
-  - simulateCopy: *ƒ ()*
-  - simulatePaste: *ƒ ()*
-  - sleep: *ƒ (ms)*
-  - updateSelectList: *ƒ (opt, id)*
+
+#### quickcommand
+
+  - **downloadFile**: *ƒ (url, defaultPath = '', showDialog = false)*
+  - **htmlParse**: *ƒ (html)*
+  - **kill**: *ƒ (pid, signal = 'SIGTERM')*
+  - **payload**: ""
+  - **setTimeout**: *ƒ (callback, ms)*
+  - **showButtonBox**: *ƒ (buttons)*
+  - **showConfirmBox**: *ƒ (title)*
+  - **showInputBox**: *ƒ (placeHolders)*
+  - **showMessageBox**: *ƒ (title, icon = "success", time = 3000)*
+  - **showSelectList**: *ƒ (selects, opt = {})*
+  - **showTextAera**: *ƒ (placeholder = "")*
+  - **simulateCopy**: *ƒ ()*
+  - **simulatePaste**: *ƒ ()*
+  - **sleep**: *ƒ (ms)*
+  - **updateSelectList**: *ƒ (opt, id)*
 
 
