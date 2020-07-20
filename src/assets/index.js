@@ -1,6 +1,13 @@
 !function () {
+    if (utools.isDarkColors()) {
+        !$('#darkmode').length && $('head').append(`
+        <link id="darkmode" rel="stylesheet" href="assets/style/darkmode.css">
+        <link id="darkswal" rel="stylesheet" href="assets/plugins/sweetalert2/dark.min.css">`)
+    } else {
+        $('#darkmode').length && $('#darkmode, #darkswal').remove()
+    }
+    
     utools.onPluginEnter(async ({ code, type, payload }) => {
-        adaptDarkMode()
         // oldVersionFix()
         var handleEnter
         utools.onPluginOut(() => {
@@ -223,16 +230,5 @@
             }
             putDB(x, customFts[x], 'customFts');
         })
-    }
-
-    // 兼容暗黑模式
-    let adaptDarkMode = () => {
-        if (utools.isDarkColors()) {
-            !$('#darkmode').length && $('head').append(`
-            <link id="darkmode" rel="stylesheet" href="assets/style/darkmode.css">
-            <link id="darkswal" rel="stylesheet" href="assets/plugins/sweetalert2/dark.min.css">`)
-        } else {
-            $('#darkmode').length && $('#darkmode, #darkswal').remove()
-        }
     }
 }()
