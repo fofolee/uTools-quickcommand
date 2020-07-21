@@ -1,1 +1,0 @@
-{"base64Ico":"","cmd":"<h1>这是一个标题</h1><br>\n<a href='xx'>这是一个链接</a><br>\n<h2>这还是一个标题</h2><br>","features":{"cmds":["html界面示例"],"code":"regex_2jzbdl2air0","explain":"html界面示例","icon":"logo/php.png"},"hasSubInput":false,"noKeyword":false,"output":"html","program":"php"}
