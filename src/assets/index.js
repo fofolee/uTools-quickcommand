@@ -6,9 +6,13 @@
     } else {
         $('#darkmode').length && $('#darkmode, #darkswal').remove()
     }
-    
+
     utools.onPluginEnter(async ({ code, type, payload }) => {
-        // oldVersionFix()
+        if (fofoCommon.isRunningAtFirstTime()) {
+            fofoCommon.showChangeLog()
+            importDefaultCommands()
+            oldVersionFix()
+        }
         var handleEnter
         utools.onPluginOut(() => {
             // 暂存 codeRunner 的内容
@@ -23,7 +27,7 @@
                     customext: $('#customext').val(),
                     customcodec: $('#customcodec').val()
                 }
-                putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
+                fofoCommon.putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
             }
             // 初始化
             $("#options, #out").empty()
@@ -208,7 +212,8 @@
 
     // 替换上个版本弃用的功能
     let oldVersionFix = () => {
-        var customFts = getDB('customFts');
+        utools.showNotification('第一次更新会对老版本命令做兼容处理，如插件显示空白请稍候', 'warning')
+        var customFts = fofoCommon.getDB('customFts');
         Object.keys(customFts).forEach((x, i) => {
             // 旧版的 program
             if (customFts[x].program == 'simulation') customFts[x].program = 'quickcommand';
@@ -228,7 +233,16 @@
                 delete customFts[x]
                 customFts[newCode] = newFts
             }
-            putDB(x, customFts[x], 'customFts');
+            fofoCommon.putDB(x, customFts[x], 'customFts');
+        })
+    }
+
+    importDefaultCommands = () => {
+        let customFts = fofoCommon.getDB('customFts')
+        let qc = Object.keys(customFts)
+        let defaultCommands = getDefaultCommands()
+        Object.keys(defaultCommands).forEach(d => {
+            if (!qc.includes(d)) importCommand(defaultCommands[d])
         })
     }
 }()
