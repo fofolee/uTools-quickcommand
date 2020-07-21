@@ -244,12 +244,13 @@ quickcommand.showMessageBox("这是一段3s后自动消失的失败提示", "err
 
 - title: String | undefined 提示的标题
 - 返回: Promise
+  - confirmed: Boolean | undefined 是否点击了确定按钮
 
 显示一个确认框
 
 ```js
-quickcommand.showConfirmBox().then(() => {
-    console.log('点击了确定')
+quickcommand.showConfirmBox().then(confirmed => {
+    confirmed && console.log('点击了确定')
 })
 ```
 
