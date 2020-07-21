@@ -9,7 +9,6 @@ const util = require("util")
 const PinyinMatch = require('pinyin-match');
 const axios = require('axios');
 // axios.defaults.adapter = require('axios/lib/adapters/http')
-fofoCommon = require('./common').fofo
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
 
@@ -326,6 +325,22 @@ swalOneByOne = options => {
     swal.getQueueStep() ? Swal.insertQueueStep(options) : Swal.queue([options])
 }
 
+pluginInfo = () => {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')))
+}
+
+isDev = () => {
+    return /[a-zA-Z0-9\-]+\.asar/.test(__dirname) ? false : true
+}
+
+let GetFilePath = (Path, File) => {
+    if (isDev()) {
+        return path.join(__dirname, Path, File)
+    } else {
+        return path.join(__dirname.replace(/([a-zA-Z0-9\-]+\.asar)/,'$1.unpacked'), Path, File)
+    }
+}
+
 let getSleepCodeByShell = ms => {
     var cmd, tempFilePath
     if (utools.isWindows()) {
@@ -342,7 +357,7 @@ let modWindowHeight = height => {
 }
 
 // 屏蔽危险函数
-let getuToolsLite = () => {
+getuToolsLite = () => {
     var utoolsLite = Object.assign({}, utools)
     delete utoolsLite.db
     delete utoolsLite.removeFeature
@@ -531,7 +546,7 @@ htmlEncode = (value, raw) => {
 py_beautify = (code, cb) => {
     var file = getQuickCommandScriptFile('py')
     fs.writeFile(file, code, { encoding: 'utf8' }, err => {
-        var cmd = `python "${fofoCommon.GetFilePath('assets/plugins', 'autopep8.py')}" "${file}"`
+        var cmd = `python "${GetFilePath('assets/plugins', 'autopep8.py')}" "${file}"`
         child_process.exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
             var codec = utools.isWindows() ? 'cp936' : 'utf8'
             cb(iconv.decode(stdout, codec).trim())
@@ -603,6 +618,7 @@ yuQueClient = axios.create({
     baseURL: 'https://www.yuque.com/api/v2/',
     headers: {
         'Content-Type': 'application/json',
+        // 只读权限
         'X-Auth-Token': 'WNrd0Z4kfCZLFrGLVAaas93DZ7sbG6PirKq7VxBL'
     }
 });
