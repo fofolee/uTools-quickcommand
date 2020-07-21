@@ -1,0 +1,29 @@
+{
+    "features": {
+        "code": "default_windowsTerminal",
+        "explain": "Windows Terminal 中打开",
+        "cmds": [
+            {
+                "label": "Windows Terminal 中打开",
+                "type": "window",
+                "match": {
+                    "app": [
+                        "explorer.exe"
+                    ]
+                }
+            }
+        ],
+        "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAFFklEQVRYR+2YvUtrSRjG5yQaxGgQd8HCxrXwD3C9peIWElBM8AOxEVTQSqy3kURFsMkVFTVGUVmw0D/AQgQLQUUiEgkY82WisoVg440aP+JZnrnMuXMm5+TkrlvIYiAkmTMfv3ne531nVCIf/CV9cD7yCfjeCH0q+J8p6Pf7/5AkqVmWZUNVJUmSQ6FQ9cPDgzVPADkYDBZnMhkzxuqNkWUZz0wWi8X39evXv9CPwvj9/kJJkv4mhPyaz4Jvb28kHA6TVCqVT3faJxAIkNfXV8P+YDSZTN9kWf7F5/O9UMBQKFSaSqXuJMlQPLoAACORSN6AWPT09JS8vLwYArIOVqu1eGpq6pESBYPBknQ6/S1fQCz4Mwq+G3Bzc7PcZrPdioDfLZH9QnsikSD39/f0IRun1x99zs/PdRXUGldeXv5DweHh4d+TyaRfayGEU6tdy0/oy17ioniGNtbOP9dq83g81rq6ugca4oGBgS/X19dHvFa5JjCaHPP87Hh+DMaOjIyU2O32ewXw6upKExCdoSC/e1GlXKqImxb7ao3FmCzAy8vLIz6UGGg2m0ltbS0tEel0WvEbg2XgeoqJqvAb4+fQ6jc9Pa0OMQDZBPCLyWQi3d3dpKmpiRwcHJC1tTUKKfpR9JqRz8TNsN+iJWZmZtSAyWSSKgg4vPv7+0l9fb1S95CFHo+HFlteOa2kEO1g5FmtTbpcLrUHE4mECtDhcBCn06ny38nJCVldXaUFGpBGITbypp7/0O52u7MBmdyZTIY8PT2Rnp4eYrfbaYKwEnJ8fEy8Xq/Kj0ZZK3pPrKxsbl7J0dFRNeDFxQX1IINhda6lpYW0t7fTOdkzhBuQj4+Piif5GqjnM6ON8IrOzc2pPRiPx5UshoJYEGcnQPv6+khjY6MK0u/3k/X1dap0vqHOBS5mchZgLBY7QuYyldgnIPG9ublZpSTaotEomZ2dpRvJdUz+Gy9qAorZCRWhIN6lpaVkcHCQ1NTUKEoiWVwuFy0/2FyuuqdXsPXCPj8/rw5xNBpVQszXQ4TbYrEQZDVAq6urSVVVFf2+sbFB9vb2SEFBgWHpEUH4xBCFgeILCwtqwEgkogJkIS4qKiJtbW2kuLiY3l6QGGVlZRQMdzzA48TRulDoHWtGSmOc1+v9Adjb2/sFhZovB9ihzWYjHR0dBJDw2fPzM7m7uyP7+/skFotR5fAWw5urrORbtLMAWaFmyhUWFpKuri4KiTCz99bWFk0OPIdyDA5QgEUbu1rp+Qvt2DDmxIu/jLDvi4uL6hCHw2GqIJscnqusrKS/WeHe2dlR4ADGKwfg5eVlagU2Bzs22dHHt4dCITI5OakcAOKZ7PP51CFGHeSLMZTr7OykEEiI3d1dcnZ2poSV7Ryf2AAAcaGAglpALDIMEjfysbExCsiXKGaBLEDUQSYvFkQIKioqSENDAzk8PCTxeFwJISD4FzaAtpWVFZo0/O1ZS020Yb6JiQklxGLiLC0tqRUEIFsUgFiUnSZQkSUDg+PNzvyJEoSE4s9upiY++XJyc3NDbm9vdSuALqB4krAQAFK8wfAbYkUdsFrlhS9DbB6WZFpH5fj4uLW1tfX73yRDQ0O/BQKBsCzLBbzUfDZq+YRXRUwIo3OXeVicF3OazeZ7h8NR7na7n5W/1J1O55/pdLqb/9eH1jWIr3GCbyReOb508HZgt3Xew8JNSCopKZnd3t720U2o3P4Bf3wCvjconwr+7xX8Bzd/bHQyI+sdAAAAAElFTkSuQmCC",
+        "platform": [
+            "win32"
+        ]
+    },
+    "program": "quickcommand",
+    "cmd": "var currentFolder = \"{{pwd}}\"\nvar home = utools.getPath('home')\nvar wt = path.join(home, '/AppData/Local/Microsoft/WindowsApps/wt.exe')\nchild_process.exec(`start \"\" \"${wt}\" -d \"${currentFolder}\"`)",
+    "output": "ignore",
+    "hasSubInput": false,
+    "scptarg": "",
+    "tags": [
+        "默认"
+    ]
+}

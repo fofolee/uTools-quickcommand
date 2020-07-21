@@ -1,0 +1,28 @@
+{
+    "features": {
+        "code": "default_textManipulation",
+        "explain": "文本处理",
+        "cmds": [
+            {
+                "label": "文本处理",
+                "type": "regex",
+                "match": "/.*?/",
+                "minNum": 1
+            }
+        ],
+        "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAABSUlEQVR4nO3dsU3DQABA0YBoGYKKIegyQYagomMZKobIBHTsECqGYADoaXyOYj5x3qujU6yvO/sSS7fZAAAAwCW5Gv3g3cvX95yBP59uh8c+B0td//VxX4dTESAmQOxmqYH3b++z1sz/7vmwzLhmQEyAmACxxe4Bu+3DRe8DRpkBMQFiAsSOXqd/P+evbc2fcqrrNwNiAsQEiAkQEyAmQEyA2GK/BY16vd+n/xs8fuzS/YsZEBMgJkBMgJgAMQFiAsTyfcDc5/CpfUP9XD+XGRATICZATICYADEBYgLEBIgJEBMgJkBMgJgAMQFiAsQEiAkQEyAmQEyAmAAxAWICxASICRATICZATICYALH87ei5zu3t5ylmQEyAmAAxAWICxJwfMMj5ASslQEyAmPMDBjk/YKUEiAkQc37AIOcHrJQAMQEAAACAP/QDdAQzpJMX9+0AAAAASUVORK5CYII=",
+        "platform": [
+            "win32",
+            "darwin",
+            "linux"
+        ]
+    },
+    "program": "quickcommand",
+    "cmd": "let textManipulation = [{\n        title: '爱词霸翻译',\n        description: text => '在线翻译中...'\n    },\n    {\n        title: '有道翻译',\n        description: text => '在线翻译中...'\n    },\n    {\n        icon: 'https://img.icons8.com/color/1x/rules.png',\n        title: '字数统计',\n        description: text => {\n            var cn = text.match(/[\\u4e00-\\u9fa5]/g)\n            var wd = text.match(/[a-zA-Z]+/g)\n            var le = text.match(/[a-zA-Z]/g)\n            var sg = text.match(/[~!@#$%^&*()_+<>?:,./;’，。、‘：“《》？~！@#￥%…（）]/g)\n            var nm = text.match(/\\d/g)\n            return `\n                          字符总数：${text.length},\n                          中文字数：${cn && cn.length || 0},\n                          英文字母：${le && le.length || 0},\n                          英文单词：${wd && wd.length || 0},\n                          符号总数：${sg && sg.length || 0},\n                          数字总数：${nm && nm.length || 0},\n              `\n        }\n    },\n    {\n        title: '词频统计',\n        description: text => {\n            var o = {},\n                fq = [],\n                l = text.length,\n                t,\n                Inx = 0;\n            while (l--) {\n                t = text.substr(l, 1);\n                t in o ? ++fq[o[t]][1] : fq[o[t] = Inx++] = [t, 1];\n            }\n            fq = fq.sort(function(a, b) {\n                return b[1] - a[1];\n            });\n            return fq.map(f => f.join(\": \")).join(\",\\n\")\n        }\n    },\n    {\n        title: '文本逆转',\n        description: text => text.split(\"\").reverse().join(\"\")\n    },\n    {\n        title: '\\\\和/互转',\n        description: text => text.includes(\"\\\\\") ? text.replace(/\\\\/g, \"/\") : text.replace(/\\//g, \"\\\\\")\n    },\n    {\n        title: '全部大写',\n        description: text => text.toUpperCase()\n    },\n    {\n        title: '全部小写',\n        description: text => text.toLowerCase()\n    },\n    {\n        title: '去除空格',\n        description: text => text.replace(/\\s/g, \"\")\n    },\n    {\n        title: '计算 MD5',\n        description: text => require('crypto').createHash('md5').update(text).digest('hex')\n    },\n    {\n        title: '十六进制编码',\n        description: text => '0x' + new Buffer(text).toString('hex')\n    },\n    {\n        title: 'base64 编码',\n        description: text => new Buffer(text).toString('base64')\n    },\n    {\n        title: 'url 编码',\n        description: text => encodeURI(text)\n    }\n];\n\nlet text = quickcommand.payload\nlet options = textManipulation.map(t => {\n    return {\n        title: t.title,\n        description: t.description(text)\n    }\n})\n\nquickcommand.showSelectList(options, { optionType: 'json' })\n    .then(choise => {\n        console.log(choise.description)\n        utools.copyText(choise.description)\n    })\n\naxios.post('http://fy.iciba.com/ajax.php?a=fy', `f=auto&t=auto&w=${text}`)\n    .then(res => {\n        let content = res.data.content\n        let trans = content.out ? content.out : content.word_mean\n        let opt = textManipulation[0]\n        opt.description = trans\n        quickcommand.updateSelectList(opt, 0)\n    })\n\naxios(`http://fanyi.youdao.com/translate?&doctype=json&type=auto&i=${text}`)\n    .then(res => {\n        let trans = res.data.translateResult[0][0].tgt\n        let opt = textManipulation[1]\n        opt.description = trans\n        quickcommand.updateSelectList(opt, 1)\n    })",
+    "output": "text",
+    "hasSubInput": false,
+    "scptarg": "",
+    "tags": [
+        "默认"
+    ]
+}
