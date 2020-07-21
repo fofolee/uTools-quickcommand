@@ -7,10 +7,34 @@
     } else {
         $('#darkmode').length && $('#darkmode, #darkswal').remove()
     }
+    // 禁用危险函数
+    let utoolsFull = utools
+    if (!isDev()) utools = getuToolsLite()
+    // 数据库函数封装
+    let getDB = id => {
+        var db = utoolsFull.db.get(id),
+            dbData = db ? db.data : {};
+        return dbData;
+    }
+
+    let putDB = (key, value, id) => {
+        var db = utoolsFull.db.get(id);
+        if (db) {
+            var rev = db._rev
+            var data = db.data
+            data[key] = value;
+            utoolsFull.db.put({ _id: id, data: data, _rev: rev });
+        } else {
+            var data = {};
+            data[key] = value;
+            utoolsFull.db.put({ _id: id, data: data });
+        }
+    }
+
     // 进入插件
     utools.onPluginEnter(async ({ code, type, payload }) => {
-        if (fofoCommon.isRunningAtFirstTime()) {
-            fofoCommon.showChangeLog()
+        if (isRunningAtFirstTime()) {
+            showChangeLog()
             importDefaultCommands()
             oldVersionFix()
         }
@@ -28,7 +52,7 @@
                     customext: $('#customext').val(),
                     customcodec: $('#customcodec').val()
                 }
-                fofoCommon.putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
+                putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
             }
             // 初始化
             $("#options, #out").empty()
@@ -51,7 +75,7 @@
             $('body').css({overflow: 'auto'})
             utools.setExpendHeight(0);
             $("#options").hide();
-            var db = utools.db.get('customFts').data[code],
+            var db = getDB('customFts')[code],
                 cmd = db.cmd;
             if (db.program == "custom") {
                 option = db.customOptions;
@@ -65,9 +89,9 @@
             // 正则
             if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
             // 文件
-            if (type == 'files') {
+            if (type == 'files' && cmd.includes('{{MatchedFiles')) {
                 let MatchedFiles = payload
-                let Matched = cmd.match(/\{\{MatchedFiles.*?\}\}/g)
+                let Matched = cmd.match(/\{\{MatchedFiles(\[\d+\]){0,1}(\.\w{1,11}){0,1}\}\}/g)
                 Matched && Matched.forEach(m => {
                     repl = eval(m.slice(2, -2))
                     typeof repl == 'object' && (repl = JSON.stringify(repl))
@@ -90,10 +114,10 @@
                 // 获取窗口信息
                 if (cmd.includes('{{WindowInfo')) {
                     let WindowInfo = payload
-                    let Matched = cmd.match(/\{\{WindowInfo.*?\}\}/g)
+                    let Matched = cmd.match(/\{\{WindowInfo(\.\w{1,7}){0,1}\}\}/g)
                     Matched && Matched.forEach(m => {
                         repl = eval(m.slice(2, -2))
-                        typeof repl == 'Object' && (repl = JSON.stringify(repl))
+                        typeof repl == 'object' && (repl = JSON.stringify(repl))
                         cmd = cmd.replace(m, repl)
                     })
                 }
@@ -213,7 +237,7 @@
     // 替换上个版本弃用的功能
     let oldVersionFix = () => {
         utools.showNotification('第一次更新会对老版本命令做兼容处理，如插件显示空白请稍候', 'warning')
-        var customFts = fofoCommon.getDB('customFts');
+        var customFts = getDB('customFts');
         Object.keys(customFts).forEach((x, i) => {
             // 旧版的 program
             if (customFts[x].program == 'simulation') customFts[x].program = 'quickcommand';
@@ -223,7 +247,7 @@
             let code = customFts[x].features.code
             if (!/^(window|key|regex|files|default)_/.test(code)) {
                 console.log(code);
-                utools.removeFeature(code)
+                utoolsFull.removeFeature(code)
                 let uid = Number(Math.random().toString().substr(3, 3) + (Date.now() + i * 10000)).toString(36)
                 let type = customFts[x].features.cmds[0].type
                 type || (type = 'key')
@@ -233,13 +257,25 @@
                 delete customFts[x]
                 customFts[newCode] = newFts
             }
-            fofoCommon.putDB(x, customFts[x], 'customFts');
+            putDB(x, customFts[x], 'customFts');
         })
+    }
+
+    let showChangeLog = () => {
+        putDB('version', pluginInfo().version, 'plugin')
+        utools.createBrowserWindow('./helps/CHANGELOG.html', {width: 1280, height: 920})
+    }
+
+    let isRunningAtFirstTime = () => {
+        var historyVersion = getDB('plugin').version
+        if (!historyVersion) return 'init'
+        if (pluginInfo().version > historyVersion) return 'update'
+        return false
     }
 
     // 导入默认命令
     let importDefaultCommands = () => {
-        let customFts = fofoCommon.getDB('customFts')
+        let customFts = getDB('customFts')
         let qc = Object.keys(customFts)
         let defaultCommands = getDefaultCommands()
         Object.keys(defaultCommands).forEach(d => {
@@ -281,11 +317,11 @@
         // 单个命令导入
         if (pushData.single) {
             var code = pushData.qc.features.code;
-            fofoCommon.putDB(code, pushData.qc, 'customFts');
+            putDB(code, pushData.qc, 'customFts');
         // 多个命令导入
         } else {
             for (var code of Object.keys(pushData.qc)) {
-                fofoCommon.putDB(code, pushData.qc[code], 'customFts');
+                putDB(code, pushData.qc[code], 'customFts');
             }
         }
         return true
@@ -293,7 +329,7 @@
 
     // 全部导出
     let exportAll = () => {
-        let jsonQc = utools.db.get('customFts').data,
+        let jsonQc = getDB('customFts'),
             options = {
                 title: '选择保存位置',
                 defaultPath: 'quickCommand',
@@ -301,7 +337,7 @@
                     { name: 'json', extensions: ['json'] },
                 ]
             };
-        if (!fofoCommon.isDev()) Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
+        if (!isDev()) Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
         window.saveFile(options, JSON.stringify(jsonQc));
     }
 
@@ -309,7 +345,7 @@
     let clearAll = () => {
         quickcommand.showConfirmBox('将会清空所有自定义命令，请确认！').then(x => {
             if (!x) return
-            utools.db.remove('customFts');
+            utoolsFull.db.remove('customFts');
             importDefaultCommands();
             clearAllFeatures();
             showOptions();
@@ -408,7 +444,7 @@
     let showOptions = (tag = "默认") => {
         $("#options").empty().fadeIn();
         var currentFts = utools.getFeatures(),
-            customFts = fofoCommon.getDB('customFts');
+            customFts = getDB('customFts');
         var allTags = ["默认"]
         var featureList = `
         <div id="featureList">
@@ -484,7 +520,7 @@
             </td>
             <td>
                 <span class="Btn editBtn"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
-                ${(tag == "默认" && !fofoCommon.isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
+                ${(tag == "默认" && !isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
             </td>`
         })
         featureList += `</tr></table></div>`
@@ -584,7 +620,7 @@
             <img id="win32" class="platform" src="./img/win32.svg">
             <img id="darwin" class="platform" src="./img/darwin.svg">
             <img id="linux" class="platform" src="./img/linux.svg">
-            ${(readonly && !fofoCommon.isDev()) ? '' : '<button class="button cmdBtn save">保存</button>'}
+            ${(readonly && !isDev()) ? '' : '<button class="button cmdBtn save">保存</button>'}
             <button class="button cmdBtn run">运行</button>
             <button class="button cmdBtn cancel">取消</button>
         </p>`
@@ -607,9 +643,9 @@
             maximumSelectionLength: 3,
             dropdownParent: $("#customize")
         }).on("select2:unselecting", e => {
-            (e.params.args.data.text == "默认") && !fofoCommon.isDev() && e.preventDefault();
+            (e.params.args.data.text == "默认") && !isDev() && e.preventDefault();
         }).on("select2:selecting", e => {
-            (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !fofoCommon.isDev() && e.preventDefault();
+            (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !isDev() && e.preventDefault();
         })
     }
 
@@ -764,7 +800,7 @@
 
     let clearAllFeatures = () => {
         for (var fts of utools.getFeatures()) {
-            utools.removeFeature(fts.code)
+            utoolsFull.removeFeature(fts.code)
         }
     }
 
@@ -842,10 +878,10 @@
 
     // 开关
     $("#options").on('change', 'input[type=checkbox]', function () {
-        var customFts = fofoCommon.getDB('customFts'),
+        var customFts = getDB('customFts'),
             code = $(this).parents('tr').attr('id')
-        if (!utools.removeFeature(code)) {
-            utools.setFeature(customFts[code].features);
+        if (!utoolsFull.removeFeature(code)) {
+            utoolsFull.setFeature(customFts[code].features);
         }
     });
 
@@ -926,7 +962,7 @@
     // 编辑
     $("#options").on('click', '.editBtn', function () {
         let code = $(this).parents('tr').attr('id')
-        let data = utools.db.get("customFts").data[code]
+        let data = getDB("customFts")[code]
         editCurrentCommand(data)
     })
 
@@ -997,9 +1033,9 @@
             let res = await yuQueClient('user')
             let authorId = res.data.data.account_id
             let authorName = res.data.data.name
-            fofoCommon.putDB('yuQueToken', yuQueToken, 'extraInfo')
-            fofoCommon.putDB('authorName', authorName, 'extraInfo')
-            fofoCommon.putDB('authorId', authorId, 'extraInfo')
+            putDB('yuQueToken', yuQueToken, 'extraInfo')
+            putDB('authorName', authorName, 'extraInfo')
+            putDB('authorId', authorId, 'extraInfo')
             quickcommand.showMessageBox("设置成功~")
         } catch (e) {
             quickcommand.showMessageBox('Token 校验失败', "error")
@@ -1008,7 +1044,7 @@
 
     let createShareMenu = jsonQc => {
         let menu = ['复制到剪贴板', '导出到文件', '', '设置 Token']
-        let extraInfo = fofoCommon.getDB('extraInfo')
+        let extraInfo = getDB('extraInfo')
         if (jsonQc.authorId) {
             if (jsonQc.authorId == extraInfo.authorId) menu[2] = '更新分享'
             else if (jsonQc.fromShare) menu[2] = '评论'
@@ -1023,7 +1059,7 @@
     // 导出
     $("#options").on('click', '.exportBtn', async function () {
         var code = $(this).parents('tr').attr('id')
-        var jsonQc = fofoCommon.getDB('customFts')[code]
+        var jsonQc = getDB('customFts')[code]
         var stringifyQc = JSON.stringify(jsonQc, null, 4)
         var choise = await quickcommand.showButtonBox(createShareMenu(jsonQc))
         switch (choise.text) {
@@ -1056,7 +1092,7 @@
 
     // 一键分享到语雀
     let shareQCToYuQue = async jsonQc => {
-        let extraInfo = fofoCommon.getDB('extraInfo')
+        let extraInfo = getDB('extraInfo')
         if (!extraInfo.yuQueToken) return quickcommand.showMessageBox("请先设置 Token，点击底部「查看帮助」可查看 Token 设置方法", "error")
         jsonQc.authorId = extraInfo.authorId
         jsonQc.authorName = extraInfo.authorName
@@ -1083,7 +1119,7 @@
             let docId = res.data.data.id
             res = await yuQueClient.put(`repos/fofolee/${repo}/docs/${docId}`, parameters)
             if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
-            fofoCommon.putDB(jsonQc.features.code, jsonQc, 'customFts');
+            putDB(jsonQc.features.code, jsonQc, 'customFts');
             return jsonQc
         } catch (error) {
             return quickcommand.showMessageBox(error, "error")
@@ -1092,7 +1128,7 @@
 
     let getSharedQCFromYuQue = async () => {
         $('#options').hide()
-        let extraInfo = fofoCommon.getDB('extraInfo')
+        let extraInfo = getDB('extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res = await yuQueClient('repos/fofolee/qcreleases/docs')
         let program, docs = res.data.data.map(d => {
@@ -1127,11 +1163,11 @@
         quickcommand.showConfirmBox('删除这个快捷命令').then(x => {
             if (!x) return
             var code = $(this).parents('tr').attr('id'),
-            db = utools.db.get("customFts"),
+            db = utoolsFull.db.get("customFts"),
             data = db.data;
             delete data[code];
-            utools.removeFeature(code);
-            utools.db.put({ _id: "customFts", data: data, _rev: db._rev });
+            utoolsFull.removeFeature(code);
+            utoolsFull.db.put({ _id: "customFts", data: data, _rev: db._rev });
             var currentTag = $('.currentTag').text()
             if ($('#featureList tr').length == 2) currentTag = "默认"
             showOptions(currentTag);
@@ -1161,7 +1197,7 @@
                 tags = $('#tags').val(),
                 rule = $('#rule').val(),
                 cmd = window.editor.getValue();
-            if (tags && tags.includes("默认") && !fofoCommon.isDev()) return
+            if (tags && tags.includes("默认") && !isDev()) return
             if (type != "window" && !rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
             if (!cmdCheck(type, cmd)) return
             if (!code) {
@@ -1258,7 +1294,7 @@
                     'codec': $('#customcodec').val()
                 }
             }
-            fofoCommon.putDB(code, pushData, 'customFts');
+            putDB(code, pushData, 'customFts');
             $("#customize").animate({ top: '100%' }, () => {
                 // 保存后标签跳转处理
                 var redirectTag, currentTag = $('.currentTag').text()
@@ -1425,7 +1461,7 @@
         $(".CodeMirror").addClass('CodeMirror-coderunner')
         $("#customize").css({ top: '0px', padding: '0px' });
         $("span.customscript > input").css({"height": "30px"})
-        var db = fofoCommon.getDB('codeHistory')
+        var db = getDB('codeHistory')
         createProgramSelect2(140, true)
         if (file) {
             var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
