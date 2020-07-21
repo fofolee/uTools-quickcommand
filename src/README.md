@@ -10,6 +10,10 @@
 
 - 简单的代码编辑及运行功能
 
+## 更新日志
+
+[CHANGELOG](https://github.com/fofolee/uTools-QuickerCommand/blob/master/src/CHANGELOG.md)
+
 ## 功能
 
 ### 1.内置命令
