@@ -129,8 +129,8 @@ quickcommand = {
             var options = {
                 onBeforeOpen: () => {
                     clickButton = i => {
-                        setTimeout(() => { swal.clickConfirm() }, 50);
                         reslove({ id: i, text: buttons[i] })
+                        swal.clickConfirm()
                     }
                     $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
@@ -276,21 +276,18 @@ quickcommand = {
         });
     },
 
-    showConfirmBox: function(title) {
-        return new Promise((reslove, reject) => {
-            let options = {
-                text: title,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: '确定！',
-                cancelButtonText: '手抖...',
-            }
-            Swal.fire(options).then(result => {
-                if (result.value) reslove()
-            })
-        });
+    showConfirmBox: async function (title) {
+        let options = {
+            text: title,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '确定！',
+            cancelButtonText: '手抖...'
+        }
+        let result = await Swal.fire(options)
+        if (result.value) return true;
     },
 
     // 关闭进程
@@ -387,6 +384,18 @@ let createNodeVM = (payload = "") => {
     return vm
 }
 
+let stringifyAll = item => {
+    var cache = [];
+    var string = JSON.stringify(item, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) return
+            cache.push(value);
+        }
+        return value;
+    }, '\t')
+    if (string != "{}") return string
+}
+
 let parseItem = item => {
     if (typeof (item) == "object") {
         if (Buffer.isBuffer(item)) {
@@ -394,19 +403,10 @@ let parseItem = item => {
             if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
             return bufferString + ']'
         } else {
-            try {
-                var cache = [];
-                var string = JSON.stringify(item, (key, value) => {
-                    if (typeof value === 'object' && value !== null) {
-                        if (cache.indexOf(value) !== -1) return
-                        cache.push(value);
-                    }
-                    return value;
-                }, '\t')
-                if (string != "{}") return string
-            } catch (error) { }
+            try { return stringifyAll(item) }
+            catch (error) { }
         }
-    } else if (typeof (item) == "undefined") {
+    } else if (typeof item == "undefined") {
         return "undefined"
     }
     return item.toString()
@@ -543,8 +543,24 @@ getQuickCommandScriptFile = ext => {
     return path.join(os.tmpdir(), `QuickCommandTempScript.${ext}`)
 }
 
-getBase64Ico = path => {
-    return fs.readFileSync(path, 'base64');
+getBase64Ico = async path => {
+    let sourceImage = 'data:image/png;base64,' + fs.readFileSync(path, 'base64')
+    let compressedImage = await getCompressedIco(path)
+    return compressedImage.length > sourceImage.length ? sourceImage : compressedImage
+}
+
+getCompressedIco = async (img, width = 40) => {
+    let compressedImage = await pictureCompress({ img: img, width: width, height: width, type: 'png', quality: 1 })
+    return compressedImage.img
+}
+
+getDefaultCommands = () => {
+    let baseDir = path.join(__dirname, 'defaults')
+    let defaultCommands = {}
+    fs.readdirSync(baseDir).forEach(f => {
+        defaultCommands[f.slice(0, -5)] = path.join(baseDir, f)
+    })
+    return defaultCommands
 }
 
 getFileInfo = options => {
