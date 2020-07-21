@@ -1,24 +1,4 @@
 !function () {
-    getDB = id => {
-        var db = utools.db.get(id),
-            dbData = db ? db.data : {};
-        return dbData;
-    }
-
-    putDB = (code, pushData, id) => {
-        var db = utools.db.get(id);
-        if (db) {
-            var rev = db._rev
-            var data = db.data
-            data[code] = pushData;
-            utools.db.put({ _id: id, data: data, _rev: rev });
-        } else {
-            var data = {};
-            data[code] = pushData;
-            utools.db.put({ _id: id, data: data });
-        }
-    }
-
     let isJsonQc = obj => {
         var keys = ["features", "program", "cmd", "output"]
         if (keys.filter(x => typeof obj[x] == 'undefined').length) return false
@@ -52,11 +32,11 @@
         // 单个命令导入
         if (pushData.single) {
             var code = pushData.qc.features.code;
-            putDB(code, pushData.qc, 'customFts');
+            fofoCommon.putDB(code, pushData.qc, 'customFts');
         // 多个命令导入
         } else {
             for (var code of Object.keys(pushData.qc)) {
-                putDB(code, pushData.qc[code], 'customFts');
+                fofoCommon.putDB(code, pushData.qc[code], 'customFts');
             }
         }
         return true
@@ -76,15 +56,13 @@
     }
 
     let clearAll = () => {
-        quickcommand.showConfirmBox('将会清空所有命令，请确认！').then(() => {
+        quickcommand.showConfirmBox('将会清空所有自定义命令，请确认！').then(x => {
+            if (!x) return
             utools.db.remove('customFts');
+            importDefaultCommands();
             clearAllFeatures();
             showOptions();
         })
-    }
-
-    let overwriteConfirm = () => {
-
     }
 
     programs = {
@@ -177,7 +155,7 @@
     showOptions = (tag = "默认") => {
         $("#options").empty().fadeIn();
         var currentFts = utools.getFeatures(),
-            customFts = getDB('customFts');
+            customFts = fofoCommon.getDB('customFts');
         var allTags = ["默认"]
         var featureList = `
         <div id="featureList">
@@ -611,7 +589,7 @@
 
     // 开关
     $("#options").on('change', 'input[type=checkbox]', function () {
-        var customFts = getDB('customFts'),
+        var customFts = fofoCommon.getDB('customFts'),
             code = $(this).parents('tr').attr('id')
         if (!utools.removeFeature(code)) {
             utools.setFeature(customFts[code].features);
@@ -766,9 +744,9 @@
             let res = await yuQueClient('user')
             let authorId = res.data.data.account_id
             let authorName = res.data.data.name
-            putDB('yuQueToken', yuQueToken, 'extraInfo')
-            putDB('authorName', authorName, 'extraInfo')
-            putDB('authorId', authorId, 'extraInfo')
+            fofoCommon.putDB('yuQueToken', yuQueToken, 'extraInfo')
+            fofoCommon.putDB('authorName', authorName, 'extraInfo')
+            fofoCommon.putDB('authorId', authorId, 'extraInfo')
             quickcommand.showMessageBox("设置成功~")
         } catch (e) {
             quickcommand.showMessageBox('Token 校验失败', "error")
@@ -777,7 +755,7 @@
 
     let createShareMenu = jsonQc => {
         let menu = ['复制到剪贴板', '导出到文件', '', '设置 Token']
-        let extraInfo = getDB('extraInfo')
+        let extraInfo = fofoCommon.getDB('extraInfo')
         if (jsonQc.authorId) {
             if (jsonQc.authorId == extraInfo.authorId) menu[2] = '更新分享'
             else if (jsonQc.fromShare) menu[2] = '评论'
@@ -792,7 +770,7 @@
     // 导出
     $("#options").on('click', '.exportBtn', async function () {
         var code = $(this).parents('tr').attr('id')
-        var jsonQc = getDB('customFts')[code]
+        var jsonQc = fofoCommon.getDB('customFts')[code]
         var stringifyQc = JSON.stringify(jsonQc, null, 4)
         var choise = await quickcommand.showButtonBox(createShareMenu(jsonQc))
         switch (choise.text) {
@@ -825,13 +803,14 @@
 
     // 一键分享到语雀
     let shareQCToYuQue = async jsonQc => {
-        let extraInfo = getDB('extraInfo')
+        let extraInfo = fofoCommon.getDB('extraInfo')
         if (!extraInfo.yuQueToken) return quickcommand.showMessageBox("请先设置 Token，点击底部「查看帮助」可查看 Token 设置方法", "error")
         jsonQc.authorId = extraInfo.authorId
         jsonQc.authorName = extraInfo.authorName
         let stringifyQc = JSON.stringify(jsonQc, null, 4)
+        console.log(jsonQc);
         if (stringifyQc.length > 5000000) return quickcommand.showMessageBox('命令大小超过5M无法分享，请检查图标或脚本内容是否过大', "error")
-        let platform = jsonQc.platform ? platform.join(" ") : "win32 darwin linux"
+        let platform = jsonQc.features.platform ? jsonQc.features.platform.join(" ") : "win32 darwin linux"
         let type = jsonQc.features.cmds[0].type
         let tags = jsonQc.tags ? jsonQc.tags.join(' ') : ""
         type || (type = 'keywords')
@@ -845,14 +824,13 @@
         }
         yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res, repo = extraInfo.authorId == 1496740 ? 'qcreleases' : 'qcshares'
-        console.log(repo);
         try {
             res = await yuQueClient.post(`repos/fofolee/${repo}/docs`, parameters)
             if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
             let docId = res.data.data.id
             res = await yuQueClient.put(`repos/fofolee/${repo}/docs/${docId}`, parameters)
             if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
-            putDB(jsonQc.features.code, jsonQc, 'customFts');
+            fofoCommon.putDB(jsonQc.features.code, jsonQc, 'customFts');
             return jsonQc
         } catch (error) {
             return quickcommand.showMessageBox(error, "error")
@@ -861,7 +839,7 @@
 
     let getSharedQCFromYuQue = async () => {
         $('#options').hide()
-        let extraInfo = getDB('extraInfo')
+        let extraInfo = fofoCommon.getDB('extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res = await yuQueClient('repos/fofolee/qcreleases/docs')
         let program, docs = res.data.data.map(d => {
@@ -893,7 +871,8 @@
 
     // 删除
     $("#options").on('click', '.delBtn', function () {
-        quickcommand.showConfirmBox('删除这个快捷命令').then(() => {
+        quickcommand.showConfirmBox('删除这个快捷命令').then(x => {
+            if (!x) return
             var code = $(this).parents('tr').attr('id'),
             db = utools.db.get("customFts"),
             data = db.data;
@@ -949,8 +928,7 @@
             if (!desc) desc = ' ';
             // 选择了图标的情况下
             if (iconame) {
-                base64ico = window.getBase64Ico(iconpath);
-                icon = "data:image/png;base64," + base64ico;
+                icon = await window.getBase64Ico(iconpath);
                 // 未自定义使用默认
             } else {
                 icon = iconpath;
@@ -1028,7 +1006,7 @@
                     'codec': $('#customcodec').val()
                 }
             }
-            putDB(code, pushData, 'customFts');
+            fofoCommon.putDB(code, pushData, 'customFts');
             $("#customize").animate({ top: '100%' }, () => {
                 // 保存后标签跳转处理
                 var redirectTag, currentTag = $('.currentTag').text()
@@ -1195,7 +1173,7 @@
         $(".CodeMirror").addClass('CodeMirror-coderunner')
         $("#customize").css({ top: '0px', padding: '0px' });
         $("span.customscript > input").css({"height": "30px"})
-        var db = getDB('codeHistory')
+        var db = fofoCommon.getDB('codeHistory')
         createProgramSelect2(140, true)
         if (file) {
             var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
