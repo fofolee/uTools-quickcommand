@@ -12,7 +12,7 @@
 
 ## 更新日志
 
-[CHANGELOG](https://github.com/fofolee/uTools-QuickerCommand/blob/master/src/CHANGELOG.md)
+[CHANGELOG](https://github.com/fofolee/uTools-QuickerCommand/blob/master/src/helps/CHANGELOG.md)
 
 ## 功能
 

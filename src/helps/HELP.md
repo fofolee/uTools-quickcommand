@@ -1,6 +1,12 @@
 [TOC]
 
-# 一、添加命令
+# 一、更新日志
+
+[更新日志戳我](CHANGELOG.html)
+
+
+
+# 二、添加命令
 
 ## 基础
 
@@ -112,7 +118,7 @@
 
 ![](https://i.imgur.com/T45uJi5.png)
 
-# 二、导出/分享/导入
+# 三、导出/分享/导入
 
 #### 导出命令
 
@@ -166,7 +172,7 @@
 
 2. 访问[ https://www.yuque.com/fofolee/qcreleases ]( https://www.yuque.com/fofolee/qcreleases )即可查看发布的命令
 
-# 三、关于
+# 四、关于
 
 #### 作者
 
