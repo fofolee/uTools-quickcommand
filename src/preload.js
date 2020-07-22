@@ -81,7 +81,7 @@ quickcommand = {
     },
 
     // 显示输入框
-    showInputBox: function (placeHolders) {
+    showInputBox: function (placeHolders, title = '') {
         return new Promise((reslove, reject) => {
             placeHolders || (placeHolders = [""])
             if (!(placeHolders instanceof Array)) return reject("参数类型错误：应为数组")
@@ -100,6 +100,7 @@ quickcommand = {
                     })
                     $(".output").is(":parent") ? utools.setExpendHeight(600) : modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
+                title: title,
                 html: html,
                 focusConfirm: false,
                 showCancelButton: true,
@@ -116,7 +117,7 @@ quickcommand = {
     },
 
     // 显示选项按钮
-    showButtonBox: function (buttons) {
+    showButtonBox: function (buttons, title = '') {
         return new Promise((reslove, reject) => {
             if (!(buttons instanceof Array)) return reject("参数类型错误：应为数组")
             utools.setExpendHeight(600)
@@ -134,6 +135,7 @@ quickcommand = {
                     $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
                 html: html,
+                title: title,
                 backdrop: utools.isDarkColors() ? '#ffffff26' : '#bbbbbb80',
                 showConfirmButton: false
             }
@@ -553,6 +555,8 @@ py_beautify = (code, cb) => {
         })
     })
 }
+
+processPlatform = process.platform
 
 getQuickCommandScriptFile = ext => {
     return path.join(os.tmpdir(), `QuickCommandTempScript.${ext}`)
