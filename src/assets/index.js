@@ -128,16 +128,19 @@
                 // 启动子命令输入
                 // 清空输出
                 // $("#out").empty();
+                var regex = new RegExp(String.raw`\{\{subinput(:.+?){0,1}\}\}`)
+                var matched = cmd.match(regex)
+                var placeholder = matched[1] || ':请输入'
                 var subinput = '';
                 var setSubInput = () => {
                     utools.setSubInput(({text}) => {
                         subinput = text;
-                    }, '请输入');
+                    }, placeholder.slice(1));
                 }
                 handleEnter = (event) => {
                     if (event.keyCode == 13) {
                         $("#out").append(`<p style="color: #438eff">>> ${new Date()}</p>`);
-                        var execmd = cmd.replace(/\{\{subinput\}\}/mg, subinput);
+                        var execmd = cmd.replace(matched[0], subinput);
                         runQuickCommand(execmd, option, db.output, true);
                     }
                 };
@@ -249,8 +252,7 @@
                 console.log(code);
                 utoolsFull.removeFeature(code)
                 let uid = Number(Math.random().toString().substr(3, 3) + (Date.now() + i * 10000)).toString(36)
-                let type = customFts[x].features.cmds[0].type
-                type || (type = 'key')
+                let type = customFts[x].features.cmds[0].type || 'key'
                 let newCode = type + '_' + uid
                 let newFts = customFts[x]
                 newFts.features.code = newCode
@@ -663,8 +665,8 @@
         return options
     }
 
-    let createTypeSelect2 = (width = false) => {
-        var data = [
+    let getTypeSheet = () => {
+        return [
             {
                 id: "key",
                 text: "关键字",
@@ -686,6 +688,10 @@
                 html: "<img src='img/file.svg'><span>复制/选中文件</span><div>匹配拖入主输入框的文件或唤出语音面板时选中的文件，可以获取复制及选中的文件信息作为变量</div>"
             }
         ]
+    }
+
+    let createTypeSelect2 = (width = false) => {
+        var data = getTypeSheet()
         $('#type').select2(getSelect2Option(data, width));
     }
 
@@ -761,7 +767,7 @@
         var specialVars = []
         $("#vars option").each(i => {
             var selector = $("#vars option").eq(i)
-            if (selector.css('display') != 'none') specialVars.push(selector.val())
+            if (!selector.prop('disabled')) specialVars.push(selector.val())
         })
         localStorage['specialVars'] = specialVars
     }
@@ -1099,17 +1105,23 @@
         let stringifyQc = JSON.stringify(jsonQc, null, 4)
         console.log(jsonQc);
         if (stringifyQc.length > 5000000) return quickcommand.showMessageBox('命令大小超过5M无法分享，请检查图标或脚本内容是否过大', "error")
-        let platform = jsonQc.features.platform ? jsonQc.features.platform.join(" ") : "win32 darwin linux"
-        let type = jsonQc.features.cmds[0].type
+        let type = jsonQc.features.cmds[0].type || 'key'
         let tags = jsonQc.tags ? jsonQc.tags.join(' ') : ""
-        type || (type = 'keywords')
+        let typeDescription = getTypeSheet().filter(x => x.id == type)[0].text
+        let custom_description = {
+            authorName: jsonQc.authorName,
+            program: jsonQc.program,
+            type: typeDescription,
+            platform: jsonQc.features.platform || ['win32', 'darwin', 'linux'],
+            tags: tags
+        }
         let parameters = {
             title: jsonQc.features.explain,
             slug: jsonQc.features.code,
             public: 1,
             format: "markdown",
             body: '```json\n' + stringifyQc + '\n```',
-            custom_description: `作者：${jsonQc.authorName} | 环境：${jsonQc.program} | 匹配：${type} | 平台：${platform} | 标签：${tags}`
+            custom_description: JSON.stringify(custom_description)
         }
         yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res, repo = extraInfo.authorId == 1496740 ? 'qcreleases' : 'qcshares'
@@ -1131,15 +1143,25 @@
         let extraInfo = getDB('extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res = await yuQueClient('repos/fofolee/qcreleases/docs')
-        let program, docs = res.data.data.map(d => {
-            program = d.custom_description.match(/环境：(.*?) /)
-            return {
-                title: d.title,
-                description: d.custom_description,
-                slug: d.slug,
-                icon: `logo/${program[1]}.png`
-            }
-        })
+        let description, platform = window.processPlatform
+        let docs = res.data.data
+            .filter(d => JSON.parse(d.custom_description).platform.includes(platform))
+            .sort((x, y) => {
+                if (y.updated_at > x.updated_at) return 1
+                else return -1
+            })
+            .map(d => {
+                description = JSON.parse(d.custom_description)
+                return {
+                    title: d.title,
+                    description: `<span class="iconfont icon-yonghu"></span> ${description.authorName}
+                    &nbsp; <span class="iconfont icon-wenjianleixingpeizhi"></span> ${description.type}
+                    &nbsp; <span class="iconfont icon-biaoqian"></span> ${description.tags}
+                    &nbsp; <span class="iconfont icon-shijian"></span> ${d.updated_at.split('T')[0]}`,
+                    slug: d.slug,
+                    icon: `logo/${description.program}.png`
+                }
+            })
         let choise = await quickcommand.showSelectList(docs, { optionType: 'json' })
         let doc = await yuQueClient(`repos/fofolee/qcreleases/docs/${choise.slug}?raw=1`)
         let body = doc.data.data.body
@@ -1260,7 +1282,7 @@
                 }];
             }
             // 需要子输入框
-            if (cmd.includes('{{subinput}}')) {
+            if (cmd.includes('{{subinput')) {
                 hasSubInput = true;
             } else {
                 hasSubInput = false;
@@ -1357,27 +1379,26 @@
         }
     }
 
+    let replaceTempInputVals = async cmd => {
+        let tempInputVals = []
+        let specilaVals = ['input', 'subinput', 'pwd', 'SelectFile', 'WindowInfo', 'MatchedFiles']
+        specilaVals.forEach(x => {
+            let m = cmd.match(new RegExp('{{' + x + '.*?}}', 'g'))
+            m && m.forEach(y => tempInputVals.includes(y) || tempInputVals.push(y))
+        })
+        if (!tempInputVals.length) return cmd
+        let inputs = await quickcommand.showInputBox(tempInputVals, '需要临时为以下变量赋值')
+        tempInputVals.forEach((t, n) => {
+            cmd = cmd.replace(new RegExp(t, 'g'), inputs[n])
+        })
+        return cmd
+    }
+
     let runCurrentCommand = async () => {
         if ($("#customize").is(":parent")) {
             var cmd = window.editor.getValue()
             cmd = special(cmd)
-            var requireInputVal = ['{{input}}', '{{subinput}}', '{{pwd}}', '{{SelectFile}}']
-                .filter(x => cmd.includes(x));
-            if (requireInputVal.length) {
-                var html = requireInputVal
-                    .map(r => `<input id="${r}" class="swal2-input" style="text-align: center; margin: 0.5rem auto" placeholder="${r}">`)
-                    .join("")
-                await Swal.fire({
-                    title: "需要临时为以下变量赋值",
-                    html: html,
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        requireInputVal.forEach(r => {
-                            cmd = cmd.replace(new RegExp(r, 'g'), document.getElementById(r).value)
-                        })
-                    }
-                })
-            }
+            // cmd = await replaceTempInputVals(cmd)
             var program = $("#program").val()
             var output = $("#output").val()
             var terminal = false
