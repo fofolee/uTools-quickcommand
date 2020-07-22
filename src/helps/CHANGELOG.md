@@ -10,7 +10,7 @@
 
 可以在线下载分享的命令
 
-![UfDkdS.png](https://s1.ax1x.com/2020/07/20/UfDkdS.png)
+![UfDkdS.png](https://i.imgur.com/L3QnUPg.png)
 
 #### 暗黑模式
 
@@ -77,6 +77,7 @@
 
 - 新增` {{MatchedFiles}} `用来获取匹配的文件
 - `{{MatchedFiles}}` 及` {{WindowInfo}} `支持获取特殊的键值，比如通过 `{{WindowInfo.id}}`获取匹配的窗口 id ，通过`{{MatchedFiles[0].path}}`获取匹配的第一个文件的路径
+- 可以通过`{{subinput:placeholder}}`的格式来自定义占位符
 - `{{pwd}} `获取失败时返回桌面路径
 
 #### 输出

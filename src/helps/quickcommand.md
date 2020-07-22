@@ -2,12 +2,10 @@
 
 ## quickcommand
 
-#### `showButtonBox(buttons)`
+#### `showButtonBox(buttons, title)`
 
-- callback:  Function  回调函数
-  - index: Integer  按钮的序号，从0开始
-  - text: String  按钮的文本
 - buttons: Array  每一个元素对应一个按钮
+- title: String | undefined 对话框标题
 - 返回: Promise
   - id: Integer  按钮的序号，从0开始
   - text: String  按钮的文本
@@ -56,9 +54,10 @@ quickcommand.showButtonBox(['打开文件', '在文件管理器中定位', '复�
 })
 ```
 
-####`showInputBox(placeHolders)`
+####`showInputBox(placeHolders, title)`
 
 - placeHolders: Array  每一个占位符对应一个输入框
+- title: String | undefined 对话框标题
 - 返回: Promise
   - values: Array  所以输入框的值
 
@@ -395,9 +394,9 @@ quickcommand.kill(16084)
   - **kill**: *ƒ (pid, signal = 'SIGTERM')*
   - **payload**: ""
   - **setTimeout**: *ƒ (callback, ms)*
-  - **showButtonBox**: *ƒ (buttons)*
+  - **showButtonBox**: *ƒ (buttons, title='')*
   - **showConfirmBox**: *ƒ (title)*
-  - **showInputBox**: *ƒ (placeHolders)*
+  - **showInputBox**: *ƒ (placeHolders, title='')*
   - **showMessageBox**: *ƒ (title, icon = "success", time = 3000)*
   - **showSelectList**: *ƒ (selects, opt = {})*
   - **showTextAera**: *ƒ (placeholder = "")*

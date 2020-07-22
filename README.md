@@ -33,7 +33,7 @@
 
 ![UfBox1.png](https://i.imgur.com/pKKWqdT.png)
 
-![UfDkdS.png](https://s1.ax1x.com/2020/07/20/UfDkdS.png)
+![UfDkdS.png](https://i.imgur.com/L3QnUPg.png)
 
 ### 3.自定义命令
 
@@ -100,6 +100,7 @@
 - `{{ClipText}}` 获取剪贴板的文本
 - `{{SelectText}}` 获取选中的文本 (已弃用)
 - `{{subinput}}`获取子输入框的文本，具有此变量时会在进入插件时自动启动子输入框
+  - 可以通过`{{subinput:placeholder}}`的格式来自定义占位符
 
 匹配**窗口/进程**时可用
 
