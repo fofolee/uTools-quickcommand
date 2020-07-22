@@ -1398,7 +1398,7 @@
         if ($("#customize").is(":parent")) {
             var cmd = window.editor.getValue()
             cmd = special(cmd)
-            // cmd = await replaceTempInputVals(cmd)
+            cmd = await replaceTempInputVals(cmd)
             var program = $("#program").val()
             var output = $("#output").val()
             var terminal = false
