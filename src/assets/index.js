@@ -128,8 +128,8 @@
                 // 启动子命令输入
                 // 清空输出
                 // $("#out").empty();
-                var regex = new RegExp(String.raw`\{\{subinput(:.+?){0,1}\}\}`)
-                var matched = cmd.match(regex)
+                var rule = String.raw`\{\{subinput(:.+?){0,1}\}\}`
+                var matched = cmd.match(new RegExp(rule))
                 var placeholder = matched[1] || ':请输入'
                 var subinput = '';
                 var setSubInput = () => {
@@ -140,8 +140,10 @@
                 handleEnter = (event) => {
                     if (event.keyCode == 13) {
                         $("#out").append(`<p style="color: #438eff">>> ${new Date()}</p>`);
-                        var execmd = cmd.replace(matched[0], subinput);
-                        runQuickCommand(execmd, option, db.output, true);
+                        console.log(cmd);
+                        cmd = cmd.replace(new RegExp(rule, 'g'), subinput);
+                        console.log(cmd);
+                        runQuickCommand(cmd, option, db.output, true);
                     }
                 };
                 setSubInput();
@@ -1021,8 +1023,8 @@
             showCancelButton: true,
             preConfirm: () => {
                 var actionType = $("#actionType").val()
-                var actionArgs = $("#actionArgs").val()
-                if ($("#isString").is(':checked')) actionArgs = "String.raw\`" + actionArgs + "\`"
+                var actionArgs = $("#actionArgs").val().replace(/\\/g, '\\\\')
+                if ($("#isString").is(':checked')) actionArgs = `"` + actionArgs + `"`
                 var action = `${actionType}(${actionArgs})`
                 if (actionType == 'utools.ubrowser.goto') action += `.run()`
                 window.editor.replaceSelection(`${action}\n`)
@@ -1306,7 +1308,13 @@
                 hasSubInput: hasSubInput,
                 scptarg: scptarg
             }
-            if (extraInfo) Object.assign(pushData, extraInfo)
+            if (extraInfo) {
+                Object.assign(pushData, extraInfo)
+                // 通过模拟访问页面来统计下载量
+                extraInfo.fromShare && utools.ubrowser.goto(`https://www.yuque.com/fofolee/qcreleases/${code}`).run({
+                show: false
+            })
+            }
             if (tags) pushData.tags = tags
             if (program == 'custom') {
                 pushData.customOptions = {
