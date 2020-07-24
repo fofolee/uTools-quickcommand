@@ -2,6 +2,8 @@
 
 ## quickcommand
 
+### ❖ UI 交互
+
 #### `showButtonBox(buttons, title)`
 
 - buttons: Array  每一个元素对应一个按钮
@@ -253,6 +255,8 @@ quickcommand.showConfirmBox().then(confirmed => {
 })
 ```
 
+### ❖ 延时函数
+
 ####`sleep(ms)`
 
 - ms:  Integer 等待的毫秒
@@ -281,7 +285,10 @@ quickcommand.setTimeout(()=>{
   console.log('2000毫秒后执行')
 }, 2000)
 ```
+### ❖ 前端封装
+
 ####`htmlParse(html)`
+
 - html:  String  需要解析的`html`文本
 - 返回: Object `DOM`对象
 
@@ -295,41 +302,75 @@ var href = quickcommand.htmlParse(html).querySelector('a').href
 console.log(`解析出来的a标签地址为${href}`)
 ```
 
-#### `downloadFile(url, defaultPath, showDialog)`
+#### `downloadFile(url, file | options)`
 
 - url:  String 地址
-- defaultPath: String | undefined  当`showDialog`为`false`时，表示下载文件的绝对路径，当`showDialog`为`true`时，表示对话框默认显示的文件名
-- showDialog: Boolean | undefined 是否弹出对话框 ，默认为`false`
+- file | options : 
+  - file: String 当赋值为文件路径时，则表示下载文件的绝对路径
+  - options: Object | undefined 不赋值时，则会弹出对话框要求选择下载到的路径, 赋值为 `Object `时，表示弹出对话框的 `options `，格式和 `utools.showSaveDialog` 中的 `options `一致
 - 返回: Promise 
-  - content: Buffer 网络响应内容的`Buffer `
+  - content: Buffer 文件的内容
 
-下载文件，也可单纯用于`http`请求，无论`defaultPath`是否定义，都将得到响应内容的`Buffer`，当`showDialog`为`false`且定义了`defaultPath`时，会下载文件为``defaultPath`，当`showDialog`为`true`时，会弹出保存文件对话框，`defaultPath`为对话框默认显示的文件名
+下载文件，可选直接下载到指定路径，或者弹出对话框选择下载路径
 
 ```js
-// 返回http响应内容
-quickcommand.downloadFile('https://www.baidu.com').then(r=>{
-  console.log(r.toString())
-})
-
 // 下载文件到D:/
 quickcommand.downloadFile('https://res.u-tools.cn/currentversion/uTools-1.1.3.exe', 'D:/')
 
 // 下载文件，并弹出对话框询问保存路径
-quickcommand.downloadFile('https://res.u-tools.cn/currentversion/uTools-1.1.3.exe', 'uTools.exe', true)
+quickcommand.downloadFile('https://res.u-tools.cn/currentversion/uTools-1.1.3.exe')
 ```
 
-#### `payload`
+#### `uploadFile(url, file | options, name, formData)`
 
-- String 对应`utools.onPluginEnter`的 `payload` 
+- url:  String 地址
+- file | options : 
+  - file: String 当赋值为文件路径时，则表示要上传的文件的绝对路径
+  - options: Object | undefined 不赋值时，则会弹出对话框要求选择要上传的文件的路径, 赋值为 `Object `时，表示弹出对话框的 `options `，格式和 `utools.showOpenDialog` 中的 `options `一致
+- name: String | undefined 文件名，默认为`file`
+- formData: Object | undefined 其他需要添加的表单数据
+- 返回: Promise 
+  - response: Object 响应内容
 
-当匹配模式为`关键字`时，返回进入插件的关键字；为`正则`时，返回匹配的文本；为`窗口`时，返回匹配的窗口信息；为`文件`时，返回匹配的文件信息
-
- **示例** 
+上传文件，可以直接上传指定文件，或者弹出对话框选择要上传的文件，可以自定义表单数据
 
 ```js
-// 匹配模式为正则/划词时
-var text = quickcommand.payload
-console.log(`主输入框匹配的文本为${text}`)
+// 上传图片到图床
+quickcommand.uploadFile("https://imgkr.com/api/v2/files/upload", "C:\\test.jpg").then(res=>{
+  console.log('上传成功，图片地址为:' + res.data.data)
+})
+
+// 包含额外表单数据
+quickcommand.uploadFile("https://catbox.moe/user/api.php", "C:\\test.jpg", 'fileToUpload', {
+  "reqtype": "fileupload"
+}).then(res=>{
+  console.log('上传成功，图片地址为:' + res.data)
+})
+```
+
+### ❖ nodejs 封装
+
+#### `loadRemoteScript(url)`
+
+- url:  String 脚本地址
+
+- 返回: Promise 
+  - Object: Object 返回从远程脚本加载的对象
+
+加载一个远程脚本文件
+
+```js
+let remote = 'https://cdn.jsdelivr.net/npm/sweetalert2@9'
+quickcommand.loadRemoteScript(remote).then(swal => {
+    swal.fire('已加载 sweetalert2 并成功弹窗')
+})
+
+// async/await
+(async () => {
+    let remote = 'https://cdn.jsdelivr.net/npm/sweetalert2@9'
+    const swal = await quickcommand.loadRemoteScript(remote)
+    swal.fire('已加载 sweetalert2 并成功弹窗')
+})()
 ```
 
 #### `kill(pid, signal)`
@@ -345,6 +386,22 @@ console.log(`主输入框匹配的文本为${text}`)
 quickcommand.kill(16084)
 ```
 
+### ❖ utools 封装
+
+#### `payload`
+
+- String 对应`utools.onPluginEnter`的 `payload` 
+
+当匹配模式为`关键字`时，返回进入插件的关键字；为`正则`时，返回匹配的文本；为`窗口`时，返回匹配的窗口信息；为`文件`时，返回匹配的文件信息
+
+ **示例** 
+
+```js
+// 匹配模式为正则/划词时
+var text = quickcommand.payload
+console.log(`主输入框匹配的文本为${text}`)
+```
+
 #### `simulateCopy()`
 
 模拟复制操作
@@ -353,23 +410,34 @@ quickcommand.kill(16084)
 
 模拟粘贴操作
 
-## 上下文一览
+## 其他
 
-#### nodejs
+### nodejs
 
-- [文档]( http://nodejs.cn/api/ )
+#### ❖ <a href ="javascript:utools.ubrowser.goto('http://nodejs.cn/api/').run({width: 1280, height: 920})">文档</a>
 
-- **require**
--  **os**: {arch: *ƒ*, cpus: *ƒ*, endianness: *ƒ*, freemem: *ƒ*, getPriority: *ƒ*, …} 
--  **fs**: {appendFile: *ƒ*, appendFileSync: *ƒ*, access: *ƒ*, accessSync: *ƒ*, chown: *ƒ*, …} 
--  **path**: {resolve: *ƒ*, normalize: *ƒ*, isAbsolute: *ƒ*, join: *ƒ*, relative: *ƒ*, …} 
--  **child_process**: {_forkChild: *ƒ*, ChildProcess: *ƒ*, exec: *ƒ*, execFile: *ƒ*, execFileSync: *ƒ*, …} 
--  **util**: {_errnoException: *ƒ*, _exceptionWithHostPort: *ƒ*, _extend: *ƒ*, callbackify: *ƒ*, debuglog: *ƒ*, …} 
-- **axios** [文档]( https://www.kancloud.cn/yunye/axios/234845)
+####  ❖ 上下文
 
-#### electron
+  - **require**: *ƒ require(path)* 
+  - **os**: {arch: *ƒ*, cpus: *ƒ*, endianness: *ƒ*, freemem: *ƒ*, getPriority: *ƒ*, …} 
+  - **fs**: {appendFile: *ƒ*, appendFileSync: *ƒ*, access: *ƒ*, accessSync: *ƒ*, chown: *ƒ*, …} 
+  - **path**: {resolve: *ƒ*, normalize: *ƒ*, isAbsolute: *ƒ*, join: *ƒ*, relative: *ƒ*, …} 
+  - **child_process**: {_forkChild: *ƒ*, ChildProcess: *ƒ*, exec: *ƒ*, execFile: *ƒ*, execFileSync: *ƒ*, …} 
+  - **util**: {_errnoException: *ƒ*, _exceptionWithHostPort: *ƒ*, _extend: *ƒ*, callbackify: *ƒ*, debuglog: *ƒ*, …} 
+  - **Buffer**: *ƒ Buffer(arg, encodingOrOffset, length)* 
+  - **process**: process {version: "v12.14.1", versions: {…}, arch: "x64", …} 
+  - **TextDecoder**: *ƒ TextDecoder()*
+  - **TextEncoder**: *ƒ TextEncoder()*
+  - **URL**: *ƒ URL()*
+  - **URLSearchParams**: *ƒ URLSearchParams()*
+  - **axios**: *ƒ* *wrap()*  
+    - [文档](./axios.html)
 
-- [文档]( http://www.electronjs.org/docs )
+### electron
+
+#### ❖ <a href ="javascript:utools.ubrowser.goto('http://www.electronjs.org/docs').run({width: 1280, height: 920})">文档</a>
+
+#### ❖ 上下文
 
 - **clipboard**: Object
 - **contextBridge**: Object
@@ -379,30 +447,16 @@ quickcommand.kill(16084)
 - **nativeImage**: Object
 - **shell**: Object
 - **webFrame**: WebFrame
-####  utools
 
-  - [文档]( https://u.tools/docs/developer/api.html )
-  - all except below
-  - ~~db~~
-  - ~~removeFeature~~
-  - ~~setFeature~~
+###  utools
 
-#### quickcommand
+#### ❖ <a href ="javascript:utools.ubrowser.goto('https://u.tools/docs/developer/api.html').run({width: 1280, height: 920})">文档</a>
 
-  - **downloadFile**: *ƒ (url, defaultPath = '', showDialog = false)*
-  - **htmlParse**: *ƒ (html)*
-  - **kill**: *ƒ (pid, signal = 'SIGTERM')*
-  - **payload**: ""
-  - **setTimeout**: *ƒ (callback, ms)*
-  - **showButtonBox**: *ƒ (buttons, title='')*
-  - **showConfirmBox**: *ƒ (title)*
-  - **showInputBox**: *ƒ (placeHolders, title='')*
-  - **showMessageBox**: *ƒ (title, icon = "success", time = 3000)*
-  - **showSelectList**: *ƒ (selects, opt = {})*
-  - **showTextAera**: *ƒ (placeholder = "")*
-  - **simulateCopy**: *ƒ ()*
-  - **simulatePaste**: *ƒ ()*
-  - **sleep**: *ƒ (ms)*
-  - **updateSelectList**: *ƒ (opt, id)*
+#### ❖ 上下文
+
+- all except below
+- ~~db~~
+- ~~removeFeature~~
+- ~~setFeature~~
 
 
