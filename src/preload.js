@@ -84,7 +84,7 @@ quickcommand = {
     showInputBox: function (placeHolders, title = '') {
         return new Promise((reslove, reject) => {
             placeHolders || (placeHolders = [""])
-            if (!(placeHolders instanceof Array)) return reject("参数类型错误：应为数组")
+            if (!(placeHolders instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof placeHolders}`))
             utools.setExpendHeight(600)
             var html = ""
             var inputBoxNumbers = placeHolders.length
@@ -119,7 +119,7 @@ quickcommand = {
     // 显示选项按钮
     showButtonBox: function (buttons, title = '') {
         return new Promise((reslove, reject) => {
-            if (!(buttons instanceof Array)) return reject("参数类型错误：应为数组")
+            if (!(buttons instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof buttons}`))
             utools.setExpendHeight(600)
             var html = ``
             var buttonBoxNumbers = buttons.length
@@ -162,7 +162,7 @@ quickcommand = {
     // 显示选项列表
     showSelectList: function (selects, opt = {}) {
         return new Promise((reslove, reject) => {
-            if (!(selects instanceof Array)) return reject("参数类型错误：应为数组")
+            if (!(selects instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof selects}`))
             opt.optionType || (opt.optionType = 'plaintext')
             typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
             typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
@@ -302,17 +302,16 @@ quickcommand = {
     },
 
     // 下载文件
-    downloadFile: function (url, defaultPath = '', showDialog = false) {
+    downloadFile: function (url, file = {}) {
         return new Promise((reslove, reject) => {
-            var filepath = showDialog ? utools.showSaveDialog({ defaultPath: defaultPath }) : defaultPath
+            if (file instanceof Object) file = utools.showSaveDialog(JSON.parse(JSON.stringify(file)))
             axios({
                 method: 'get',
                 url: url,
                 responseType: 'arraybuffer'
             }).then(res => {
                 var filebuffer = Buffer.from(res.data)
-                if (!filepath) reslove(filebuffer)
-                fs.writeFile(filepath, filebuffer, err => {
+                fs.writeFile(file, filebuffer, err => {
                     if (err) reject(err)
                     else reslove(filebuffer)
                 })
@@ -320,6 +319,41 @@ quickcommand = {
                 reject(err)
             })
         })
+    },
+
+    // 上传文件
+    uploadFile: function(url, file = {}, name = 'file', formData = {}) {
+        return new Promise((reslove, reject) => {
+            if (file instanceof Object) file = utools.showOpenDialog(JSON.parse(JSON.stringify(file)))[0]
+            if (!fs.existsSync(file)) return reject('文件不存在')
+            var form = new FormData();
+            var arraybuffer = fs.readFileSync(file).buffer
+            var objfile = new File([arraybuffer], path.basename(file))
+            form.append(name, objfile)
+            var keys = Object.keys(formData)
+            if (keys.length) keys.forEach(k => form.append(k, formData[k]))
+            axios.post(url, form, {
+                headers: {
+                    'accept': 'application/json',
+                    'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+                }
+            }).then(res => {
+                reslove(res)
+            }).catch(err => {
+                reject(err)
+            })
+        })
+    },
+
+    // 载入在线资源
+    loadRemoteScript: async function (url, forceUpdate = false) {
+        if (!/^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/.test(url)) throw 'url 不合法'
+        let remote = url
+        let root = path.join(os.tmpdir(), 'qcRemoteScript')
+        if (!fs.existsSync(root)) fs.mkdirSync(root)
+        let local = path.join(root, require('crypto').createHash('md5').update(url).digest('hex'))
+        if (forceUpdate || !fs.existsSync(local)) await this.downloadFile(remote, local)
+        return require(local)
     }
 }
 
@@ -377,8 +411,13 @@ let getSandboxFuns = () => {
         os: os,
         child_process: child_process,
         util: util,
+        TextDecoder: TextDecoder,
+        TextEncoder: TextEncoder,
+        URL: URL,
+        URLSearchParams: URLSearchParams,
         axios: axios,
-        alert: alert
+        alert: alert,
+        confirm: confirm
     }
     shortCodes.forEach(f => {
         sandbox[f.name] = f
@@ -411,14 +450,19 @@ let stringifyAll = item => {
         return value;
     }, '\t')
     if (string != "{}") return string
+    else return item.toString()
 }
 
 let parseItem = item => {
-    if (typeof (item) == "object") {
+    if (typeof item == "object") {
         if (Buffer.isBuffer(item)) {
             var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
             if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
             return bufferString + ']'
+        } else if (item instanceof ArrayBuffer) {
+            return `ArrayBuffer(${item.byteLength})`
+        } else if (item instanceof Blob) {
+            return `Blob {size: ${item.size}, type: "${item.type}"}`
         } else {
             try { return stringifyAll(item) }
             catch (error) { }
