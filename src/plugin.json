@@ -9,6 +9,9 @@
     "unpack":"autopep8.py",
     "logo": "logo.png",
     "preload": "preload.js",
+    "pluginSetting": {
+        "single": false
+    },
     "features": [
         {
             "code": "options",
