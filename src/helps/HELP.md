@@ -148,11 +148,9 @@
 
 **注意：**
 
-1. 为了保证命令的安全和质量，分享后的命令必须经过快捷命令插件作者本人`发布`后才能出现在`分享中心`当中。所有分享而暂未发布的命令在[ https://www.yuque.com/g/fofolee/qcshares/docs ]( https://www.yuque.com/g/fofolee/qcshares/docs )可以查看到（仅知识库成员访问），所有已发布的命令在[ https://www.yuque.com/fofolee/qcreleases ]( https://www.yuque.com/fofolee/qcreleases )可以查看到(所有人均可访问)。
+1. 命令的分享基于语雀共享知识库实现，语雀的共享知识库对知识库的成员没有太大约束，用官方的话来说，是` 基于信任和一起共建的基础上 `的，目前加入成为成员不需要通过审批确认，后期如果出现捣乱的情况会踢出成员并开启加入审批。先在此约定：**命令的分享请通过插件实现，不要在 web 端（即语雀知识库内）直接修改编辑分享的命令，否则可能会导致一些不可预知的错误**。
 
-![](https://i.imgur.com/mn1qeTT.png)
-
-2. 请自觉规范自己的行为，所有操作均有日志，所有未发布的命令均视为不安全的命令
+2. 同时为了保证命令的安全和质量，分享后的命令必须经过快捷命令插件作者本人`发布`后才能出现在`分享中心`当中。所有已发布的命令在[ https://www.yuque.com/fofolee/qcreleases ]( https://www.yuque.com/fofolee/qcreleases )可以查看到。
 
 #### 导入命令
 
@@ -169,7 +167,7 @@
 
 ![UfBox1.png](https://i.imgur.com/pKKWqdT.png)
 
-![UfDkdS.png](https://i.imgur.com/L3QnUPg.png)
+![UfDkdS.png](https://i.imgur.com/ikAxHY1.png)
 
 2. 访问[ https://www.yuque.com/fofolee/qcreleases ]( https://www.yuque.com/fofolee/qcreleases )即可查看发布的命令
 

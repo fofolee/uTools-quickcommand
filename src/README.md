@@ -28,18 +28,18 @@
 
 ![UaJD8U.png](https://i.imgur.com/SI21vCg.png)
 
-![UJ3RyV.gif](https://s1.ax1x.com/2020/07/13/UJ3RyV.gif)
+![ap24Hg.gif](https://s1.ax1x.com/2020/07/26/ap24Hg.gif)
 
 ### 2.导入、导出、分享命令
 
 - 支持通过文件导入导出命令
-- 支持通过剪贴导入导出命令
+- 支持通过剪贴板导入导出命令
 - 支持一键分享命令
 - 支持在线获取及导入别人分享的命令
 
 ![UfBox1.png](https://i.imgur.com/pKKWqdT.png)
 
-![UfDkdS.png](https://i.imgur.com/L3QnUPg.png)
+![UfDkdS.png](https://i.imgur.com/ikAxHY1.png)
 
 ### 3.自定义命令
 

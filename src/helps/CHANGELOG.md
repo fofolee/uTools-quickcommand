@@ -10,7 +10,7 @@
 
 可以在线下载分享的命令
 
-![UfDkdS.png](https://i.imgur.com/L3QnUPg.png)
+![UfDkdS.png](https://i.imgur.com/ikAxHY1.png)
 
 #### 暗黑模式
 
@@ -21,6 +21,8 @@
 内置`文本处理`，`find GUI`，`执行 shell 命令`等多个实用快捷命令，均使用新版本新增功能实现
 
 ![UfrkOx.png](https://s1.ax1x.com/2020/07/20/UfrkOx.png)
+
+![ap24Hg.gif](https://s1.ax1x.com/2020/07/26/ap24Hg.gif)
 
 #### RunCode
 
