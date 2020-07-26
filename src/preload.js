@@ -175,7 +175,7 @@ quickcommand = {
                     item.text = ''
                     Object.keys(s).forEach(k => item[k] = s[k])
                     item.id = i
-                    s.icon && (item.text += `<div class="icon"><img src="${s.icon}"></div>`)
+                    s.icon && (item.text += `<div class="icon"><img src="${s.icon}" onerror="this.src='./logo.png'"></div>`)
                     s.title && (item.text += `<div class="title">${s.title}</div>`)
                     s.description && (item.text += `<div class="description">${s.description}</div>`)
                 } else {
@@ -324,11 +324,16 @@ quickcommand = {
     // 上传文件
     uploadFile: function(url, file = {}, name = 'file', formData = {}) {
         return new Promise((reslove, reject) => {
-            if (file instanceof Object) file = utools.showOpenDialog(JSON.parse(JSON.stringify(file)))[0]
-            if (!fs.existsSync(file)) return reject('文件不存在')
+            var objfile
+            if (file instanceof File) {
+                objfile = file
+            } else {
+                if (file instanceof Object) file = utools.showOpenDialog(JSON.parse(JSON.stringify(file)))[0]
+                if (!fs.existsSync(file)) return reject('文件不存在')
+                var arraybuffer = fs.readFileSync(file).buffer
+                var objfile = new File([arraybuffer], path.basename(file))
+            }
             var form = new FormData();
-            var arraybuffer = fs.readFileSync(file).buffer
-            var objfile = new File([arraybuffer], path.basename(file))
             form.append(name, objfile)
             var keys = Object.keys(formData)
             if (keys.length) keys.forEach(k => form.append(k, formData[k]))
@@ -655,11 +660,11 @@ getCurrentFolderPathFix = () => {
     return pwdFix.replace(/\\/g, '\\\\')
 }
 
-saveFile = (options, content) => {
-    var filename = utools.showSaveDialog(options)
-    filename && fs.writeFile(filename, content, 'utf8', err => {
-        err && console.log(err)
-    })
+saveFile = (content, file) => {
+    if (file instanceof Object) {
+        file = utools.showSaveDialog(file)
+    }
+    file && fs.writeFileSync(file, content)
 }
 
 yuQueClient = axios.create({

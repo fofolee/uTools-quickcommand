@@ -342,7 +342,7 @@
                 ]
             };
         if (!isDev()) Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
-        window.saveFile(options, JSON.stringify(jsonQc));
+        window.saveFile(JSON.stringify(jsonQc), options);
     }
 
     // 清空
@@ -1064,6 +1064,16 @@
         return menu
     }
 
+    // 分享相关
+    const yuQueShareVars = {
+        imgBedApi: 'https://imgkr.com/api/v2/files/upload',
+        imgBedBaseLink: 'https://imgkr.cn-bj.ufileos.com/',
+        yuQueImgBedBaseLink: 'https://cdn.nlark.com/yuque/',
+        releaseRepo: 'fofolee/qcreleases',
+        shareRepo: 'fofolee/qcshares',
+        shareLock: false
+    }
+
     // 导出
     $("#options").on('click', '.exportBtn', async function () {
         var code = $(this).parents('tr').attr('id')
@@ -1075,28 +1085,62 @@
                 utools.copyText(stringifyQc) && quickcommand.showMessageBox('已复制到剪贴板')
                 break;
             case '导出到文件':
-                window.saveFile({
+                window.saveFile(stringifyQc, {
                     title: '选择保存位置',
                     defaultPath: `${jsonQc.features.explain}.json`,
                     filters: [ { name: 'json', extensions: ['json'] }, ]
-                }, stringifyQc)
+                })
                 break;
             case '分享命令':
             case '更新分享':
-                var result = await shareQCToYuQue(jsonQc)
-                result && quickcommand.showMessageBox('分享成功，等待发布后即可在分享中心直接下载')
+                if (yuQueShareVars.shareLock) {
+                    quickcommand.showMessageBox('分享速度太快了，请稍候', 'warning')
+                } else {
+                    yuQueShareVars.shareLock = true
+                    jsonQc = await updateImgLink(jsonQc)
+                    var result = await shareQCToYuQue(jsonQc)
+                    yuQueShareVars.shareLock = false
+                    result && quickcommand.showMessageBox('分享成功，等待发布后即可在分享中心直接下载')
+                }
                 break;
             case '我要分享':
                 utools.createBrowserWindow('./helps/HELP.html?#分享命令', {width: 1280, height: 920})
                 break;
             case '评论':
-                utools.shellOpenExternal(`https://www.yuque.com/fofolee/qcreleases/${code}`)
+                utools.shellOpenExternal(`https://www.yuque.com/${yuQueShareVars.releaseRepo}/${code}`)
                 break;
             case '设置 Token':
                 await setYuQueToken()
                 break;
         }
     })
+
+    let updateImgLink = async jsonQc => {
+        let icon = jsonQc.features.icon
+        if (!jsonQc.imgLink && icon.includes('base64')) {
+            try {
+                if (icon.length > 2000) icon = await getCompressedIco(icon)
+                jsonQc.features.icon = icon
+                let res = await quickcommand.uploadFile(yuQueShareVars.imgBedApi, dataURLtoFile(icon, jsonQc.features.code + '.png'))
+                jsonQc.imgLink = res.data.data
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return jsonQc
+    }
+
+    let dataURLtoFile = (dataurl, filename) => {
+        let arr = dataurl.split(','),
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
 
     // 一键分享到语雀
     let shareQCToYuQue = async jsonQc => {
@@ -1105,7 +1149,6 @@
         jsonQc.authorId = extraInfo.authorId
         jsonQc.authorName = extraInfo.authorName
         let stringifyQc = JSON.stringify(jsonQc, null, 4)
-        console.log(jsonQc);
         if (stringifyQc.length > 5000000) return quickcommand.showMessageBox('命令大小超过5M无法分享，请检查图标或脚本内容是否过大', "error")
         let type = jsonQc.features.cmds[0].type || 'key'
         let tags = jsonQc.tags ? jsonQc.tags.join(' ') : ""
@@ -1125,13 +1168,14 @@
             body: '```json\n' + stringifyQc + '\n```',
             custom_description: JSON.stringify(custom_description)
         }
+        if (jsonQc.imgLink) parameters.cover = jsonQc.imgLink.replace(yuQueShareVars.imgBedBaseLink, yuQueShareVars.yuQueImgBedBaseLink)
         yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
-        let res, repo = extraInfo.authorId == 1496740 ? 'qcreleases' : 'qcshares'
+        let res, repo = extraInfo.authorId == 1496740 ? yuQueShareVars.releaseRepo : yuQueShareVars.shareRepo
         try {
-            res = await yuQueClient.post(`repos/fofolee/${repo}/docs`, parameters)
+            res = await yuQueClient.post(`repos/${repo}/docs`, parameters)
             if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
             let docId = res.data.data.id
-            res = await yuQueClient.put(`repos/fofolee/${repo}/docs/${docId}`, parameters)
+            res = await yuQueClient.put(`repos/${repo}/docs/${docId}`, parameters)
             if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
             putDB(jsonQc.features.code, jsonQc, 'customFts');
             return jsonQc
@@ -1144,7 +1188,7 @@
         $('#options').hide()
         let extraInfo = getDB('extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
-        let res = await yuQueClient('repos/fofolee/qcreleases/docs')
+        let res = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs`)
         let description, platform = window.processPlatform
         let docs = res.data.data
             .filter(d => JSON.parse(d.custom_description).platform.includes(platform))
@@ -1157,15 +1201,16 @@
                 return {
                     title: d.title,
                     description: `<span class="iconfont icon-yonghu"></span> ${description.authorName}
+                    &nbsp; <span class="iconfont icon-code"></span> ${description.program}
                     &nbsp; <span class="iconfont icon-wenjianleixingpeizhi"></span> ${description.type}
                     &nbsp; <span class="iconfont icon-biaoqian"></span> ${description.tags}
                     &nbsp; <span class="iconfont icon-shijian"></span> ${d.updated_at.split('T')[0]}`,
                     slug: d.slug,
-                    icon: `logo/${description.program}.png`
+                    icon: d.cover ? d.cover.replace(yuQueShareVars.yuQueImgBedBaseLink, yuQueShareVars.imgBedBaseLink) : `logo/${description.program}.png`
                 }
             })
         let choise = await quickcommand.showSelectList(docs, { optionType: 'json' })
-        let doc = await yuQueClient(`repos/fofolee/qcreleases/docs/${choise.slug}?raw=1`)
+        let doc = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs/${choise.slug}?raw=1`)
         let body = doc.data.data.body
         let stringifyQc = body.match(/```json([\s\S]*)```/)[1]
         let qc = JSON.parse(stringifyQc)
@@ -1311,9 +1356,9 @@
             if (extraInfo) {
                 Object.assign(pushData, extraInfo)
                 // 通过模拟访问页面来统计下载量
-                extraInfo.fromShare && utools.ubrowser.goto(`https://www.yuque.com/fofolee/qcreleases/${code}`).run({
-                show: false
-            })
+                extraInfo.fromShare && utools.ubrowser.goto(`https://www.yuque.com/${yuQueShareVars.releaseRepo}/${code}`).run({
+                    show: false
+                })
             }
             if (tags) pushData.tags = tags
             if (program == 'custom') {
