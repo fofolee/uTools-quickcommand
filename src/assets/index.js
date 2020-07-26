@@ -1209,14 +1209,18 @@
                     icon: d.cover ? d.cover.replace(yuQueShareVars.yuQueImgBedBaseLink, yuQueShareVars.imgBedBaseLink) : `logo/${description.program}.png`
                 }
             })
-        let choise = await quickcommand.showSelectList(docs, { optionType: 'json' })
-        let doc = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs/${choise.slug}?raw=1`)
-        let body = doc.data.data.body
-        let stringifyQc = body.match(/```json([\s\S]*)```/)[1]
-        let qc = JSON.parse(stringifyQc)
-        $('#options').show()
-        qc.fromShare = true
-        editCurrentCommand(qc)
+        let choise = await quickcommand.showSelectList(docs, { optionType: 'json', showCancelButton: true })
+        if (choise) {
+            let doc = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs/${choise.slug}?raw=1`)
+            let body = doc.data.data.body
+            let stringifyQc = body.match(/```json([\s\S]*)```/)[1]
+            let qc = JSON.parse(stringifyQc)
+            qc.fromShare = true
+            $('#options').show()
+            editCurrentCommand(qc)
+        } else {
+            $('#options').show()
+        }
         utools.setExpendHeight(600)
     }
 
@@ -1371,23 +1375,27 @@
             }
             putDB(code, pushData, 'customFts');
             $("#customize").animate({ top: '100%' }, () => {
-                // 保存后标签跳转处理
-                var redirectTag, currentTag = $('.currentTag').text()
-                if (tags.length) {
-                    if (pushData.tags.includes(currentTag)) {
-                        redirectTag = currentTag
-                    } else {
-                        redirectTag = pushData.tags[0]
-                    }
-                } else {
-                    redirectTag = "未分类"
-                }
-                showOptions(redirectTag);
-                location.href = '#' + code
                 $("#customize").empty()
-                let checkSwitch = $(`#${code} .checked-switch`)
-                checkSwitch.click()
-                checkSwitch.is(':checked') || checkSwitch.click()
+                if (extraInfo && extraInfo.fromShare) {
+                    getSharedQCFromYuQue()
+                } else {
+                    // 保存后标签跳转处理
+                    var redirectTag, currentTag = $('.currentTag').text()
+                    if (tags.length) {
+                        if (pushData.tags.includes(currentTag)) {
+                            redirectTag = currentTag
+                        } else {
+                            redirectTag = pushData.tags[0]
+                        }
+                    } else {
+                        redirectTag = "未分类"
+                    }
+                    showOptions(redirectTag);
+                    location.href = '#' + code
+                    let checkSwitch = $(`#${code} .checked-switch`)
+                    checkSwitch.click()
+                    checkSwitch.is(':checked') || checkSwitch.click()
+                }
             });
         }
     }
@@ -1497,6 +1505,8 @@
         if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
             $("#customize").animate({ top: '100%' });
             $("#customize").empty()
+            var extraInfo = $('#customize').data('extraInfo')
+            if (extraInfo && extraInfo.fromShare) getSharedQCFromYuQue()
         }
     }
 

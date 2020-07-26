@@ -845,21 +845,34 @@ li.CodeMirror-hint {
     border-radius: 6px;
 }
 
-#quicktextarea button {
+.circleButton {
     position: absolute;
+    border: 0;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    outline: none;
+}
+
+#quicktextarea .circleButton{
     right: 20px;
     bottom: 20px;
     height: 40px;
     width: 40px;
-    border: 0;
-    border-radius: 50%;
     background: #2196F3;
-    color: white;
-    cursor: pointer;
 }
 
-#quicktextarea button:hover {
-    background: #6ab4f0;
+#quickselect .circleButton{
+    right: 10px;
+    bottom: 10px;
+    height: 25px;
+    width: 25px;
+    background: #db4d14;
+    z-index: 1060;
+}
+
+.circleButton:hover {
+    filter: brightness(1.2);
 }
 
 /*quicktextarea*/

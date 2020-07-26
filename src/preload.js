@@ -167,7 +167,8 @@ quickcommand = {
             typeof opt.placeholder == 'undefined' && (opt.placeholder = "搜索，支持拼音")
             typeof opt.enableSearch == 'undefined' && (opt.enableSearch = true)
             if ($('#quickselect').length) $('#quickselect').remove()
-            $("body").append(`<div id="quickselect"><select id="selectBox"></select></div>`)
+            let cancelButton = opt.showCancelButton ? '<button class="circleButton">✕</button>' : ''
+            $("body").append(`<div id="quickselect"><select id="selectBox"></select>${cancelButton}</div>`)
             let item, data = []
             selects.forEach((s, i) => {
                 item = {}
@@ -189,6 +190,7 @@ quickcommand = {
                 // data: data,
                 width: "100%",
                 dropdownParent: $("#quickselect"),
+                closeOnSelect: false,
                 // 支持无限滚动
                 ajax: {
                     transport: (params, success, failure) => {
@@ -221,15 +223,22 @@ quickcommand = {
                 $("#quickselect .select2-search__field").val(text).trigger('input')
                 modWindowHeight($('.select2-results').outerHeight())
             }, opt.placeholder)
-            $('#selectBox').on('select2:select', function (e) {
-                let result = $('#selectBox').data('options')[$(this).val()]
-                delete result.selected
+            // 关闭列表
+            let closeSelect = () => {
                 $('#selectBox').off('select2:select')
                 utools.removeSubInput()
                 $("#quickselect").remove()
+            }
+            $('#selectBox').on('select2:select', function (e) {
+                let result = $('#selectBox').data('options')[$(this).val()]
+                delete result.selected
+                closeSelect()
                 reslove(result)
             })
-
+            $('.circleButton').click(() => {
+                closeSelect()
+                reslove(false)
+            })
         });
     },
 
@@ -265,11 +274,11 @@ quickcommand = {
             var html = `
             <div id="quicktextarea">
                 <textarea placeholder="${placeholder}"></textarea>
-                <button>✔</button>
+                <button class="circleButton">✔</button>
             </div>`
             $("body").append(html)
             $("#quicktextarea").addClass("fadeInUpWindow")
-            $("#quicktextarea > button").click(function () {
+            $(".circleButton").click(function () {
                 $("#quicktextarea").addClass("fadeOutDownWindow")
                 setTimeout(() => { $("#quicktextarea").remove() }, 300);
                 reslove($("#quicktextarea > textarea").val())
