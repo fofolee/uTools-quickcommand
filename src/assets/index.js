@@ -1216,8 +1216,10 @@
             qc.fromShare = true
             $('#options').show()
             editCurrentCommand(qc)
+            $('#customize').data('returnShare', true)
         } else {
             $('#options').show()
+            $('#customize').removeData('returnShare')
         }
         utools.setExpendHeight(600)
     }
@@ -1374,7 +1376,7 @@
             putDB(code, pushData, 'customFts');
             $("#customize").animate({ top: '100%' }, () => {
                 $("#customize").empty()
-                if (extraInfo && extraInfo.fromShare) {
+                if ($('#customize').data('returnShare')) {
                     getSharedQCFromYuQue()
                 } else {
                     // 保存后标签跳转处理
@@ -1503,8 +1505,7 @@
         if ($("#customize").is(":parent") && $("#featureList").is(":parent")) {
             $("#customize").animate({ top: '100%' });
             $("#customize").empty()
-            var extraInfo = $('#customize').data('extraInfo')
-            if (extraInfo && extraInfo.fromShare) getSharedQCFromYuQue()
+            if ($('#customize').data('returnShare')) getSharedQCFromYuQue()
         }
     }
 
