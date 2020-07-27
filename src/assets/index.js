@@ -140,10 +140,8 @@
                 handleEnter = (event) => {
                     if (event.keyCode == 13) {
                         $("#out").append(`<p style="color: #438eff">>> ${new Date()}</p>`);
-                        console.log(cmd);
-                        cmd = cmd.replace(new RegExp(rule, 'g'), subinput);
-                        console.log(cmd);
-                        runQuickCommand(cmd, option, db.output, true);
+                        var cmdToRun = cmd.replace(new RegExp(rule, 'g'), subinput);
+                        runQuickCommand(cmdToRun, option, db.output, true);
                     }
                 };
                 setSubInput();
