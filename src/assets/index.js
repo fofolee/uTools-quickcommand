@@ -675,17 +675,17 @@
             {
                 id: "regex",
                 text: "正则/划词",
-                html: "<img src='img/regex.svg'><span>正则/划词</span><div>正则匹配主输入框文本或唤出语音面板时选中的文本，可以获取输入框文本或选中文本作为变量</div>"
+                html: "<img src='img/regex.svg'><span>正则/划词</span><div>正则匹配主输入框文本或唤出超级面板时选中的文本，可以获取输入框文本或选中文本作为变量</div>"
             },
             {
                 id: "window",
                 text: "窗口/进程",
-                html: "<img src='img/window.svg'><span>窗口/进程</span><div>匹配呼出uTools前或唤出语音面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量</div>"
+                html: "<img src='img/window.svg'><span>窗口/进程</span><div>匹配呼出uTools前或唤出超级面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量</div>"
             },
             {
                 id: "files",
                 text: "复制/选中文件",
-                html: "<img src='img/file.svg'><span>复制/选中文件</span><div>匹配拖入主输入框的文件或唤出语音面板时选中的文件，可以获取复制及选中的文件信息作为变量</div>"
+                html: "<img src='img/file.svg'><span>复制/选中文件</span><div>匹配拖入主输入框的文件或唤出超级面板时选中的文件，可以获取复制及选中的文件信息作为变量</div>"
             }
         ]
     }
