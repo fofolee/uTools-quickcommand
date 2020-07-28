@@ -10,25 +10,33 @@
     // 禁用危险函数
     let utoolsFull = utools
     if (!isDev()) utools = getuToolsLite()
+    // 数据库前缀
+    const QC_PREFIX = 'qc_'
+    const CFG_PREFIX = 'cfg_'
     // 数据库函数封装
     let getDB = id => {
-        var db = utoolsFull.db.get(id),
-            dbData = db ? db.data : {};
-        return dbData;
+        let db = utoolsFull.db.get(id)
+        return db ? db.data : {}
     }
 
-    let putDB = (key, value, id) => {
-        var db = utoolsFull.db.get(id);
-        if (db) {
-            var rev = db._rev
-            var data = db.data
-            data[key] = value;
-            utoolsFull.db.put({ _id: id, data: data, _rev: rev });
-        } else {
-            var data = {};
-            data[key] = value;
-            utoolsFull.db.put({ _id: id, data: data });
-        }
+    let putDB = (value, id) => {
+        let db = utoolsFull.db.get(id);
+        if (db) utoolsFull.db.put({ _id: id, data: value, _rev: db._rev })
+        else utoolsFull.db.put({ _id: id, data: value });
+    }
+
+    let delDB = id => {
+        return utoolsFull.db.remove(id)
+    }
+
+    let getDocs = key => {
+        return utoolsFull.db.allDocs(key)
+    }
+    // 获取所有 qc，等效于 1.6 版本 getDB('customFts')
+    window.getAllQuickCommands = () => {
+        let allQcs = {}
+        getDocs(QC_PREFIX).forEach(x => allQcs[x.data.features.code] = x.data)
+        return allQcs
     }
 
     // 进入插件
@@ -52,7 +60,7 @@
                     customext: $('#customext').val(),
                     customcodec: $('#customcodec').val()
                 }
-                putDB('history', { cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, 'codeHistory')
+                putDB({ cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, CFG_PREFIX + 'codeHistory')
             }
             // 初始化
             $("#options, #out").empty()
@@ -75,7 +83,7 @@
             $('body').css({overflow: 'auto'})
             utools.setExpendHeight(0);
             $("#options").hide();
-            var db = getDB('customFts')[code],
+            var db = getDB(QC_PREFIX + code),
                 cmd = db.cmd;
             if (db.program == "custom") {
                 option = db.customOptions;
@@ -239,49 +247,49 @@
 
     // 替换上个版本弃用的功能
     let oldVersionFix = () => {
-        utools.showNotification('第一次更新会对老版本命令做兼容处理，如插件显示空白请稍候', 'warning')
         var customFts = getDB('customFts');
-        Object.keys(customFts).forEach((x, i) => {
+        let ftsKeys = Object.keys(customFts);
+        if (!ftsKeys.length) return;
+        utools.showNotification('正在对老版本命令做兼容处理，如插件显示空白请稍候', 'warning')
+        ftsKeys.forEach((x, i) => {
+            let fts = customFts[x]
             // 旧版的 program
-            if (customFts[x].program == 'simulation') customFts[x].program = 'quickcommand';
+            if (fts.program == 'simulation') fts.program = 'quickcommand';
             // 旧版的 sleep
-            if (customFts[x].cmd.includes('await sleep')) customFts[x].cmd = customFts[x].cmd.replace(/await sleep/g, 'quickcommand.sleep')
+            if (fts.cmd.includes('await sleep')) fts.cmd = fts.cmd.replace(/await sleep/g, 'quickcommand.sleep')
             // 不规范的 code
-            let code = customFts[x].features.code
+            let code = fts.features.code
             if (!/^(window|key|regex|files|default)_/.test(code)) {
                 console.log(code);
                 utoolsFull.removeFeature(code)
                 let uid = Number(Math.random().toString().substr(3, 3) + (Date.now() + i * 10000)).toString(36)
-                let type = customFts[x].features.cmds[0].type || 'key'
-                let newCode = type + '_' + uid
-                let newFts = customFts[x]
-                newFts.features.code = newCode
-                delete customFts[x]
-                customFts[newCode] = newFts
+                let type = fts.features.cmds[0].type || 'key'
+                code = type + '_' + uid
+                fts.features.code = code
             }
-            putDB(x, customFts[x], 'customFts');
+            // 每一个命令一个 id
+            putDB(fts, QC_PREFIX + code)
         })
+        delDB('customFts')
     }
 
     let showChangeLog = () => {
-        putDB('version', pluginInfo().version, 'plugin')
+        putDB(pluginInfo().version, CFG_PREFIX + 'version')
         utools.createBrowserWindow('./helps/CHANGELOG.html', {width: 1280, height: 920})
     }
 
     let isRunningAtFirstTime = () => {
-        var historyVersion = getDB('plugin').version
-        if (!historyVersion) return 'init'
+        var historyVersion = getDB(CFG_PREFIX + 'version')
+        if (historyVersion instanceof Object) return 'init'
         if (pluginInfo().version > historyVersion) return 'update'
         return false
     }
 
     // 导入默认命令
     let importDefaultCommands = () => {
-        let customFts = getDB('customFts')
-        let qc = Object.keys(customFts)
         let defaultCommands = getDefaultCommands()
-        Object.keys(defaultCommands).forEach(d => {
-            if (!qc.includes(d)) importCommand(defaultCommands[d])
+        Object.values(defaultCommands).forEach(d => {
+            importCommand(d)
         })
     }
 
@@ -319,11 +327,11 @@
         // 单个命令导入
         if (pushData.single) {
             var code = pushData.qc.features.code;
-            putDB(code, pushData.qc, 'customFts');
+            putDB(pushData.qc, QC_PREFIX + code);
         // 多个命令导入
         } else {
             for (var code of Object.keys(pushData.qc)) {
-                putDB(code, pushData.qc[code], 'customFts');
+                putDB(pushData.qc[code], QC_PREFIX + code);
             }
         }
         return true
@@ -331,23 +339,25 @@
 
     // 全部导出
     let exportAll = () => {
-        let jsonQc = getDB('customFts'),
-            options = {
+        let allQcs = getAllQuickCommands()
+        let options = {
                 title: '选择保存位置',
                 defaultPath: 'quickCommand',
                 filters: [
                     { name: 'json', extensions: ['json'] },
                 ]
             };
-        if (!isDev()) Object.keys(jsonQc).filter(k => jsonQc[k].tags && jsonQc[k].tags.includes('默认')).map(k => delete jsonQc[k])
-        window.saveFile(JSON.stringify(jsonQc), options);
+        if (!isDev()) Object.keys(allQcs).forEach(k => {
+            if (k.includes('default_')) delete allQcs[k]
+        })
+        window.saveFile(JSON.stringify(allQcs), options);
     }
 
     // 清空
     let clearAll = () => {
         quickcommand.showConfirmBox('将会清空所有自定义命令，请确认！').then(x => {
             if (!x) return
-            utoolsFull.db.remove('customFts');
+            getDocs(QC_PREFIX).map(x => x._id).forEach(y => delDB(y))
             importDefaultCommands();
             clearAllFeatures();
             showOptions();
@@ -446,7 +456,7 @@
     let showOptions = (tag = "默认") => {
         $("#options").empty().fadeIn();
         var currentFts = utools.getFeatures(),
-            customFts = getDB('customFts');
+            customFts = getAllQuickCommands();
         var allTags = ["默认"]
         var featureList = `
         <div id="featureList">
@@ -884,7 +894,7 @@
 
     // 开关
     $("#options").on('change', 'input[type=checkbox]', function () {
-        var customFts = getDB('customFts'),
+        var customFts = getAllQuickCommands(),
             code = $(this).parents('tr').attr('id')
         if (!utoolsFull.removeFeature(code)) {
             utoolsFull.setFeature(customFts[code].features);
@@ -968,7 +978,7 @@
     // 编辑
     $("#options").on('click', '.editBtn', function () {
         let code = $(this).parents('tr').attr('id')
-        let data = getDB("customFts")[code]
+        let data = getDB(QC_PREFIX + code)
         editCurrentCommand(data)
     })
 
@@ -1037,11 +1047,12 @@
         yuQueClient.defaults.headers['X-Auth-Token'] = yuQueToken
         try {
             let res = await yuQueClient('user')
-            let authorId = res.data.data.account_id
-            let authorName = res.data.data.name
-            putDB('yuQueToken', yuQueToken, 'extraInfo')
-            putDB('authorName', authorName, 'extraInfo')
-            putDB('authorId', authorId, 'extraInfo')
+            let extraInfo = {
+                yuQueToken: yuQueToken,
+                authorId: res.data.data.account_id,
+                authorName: res.data.data.name
+            }
+            putDB(extraInfo, CFG_PREFIX + 'extraInfo')
             quickcommand.showMessageBox("设置成功~")
         } catch (e) {
             quickcommand.showMessageBox('Token 校验失败', "error")
@@ -1050,7 +1061,7 @@
 
     let createShareMenu = jsonQc => {
         let menu = ['复制到剪贴板', '导出到文件', '', '设置 Token']
-        let extraInfo = getDB('extraInfo')
+        let extraInfo = getDB(CFG_PREFIX + 'extraInfo')
         if (jsonQc.authorId) {
             if (jsonQc.authorId == extraInfo.authorId) menu[2] = '更新分享'
             else if (jsonQc.fromShare) menu[2] = '评论'
@@ -1075,7 +1086,7 @@
     // 导出
     $("#options").on('click', '.exportBtn', async function () {
         var code = $(this).parents('tr').attr('id')
-        var jsonQc = getDB('customFts')[code]
+        var jsonQc = getDB(QC_PREFIX + code)
         var stringifyQc = JSON.stringify(jsonQc, null, 4)
         var choise = await quickcommand.showButtonBox(createShareMenu(jsonQc))
         switch (choise.text) {
@@ -1142,7 +1153,7 @@
 
     // 一键分享到语雀
     let shareQCToYuQue = async jsonQc => {
-        let extraInfo = getDB('extraInfo')
+        let extraInfo = getDB(CFG_PREFIX + 'extraInfo')
         if (!extraInfo.yuQueToken) return quickcommand.showMessageBox("请先设置 Token，点击底部「查看帮助」可查看 Token 设置方法", "error")
         jsonQc.authorId = extraInfo.authorId
         jsonQc.authorName = extraInfo.authorName
@@ -1175,7 +1186,7 @@
             let docId = res.data.data.id
             res = await yuQueClient.put(`repos/${repo}/docs/${docId}`, parameters)
             if (!res.data.data) return quickcommand.showMessageBox("分享失败，不知道为啥", "error")
-            putDB(jsonQc.features.code, jsonQc, 'customFts');
+            putDB(jsonQc, jsonQc.features.code);
             return jsonQc
         } catch (error) {
             return quickcommand.showMessageBox(error, "error")
@@ -1184,7 +1195,7 @@
 
     let getSharedQCFromYuQue = async () => {
         $('#options').hide()
-        let extraInfo = getDB('extraInfo')
+        let extraInfo = getDB(CFG_PREFIX + 'extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs`)
         let description, platform = window.processPlatform
@@ -1235,12 +1246,9 @@
     $("#options").on('click', '.delBtn', function () {
         quickcommand.showConfirmBox('删除这个快捷命令').then(x => {
             if (!x) return
-            var code = $(this).parents('tr').attr('id'),
-            db = utoolsFull.db.get("customFts"),
-            data = db.data;
-            delete data[code];
+            var code = $(this).parents('tr').attr('id')
+            delDB(QC_PREFIX + code)
             utoolsFull.removeFeature(code);
-            utoolsFull.db.put({ _id: "customFts", data: data, _rev: db._rev });
             var currentTag = $('.currentTag').text()
             if ($('#featureList tr').length == 2) currentTag = "默认"
             showOptions(currentTag);
@@ -1373,7 +1381,7 @@
                     'codec': $('#customcodec').val()
                 }
             }
-            putDB(code, pushData, 'customFts');
+            putDB(pushData, QC_PREFIX + code);
             $("#customize").animate({ top: '100%' }, () => {
                 $("#customize").empty()
                 if ($('#customize').data('returnShare')) {
@@ -1436,7 +1444,7 @@
                 showClass: { popup: showClass },
                 hideClass: { popup: hideClass }
             }
-            success ? swalOneByOne(options) : Swal.fire(options)
+            Swal.fire(options)
         }
     }
 
@@ -1544,7 +1552,7 @@
         $(".CodeMirror").addClass('CodeMirror-coderunner')
         $("#customize").css({ top: '0px', padding: '0px' });
         $("span.customscript > input").css({"height": "30px"})
-        var db = getDB('codeHistory')
+        var history = getDB(CFG_PREFIX + 'codeHistory')
         createProgramSelect2(140, true)
         if (file) {
             var fileinfo = getFileInfo({ type: 'file', argvs: file, readfile: true })
@@ -1552,12 +1560,12 @@
             var program = Object.keys(programs).filter(x => `.${programs[x].ext}` == fileinfo.ext)
             if (program) $('#program').val(program[0]).trigger('change')
             // runCurrentCommand()
-        } else if(db.history){
-            window.editor.setValue(db.history.cmd)
-            $('#program').val(db.history.program).trigger('change')
-            $('#scptarg').val(db.history.scptarg)
-            var custom = db.history.customoptions
-            if (db.history.program = 'custom' && custom) {
+        } else if(history.program){
+            window.editor.setValue(history.cmd)
+            $('#program').val(history.program).trigger('change')
+            $('#scptarg').val(history.scptarg)
+            var custom = history.customoptions
+            if (history.program = 'custom' && custom) {
                 $('#custombin').val(custom.custombin)
                 $('#customarg').val(custom.customarg)
                 $('#customext').val(custom.customext)
