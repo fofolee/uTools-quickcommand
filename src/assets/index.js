@@ -365,7 +365,7 @@
             importDefaultCommands();
             clearAllFeatures();
             showOptions();
-            quickcommand.showMessageBox('已将所有命令复制到剪贴板，如果是误操作可以点击导入命令恢复', 'warning')
+            quickcommand.showMessageBox('清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复')
         })
     }
 
@@ -1262,11 +1262,13 @@
         quickcommand.showConfirmBox('删除这个快捷命令').then(x => {
             if (!x) return
             var code = $(this).parents('tr').attr('id')
+            utools.copyText(JSON.stringify(getDB(QC_PREFIX + code)))
             delDB(QC_PREFIX + code)
             utoolsFull.removeFeature(code);
             var currentTag = $('.currentTag').text()
-            if ($('#featureList tr').length == 2) currentTag = "默认"
+            if ($('#featureList tr').length == 1) currentTag = "默认"
             showOptions(currentTag);
+            quickcommand.showMessageBox('删除成功，为防止误操作，已将删除的命令复制到剪贴板')
         })
     })
 
