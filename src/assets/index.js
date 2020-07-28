@@ -338,7 +338,7 @@
     }
 
     // 全部导出
-    let exportAll = () => {
+    let exportAll = (copy = false) => {
         let allQcs = getAllQuickCommands()
         let options = {
                 title: '选择保存位置',
@@ -350,17 +350,21 @@
         if (!isDev()) Object.keys(allQcs).forEach(k => {
             if (k.includes('default_')) delete allQcs[k]
         })
-        window.saveFile(JSON.stringify(allQcs), options);
+        let stringifyQcs = JSON.stringify(allQcs)
+        if (copy) utools.copyText(stringifyQcs)
+        else window.saveFile(stringifyQcs, options);
     }
 
     // 清空
     let clearAll = () => {
         quickcommand.showConfirmBox('将会清空所有自定义命令，请确认！').then(x => {
             if (!x) return
+            exportAll(true)
             getDocs(QC_PREFIX).map(x => x._id).forEach(y => delDB(y))
             importDefaultCommands();
             clearAllFeatures();
             showOptions();
+            quickcommand.showMessageBox('已将所有命令复制到剪贴板，如果是误操作可以点击导入命令恢复', 'warning')
         })
     }
 
