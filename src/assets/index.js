@@ -257,13 +257,22 @@
             if (fts.program == 'simulation') fts.program = 'quickcommand';
             // 旧版的 sleep
             if (fts.cmd.includes('await sleep')) fts.cmd = fts.cmd.replace(/await sleep/g, 'quickcommand.sleep')
+            // 旧版的 match.app
+            let type = fts.features.cmds[0].type || 'key'
+            if (type == 'window') {
+                let windowMatch = fts.features.cmds[0].match
+                console.log(windowMatch)
+                if (windowMatch && (typeof windowMatch.app == 'string')) {
+                    console.log(fts);
+                    fts.features.cmds[0].match.app = windowMatch.app.split(',')
+                }
+            }
             // 不规范的 code
             let code = fts.features.code
             if (!/^(window|key|regex|files|default)_/.test(code)) {
                 console.log(code);
                 utoolsFull.removeFeature(code)
                 let uid = Number(Math.random().toString().substr(3, 3) + (Date.now() + i * 10000)).toString(36)
-                let type = fts.features.cmds[0].type || 'key'
                 code = type + '_' + uid
                 fts.features.code = code
             }
@@ -457,6 +466,83 @@
         }
     }
 
+    let showCommandByType = features => {
+        let qcType = '', rules = features.cmds[0].match
+        if (features.cmds[0].type == 'regex') {
+            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+            qcType = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
+        } else if (features.cmds[0].type == 'window') {
+            qcType += `<div class="topchild">窗口</div><div>`
+            if (!rules) {
+                qcType += `<span class="keyword win">所有窗口</span>`
+            } else if (rules.title || rules.class) {
+                qcType += `<span class="keyword win">${JSON.stringify(rules).slice(0,  14) + '...'}</span>`;
+            } else if (rules.app) {
+                rules = rules.app.join(",")
+                if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+                rules.split(',').forEach(r => {
+                    qcType += `<span class="keyword win">${r}</span>`;
+                });
+            }
+            qcType += `</div>`
+        } else if (features.cmds[0].type == 'files') {
+            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+            qcType = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
+        } else {
+            rules = features.cmds.join(",")
+            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+            qcType += `<div class="topchild">关键字</div><div>`
+            rules.split(',').forEach(r => {
+                qcType += `<span class="keyword">${r}</span>`;
+            });
+            qcType += `</div>`
+        }
+        return qcType
+    }
+
+    let getEveryFeature = (fts, currentFts, tag) => {
+        if (tag == "未分类") {
+            if (fts.tags && fts.tags.length) return ''
+        } else {
+            if (!fts.tags) return ''
+            if (!fts.tags.includes(tag)) return ''
+        }
+        var features = fts.features;
+        var qcType = showCommandByType(features);
+        var isChecked = '';
+        for(var c of currentFts){
+            if (c.code == features.code) {
+                isChecked = 'checked';
+                break;
+            }
+        }
+        var platformIcons
+        if (features.platform) platformIcons = features.platform.map(x => `<img src="img/${x}.svg">`)
+        else platformIcons = ['<img src="img/win32.svg">', '<img src="img/darwin.svg">', '<img src="img/linux.svg">']
+        return `<tr id="${features.code}">
+        <td><img class="logo" src="${features.icon}"></td>
+        <td>
+            <div class="topchild">${features.explain}</div>
+            <div>
+                <span class="info">
+                <span style="margin: 0; font-size: smaller; color: ${fts.program == 'quickcommand' ? "#00af2c;" : programs[fts.program].color}">●</span>
+                ${fts.program} | ${platformIcons.join('')}
+            </div>
+        </td>
+        <td>${qcType}</td>
+        <td>
+            <label class="switch-btn">
+                <input class="checked-switch" type="checkbox" ${isChecked}>
+                <span class="text-switch"></span>
+                <span class="toggle-btn"></span>
+            </label>
+        </td>
+        <td>
+            <span class="Btn editBtn"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
+            ${(tag == "默认" && !isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
+        </td>`
+    }
+
     // 显示设置界面
     let showOptions = (tag = "默认") => {
         $("#options").empty().fadeIn();
@@ -466,79 +552,14 @@
         var featureList = `
         <div id="featureList">
             <table>`;
-        Object.values(customFts).some(fts => {
-            var features = fts.features;
-            if (fts.tags) {
-                fts.tags.map(t => !allTags.includes(t) && allTags.push(t))
+        Object.values(customFts).forEach(fts => {
+            // 跳过有问题的命令
+            try {
+                if (fts.tags) fts.tags.map(t => !allTags.includes(t) && allTags.push(t))
+                featureList += getEveryFeature(fts, currentFts, tag)
+            } catch (e) {
+                console.log(e)
             }
-            if (tag == "未分类") {
-                if (fts.tags && fts.tags.length) return false
-            } else {
-                if (!fts.tags) return false
-                if (!fts.tags.includes(tag)) return false
-            }
-            var cmds = '', rules = features.cmds[0].match;
-            if (features.cmds[0].type == 'regex') {
-                if (rules.length >  14) rules = rules.slice(0,  14) + '...';
-                cmds = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
-            } else if (features.cmds[0].type == 'window') {
-                cmds += `<div class="topchild">窗口</div><div>`
-                if (!rules) {
-                    cmds += `<span class="keyword win">所有窗口</span>`
-                } else if (rules.title || rules.class) {
-                    cmds += `<span class="keyword win">${JSON.stringify(rules).slice(0,  14) + '...'}</span>`;
-                } else if (rules.app) {
-                    rules = rules.app.join(",")
-                    if(rules.length >  14) rules = rules.slice(0,  14) + '...';
-                    rules.split(',').forEach(r => {
-                        cmds += `<span class="keyword win">${r}</span>`;
-                    });
-                }
-                cmds += `</div>`
-            } else if (features.cmds[0].type == 'files') {
-                if (rules.length >  14) rules = rules.slice(0,  14) + '...';
-                cmds = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
-            } else {
-                rules = features.cmds.join(",")
-                if(rules.length >  14) rules = rules.slice(0,  14) + '...';
-                cmds += `<div class="topchild">关键字</div><div>`
-                rules.split(',').forEach(r => {
-                    cmds += `<span class="keyword">${r}</span>`;
-                });
-                cmds += `</div>`
-            }
-            var isChecked = '';
-            for(var c of currentFts){
-                if (c.code == features.code) {
-                    isChecked = 'checked';
-                    break;
-                }
-            }
-            var platformIcons
-            if (features.platform) platformIcons = features.platform.map(x => `<img src="img/${x}.svg">`)
-            else platformIcons = ['<img src="img/win32.svg">', '<img src="img/darwin.svg">', '<img src="img/linux.svg">']
-            featureList += `<tr id="${features.code}">
-            <td><img class="logo" src="${features.icon}"></td>
-            <td>
-                <div class="topchild">${features.explain}</div>
-                <div>
-                    <span class="info">
-                    <span style="margin: 0; font-size: smaller; color: ${fts.program == 'quickcommand' ? "#00af2c;" : programs[fts.program].color}">●</span>
-                    ${fts.program} | ${platformIcons.join('')}
-                </div>
-            </td>
-            <td>${cmds}</td>
-            <td>
-                <label class="switch-btn">
-                    <input class="checked-switch" type="checkbox" ${isChecked}>
-                    <span class="text-switch"></span>
-                    <span class="toggle-btn"></span>
-                </label>
-            </td>
-            <td>
-                <span class="Btn editBtn"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
-                ${(tag == "默认" && !isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
-            </td>`
         })
         featureList += `</tr></table></div>`
         var sidebar = `
@@ -1418,7 +1439,7 @@
         let redirectTag
         let currentTag = $('.currentTag').text()
         // let AllTags = Array.from($('.sidebar li')).map(x => x.innerText)
-        if (tags.length) {
+        if (tags && tags.length) {
             if (tags.includes(currentTag)) {
                 redirectTag = currentTag
             } else {
