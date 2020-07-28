@@ -33,7 +33,7 @@
         return utoolsFull.db.allDocs(key)
     }
     // 获取所有 qc，等效于 1.6 版本 getDB('customFts')
-    window.getAllQuickCommands = () => {
+    let getAllQuickCommands = () => {
         let allQcs = {}
         getDocs(QC_PREFIX).forEach(x => allQcs[x.data.features.code] = x.data)
         return allQcs
@@ -328,13 +328,14 @@
         if (pushData.single) {
             var code = pushData.qc.features.code;
             putDB(pushData.qc, QC_PREFIX + code);
+            return { tags: pushData.qc.tags, code: code }
         // 多个命令导入
         } else {
             for (var code of Object.keys(pushData.qc)) {
                 putDB(pushData.qc[code], QC_PREFIX + code);
             }
+            return true
         }
-        return true
     }
 
     // 全部导出
@@ -917,8 +918,14 @@
                 break;
             case 'import':
                 var success = importCommand()
-                if (success) showOptions() || quickcommand.showMessageBox("导入成功")
-                else if (success == false) quickcommand.showMessageBox("导入失败，格式错误", "error")
+                if (success) {
+                    if (success instanceof Object) locateToCode(success.tags, success.code)
+                    else showOptions()
+                    quickcommand.showMessageBox("导入成功")
+                }
+                else if (success == false) {
+                    quickcommand.showMessageBox("导入失败，格式错误", "error")
+                }
                 break;
             case 'enableAll': $(".checked-switch:not(:checked)").click();
                 break;
@@ -1391,25 +1398,31 @@
                 if ($('#customize').data('returnShare')) {
                     getSharedQCFromYuQue()
                 } else {
-                    // 保存后标签跳转处理
-                    var redirectTag, currentTag = $('.currentTag').text()
-                    if (tags.length) {
-                        if (pushData.tags.includes(currentTag)) {
-                            redirectTag = currentTag
-                        } else {
-                            redirectTag = pushData.tags[0]
-                        }
-                    } else {
-                        redirectTag = "未分类"
-                    }
-                    showOptions(redirectTag);
-                    location.href = '#' + code
+                    locateToCode(pushData.tags, code)
                     let checkSwitch = $(`#${code} .checked-switch`)
                     checkSwitch.click()
                     checkSwitch.is(':checked') || checkSwitch.click()
                 }
             });
         }
+    }
+
+    // 保存后标签跳转处理
+    let locateToCode = (tags, code) => {
+        let redirectTag
+        let currentTag = $('.currentTag').text()
+        // let AllTags = Array.from($('.sidebar li')).map(x => x.innerText)
+        if (tags.length) {
+            if (tags.includes(currentTag)) {
+                redirectTag = currentTag
+            } else {
+                redirectTag = tags[0]
+            }
+        } else {
+            redirectTag = "未分类"
+        }
+        showOptions(redirectTag);
+        location.href = '#' + code
     }
 
     // 显示运行结果
