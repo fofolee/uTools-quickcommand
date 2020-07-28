@@ -1211,7 +1211,11 @@
         let res = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs`)
         let description, platform = window.processPlatform
         let docs = res.data.data
-            .filter(d => JSON.parse(d.custom_description).platform.includes(platform))
+            .filter(d => {
+                try {
+                    return JSON.parse(d.custom_description).platform.includes(platform)  
+                } catch (error) { }
+            })
             .sort((x, y) => {
                 if (y.updated_at > x.updated_at) return 1
                 else return -1
