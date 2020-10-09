@@ -102,8 +102,8 @@
                 let Matched = cmd.match(/\{\{MatchedFiles(\[\d+\]){0,1}(\.\w{1,11}){0,1}\}\}/g)
                 Matched && Matched.forEach(m => {
                     repl = eval(m.slice(2, -2))
-                    typeof repl == 'object' && (repl = JSON.stringify(repl))
-                    cmd = cmd.replace(m, repl)
+                    typeof repl == 'object' ? (repl = JSON.stringify(repl)) : (repl = repl.replace('\\', '\\\\'))
+                    cmd = cmd.replace(m, repl.replace('$','$$$'))
                 })
             }
             // 窗口
@@ -117,7 +117,9 @@
                 // 获取资源管理器或访达当前目录
                 if (cmd.includes('{{pwd}}')) {
                     repl = getCurrentFolderPathFix();
+                    console.log(repl);
                     cmd = cmd.replace(/\{\{pwd\}\}/mg, repl)
+                    console.log(cmd)
                 }
                 // 获取窗口信息
                 if (cmd.includes('{{WindowInfo')) {
@@ -235,6 +237,7 @@
                     message(stdout)
                     break;
                 case "ignore":
+                case "nothing":
                     break;
                 default:
                     break;
@@ -466,36 +469,60 @@
         }
     }
 
+    let getCmdsType = cmds => {
+        try {
+            JSON.stringify(cmds)
+        } catch (error) {
+            return 'illegal'
+        }
+        if (cmds.length == 0) return 'null'
+        if (cmds.length == 1) {
+            let type = cmds[0].type
+            if (!type) return 'key'
+            if (type == 'window' || cmds[0].minNum) return type
+            return 'professional'
+        }
+        let counts = cmds.filter(x => typeof x == 'string').length
+        return counts == cmds.length ? 'key' : 'professional'
+    }
+
     let showCommandByType = features => {
-        let qcType = '', rules = features.cmds[0].match
-        if (features.cmds[0].type == 'regex') {
-            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-            qcType = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
-        } else if (features.cmds[0].type == 'window') {
-            qcType += `<div class="topchild">窗口</div><div>`
-            if (!rules) {
-                qcType += `<span class="keyword win">所有窗口</span>`
-            } else if (rules.title || rules.class) {
-                qcType += `<span class="keyword win">${JSON.stringify(rules).slice(0,  14) + '...'}</span>`;
-            } else if (rules.app) {
-                rules = rules.app.join(",")
-                if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-                rules.split(',').forEach(r => {
-                    qcType += `<span class="keyword win">${r}</span>`;
-                });
-            }
-            qcType += `</div>`
-        } else if (features.cmds[0].type == 'files') {
-            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-            qcType = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
+        let qcType = ''
+        let cmds = features.cmds
+        let type = getCmdsType(cmds)
+        if (type == 'professional') {
+            qcType = `<div class="topchild">专业模式</div><div><span class="keyword">[{...}]</span></div>`;
         } else {
-            rules = features.cmds.join(",")
-            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-            qcType += `<div class="topchild">关键字</div><div>`
-            rules.split(',').forEach(r => {
-                qcType += `<span class="keyword">${r}</span>`;
-            });
-            qcType += `</div>`
+            let rules = cmds[0].match
+            if (type == 'regex') {
+                if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+                qcType = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
+            } else if (type == 'window') {
+                qcType += `<div class="topchild">窗口</div><div>`
+                if (!rules) {
+                    qcType += `<span class="keyword win">所有窗口</span>`
+                } else if (rules.title || rules.class) {
+                    qcType += `<span class="keyword win">${JSON.stringify(rules).slice(0,  14) + '...'}</span>`;
+                } else if (rules.app) {
+                    rules = rules.app.join(",")
+                    if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+                    rules.split(',').forEach(r => {
+                        qcType += `<span class="keyword win">${r}</span>`;
+                    });
+                }
+                qcType += `</div>`
+            } else if (type == 'files') {
+                if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+                qcType = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
+            } else {
+                rules = features.cmds.join(",")
+                if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+                qcType += `<div class="topchild">关键字</div><div>`
+                rules.split(',').forEach(r => {
+                    qcType += `<span class="keyword">${r}</span>`;
+                });
+                qcType += `</div>`
+            }
         }
         return qcType
     }
@@ -628,7 +655,8 @@
             </select>
             <span class="word">输&#12288;出</span>
             <select id="output">
-                <option value="ignore">隐藏并忽略输出</option>
+                <option value="ignore">忽略输出并隐藏</option>
+                <option value="nothing">忽略输出并保留窗口</option>
                 <option value="text">显示纯文本输出</option>
                 <option value="html">显示html格式的输出</option>
                 <option value="terminal" id="showInTerm" disabled>在终端显示输出</option>
@@ -722,6 +750,11 @@
                 id: "files",
                 text: "复制/选中文件",
                 html: "<img src='img/file.svg'><span>复制/选中文件</span><div>匹配拖入主输入框的文件或唤出超级面板时选中的文件，可以获取复制及选中的文件信息作为变量</div>"
+            },
+            {
+                id: "professional",
+                text: "专业模式",
+                html: "<img src='img/professional.svg'><span>专业模式</span><div>通过json格式的配置实现同时匹配关键字、窗口、文件甚至图片，或者指定文件数量、窗口类等</div>"
             }
         ]
     }
@@ -834,6 +867,10 @@
                 $(".var.window").prop("disabled", false)
                 $("#rule").prop("placeholder", '多个窗口进程逗号隔开，留空匹配所有窗口');
                 break;
+            case 'professional':
+                $("#ruleWord").html("配&#12288;置");
+                $(".var.regex, .var.window, .var.files").prop("disabled", false)
+                $("#rule").prop("placeholder", '等效于 features.cmds');
             default:
                 break;
         }
@@ -961,7 +998,6 @@
 
     let editCurrentCommand = data => {
         let code = data.features.code
-        let cmds = data.features.cmds[0]
         let platform = data.features.platform
         let readonly = false
         let extraInfo = {
@@ -974,16 +1010,23 @@
         $('#customize').data('extraInfo', extraInfo)
         data.tags && $('#tags').val(data.tags).trigger('change')
         platform && ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
-        $('#type').val(cmds.type).trigger("change")
-        if (cmds.type == 'regex' || cmds.type == 'files') {
-            $('#rule').val(cmds.match);
-        } else if (cmds.type == 'window') {
-            if (!cmds.match) $('#rule').val('');
-            else if (cmds.match.title || cmds.match.class) $('#rule').val(JSON.stringify(cmds.match));
-            else $('#rule').val(cmds.match.app);
+        let cmds = data.features.cmds
+        let type = getCmdsType(cmds)
+        $('#type').val(type).trigger("change")
+        if (type == 'professional') {
+            $('#rule').val(JSON.stringify(cmds))
         } else {
-            $('#type').val('key').trigger("change")
-            $('#rule').val(data.features.cmds.toString());
+            cmds = cmds[0]
+            if (type == 'regex' || type == 'files') {
+                $('#rule').val(cmds.match);
+            } else if (type == 'window') {
+                if (!cmds.match) $('#rule').val('');
+                else if (cmds.match.title || cmds.match.class) $('#rule').val(JSON.stringify(cmds.match));
+                else $('#rule').val(cmds.match.app);
+            } else {
+                $('#type').val('key').trigger("change")
+                $('#rule').val(data.features.cmds.toString());
+            }
         }
         $('#code').val(code);
         $('#program').val(data.program).trigger("change");
@@ -1235,7 +1278,9 @@
             .filter(d => {
                 try {
                     return JSON.parse(d.custom_description).platform.includes(platform)  
-                } catch (error) { }
+                } catch (error) {
+                    console.log(error)
+                }
             })
             .sort((x, y) => {
                 if (y.updated_at > x.updated_at) return 1
@@ -1377,6 +1422,12 @@
                     "match": rule,
                     "minNum": 1
                 }];
+            } else if (type == 'professional') {
+                try {
+                    cmds = JSON.parse(rule)
+                } catch (error) {
+                    return quickcommand.showMessageBox(`配置的格式有误，请核查！`, 'error')
+                }
             }
             // 需要子输入框
             if (cmd.includes('{{subinput')) {

@@ -224,6 +224,7 @@ body {
 
 #options .logo {
     max-width: 40px;
+    max-height: 40px;
 }
 
 #options .info {
@@ -538,7 +539,8 @@ input::-webkit-input-placeholder {
 
 #options #customize #icon {
     float: right;
-    width: 40px;
+    max-width: 40px;
+    max-height: 40px;
     cursor: pointer;
 }
 
@@ -730,7 +732,7 @@ li.CodeMirror-hint {
 }
 
 #options #customize .select2-results>.select2-results__options {
-    max-height: 300px;
+    max-height: 360px;
 }
 
 #options #customize .select2-selection--single:hover,
