@@ -192,9 +192,10 @@ quickcommand.setTimeout(()=>{
 }, 2000)
 ```
 
-####`showTextAera(placeholder)`
+####`showTextAera(placeholder, value)`
 
 - placeholder: String | undefined  文本框占位符
+- value: String | undefined 默认的文本值
 - 返回: Promise
   - text: String  文本框的文本
 
@@ -458,5 +459,3 @@ console.log(`主输入框匹配的文本为${text}`)
 - ~~db~~
 - ~~removeFeature~~
 - ~~setFeature~~
-
-

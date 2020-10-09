@@ -7,6 +7,8 @@
     - 可以通过 json 格式的配置实现同时匹配关键字、窗口、文件甚至图片
     - 可以实现指定文件数量、窗口类等
     - json 格式配置和插件开发的 features.cmds 一致
+    - 配置处可以点击旁边的按钮全屏，方便填写 json 格式的配置
+ - quickcommand.showTextAera 新增一个参数可以设置默认文本值
 
 ### BUG FIX
 
