@@ -439,7 +439,17 @@ body {
 }
 
 #options #customize input#rule {
-    width: 40%;
+    width: 38%;
+}
+
+#options #customize img#expandBtn {
+    max-width: 15px;
+    cursor: pointer;
+}
+
+#options #customize img#expandBtn:hover {
+    filter: drop-shadow(0 0 5px black);
+    transition: 0.2s;
 }
 
 #options #customize input#scptarg {
