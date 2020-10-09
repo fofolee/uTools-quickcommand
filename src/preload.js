@@ -268,12 +268,12 @@ quickcommand = {
     },
 
     // 显示文本输入框
-    showTextAera: function (placeholder = "") {
+    showTextAera: function (placeholder = "", value = "") {
         return new Promise((reslove, reject) => {
             utools.setExpendHeight(600)
             var html = `
             <div id="quicktextarea">
-                <textarea placeholder="${placeholder}"></textarea>
+                <textarea placeholder="${placeholder}">${value}</textarea>
                 <button class="circleButton">✔</button>
             </div>`
             $("body").append(html)
