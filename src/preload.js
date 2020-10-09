@@ -296,6 +296,7 @@ quickcommand = {
             confirmButtonText: '确定！',
             cancelButtonText: '手抖...'
         }
+        utools.setExpendHeight(600)
         let result = await Swal.fire(options)
         if (result.value) return true;
     },
