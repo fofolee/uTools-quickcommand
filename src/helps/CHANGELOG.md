@@ -1,4 +1,4 @@
-## v2.0.2
+## v2.1.0
 
 ### 新增功能
 
@@ -9,6 +9,9 @@
     - json 格式配置和插件开发的 features.cmds 一致
     - 配置处可以点击旁边的按钮全屏，方便填写 json 格式的配置
  - quickcommand.showTextAera 新增一个参数可以设置默认文本值
+
+ ![0yxZIP.png](https://s1.ax1x.com/2020/10/10/0yxZIP.png)
+ ![06SuuQ.png](https://s1.ax1x.com/2020/10/10/06SuuQ.png)
 
 ### BUG FIX
 

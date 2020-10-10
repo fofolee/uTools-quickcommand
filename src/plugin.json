@@ -4,7 +4,7 @@
     "main": "index.html",
     "homepage": "https://github.com/fofolee/uTools-QuickerCommand",
     "publishPage": "https://yuanliao.info/d/424",
-    "version": "2.0.2",
+    "version": "2.1.0",
     "author": "云之轩",
     "unpack":"autopep8.py",
     "logo": "logo.png",
