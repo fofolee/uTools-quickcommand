@@ -1,6 +1,6 @@
 
 
-# 快捷命令 V2.1.0
+# 快捷命令 V2.1.1
 
 [![GitHub stars](https://img.shields.io/github/stars/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/network/members) [![GitHub license](https://img.shields.io/github/license/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/blob/master/LICENSE) [![version]( https://img.shields.io/badge/dynamic/json?color=f58142&label=version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Ffofolee%2FuTools-QuickerCommand%2Fmaster%2Fsrc%2Fplugin.json&style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/blob/master/src/helps/CHANGELOG.md) [![猿料](https://img.shields.io/badge/%E7%8C%BF%E6%96%99-%2Fd%2F424-red?style=flat-square)](https://yuanliao.info/d/424) [![评论](https://img.shields.io/badge/dynamic/json?color=%2350e3c2&label=%E8%AF%84%E8%AE%BA&query=%24.data.attributes.commentsCount&url=https%3A%2F%2Fyuanliao.info%2Fapi%2Fdiscussions%2F424&style=flat-square)](https://yuanliao.info/d/424) [![下载](https://img.shields.io/badge/dynamic/json?label=%E4%B8%8B%E8%BD%BD&query=quickcommand&url=http%3A%2F%2F45.77.122.164%3A8888%2FdownloadsStatistics.php&style=flat-square)](https://yuanliao.info/d/424)
 
@@ -79,8 +79,10 @@
   - 匹配呼出 uTools 前或唤出超级面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量
 - 复制/选中文件
   - 匹配拖入主输入框的文件或唤出超级面板时选中的文件，可以获取复制及选中的文件信息作为变量
+- 专业模式
+  - 匹配 JSON 格式的配置，等效于插件开发中的`features.cmds`
 
-![UY3i7D.png](https://s1.ax1x.com/2020/07/13/UY3i7D.png)
+![06C726.png](https://s1.ax1x.com/2020/10/10/06C726.png)
 
 ##### 环境
 

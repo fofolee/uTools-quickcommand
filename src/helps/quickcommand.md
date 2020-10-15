@@ -56,7 +56,7 @@ quickcommand.showButtonBox(['打开文件', '在文件管理器中定位', '复�
 })
 ```
 
-####`showInputBox(placeHolders, title)`
+#### `showInputBox(placeHolders, title)`
 
 - placeHolders: Array  每一个占位符对应一个输入框
 - title: String | undefined 对话框标题
@@ -89,7 +89,7 @@ quickcommand.showInputBox(["要替换的内容，两边加 / 使用正则", "替
 	...
 })
 ```
-####`showSelectList(selects, options)`
+#### `showSelectList(selects, options)`
 
 - selects: Array  每一个元素对应一个列表选项
 - options: Array | undefined 列表的选项
@@ -192,7 +192,7 @@ quickcommand.setTimeout(()=>{
 }, 2000)
 ```
 
-####`showTextAera(placeholder, value)`
+#### `showTextAera(placeholder, value)`
 
 - placeholder: String | undefined  文本框占位符
 - value: String | undefined 默认的文本值
@@ -227,7 +227,7 @@ quickcommand.showTextAera("请输入代码片段").then(code => {
         })
 })
 ```
-####`showMessageBox(message, icon, time)`
+#### `showMessageBox(message, icon, time)`
 
 - message:  String  显示的消息内容
 - icon: String | undefined  图标，可为`success`、`error`、`warning`、`info`、`question`，默认为`success`
@@ -258,7 +258,7 @@ quickcommand.showConfirmBox().then(confirmed => {
 
 ### ❖ 延时函数
 
-####`sleep(ms)`
+#### `sleep(ms)`
 
 - ms:  Integer 等待的毫秒
 
@@ -272,7 +272,7 @@ quickcommand.sleep(200)
 utools.simulateKeyboardTap('c', 'ctrl')
 ```
 
-####`setTimeout(callback, ms)`
+#### `setTimeout(callback, ms)`
 
 - callback:  Function  回调函数
 - ms: Integer 延时的毫秒
@@ -288,7 +288,7 @@ quickcommand.setTimeout(()=>{
 ```
 ### ❖ 前端封装
 
-####`htmlParse(html)`
+#### `htmlParse(html)`
 
 - html:  String  需要解析的`html`文本
 - 返回: Object `DOM`对象
@@ -389,18 +389,21 @@ quickcommand.kill(16084)
 
 ### ❖ utools 封装
 
-#### `payload`
+#### `enterData`
 
-- String 对应`utools.onPluginEnter`的 `payload` 
-
-当匹配模式为`关键字`时，返回进入插件的关键字；为`正则`时，返回匹配的文本；为`窗口`时，返回匹配的窗口信息；为`文件`时，返回匹配的文件信息
+- Object 对应`utools.onPluginEnter` 的 `code`  `type` 和 `payload`
+  - code: String 唯一标示
+  - type: 匹配模式，可以为 `text` `img`  `files`  `regex`  `over` `window`
+  - payload: 当匹配模式为`关键字`时，返回进入插件的关键字；为`正则`时，返回匹配的文本；为`窗口`时，返回匹配的窗口信息；为`文件`时，返回匹配的文件信息
 
  **示例** 
 
 ```js
 // 匹配模式为正则/划词时
-var text = quickcommand.payload
-console.log(`主输入框匹配的文本为${text}`)
+if (quickcommand.enterData.type == 'regex'){
+  var text = quickcommand.enterData.payload
+	console.log(`主输入框匹配的文本为${text}`)
+}
 ```
 
 #### `simulateCopy()`

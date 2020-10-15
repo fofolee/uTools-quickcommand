@@ -1,3 +1,12 @@
+## v2.1.1
+
+ - 在新建命令支持选择任意文件作为图标
+    - 当选择 `.PNG` `.JPG` `.ICO` 等文件时，则以图片作为图标
+    - 当选择 `.EXE` `.APP` 时，则以程序的图标作为图标
+    - 当选择其他文件时，则以该文件的默认图标作为图标
+ - 新增 `quickcommand.enterData` 用以获取进入插件时匹配的类型和数据，用法详见文档
+ - 提供一个示例，作为`专业模式`下`配置`的默认值
+
 ## v2.1.0
 
 ### 新增功能
@@ -6,9 +15,9 @@
  - 添加`专业模式`的匹配选项
     - 可以通过 json 格式的配置实现同时匹配关键字、窗口、文件甚至图片
     - 可以实现指定文件数量、窗口类等
-    - json 格式配置和插件开发的 features.cmds 一致
+    - json 格式配置和插件开发的 `features.cmds` 一致
     - 配置处可以点击旁边的按钮全屏，方便填写 json 格式的配置
- - quickcommand.showTextAera 新增一个参数可以设置默认文本值
+ - `quickcommand.showTextAera` 新增一个参数可以设置默认文本值
 
  ![0yxZIP.png](https://s1.ax1x.com/2020/10/10/0yxZIP.png)
  ![06SuuQ.png](https://s1.ax1x.com/2020/10/10/06SuuQ.png)

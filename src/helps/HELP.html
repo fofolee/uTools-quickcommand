@@ -2,21 +2,22 @@
 <html>
 <head>
 <meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
-<title>HELP</title><link href='vue/fonts.css' rel='stylesheet' type='text/css' /><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; }
+<title>HELP</title><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color: #ffffff; --text-color: #333333; --select-text-bg-color: #B5D6FC; --select-text-font-color: auto; --monospace: "Lucida Console",Consolas,"Courier",monospace; }
 html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
-body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857143; overflow-x: hidden; background-image: inherit; background-size: inherit; background-attachment: inherit; background-origin: inherit; background-clip: inherit; background-color: inherit; tab-size: 4; background-position: inherit inherit; background-repeat: inherit inherit; }
 iframe { margin: auto; }
 a.url { word-break: break-all; }
 a:active, a:hover { outline: 0px; }
 .in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
-#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 40px; }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; word-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 40px; }
 #write.first-line-indent p { text-indent: 2em; }
 #write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
 #write.first-line-indent li { margin-left: 2em; }
 .for-image #write { padding-left: 8px; padding-right: 8px; }
 body.typora-export { padding-left: 30px; padding-right: 30px; }
 .typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
-@media screen and (max-width: 500px) {
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) { 
   body.typora-export { padding-left: 0px; padding-right: 0px; }
   #write { padding-left: 20px; padding-right: 20px; }
   .CodeMirror-sizer { margin-left: 0px !important; }
@@ -24,14 +25,14 @@ body.typora-export { padding-left: 30px; padding-right: 30px; }
 }
 #write li > figure:last-child { margin-bottom: 0.5rem; }
 #write ol, #write ul { position: relative; }
-img { max-width: 100%; vertical-align: middle; }
-button, input, select, textarea { color: inherit; font: inherit; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-caps: inherit; font-weight: inherit; font-stretch: inherit; line-height: inherit; }
 input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
 *, ::after, ::before { box-sizing: border-box; }
 #write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
 #write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
 p { line-height: inherit; }
-h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 2; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
 p { orphans: 4; }
 h1 { font-size: 2rem; }
 h2 { font-size: 1.8rem; }
@@ -43,17 +44,17 @@ h6 { font-size: 1rem; }
 .hidden { display: none; }
 .md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
 a { cursor: pointer; }
-sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; cursor: pointer; }
 sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
 #write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
 figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
-figure > table { margin: 0px !important; }
+figure > table { margin: 0px; }
 tr { break-inside: avoid; break-after: auto; }
 thead { display: table-header-group; }
 table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
 table.md-table td { min-width: 32px; }
-.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
-.CodeMirror-linenumber { user-select: none; }
+.CodeMirror-gutters { border-right-width: 0px; background-color: inherit; }
+.CodeMirror-linenumber { }
 .CodeMirror { text-align: left; }
 .CodeMirror-placeholder { opacity: 0.3; }
 .CodeMirror pre { padding: 0px 4px; }
@@ -63,7 +64,7 @@ div.hr:focus { cursor: none; }
 #write.fences-no-line-wrapping pre { white-space: pre; }
 #write pre.ty-contain-cm { white-space: normal; }
 .CodeMirror-gutters { margin-right: 4px; }
-.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background-image: inherit; background-size: inherit; background-attachment: inherit; background-origin: inherit; background-clip: inherit; background-color: inherit; position: relative !important; background-position: inherit inherit; background-repeat: inherit inherit; }
 .md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
 #write .md-fences.mock-cm { white-space: pre-wrap; }
 .md-fences.md-fences-with-lineno { padding-left: 0px; }
@@ -72,7 +73,7 @@ div.hr:focus { cursor: none; }
 .CodeMirror-line, twitterwidget { break-inside: avoid; }
 .footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
 .footnotes + .footnotes { margin-top: 0px; }
-.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; background-position: 0px 0px; background-repeat: initial initial; }
 li div { padding-top: 0px; }
 blockquote { margin: 1rem 0px; }
 li .mathjax-block, li p { margin: 0.5rem 0px; }
@@ -81,28 +82,30 @@ blockquote > :last-child { margin-bottom: 0px; }
 blockquote > :first-child, li > :first-child { margin-top: 0px; }
 .footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
 #write .footnote-line { white-space: pre-wrap; }
-@media print {
-  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; }
+@media print { 
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
   #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
   .typora-export * { -webkit-print-color-adjust: exact; }
   html.blink-to-pdf { font-size: 13px; }
-  .typora-export #write { padding-left: 32px; padding-right: 32px; padding-bottom: 0px; break-after: avoid; }
+  .typora-export #write { break-after: avoid; }
   .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
 }
 .footnote-line { margin-top: 0.714em; font-size: 0.7em; }
 a img, img a { cursor: pointer; }
-pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background-color: rgb(204, 204, 204); display: block; overflow-x: hidden; background-position: initial initial; background-repeat: initial initial; }
 p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
 p > .md-image:only-child { display: inline-block; width: 100%; }
 #write .MathJax_Display { margin: 0.8em 0px 0px; }
 .md-math-block { width: 100%; }
 .md-math-block:not(:empty)::after { display: none; }
-[contenteditable="true"]:active, [contenteditable="true"]:focus { outline: 0px; box-shadow: none; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
 .md-task-list-item { position: relative; list-style-type: none; }
 .task-list-item.md-task-list-item { padding-left: 0px; }
 .md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
 .math { font-size: 1rem; }
-.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; }
 .md-toc-content { position: relative; margin-left: 0px; }
 .md-toc-content::after, .md-toc::after { display: none; }
 .md-toc-item { display: block; color: rgb(65, 131, 196); }
@@ -115,7 +118,7 @@ p > .md-image:only-child { display: inline-block; width: 100%; }
 .md-toc-h4 .md-toc-inner { margin-left: 6em; }
 .md-toc-h5 .md-toc-inner { margin-left: 8em; }
 .md-toc-h6 .md-toc-inner { margin-left: 10em; }
-@media screen and (max-width: 48em) {
+@media screen and (max-width: 48em) { 
   .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
   .md-toc-h4 .md-toc-inner { margin-left: 5em; }
   .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
@@ -126,122 +129,557 @@ a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; 
 .md-attr { display: none; }
 .md-fn-count::after { content: "."; }
 code, pre, samp, tt { font-family: var(--monospace); }
-kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background-color: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; background-position: initial initial; background-repeat: initial initial; }
 .md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
-code { text-align: left; vertical-align: initial; }
-a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+code { text-align: left; }
+a.md-print-anchor { white-space: pre !important; border: none !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; text-shadow: initial !important; background-position: 0px 0px !important; background-repeat: initial initial !important; }
 .md-inline-math .MathJax_SVG .noError { display: none !important; }
 .html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
 .md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
 .MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
 .MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
 .MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
-.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
-.MathJax_SVG * { transition: none 0s ease 0s; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none; }
 .MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; margin-top: 0px !important; }
 .os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
 .md-diagram-panel > svg { max-width: 100%; }
-[lang="mermaid"] svg, [lang="flow"] svg { max-width: 100%; height: auto; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
 [lang="mermaid"] .node text { font-size: 1rem; }
-table tr th { border-bottom: 0px; }
+table tr th { border-bottom-width: 0px; }
 video { max-width: 100%; display: block; margin: 0px auto; }
 iframe { max-width: 100%; width: 100%; border: none; }
 .highlight td, .highlight tr { border: 0px; }
 svg[id^="mermaidChart"] { line-height: 1em; }
-
-
-
-
-:root { --side-bar-bg-color: #fff; --control-text-color: #777; --font-sans-serif: "Ubuntu", "Source Sans Pro", sans-serif  !important; --font-monospace: "Fira Code", "Roboto Mono", monospace  !important; }
-html { font-size: 16px; }
-body { font-family: var(--font-sans-serif); color: rgb(52, 73, 94); -webkit-font-smoothing: antialiased; line-height: 1.6rem; letter-spacing: 0px; margin: 0px; overflow-x: hidden; }
-#write { max-width: 860px; margin: 0px auto; padding: 20px 30px 100px; }
-#write p { line-height: 1.6rem; word-spacing: 0.05rem; }
-#write ol li { padding-left: 0.5rem; }
-#write > ul:first-child, #write > ol:first-child { margin-top: 30px; }
-body > :first-child { margin-top: 0px !important; }
-body > :last-child { margin-bottom: 0px !important; }
-a { color: rgb(66, 185, 131); font-weight: 600; padding: 0px 2px; text-decoration: none; }
-h1, h2, h3, h4, h5, h6 { position: relative; margin-top: 1rem; margin-bottom: 1rem; font-weight: bold; line-height: 1.4; cursor: text; }
-h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor { text-decoration: none; }
-h1 tt, h1 code { font-size: inherit !important; }
-h2 tt, h2 code { font-size: inherit !important; }
-h3 tt, h3 code { font-size: inherit !important; }
-h4 tt, h4 code { font-size: inherit !important; }
-h5 tt, h5 code { font-size: inherit !important; }
-h6 tt, h6 code { font-size: inherit !important; }
-h2 a, h3 a { color: rgb(52, 73, 94); }
-h1 { padding-bottom: 0.4rem; font-size: 2.2rem; line-height: 1.3; }
-h2 { font-size: 1.75rem; line-height: 1.225; margin: 35px 0px 15px; padding-bottom: 0.5em; border-bottom: 1px solid rgb(221, 221, 221); }
-h3 { font-size: 1.4rem; line-height: 1.43; margin: 20px 0px 7px; }
-h4 { font-size: 1.2rem; }
-h5 { font-size: 1rem; }
-h6 { font-size: 1rem; color: rgb(119, 119, 119); }
-p, blockquote, ul, ol, dl, table { margin: 0.8em 0px; }
-li > ol, li > ul { margin: 0px; }
-hr { height: 2px; padding: 0px; margin: 16px 0px; background-color: rgb(231, 231, 231); border: 0px none; overflow: hidden; box-sizing: content-box; }
-body > h2:first-child { margin-top: 0px; padding-top: 0px; }
-body > h1:first-child { margin-top: 0px; padding-top: 0px; }
-body > h1:first-child + h2 { margin-top: 0px; padding-top: 0px; }
-body > h3:first-child, body > h4:first-child, body > h5:first-child, body > h6:first-child { margin-top: 0px; padding-top: 0px; }
-a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 { margin-top: 0px; padding-top: 0px; }
-h1 p, h2 p, h3 p, h4 p, h5 p, h6 p { margin-top: 0px; }
-li p.first { display: inline-block; }
-ul, ol { padding-left: 30px; }
-ul:first-child, ol:first-child { margin-top: 0px; }
-ul:last-child, ol:last-child { margin-bottom: 0px; }
-blockquote { border-left: 4px solid rgb(66, 185, 131); padding: 10px 15px; color: rgb(119, 119, 119); background-color: rgba(66, 185, 131, 0.1); }
-table { padding: 0px; word-break: initial; }
-table tr { border-top: 1px solid rgb(223, 226, 229); margin: 0px; padding: 0px; }
-table tr:nth-child(2n), thead { background-color: rgb(250, 250, 250); }
-table tr th { font-weight: bold; border-width: 1px 1px 0px; border-top-style: solid; border-right-style: solid; border-left-style: solid; border-top-color: rgb(223, 226, 229); border-right-color: rgb(223, 226, 229); border-left-color: rgb(223, 226, 229); border-image: initial; border-bottom-style: initial; border-bottom-color: initial; text-align: left; margin: 0px; padding: 6px 13px; }
-table tr td { border: 1px solid rgb(223, 226, 229); text-align: left; margin: 0px; padding: 6px 13px; }
-table tr th:first-child, table tr td:first-child { margin-top: 0px; }
-table tr th:last-child, table tr td:last-child { margin-bottom: 0px; }
-#write strong { padding: 0px 1px; }
-#write em { padding: 0px 5px 0px 2px; }
-#write table thead th { background-color: rgb(242, 242, 242); }
-#write .CodeMirror-gutters { border-right: none; }
-#write .md-fences { border: 1px solid rgb(244, 244, 244); -webkit-font-smoothing: initial; line-height: 1.43rem; border-radius: 2px; font-family: var(--font-monospace); font-size: 0.85rem; overflow-wrap: normal; margin: 0.8rem 0px !important; padding: 0.3rem 0px !important; background-color: rgb(248, 248, 248) !important; }
-#write .CodeMirror-wrap .CodeMirror-code pre { padding-left: 12px; }
-#write code, tt { padding: 2px 4px; border-radius: 2px; font-family: var(--font-monospace); font-size: 0.92rem; color: rgb(233, 105, 0); background-color: rgb(248, 248, 248); }
-tt { margin: 0px 2px; }
-#write .md-footnote { background-color: rgb(248, 248, 248); color: rgb(233, 105, 0); }
-#write mark { background-color: rgb(235, 255, 235); border-radius: 2px; padding: 2px 4px; margin: 0px 2px; color: rgb(34, 34, 34); font-weight: 500; }
-#write del { padding: 1px 2px; }
-.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(34, 162, 201); }
-.cm-s-inner .cm-string { color: rgb(34, 162, 201); }
-.md-task-list-item > input { margin-left: -1.3em; }
-@media print {
-  html { font-size: 13px; }
-  table, pre { break-inside: avoid; }
-  pre { overflow-wrap: break-word; }
+mark { background-color: rgb(255, 255, 0); color: rgb(0, 0, 0); background-position: initial initial; background-repeat: initial initial; }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+mark .md-meta { color: rgb(0, 0, 0); opacity: 0.3 !important; }
+@media print { 
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
 }
-.md-fences { background-color: rgb(248, 248, 248); }
-#write pre.md-meta-block { padding: 1rem; font-size: 85%; line-height: 1.45; background-color: rgb(247, 247, 247); border: 0px; border-radius: 3px; color: rgb(119, 119, 119); margin-top: 0px !important; }
-.mathjax-block > .code-tooltip { bottom: 0.375rem; }
-#write > h3.md-focus::before { left: -1.5625rem; top: 0.375rem; }
-#write > h4.md-focus::before { left: -1.5625rem; top: 0.285714rem; }
-#write > h5.md-focus::before { left: -1.5625rem; top: 0.285714rem; }
-#write > h6.md-focus::before { left: -1.5625rem; top: 0.285714rem; }
-.md-image > .md-meta { border-radius: 3px; font-family: var(--font-monospace); padding: 2px 0px 0px 4px; font-size: 0.9em; color: inherit; }
-.md-tag { color: inherit; }
-.md-toc { margin-top: 20px; padding-bottom: 20px; }
-.sidebar-tabs { border-bottom: none; }
-#typora-quick-open { border: 1px solid rgb(221, 221, 221); background-color: rgb(248, 248, 248); }
-#typora-quick-open-item { background-color: rgb(250, 250, 250); border-color: rgb(254, 254, 254) rgb(229, 229, 229) rgb(229, 229, 229) rgb(238, 238, 238); border-style: solid; border-width: 1px; }
-#md-notification::before { top: 10px; }
-.on-focus-mode blockquote { border-left-color: rgba(85, 85, 85, 0.12); }
-header, .context-menu, .megamenu-content, footer { font-family: var(--font-sans-serif); }
-.file-node-content:hover .file-node-icon, .file-node-content:hover .file-node-open-state { visibility: visible; }
-.mac-seamless-mode #typora-sidebar { background-color: var(--side-bar-bg-color); }
-.md-lang { color: rgb(180, 101, 77); }
-.html-for-mac .context-menu { --item-hover-bg-color: #E6F0FE; }
 
- .typora-export li, .typora-export p, .typora-export,  .footnote-line {white-space: normal;} 
+
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+@font-face {
+    font-family: 'Source Sans Pro';
+    font-style: normal;
+    font-weight: 600;
+    src: local('Source Sans Pro SemiBold'), local('SourceSansPro-SemiBold'), url('file:///Users/lee/Library/Application%20Support/abnerworks.Typora/themes/vue/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwlxdu.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}@import '';
+
+:root {
+    --side-bar-bg-color: #fff;
+    --control-text-color: #777;
+    --font-sans-serif: 'Ubuntu', 'Source Sans Pro', sans-serif !important;
+    --font-monospace: 'Fira Code', 'Roboto Mono', monospace !important;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-sans-serif);
+    color: #34495e;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6rem;
+    letter-spacing: 0;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#write {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 30px 100px;
+}
+
+#write p {
+    line-height: 1.6rem;
+    word-spacing: .05rem;
+}
+
+#write ol li {
+    padding-left: 0.5rem;
+}
+
+#write > ul:first-child,
+#write > ol:first-child {
+    margin-top: 30px;
+}
+
+body > *:first-child {
+    margin-top: 0 !important;
+}
+
+body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+a {
+    color: #42b983;
+    font-weight: 600;
+    padding: 0 2px;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+
+h1 tt,
+h1 code {
+    font-size: inherit !important;
+}
+
+h2 tt,
+h2 code {
+    font-size: inherit !important;
+}
+
+h3 tt,
+h3 code {
+    font-size: inherit !important;
+}
+
+h4 tt,
+h4 code {
+    font-size: inherit !important;
+}
+
+h5 tt,
+h5 code {
+    font-size: inherit !important;
+}
+
+h6 tt,
+h6 code {
+    font-size: inherit !important;
+}
+
+h2 a,
+h3 a {
+    color: #34495e;
+}
+
+h1 {
+    padding-bottom: .4rem;
+    font-size: 2.2rem;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.75rem;
+    line-height: 1.225;
+    margin: 35px 0 15px;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid #ddd;
+}
+
+h3 {
+    font-size: 1.4rem;
+    line-height: 1.43;
+    margin: 20px 0 7px;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #777;
+}
+
+p,
+blockquote,
+ul,
+ol,
+dl,
+table {
+    margin: 0.8em 0;
+}
+
+li > ol,
+li > ul {
+    margin: 0 0;
+}
+
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+body > h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h3:first-child,
+body > h4:first-child,
+body > h5:first-child,
+body > h6:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+a:first-child h1,
+a:first-child h2,
+a:first-child h3,
+a:first-child h4,
+a:first-child h5,
+a:first-child h6 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+h1 p,
+h2 p,
+h3 p,
+h4 p,
+h5 p,
+h6 p {
+    margin-top: 0;
+}
+
+li p.first {
+    display: inline-block;
+}
+
+ul,
+ol {
+    padding-left: 30px;
+}
+
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+
+blockquote {
+    border-left: 4px solid #42b983;
+    padding: 10px 15px;
+    color: #777;
+    background-color: rgba(66, 185, 131, .1);
+}
+
+table {
+    padding: 0;
+    word-break: initial;
+}
+
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+
+table tr:nth-child(2n),
+thead {
+    background-color: #fafafa;
+}
+
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr td {
+    border: 1px solid #dfe2e5;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+#write strong {
+    padding: 0 1px;
+}
+
+#write em {
+    padding: 0 5px 0 2px;
+}
+
+#write table thead th {
+    background-color: #f2f2f2;
+}
+
+#write .CodeMirror-gutters {
+    border-right: none;
+}
+
+#write .md-fences {
+    border: 1px solid #F4F4F4;
+    -webkit-font-smoothing: initial;
+    margin: 0.8rem 0 !important;
+    padding: 0.3rem 0 !important;
+    line-height: 1.43rem;
+    background-color: #F8F8F8 !important;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.85rem;
+    word-wrap: normal;
+}
+
+#write .CodeMirror-wrap .CodeMirror-code pre {
+    padding-left: 12px;
+}
+
+#write code, tt {
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.92rem;
+    color: #e96900;
+    background-color: #f8f8f8;
+}
+
+tt {
+    margin: 0 2px;
+}
+
+#write .md-footnote {
+    background-color: #f8f8f8;
+    color: #e96900;
+}
+
+/* heighlight. */
+#write mark {
+    background-color: #EBFFEB;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: 0 2px;
+    color: #222;
+    font-weight: 500;
+}
+
+#write del {
+    padding: 1px 2px;
+}
+
+.cm-s-inner .cm-link,
+.cm-s-inner.cm-link {
+    color: #22a2c9;
+}
+
+.cm-s-inner .cm-string {
+    color: #22a2c9;
+}
+
+.md-task-list-item > input {
+    margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+    background-color: #f8f8f8;
+}
+
+#write pre.md-meta-block {
+    padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block > .code-tooltip {
+    bottom: .375rem;
+}
+
+#write > h3.md-focus:before {
+    left: -1.5625rem;
+    top: .375rem;
+}
+
+#write > h4.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h5.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h6.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+.md-image > .md-meta {
+    border-radius: 3px;
+    font-family: var(--font-monospace);
+    padding: 2px 0 0 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: inherit;
+}
+
+.md-toc {
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#md-notification:before {
+    top: 10px;
+}
+
+/** focus mode */
+
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header,
+.context-menu,
+.megamenu-content,
+footer {
+    font-family: var(--font-sans-serif);
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state {
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+
+
 </style>
 </head>
-<body class='typora-export os-windows' >
-<div  id='write'  class = 'is-node'><div class='md-toc' mdtype='toc'><p class="md-toc-content" role="list"><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n2"><a class="md-toc-inner" style="cursor: pointer;" href="#一更新日志">一、更新日志</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n5"><a class="md-toc-inner" style="cursor: pointer;" href="#二添加命令">二、添加命令</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n6"><a class="md-toc-inner" style="cursor: pointer;" href="#基础">基础</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n7"><a class="md-toc-inner" style="cursor: pointer;" href="#常用动作">常用动作</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n32"><a class="md-toc-inner" style="cursor: pointer;" href="#模拟按键">模拟按键</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n35"><a class="md-toc-inner" style="cursor: pointer;" href="#进阶">进阶</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n36"><a class="md-toc-inner" style="cursor: pointer;" href="#匹配">匹配</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n38"><a class="md-toc-inner" style="cursor: pointer;" href="#关键字">关键字</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n42"><a class="md-toc-inner" style="cursor: pointer;" href="#正则划词">正则/划词</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n46"><a class="md-toc-inner" style="cursor: pointer;" href="#窗口进程">窗口/进程</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n50"><a class="md-toc-inner" style="cursor: pointer;" href="#复制选中文件">复制/选中文件</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n55"><a class="md-toc-inner" style="cursor: pointer;" href="#环境">环境</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n56"><a class="md-toc-inner" style="cursor: pointer;" href="#quickcommand">quickcommand</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n64"><a class="md-toc-inner" style="cursor: pointer;" href="#pythoncmdshell-php-等环境">python、cmd、shell 、php 等环境</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n75"><a class="md-toc-inner" style="cursor: pointer;" href="#插值变量">插值变量</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n77"><a class="md-toc-inner" style="cursor: pointer;" href="#全模式可用">全模式可用</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n94"><a class="md-toc-inner" style="cursor: pointer;" href="#匹配窗口进程时可用">匹配窗口/进程时可用</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n105"><a class="md-toc-inner" style="cursor: pointer;" href="#匹配正则划词时可用">匹配正则/划词时可用</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n109"><a class="md-toc-inner" style="cursor: pointer;" href="#匹配复制选中文件时可用">匹配复制/选中文件时可用</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n117"><a class="md-toc-inner" style="cursor: pointer;" href="#输出">输出</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n135"><a class="md-toc-inner" style="cursor: pointer;" href="#三导出分享导入">三、导出/分享/导入</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n136"><a class="md-toc-inner" style="cursor: pointer;" href="#导出命令">导出命令</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n144"><a class="md-toc-inner" style="cursor: pointer;" href="#分享命令">分享命令</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n154"><a class="md-toc-inner" style="cursor: pointer;" href="#导入命令">导入命令</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n164"><a class="md-toc-inner" style="cursor: pointer;" href="#获取分享">获取分享</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n174"><a class="md-toc-inner" style="cursor: pointer;" href="#四关于">四、关于</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n175"><a class="md-toc-inner" style="cursor: pointer;" href="#作者">作者</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n178"><a class="md-toc-inner" style="cursor: pointer;" href="#赞赏码">赞赏码</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n181"><a class="md-toc-inner" style="cursor: pointer;" href="#所有插件">所有插件</a></span></p></div><h1><a name="一更新日志" class="md-header-anchor"></a><span>一、更新日志</span></h1><p><a href='CHANGELOG.html'><span>更新日志戳我</span></a></p><p>&nbsp;</p><h1><a name="二添加命令" class="md-header-anchor"></a><span>二、添加命令</span></h1><h2><a name="基础" class="md-header-anchor"></a><span>基础</span></h2><h4><a name="常用动作" class="md-header-anchor"></a><span>常用动作</span></h4><p><span>通过点击</span><code>+动作</code><sup><span>①</span></sup><span>按钮进行添加</span></p><ul><li><span>打开文件/文件夹/软件</span><sup><span>②</span></sup><span> （实现在主输入框启动自定义的软件名称及路径 ）</span></li><li><span>在文件管理器中定位文件</span></li><li><span>用默认浏览器打开网址（实现类似网页快开的功能）</span></li><li><span>用 ubrowser 打开网址</span></li><li><span>执行系统命令</span></li><li><span>将内容写入剪贴板</span></li><li><span>发送系统消息</span></li><li><span>弹窗显示消息</span></li><li><span>发送文本到活动窗口</span></li><li><span>转至指定插件(实现自定义插件关键字)</span></li><li><span>添加延时</span></li></ul><h4><a name="模拟按键" class="md-header-anchor"></a><span>模拟按键</span></h4><p><span>通过点击</span><code>+按键</code><sup><span>③</span></sup><span>按钮进行添加</span></p><p><img src="https://i.imgur.com/SozshQL.png" referrerpolicy="no-referrer"></p><h2><a name="进阶" class="md-header-anchor"></a><span>进阶</span></h2><h4><a name="匹配" class="md-header-anchor"></a><span>匹配</span></h4><p><span>决定通过何种方式进入插件，不同的匹配模式也会影响插值变量的使用</span></p><h5><a name="关键字" class="md-header-anchor"></a><span>关键字</span></h5><ul><li><span>在主输入框输入对应关键字进入插件，最通用的一种模式，关键字可以设置多个</span></li></ul><h5><a name="正则划词" class="md-header-anchor"></a><span>正则/划词</span></h5><ul><li><span>正则匹配主输入框文本或唤出超级面板时选中的文本，可以获取输入框文本或选中文本作为变量</span></li></ul><h5><a name="窗口进程" class="md-header-anchor"></a><span>窗口/进程</span></h5><ul><li><span>匹配呼出 uTools 前或唤出超级面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量</span></li></ul><h5><a name="复制选中文件" class="md-header-anchor"></a><span>复制/选中文件</span></h5><ul><li><span>匹配拖入主输入框的文件或唤出超级面板时选中的文件，可以获取复制及选中的文件信息作为变量</span></li></ul><p><img src="https://i.imgur.com/cCM2k6A.png" referrerpolicy="no-referrer"></p><h4><a name="环境" class="md-header-anchor"></a><span>环境</span></h4><h5><a name="quickcommand" class="md-header-anchor"></a><span>quickcommand</span></h5><ul><li><span>可以快速执行打开网址、软件、文件夹、模拟按键等高频动作的命令</span></li><li><span>可以通过 quickcommand 的 api 来编写具有 UI 交互的脚本，详见</span><a href='./quickcommand.html'><span>文档</span></a></li><li><span>可以使用nodejs、electron、uTools 的 api, 其中 os、fs、path、child_process、util、axios、electron 已经预先  require 了, 无需再次 require ,详见</span><a href='./quickcommand.html#上下文一览'><span>文档中的上下文一览</span></a></li></ul><h5><a name="pythoncmdshell-php-等环境" class="md-header-anchor"></a><span>python、cmd、shell 、php 等环境</span></h5><ul><li><span>本机装了相应环境即可执行相应的脚本</span></li><li><span>可以通过插值变量增强脚本的功能</span></li><li><span>支持 10+ 语言</span></li><li><span>可以通过 custom 手动设置解释器路径、参数、脚本后缀及编码方式</span></li></ul><p><img src="https://i.imgur.com/MPF1MdJ.png" referrerpolicy="no-referrer"></p><h4><a name="插值变量" class="md-header-anchor"></a><span>插值变量</span></h4><p><span>本插件内置了一些特殊的插值变量，可以获取一些特殊的值，能够加入到插件里的任意脚本中</span></p><h5><a name="全模式可用" class="md-header-anchor"></a><span>全模式可用</span></h5><ul><li><p><code>{{isWin}}</code><span> 是否Window系统， 返回1或0</span></p></li><li><p><code>{{LocalId}}</code><span>本机唯一ID</span></p></li><li><p><code>{{BrowserUrl}}</code><span> 浏览器的当前链接</span></p></li><li><p><code>{{ClipText}}</code><span> 获取剪贴板的文本</span></p></li><li><p><code>{{SelectText}}</code><span> 获取选中的文本 (已弃用)</span></p></li><li><p><code>{{subinput}}</code><span>获取子输入框的文本，具有此变量时会在进入插件时自动启动子输入框</span></p><ul><li><span>可以通过</span><code>{{subinput:placeholder}}</code><span>的格式来自定义占位符 </span></li></ul></li></ul><h5><a name="匹配窗口进程时可用" class="md-header-anchor"></a><span>匹配窗口/进程时可用</span></h5><ul><li><p><code>{{pwd}}</code><span> 资源管理器或访达的当前目录</span></p></li><li><p><code>{{SelectFile}}</code><span> 文件管理器选中的文件，不支持 Linux</span></p></li><li><p><code>{{WindowInfo}}</code><span>当前窗口信息，返回 JSON 格式字符串</span></p><ul><li><span>可以使用类似 </span><code>{{WindowInfo.id}}</code><span>的格式来直接读取相应的值</span></li></ul></li></ul><h5><a name="匹配正则划词时可用" class="md-header-anchor"></a><span>匹配正则/划词时可用</span></h5><ul><li><code>{{input}}</code><span> 获取主输入框的文本</span></li></ul><h5><a name="匹配复制选中文件时可用" class="md-header-anchor"></a><span>匹配复制/选中文件时可用</span></h5><ul><li><p><code>{{MatchedFiles}}</code><span> 匹配的文件，返回 JSON 格式字符串</span></p><ul><li><span>可以使用类似</span><code>{{MatchedFiles[0].path}}</code><span>的格式来直接读取相应的值</span></li></ul></li></ul><p><img src="https://i.imgur.com/PYjjYnR.png" referrerpolicy="no-referrer"></p><h4><a name="输出" class="md-header-anchor"></a><span>输出</span></h4><p><span>如果脚本有输出，则可以对输出内容做如下处理</span></p><ul><li><span>隐藏并忽略输出</span></li><li><span>显示纯文本输出 (不解析 html 内容)</span></li><li><span>显示html格式的输出 (可以进一步编写简单的 GUI 界面，参考内置动作</span><code>特殊符号大全</code><span>)</span></li><li><span>复制到剪贴板</span></li><li><span>发送到活动窗口（可实现发送常用短语之类的功能）</span></li><li><span>发送到系统通知</span></li><li><span>在终端中显示</span></li></ul><p><img src="https://i.imgur.com/T45uJi5.png" referrerpolicy="no-referrer"></p><h1><a name="三导出分享导入" class="md-header-anchor"></a><span>三、导出/分享/导入</span></h1><h4><a name="导出命令" class="md-header-anchor"></a><span>导出命令</span></h4><p><span>点击命令旁的蓝色小箭头</span><sup><span>①</span></sup><span>即可导出命令，支持</span></p><ul><li><span>导出到剪贴板</span><sup><span>②</span></sup></li><li><span>导出到文件</span><sup><span>③</span></sup></li></ul><p><img src="https://i.imgur.com/NoM6y5n.png" referrerpolicy="no-referrer"></p><h4><a name="分享命令" class="md-header-anchor"></a><span>分享命令</span></h4><p><span>点击分享命令即可一键分享当前的命令，初次分享命令，需要按照以下步骤设置 token：</span></p><p><span>1.通过 </span><a href=' https://www.yuque.com/g/fofolee/qcshares/collaborator/join?token=6LZn2vc34dqfIQdC '><span>https://www.yuque.com/g/fofolee/qcshares/collaborator/join?token=6LZn2vc34dqfIQdC</span></a><span> 成为知识库成员，如果没有语雀账号，需要先注册一个</span></p><p><img src="https://i.imgur.com/H4Hh781.png" referrerpolicy="no-referrer"></p><p><span>2.生成一个具有编辑权限的 token</span></p><p><img src="https://s1.ax1x.com/2020/07/19/U2Rw0P.png" referrerpolicy="no-referrer" alt="U2Rw0P.png"></p><p><span>3.点击命令旁的蓝色小箭头</span><sup><span>①</span></sup><span>，填入生成的 token </span><sup><span>②</span></sup><span> ，之后就可以尽情地分享命令啦</span></p><p><img src="https://i.imgur.com/pQbFcvs.png" referrerpolicy="no-referrer"></p><p><strong><span>注意：</span></strong></p><ol><li><span>命令的分享基于语雀共享知识库实现，语雀的共享知识库对知识库的成员没有太大约束，用官方的话来说，是</span><code>基于信任和一起共建的基础上</code><span>的，目前加入成为成员不需要通过审批确认，后期如果出现捣乱的情况会踢出成员并开启加入审批。先在此约定：</span><strong><span>命令的分享请通过插件实现，不要在 web 端（即语雀知识库内）直接修改编辑分享的命令，否则可能会导致一些不可预知的错误</span></strong><span>。</span></li></ol><ol start='2' ><li><span>同时为了保证命令的安全和质量，分享后的命令必须经过快捷命令插件作者本人</span><code>发布</code><span>后才能出现在</span><code>分享中心</code><span>当中。所有已发布的命令在</span><a href=' https://www.yuque.com/fofolee/qcreleases '><span> https://www.yuque.com/fofolee/qcreleases </span></a><span>可以查看到。</span></li></ol><h4><a name="导入命令" class="md-header-anchor"></a><span>导入命令</span></h4><ul><li><span>可以通过点击底部的</span><code>导入命令</code><span>来导入命令</span></li><li><span>会优先识别剪贴板,如果剪贴板内有正确格式的命令会自动导入</span></li><li><span>如果剪贴板内没有,则会弹出文件选择框</span></li><li><span>支持自动识别是单个导出的命令还是全部导出的命令</span></li></ul><h4><a name="获取分享" class="md-header-anchor"></a><span>获取分享</span></h4><p><span>可以通过以下两种方式来获取分享：</span></p><ol start='' ><li><span>点击设置界面底部的</span><code>分享中心</code><sup><span>①</span></sup><span>即可获取并导入在线分享的命令</span></li></ol><p><img src="https://i.imgur.com/pKKWqdT.png" referrerpolicy="no-referrer" alt="UfBox1.png"></p><p><img src="https://i.imgur.com/ikAxHY1.png" referrerpolicy="no-referrer" alt="UfDkdS.png"></p><ol start='2' ><li><span>访问</span><a href=' https://www.yuque.com/fofolee/qcreleases '><span> https://www.yuque.com/fofolee/qcreleases </span></a><span>即可查看发布的命令</span></li></ol><h1><a name="四关于" class="md-header-anchor"></a><span>四、关于</span></h1><h4><a name="作者" class="md-header-anchor"></a><span>作者</span></h4><p><img width="30px" src="https://s1.ax1x.com/2020/07/14/UaDkdg.png"><a href=' https://github.com/fofolee '><span>github @fofolee</span></a></p><p><img width="30px" src=" https://yuanliao.info/assets/avatars/frbg0owd6t3mmejs.png "><a href='  https://yuanliao.info/u/fofolee/discussions  '><span>猿料社区 @fofolee</span></a></p><h4><a name="赞赏码" class="md-header-anchor"></a><span>赞赏码</span></h4><p><span>鉴于之前某位可爱的同学捐赠的时候捐错了对象，此处献上我的捐赠码~</span></p><p><img width="500px" src="https://s1.ax1x.com/2020/07/15/Uacgqx.png"></p><h4><a name="所有插件" class="md-header-anchor"></a><span>所有插件</span></h4><p><span>所有由我制作的插件如下表所示，有兴趣的童鞋可以试一试~</span></p><table> <tbody> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/c6e808470b6cbc778865e9ed1bebf339.png"></td> <td>快捷命令</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/11bf712cc79499549754586fff7c8db1.png"></td> <td>程序员手册</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/dd0977b7d74db32d7088795ef62a7769.png"></td> <td>bilibili</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/f26a31d11af3a54f9bddd7e781da46d5.png"></td> <td>关闭进程</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/80eae148109a4d7001232efebdd14aca.png"></td> <td>插件面板</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/223f27b647b184ffdb2cd9f05a99d50a.png"></td> <td>随机壁纸</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/480ac04e8ea522b7bb0dae6418e177a4.png"></td> <td>Github助手</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/0de374539c3c358d122ca652d26b5b6e.png"></td> <td>文件夹助手</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/5f9fd2f37445a462c0735b9dcca828cd.png"></td> <td>emoji搜索</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/50ef534638a9fc7fbed5274131afe503.png"></td> <td>😩能不能好好说话</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/9863ccc91f32b4ab660d6e58dd8b04ae.png"></td> <td>winget</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/6abb03b743259bd4c976d2a29da0a395.png"></td> <td>icons8搜索</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/527a20566499e7c3fb63e8705d60ccb7.png"></td> <td>kali 工具介绍</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/3ef0e794b7950193fc98289ea2b199e9.png"></td> <td>png转icon</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> </tbody> </table></div>
+<body class='typora-export'>
+<div id='write'  class=''><div class='md-toc' mdtype='toc'><p class="md-toc-content" role="list"><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n2"><a class="md-toc-inner" href="#一更新日志">一、更新日志</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n5"><a class="md-toc-inner" href="#二添加命令">二、添加命令</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n6"><a class="md-toc-inner" href="#基础">基础</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n7"><a class="md-toc-inner" href="#常用动作">常用动作</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n32"><a class="md-toc-inner" href="#模拟按键">模拟按键</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n35"><a class="md-toc-inner" href="#进阶">进阶</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n36"><a class="md-toc-inner" href="#匹配">匹配</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n38"><a class="md-toc-inner" href="#关键字">关键字</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n42"><a class="md-toc-inner" href="#正则划词">正则/划词</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n46"><a class="md-toc-inner" href="#窗口进程">窗口/进程</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n50"><a class="md-toc-inner" href="#复制选中文件">复制/选中文件</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n54"><a class="md-toc-inner" href="#专业模式">专业模式</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n59"><a class="md-toc-inner" href="#环境">环境</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n60"><a class="md-toc-inner" href="#quickcommand">quickcommand</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n68"><a class="md-toc-inner" href="#pythoncmdshell-php-等环境">python、cmd、shell 、php 等环境</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n79"><a class="md-toc-inner" href="#插值变量">插值变量</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n81"><a class="md-toc-inner" href="#全模式可用">全模式可用</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n98"><a class="md-toc-inner" href="#匹配窗口进程时可用">匹配窗口/进程时可用</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n109"><a class="md-toc-inner" href="#匹配正则划词时可用">匹配正则/划词时可用</a></span><span role="listitem" class="md-toc-item md-toc-h5" data-ref="n113"><a class="md-toc-inner" href="#匹配复制选中文件时可用">匹配复制/选中文件时可用</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n121"><a class="md-toc-inner" href="#输出">输出</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n139"><a class="md-toc-inner" href="#三导出分享导入">三、导出/分享/导入</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n140"><a class="md-toc-inner" href="#导出命令">导出命令</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n148"><a class="md-toc-inner" href="#分享命令">分享命令</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n162"><a class="md-toc-inner" href="#导入命令">导入命令</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n172"><a class="md-toc-inner" href="#获取分享">获取分享</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n182"><a class="md-toc-inner" href="#四关于">四、关于</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n183"><a class="md-toc-inner" href="#作者">作者</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n186"><a class="md-toc-inner" href="#赞赏码">赞赏码</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n189"><a class="md-toc-inner" href="#所有插件">所有插件</a></span></p></div><h1><a name="一更新日志" class="md-header-anchor"></a><span>一、更新日志</span></h1><p><a href='CHANGELOG.html'><span>更新日志戳我</span></a></p><p>&nbsp;</p><h1><a name="二添加命令" class="md-header-anchor"></a><span>二、添加命令</span></h1><h2><a name="基础" class="md-header-anchor"></a><span>基础</span></h2><h4><a name="常用动作" class="md-header-anchor"></a><span>常用动作</span></h4><p><span>通过点击</span><code>+动作</code><sup><span>①</span></sup><span>按钮进行添加</span></p><ul><li><span>打开文件/文件夹/软件</span><sup><span>②</span></sup><span> （实现在主输入框启动自定义的软件名称及路径 ）</span></li><li><span>在文件管理器中定位文件</span></li><li><span>用默认浏览器打开网址（实现类似网页快开的功能）</span></li><li><span>用 ubrowser 打开网址</span></li><li><span>执行系统命令</span></li><li><span>将内容写入剪贴板</span></li><li><span>发送系统消息</span></li><li><span>弹窗显示消息</span></li><li><span>发送文本到活动窗口</span></li><li><span>转至指定插件(实现自定义插件关键字)</span></li><li><span>添加延时</span></li></ul><h4><a name="模拟按键" class="md-header-anchor"></a><span>模拟按键</span></h4><p><span>通过点击</span><code>+按键</code><sup><span>③</span></sup><span>按钮进行添加</span></p><p><img src="https://i.imgur.com/SozshQL.png" referrerpolicy="no-referrer"></p><h2><a name="进阶" class="md-header-anchor"></a><span>进阶</span></h2><h4><a name="匹配" class="md-header-anchor"></a><span>匹配</span></h4><p><span>决定通过何种方式进入插件，不同的匹配模式也会影响插值变量的使用</span></p><h5><a name="关键字" class="md-header-anchor"></a><span>关键字</span></h5><ul><li><span>在主输入框输入对应关键字进入插件，最通用的一种模式，关键字可以设置多个</span></li></ul><h5><a name="正则划词" class="md-header-anchor"></a><span>正则/划词</span></h5><ul><li><span>正则匹配主输入框文本或唤出超级面板时选中的文本，可以获取输入框文本或选中文本作为变量</span></li></ul><h5><a name="窗口进程" class="md-header-anchor"></a><span>窗口/进程</span></h5><ul><li><span>匹配呼出 uTools 前或唤出超级面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量</span></li></ul><h5><a name="复制选中文件" class="md-header-anchor"></a><span>复制/选中文件</span></h5><ul><li><span>匹配拖入主输入框的文件或唤出超级面板时选中的文件，可以获取复制及选中的文件信息作为变量</span></li></ul><h5><a name="专业模式" class="md-header-anchor"></a><span>专业模式</span></h5><ul><li><span>匹配 JSON 格式的配置，等效于插件开发中的</span><code>features.cmds</code></li></ul><p><img src="https://s1.ax1x.com/2020/10/10/06C726.png" referrerpolicy="no-referrer" alt="06C726.png"></p><h4><a name="环境" class="md-header-anchor"></a><span>环境</span></h4><h5><a name="quickcommand" class="md-header-anchor"></a><span>quickcommand</span></h5><ul><li><span>可以快速执行打开网址、软件、文件夹、模拟按键等高频动作的命令</span></li><li><span>可以通过 quickcommand 的 api 来编写具有 UI 交互的脚本，详见</span><a href='./quickcommand.html'><span>文档</span></a></li><li><span>可以使用nodejs、electron、uTools 的 api, 其中 os、fs、path、child_process、util、axios、electron 已经预先  require 了, 无需再次 require ,详见</span><a href='./quickcommand.html#上下文一览'><span>文档中的上下文一览</span></a></li></ul><h5><a name="pythoncmdshell-php-等环境" class="md-header-anchor"></a><span>python、cmd、shell 、php 等环境</span></h5><ul><li><span>本机装了相应环境即可执行相应的脚本</span></li><li><span>可以通过插值变量增强脚本的功能</span></li><li><span>支持 10+ 语言</span></li><li><span>可以通过 custom 手动设置解释器路径、参数、脚本后缀及编码方式</span></li></ul><p><img src="https://i.imgur.com/MPF1MdJ.png" referrerpolicy="no-referrer"></p><h4><a name="插值变量" class="md-header-anchor"></a><span>插值变量</span></h4><p><span>本插件内置了一些特殊的插值变量，可以获取一些特殊的值，能够加入到插件里的任意脚本中</span></p><h5><a name="全模式可用" class="md-header-anchor"></a><span>全模式可用</span></h5><ul><li><p><code>{{isWin}}</code><span> 是否Window系统， 返回1或0</span></p></li><li><p><code>{{LocalId}}</code><span>本机唯一ID</span></p></li><li><p><code>{{BrowserUrl}}</code><span> 浏览器的当前链接</span></p></li><li><p><code>{{ClipText}}</code><span> 获取剪贴板的文本</span></p></li><li><p><code>{{SelectText}}</code><span> 获取选中的文本 (已弃用)</span></p></li><li><p><code>{{subinput}}</code><span>获取子输入框的文本，具有此变量时会在进入插件时自动启动子输入框</span></p><ul><li><span>可以通过</span><code>{{subinput:placeholder}}</code><span>的格式来自定义占位符 </span></li></ul></li></ul><h5><a name="匹配窗口进程时可用" class="md-header-anchor"></a><span>匹配窗口/进程时可用</span></h5><ul><li><p><code>{{pwd}}</code><span> 资源管理器或访达的当前目录</span></p></li><li><p><code>{{SelectFile}}</code><span> 文件管理器选中的文件，不支持 Linux</span></p></li><li><p><code>{{WindowInfo}}</code><span>当前窗口信息，返回 JSON 格式字符串</span></p><ul><li><span>可以使用类似 </span><code>{{WindowInfo.id}}</code><span>的格式来直接读取相应的值</span></li></ul></li></ul><h5><a name="匹配正则划词时可用" class="md-header-anchor"></a><span>匹配正则/划词时可用</span></h5><ul><li><code>{{input}}</code><span> 获取主输入框的文本</span></li></ul><h5><a name="匹配复制选中文件时可用" class="md-header-anchor"></a><span>匹配复制/选中文件时可用</span></h5><ul><li><p><code>{{MatchedFiles}}</code><span> 匹配的文件，返回 JSON 格式字符串</span></p><ul><li><span>可以使用类似</span><code>{{MatchedFiles[0].path}}</code><span>的格式来直接读取相应的值</span></li></ul></li></ul><p><img src="https://i.imgur.com/PYjjYnR.png" referrerpolicy="no-referrer"></p><h4><a name="输出" class="md-header-anchor"></a><span>输出</span></h4><p><span>如果脚本有输出，则可以对输出内容做如下处理</span></p><ul><li><span>隐藏并忽略输出</span></li><li><span>显示纯文本输出 (不解析 html 内容)</span></li><li><span>显示html格式的输出 (可以进一步编写简单的 GUI 界面，参考内置动作</span><code>特殊符号大全</code><span>)</span></li><li><span>复制到剪贴板</span></li><li><span>发送到活动窗口（可实现发送常用短语之类的功能）</span></li><li><span>发送到系统通知</span></li><li><span>在终端中显示</span></li></ul><p><img src="https://i.imgur.com/T45uJi5.png" referrerpolicy="no-referrer"></p><h1><a name="三导出分享导入" class="md-header-anchor"></a><span>三、导出/分享/导入</span></h1><h4><a name="导出命令" class="md-header-anchor"></a><span>导出命令</span></h4><p><span>点击命令旁的蓝色小箭头</span><sup><span>①</span></sup><span>即可导出命令，支持</span></p><ul><li><span>导出到剪贴板</span><sup><span>②</span></sup></li><li><span>导出到文件</span><sup><span>③</span></sup></li></ul><p><img src="https://i.imgur.com/NoM6y5n.png" referrerpolicy="no-referrer"></p><h4><a name="分享命令" class="md-header-anchor"></a><span>分享命令</span></h4><p><span>点击分享命令即可一键分享当前的命令，初次分享命令，需要按照以下步骤设置 token：</span></p><p><span>1.通过 </span><a href=' https://www.yuque.com/g/fofolee/qcshares/collaborator/join?token=6LZn2vc34dqfIQdC '><span>https://www.yuque.com/g/fofolee/qcshares/collaborator/join?token=6LZn2vc34dqfIQdC</span></a><span> 成为知识库成员，如果没有语雀账号，需要先注册一个</span></p><p><img src="https://i.imgur.com/H4Hh781.png" referrerpolicy="no-referrer"></p><p><span>2.生成一个具有编辑权限的 token</span></p><p><img src="https://s1.ax1x.com/2020/07/19/U2Rw0P.png" referrerpolicy="no-referrer" alt="U2Rw0P.png"></p><p><span>3.点击命令旁的蓝色小箭头</span><sup><span>①</span></sup><span>，填入生成的 token </span><sup><span>②</span></sup><span> ，之后就可以尽情地分享命令啦</span></p><p><img src="https://i.imgur.com/pQbFcvs.png" referrerpolicy="no-referrer"></p><p><strong><span>注意：</span></strong></p><ol start='' ><li><span>命令的分享基于语雀共享知识库实现，语雀的共享知识库对知识库的成员没有太大约束，用官方的话来说，是</span><code>基于信任和一起共建的基础上</code><span>的，目前加入成为成员不需要通过审批确认，后期如果出现捣乱的情况会踢出成员并开启加入审批。先在此约定：</span><strong><span>命令的分享请通过插件实现，不要在 web 端（即语雀知识库内）直接修改编辑分享的命令，否则可能会导致一些不可预知的错误</span></strong><span>。</span></li><li><span>同时为了保证命令的安全和质量，分享后的命令必须经过快捷命令插件作者本人</span><code>发布</code><span>后才能出现在</span><code>分享中心</code><span>当中。所有已发布的命令在</span><a href=' https://www.yuque.com/fofolee/qcreleases '><span> https://www.yuque.com/fofolee/qcreleases </span></a><span>可以查看到。</span></li></ol><h4><a name="导入命令" class="md-header-anchor"></a><span>导入命令</span></h4><ul><li><span>可以通过点击底部的</span><code>导入命令</code><span>来导入命令</span></li><li><span>会优先识别剪贴板,如果剪贴板内有正确格式的命令会自动导入</span></li><li><span>如果剪贴板内没有,则会弹出文件选择框</span></li><li><span>支持自动识别是单个导出的命令还是全部导出的命令</span></li></ul><h4><a name="获取分享" class="md-header-anchor"></a><span>获取分享</span></h4><p><span>可以通过以下两种方式来获取分享：</span></p><ol start='' ><li><span>点击设置界面底部的</span><code>分享中心</code><sup><span>①</span></sup><span>即可获取并导入在线分享的命令</span></li></ol><p><img src="https://i.imgur.com/pKKWqdT.png" referrerpolicy="no-referrer" alt="UfBox1.png"></p><p><img src="https://i.imgur.com/ikAxHY1.png" referrerpolicy="no-referrer" alt="UfDkdS.png"></p><ol start='2' ><li><span>访问</span><a href=' https://www.yuque.com/fofolee/qcreleases '><span> https://www.yuque.com/fofolee/qcreleases </span></a><span>即可查看发布的命令</span></li></ol><h1><a name="四关于" class="md-header-anchor"></a><span>四、关于</span></h1><h4><a name="作者" class="md-header-anchor"></a><span>作者</span></h4><p><img width="30px" src="https://s1.ax1x.com/2020/07/14/UaDkdg.png"><a href=' https://github.com/fofolee '><span>github @fofolee</span></a></p><p><img width="30px" src=" https://yuanliao.info/assets/avatars/frbg0owd6t3mmejs.png "><a href='  https://yuanliao.info/u/fofolee/discussions  '><span>猿料社区 @fofolee</span></a></p><h4><a name="赞赏码" class="md-header-anchor"></a><span>赞赏码</span></h4><p><span>鉴于之前某位可爱的同学捐赠的时候捐错了对象，此处献上我的捐赠码~</span></p><p><img width="500px" src="https://s1.ax1x.com/2020/07/15/Uacgqx.png"></p><h4><a name="所有插件" class="md-header-anchor"></a><span>所有插件</span></h4><p><span>所有由我制作的插件如下表所示，有兴趣的童鞋可以试一试~</span></p><table> <tbody> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/c6e808470b6cbc778865e9ed1bebf339.png"></td> <td>快捷命令</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/11bf712cc79499549754586fff7c8db1.png"></td> <td>程序员手册</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/dd0977b7d74db32d7088795ef62a7769.png"></td> <td>bilibili</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/f26a31d11af3a54f9bddd7e781da46d5.png"></td> <td>关闭进程</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/80eae148109a4d7001232efebdd14aca.png"></td> <td>插件面板</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/223f27b647b184ffdb2cd9f05a99d50a.png"></td> <td>随机壁纸</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/480ac04e8ea522b7bb0dae6418e177a4.png"></td> <td>Github助手</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/0de374539c3c358d122ca652d26b5b6e.png"></td> <td>文件夹助手</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/5f9fd2f37445a462c0735b9dcca828cd.png"></td> <td>emoji搜索</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/50ef534638a9fc7fbed5274131afe503.png"></td> <td>😩能不能好好说话</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/9863ccc91f32b4ab660d6e58dd8b04ae.png"></td> <td>winget</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/6abb03b743259bd4c976d2a29da0a395.png"></td> <td>icons8搜索</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/527a20566499e7c3fb63e8705d60ccb7.png"></td> <td>kali 工具介绍</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> <tr> <td><img style="max-width:30px;max-height:30px" src="https://res.u-tools.cn/plugins/logo/3ef0e794b7950193fc98289ea2b199e9.png"></td> <td>png转icon</td> <td><button onclick="utools.redirect(this.parentNode.parentNode.querySelector('td+td').innerText)">戳我</button></td> </tr> </tbody> </table></div>
 </body>
 </html>
