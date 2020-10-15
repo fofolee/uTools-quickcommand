@@ -88,7 +88,7 @@
             if (db.program == "custom") {
                 option = db.customOptions;
             } else if(db.program == "quickcommand"){
-                option = { mode: "quickcommand", payload: payload };
+                option = { mode: "quickcommand", enterData: { code, type, payload } };
             }else{
                 option = programs[db.program];
             }
@@ -174,7 +174,7 @@
             runCodeInVm(cmd, (stdout, stderr) => {
                 if (cmd.includes("utools.setExpendHeight")) outputOpts.autoHeight = false
                 switchQuickCommandResult(stdout, stderr, outputOpts)
-            }, option.payload)
+            }, option.enterData)
         } else {
             var terminal = output == 'terminal' ? true : false
             outputOpts.scriptPath = getQuickCommandScriptFile(option.ext)
@@ -871,6 +871,8 @@
                 $("#ruleWord").html("配&#12288;置");
                 $(".var.regex, .var.window, .var.files").prop("disabled", false)
                 $("#rule").prop("placeholder", '等效于 features.cmds');
+                let sample = `["关键词",{"type":"img","label":"图片匹配"},{"type":"files","label":"文件匹配","fileType":"file","match":"/aaa/","minLength":1,"maxLength":99},{"type":"regex","label":"文本正则匹配","match":"/bbb/i","minLength":1,"maxLength":99},{"type":"over","label":"无匹配时","exclude":"/ccc/i","minLength":1,"maxLength":99},{"type":"window","label":"窗口动作","match":{"app":["ddd.app","eee.exe"],"title":"/fff/","class":["ggg"]}}]`
+                !$('#rule').val() && $('#rule').val(sample) 
             default:
                 break;
         }
@@ -886,7 +888,7 @@
     let hasCustomIcon = () => {
         var src = $("#icon").attr('src');
         var iconame = $("#iconame").val();
-        return /data:image\/png;base64,/.test(src) || iconame
+        return /data:image\/\w+;base64,/.test(src) || iconame
     }
 
     let programCheck = () => {
@@ -1339,18 +1341,16 @@
     })
 
     // 选择图标
-    $("#options").on('click', '#icon', function () {
+    $("#options").on('click', '#icon', async function () {
         var options = {
             buttonLabel: '选择',
-            filters: [{
-                name: 'Images',
-                extensions: ['png']
-            }, ]
+            properties: ['openFile']
         }
         var file = getFileInfo({ type: 'dialog', argvs: options, readfile: false })
         if (file) {
             $("#iconame").val(file.name);
-            $("#icon").attr('src', file.path);
+            let src = await getBase64Ico(file.path);
+            $("#icon").attr('src', src);
         }
     })
 
@@ -1373,18 +1373,9 @@
                 scptarg = $('#scptarg').val(),
                 program = $('#program').val(),
                 desc = $('#desc').val(),
-                iconame = $("#iconame").val(),
-                iconpath = $("#icon").attr('src'),
-                icon,
+                icon = $("#icon").attr('src'),
                 hasSubInput;
             if (!desc) desc = ' ';
-            // 选择了图标的情况下
-            if (iconame) {
-                icon = await window.getBase64Ico(iconpath);
-                // 未自定义使用默认
-            } else {
-                icon = iconpath;
-            }
             if (type == 'key') {
                 cmds = rule.split(",").map(x => x.trim())
             } else if (type == 'regex') {

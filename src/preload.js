@@ -440,9 +440,10 @@ let getSandboxFuns = () => {
     return sandbox
 }
 
-let createNodeVM = (payload = "") => {
+let createNodeVM = (enterData = {}) => {
     var sandbox = getSandboxFuns()
-    sandbox.quickcommand.payload = payload
+    sandbox.quickcommand.enterData = enterData
+    sandbox.quickcommand.payload = enterData.payload
     const vm = new NodeVM({
         require: {
             external: true,
@@ -488,8 +489,8 @@ let parseItem = item => {
     return item.toString()
 }
 
-runCodeInVm = (cmd, cb, payload = "") => {
-    const vm = createNodeVM(payload)
+runCodeInVm = (cmd, cb, enterData = {}) => {
+    const vm = createNodeVM(enterData)
     //重定向 console
     vm.on('console.log', stdout => {
         console.log(stdout);
@@ -596,7 +597,7 @@ dirPythonMod = (mod, cb) => {
 getNodeJsCommand = () => {
     var obj = getSandboxFuns()
     obj.Buffer = Buffer
-    obj.quickcommand.payload = ''
+    obj.quickcommand.enterData = {code: '', type: '', payload: ''}
     return obj
 }
 
@@ -621,9 +622,14 @@ getQuickCommandScriptFile = ext => {
     return path.join(os.tmpdir(), `QuickCommandTempScript.${ext}`)
 }
 
-getBase64Ico = async path => {
-    let sourceImage = 'data:image/png;base64,' + fs.readFileSync(path, 'base64')
-    let compressedImage = await getCompressedIco(path)
+getBase64Ico = async filepath => {
+    let sourceImage, ext = path.extname(filepath).slice(1)
+    if (ext == 'png' || ext == 'jpg' || ext == 'jpeg' || ext == 'bmp' || ext == 'ico') {
+        sourceImage = `data:image/${ext};base64,` + fs.readFileSync(filepath, 'base64')
+    } else {
+        sourceImage = utools.getFileIcon(filepath)
+    }
+    let compressedImage = await getCompressedIco(sourceImage)
     return compressedImage.length > sourceImage.length ? sourceImage : compressedImage
 }
 
