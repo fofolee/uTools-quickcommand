@@ -94,6 +94,12 @@
             }
             option.scptarg = db.scptarg
             cmd = special(cmd);
+            if (cmd.includes('{{type}}')) {
+                cmd = cmd.replace(/\{\{type\}\}/mg, type)
+            }
+            if (cmd.includes('{{payload}}')) {
+                cmd = cmd.replace(/\{\{payload\}\}/mg, typeof payload == 'object' ? (payload = JSON.stringify(payload)) : (payload = payload.replace('\\', '\\\\')))
+            }
             // 正则
             if (type == 'regex') cmd = cmd.replace(/\{\{input\}\}/mg, payload);
             // 文件
@@ -649,9 +655,11 @@
                 <option value="{{subinput}}">子输入框的文本</option>
                 <option value="{{input}}" disabled class="var regex">主输入框的文本</option>
                 <option value="{{pwd}}" disabled class="var window">文件管理器当前目录</option>
-                <option value="{{WindowInfo}}" disabled class="var window">当前窗口信息，返回JSON格式字符串</option>
+                <option value="{{WindowInfo}}" disabled class="var window">当前窗口信息，JSON格式字符串</option>
                 <option value="{{SelectFile}}" disabled class="var window">文件管理器选中的文件，不支持Linux</option>
-                <option value="{{MatchedFiles}}" disabled class="var files">匹配的文件，返回JSON格式字符串</option>
+                <option value="{{MatchedFiles}}" disabled class="var files">匹配的文件，JSON格式字符串</option>
+                <option value="{{type}}">专业模式的type</option>
+                <option value="{{payload}}">专业模式的payload，JSON格式字符串</option>
             </select>
             <span class="word">输&#12288;出</span>
             <select id="output">
@@ -1183,7 +1191,7 @@
                     quickcommand.showMessageBox('分享速度太快了，请稍候', 'warning')
                 } else {
                     yuQueShareVars.shareLock = true
-                    jsonQc = await updateImgLink(jsonQc)
+                    // jsonQc = await updateImgLink(jsonQc)
                     var result = await shareQCToYuQue(jsonQc)
                     yuQueShareVars.shareLock = false
                     result && quickcommand.showMessageBox('分享成功，等待发布后即可在分享中心直接下载')
@@ -1254,7 +1262,7 @@
             body: '```json\n' + stringifyQc + '\n```',
             custom_description: JSON.stringify(custom_description)
         }
-        if (jsonQc.imgLink) parameters.cover = jsonQc.imgLink.replace(yuQueShareVars.imgBedBaseLink, yuQueShareVars.yuQueImgBedBaseLink)
+        // if (jsonQc.imgLink) parameters.cover = jsonQc.imgLink.replace(yuQueShareVars.imgBedBaseLink, yuQueShareVars.yuQueImgBedBaseLink)
         yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
         let res, repo = extraInfo.authorId == 1496740 ? yuQueShareVars.releaseRepo : yuQueShareVars.shareRepo
         try {
@@ -1298,7 +1306,7 @@
                     &nbsp; <span class="iconfont icon-biaoqian"></span> ${description.tags}
                     &nbsp; <span class="iconfont icon-shijian"></span> ${d.updated_at.split('T')[0]}`,
                     slug: d.slug,
-                    icon: d.cover ? d.cover.replace(yuQueShareVars.yuQueImgBedBaseLink, yuQueShareVars.imgBedBaseLink) : `logo/${description.program}.png`
+                    icon: d.last_editor.avatar_url
                 }
             })
         let choise = await quickcommand.showSelectList(docs, { optionType: 'json', showCancelButton: true })
