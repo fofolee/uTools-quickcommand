@@ -1349,18 +1349,99 @@
     })
 
     // 选择图标
-    $("#options").on('click', '#icon', async function () {
-        var options = {
-            buttonLabel: '选择',
-            properties: ['openFile']
-        }
-        var file = getFileInfo({ type: 'dialog', argvs: options, readfile: false })
-        if (file) {
-            $("#iconame").val(file.name);
-            let src = await getBase64Ico(file.path);
-            $("#icon").attr('src', src);
-        }
+    $("#options").on('click', '#icon', function () {
+        showChangeIconWindow()
     })
+
+    // 从 icons8 选择图标
+    let getIcons8Icon = () => {
+        let showIcon = icon => {
+            return $(`<img class="icon8s" src="https://img.icons8.com/color/1x/${icon.commonName}.png"> <span>${icon.name}</span>`)
+        }
+        let showItems = item => {
+            if (item.loading) return item.text
+            return showIcon(item)
+        }
+        let showSelection = selection => {
+            if (!selection.commonName) return selection.text
+            $('#networkImg').val(`https://img.icons8.com/color/1x/${selection.commonName}.png`)
+            return showIcon(selection)
+        }
+        $('#icons8').select2({
+            dataType: 'json',
+            width: '80%',
+            delay: 250,
+            ajax: {
+                url: 'https://search.icons8.com/api/iconsets/v5/search',
+                data: function (params) {
+                    return {
+                        term: params.term,
+                        offset: (params.page - 1) * 10 || 0,
+                        platform: 'color',
+                        amount: 10,
+                        token: 'JpOyWT5TW8yYThBIk1fCbsNDd3ISSChSD5vPgCON'
+                    }
+                },
+                processResults: function (data, params) {
+                    return {
+                        results: data.icons,
+                        pagination: {
+                            more: (data.parameters.offset + 10) < data.parameters.countAll
+                        }
+                    };
+                },
+                cache: true
+            },
+            placeholder: '搜索icons8图标',
+            minimumInputLength: 1,
+            templateResult: showItems,
+            templateSelection: showSelection
+        })
+    }
+
+    let getRemoteImg = async imgUrl => {
+        try {
+            let imgInfo = getFileInfo({ type: 'file', argvs: imgUrl, readfile: false })
+            let imgPath = getQuickCommandScriptFile(imgInfo.ext)
+            await quickcommand.downloadFile(imgUrl, imgPath)
+            $("#iconame").val(imgInfo.name);
+            let src = await getBase64Ico(imgPath);
+            $("#icon").attr('src', src);
+        } catch (error) {
+            quickcommand.showMessageBox('图片地址有误！', 'error')
+        }
+    }
+
+    let showChangeIconWindow = () => {
+        var html = `
+        <button id="localImg" class="swal2-confirm swal2-styled" style="width: 80%; height: 3rem; margin: 1em">选择本地图标</button>
+        <select id="icons8"></select>
+        <input id="networkImg" placeholder="使用网络图片" class="swal2-input" style="width: 80%; height: 3rem; text-align: center">
+        `
+        Swal.fire({
+            title: "设置图标",
+            onBeforeOpen: () => {
+                getIcons8Icon()
+                $('#localImg').click(async () => {
+                    var options = { buttonLabel: '选择', properties: ['openFile'] }
+                    var file = getFileInfo({ type: 'dialog', argvs: options, readfile: false })
+                    if (file) {
+                        $("#iconame").val(file.name);
+                        let src = await getBase64Ico(file.path);
+                        $("#icon").attr('src', src);
+                        Swal.close()
+                    }
+                })
+            },
+            html: html,
+            showCancelButton: true,
+            preConfirm: async () => {
+                let imgUrl = $('#networkImg').val()
+                if (imgUrl) await getRemoteImg(imgUrl)
+                else quickcommand.showMessageBox('没有输入图标地址', 'warning')
+            }
+        })
+    }
 
     let SaveCurrentCommand = async () => {
         if ($('#tags').is(":parent")) {

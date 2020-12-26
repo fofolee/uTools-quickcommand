@@ -831,6 +831,25 @@ li.CodeMirror-hint {
     outline: none
 }
 
+.swal2-shown .select2-dropdown {
+    z-index: 1070;
+}
+
+.swal2-content .select2-container .select2-selection--single,
+.swal2-content .select2-container .select2-selection--single .select2-selection__arrow {
+    height: 3rem;
+}
+
+
+.swal2-content .select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 3rem;
+}
+
+.swal2-content img.icon8s {
+    vertical-align: middle;
+    max-width: 35px;
+}
+
 /*select2*/
 
 /*quicktextarea*/
@@ -866,7 +885,7 @@ li.CodeMirror-hint {
     outline: none;
 }
 
-#quicktextarea .circleButton{
+#quicktextarea .circleButton {
     right: 20px;
     bottom: 20px;
     height: 40px;
@@ -874,7 +893,7 @@ li.CodeMirror-hint {
     background: #2196F3;
 }
 
-#quickselect .circleButton{
+#quickselect .circleButton {
     right: 10px;
     bottom: 10px;
     height: 25px;
@@ -890,7 +909,7 @@ li.CodeMirror-hint {
 /*quicktextarea*/
 
 /*搜索框*/
-#out > #outputSearch {
+#out>#outputSearch {
     position: fixed;
     opacity: 0;
     top: -30px;
@@ -900,7 +919,7 @@ li.CodeMirror-hint {
     box-shadow: 2px 1px 3px 0px black;
 }
 
-#out > #outputSearch input {
+#out>#outputSearch input {
     height: 20px;
     width: 220px;
     margin-right: 5px;
@@ -909,11 +928,11 @@ li.CodeMirror-hint {
     outline: none;
 }
 
-#out > #outputSearch input:focus {
+#out>#outputSearch input:focus {
     border: 1px solid #03A9F4;
 }
 
-#out > #outputSearch > kbd {
+#out>#outputSearch>kbd {
     cursor: pointer;
     margin: 5px;
     user-select: none;
