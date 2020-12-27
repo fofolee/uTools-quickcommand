@@ -1356,7 +1356,7 @@
     // 从 icons8 选择图标
     let getIcons8Icon = () => {
         let showIcon = icon => {
-            return $(`<img class="icon8s" src="https://img.icons8.com/color/1x/${icon.commonName}.png"> <span>${icon.name}</span>`)
+            return $(`<img class="networkImg" src="https://img.icons8.com/color/1x/${icon.commonName}.png"> <span>${icon.name}</span>`)
         }
         let showItems = item => {
             if (item.loading) return item.text
@@ -1364,10 +1364,10 @@
         }
         let showSelection = selection => {
             if (!selection.commonName) return selection.text
-            $('#networkImg').val(`https://img.icons8.com/color/1x/${selection.commonName}.png`)
+            $('#networkImgUrl').val(`https://img.icons8.com/color/1x/${selection.commonName}.png`)
             return showIcon(selection)
         }
-        $('#icons8').select2({
+        $('#networkImg').select2({
             dataType: 'json',
             width: '80%',
             delay: 250,
@@ -1379,10 +1379,11 @@
                         offset: (params.page - 1) * 10 || 0,
                         platform: 'color',
                         amount: 10,
-                        token: 'JpOyWT5TW8yYThBIk1fCbsNDd3ISSChSD5vPgCON'
+                        token: 'JpOyWT5TW8yYThBIk1fCbsNDd3ISSChSD5vPgCON',
+                        language: /[\u4e00-\u9fa5]/.test(params.term) ? 'zh' : 'en'
                     }
                 },
-                processResults: function (data, params) {
+                processResults: function (data) {
                     return {
                         results: data.icons,
                         pagination: {
@@ -1415,8 +1416,8 @@
     let showChangeIconWindow = () => {
         var html = `
         <button id="localImg" class="swal2-confirm swal2-styled" style="width: 80%; height: 3rem; margin: 1em">选择本地图标</button>
-        <select id="icons8"></select>
-        <input id="networkImg" placeholder="使用网络图片" class="swal2-input" style="width: 80%; height: 3rem; text-align: center">
+        <select id="networkImg"></select>
+        <input id="networkImgUrl" placeholder="使用网络图片" class="swal2-input" style="width: 80%; height: 3rem; text-align: center">
         `
         Swal.fire({
             title: "设置图标",
@@ -1436,7 +1437,7 @@
             html: html,
             showCancelButton: true,
             preConfirm: async () => {
-                let imgUrl = $('#networkImg').val()
+                let imgUrl = $('#networkImgUrl').val()
                 if (imgUrl) await getRemoteImg(imgUrl)
                 else quickcommand.showMessageBox('没有输入图标地址', 'warning')
             }
