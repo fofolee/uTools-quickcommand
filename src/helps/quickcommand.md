@@ -387,6 +387,19 @@ quickcommand.loadRemoteScript(remote).then(swal => {
 quickcommand.kill(16084)
 ```
 
+#### `runVbs(script)`
+- script:  String  VBS代码 
+- 返回: Promise 
+  - Result: String 脚本运行结果
+
+windows 下运行 VBS 脚本
+
+ **示例** 
+
+```js
+quickcommand.runVbs(`CreateObject("SAPI.SpVoice").Speak"Hello"`)
+```
+
 ### ❖ utools 封装
 
 #### `enterData`
