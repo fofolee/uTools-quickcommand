@@ -640,13 +640,15 @@ getQuickCommandScriptFile = ext => {
 
 getBase64Ico = async filepath => {
     let sourceImage, ext = path.extname(filepath).slice(1)
-    if (ext == 'png' || ext == 'jpg' || ext == 'jpeg' || ext == 'bmp' || ext == 'ico') {
+    if (['png', 'jpg', 'jpeg', 'bmp', 'ico', 'gif', 'svg'].includes(ext)) {
+        if (ext == 'svg') ext = 'svg+xml'
         sourceImage = `data:image/${ext};base64,` + fs.readFileSync(filepath, 'base64')
     } else {
         sourceImage = utools.getFileIcon(filepath)
     }
     let compressedImage = await getCompressedIco(sourceImage)
-    return compressedImage.length > sourceImage.length ? sourceImage : compressedImage
+    if (sourceImage.length < compressedImage.length && ext == 'png') compressedImage = sourceImage
+    return compressedImage
 }
 
 getCompressedIco = async (img, width = 40) => {
