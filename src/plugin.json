@@ -4,7 +4,7 @@
     "main": "index.html",
     "homepage": "https://github.com/fofolee/uTools-QuickerCommand",
     "publishPage": "https://yuanliao.info/d/424",
-    "version": "2.1.1",
+    "version": "2.2.0",
     "author": "云之轩",
     "unpack":"autopep8.py",
     "logo": "logo.png",
@@ -21,11 +21,15 @@
         {
             "code": "code",
             "explain": "编辑及运行代码",
-            "cmds": [ "运行代码", "RunCode", {
-                "type": "files",
-                "label": "运行代码",
-                "fileType": "file",
-                "match": "/\\.(sh|scpt|bat|ps1|py|js|rb|php|c|cs|lua|pl)$/i",
+            "cmds": [ "运行代码", "RunCode"]
+        },
+        {
+            "code": "newcommand",
+            "explain": "快速新建快捷命令",
+            "cmds": [ "新建快捷命令", "NewCommand", {
+                "type": "regex",
+                "label": "新建快捷命令",
+                "match": "/^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$/i",
                 "maxNum": 1
             }]
         }
