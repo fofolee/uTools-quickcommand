@@ -78,6 +78,15 @@
             // utools.setExpendHeight(600);
             if (type == 'files') file = payload[0].path
             showCodeEditor(file)
+        } else if (code == 'newcommand') {
+            utools.setExpendHeight(600)
+            $("#options").empty().fadeIn();
+            qc = {"program": "quickcommand","cmd": "","output": "ignore"}
+            if (payload != 'NewCommand' && payload != '新建快捷命令') {
+                let qcparser = quickCommandParser(payload, false)
+                if (qcparser.single) qc = qcparser.qc
+            }
+            editCurrentCommand(qc, false)
         } else {
             // console.log(new Date().getTime() - window.startTime);
             $('body').css({overflow: 'auto'})
@@ -312,21 +321,21 @@
     }
 
     // 是否含有 quickcommand 键值
-    let isJsonQc = obj => {
-        var keys = ["features", "program", "cmd", "output"]
+    let isJsonQc = (obj, strict = true) => {
+        var keys = strict ? ["features", "program", "cmd", "output"] : ["program", "cmd"]
         if (keys.filter(x => typeof obj[x] == 'undefined').length) return false
         return true
     }
 
     // 判断是否为可导入的快捷命令
-    let quickCommandParser = json => {
+    let quickCommandParser = (json, strict = true) => {
         try {
             var qc = JSON.parse(json)
         } catch (error) {
             return false
         }
-        if (isJsonQc(qc)) return { single: true, qc: qc }
-        else if (!Object.values(qc).filter(q => !isJsonQc(q)).length) return { single: false, qc: qc }
+        if (isJsonQc(qc, strict)) return { single: true, qc: qc }
+        else if (!Object.values(qc).filter(q => !isJsonQc(q, strict)).length) return { single: false, qc: qc }
         else return false
     }
 
@@ -1006,9 +1015,10 @@
         }
     })
 
-    let editCurrentCommand = data => {
-        let code = data.features.code
-        let platform = data.features.platform
+    let editCurrentCommand = async (data, animate = true) => {
+        let features = data.features || {}
+        let code = features.code
+        let platform = features.platform
         let readonly = false
         let extraInfo = {
             authorName: data.authorName,
@@ -1020,30 +1030,36 @@
         $('#customize').data('extraInfo', extraInfo)
         data.tags && $('#tags').val(data.tags).trigger('change')
         platform && ["win32", "darwin", "linux"].map(x => (!platform.includes(x) && $(`#${x}`).addClass('disabled')))
-        let cmds = data.features.cmds
-        let type = getCmdsType(cmds)
-        $('#type').val(type).trigger("change")
-        if (type == 'professional') {
-            $('#rule').val(JSON.stringify(cmds))
-        } else {
-            cmds = cmds[0]
-            if (type == 'regex' || type == 'files') {
-                $('#rule').val(cmds.match);
-            } else if (type == 'window') {
-                if (!cmds.match) $('#rule').val('');
-                else if (cmds.match.title || cmds.match.class) $('#rule').val(JSON.stringify(cmds.match));
-                else $('#rule').val(cmds.match.app);
+        let cmds = features.cmds
+        if (cmds) {
+            let type = getCmdsType(cmds)
+            $('#type').val(type).trigger("change")
+            if (type == 'professional') {
+                $('#rule').val(JSON.stringify(cmds))
             } else {
-                $('#type').val('key').trigger("change")
-                $('#rule').val(data.features.cmds.toString());
-            }
+                cmds = cmds[0]
+                if (type == 'regex' || type == 'files') {
+                    $('#rule').val(cmds.match);
+                } else if (type == 'window') {
+                    if (!cmds.match) $('#rule').val('');
+                    else if (cmds.match.title || cmds.match.class) $('#rule').val(JSON.stringify(cmds.match));
+                    else $('#rule').val(cmds.match.app);
+                } else {
+                    $('#type').val('key').trigger("change")
+                    $('#rule').val(features.cmds.toString());
+                }
+            }     
+        } else {
+            $('#type').val('key').trigger("change")
         }
         $('#code').val(code);
         $('#program').val(data.program).trigger("change");
         $('#output').val(data.output).trigger("change");
-        $('#desc').val(data.features.explain);
+        $('#desc').val(features.explain);
         $('#scptarg').val(data.scptarg);
-        $("#icon").attr('src', data.features.icon);
+        let icon = features.icon || ''
+        if (icon && !/^(data:image\/png;base64,|logo\/)/.test(icon) ) icon = await getBase64Ico(icon)
+        $("#icon").attr('src', icon);
         let mode = data.program;
         if (mode == 'custom') {
             $('#custombin').show().val(data.customOptions.bin);
@@ -1054,10 +1070,15 @@
         typeCheck();
         programCheck();
         // 分段载入，保障动画流畅
-        window.editor.setValue(data.cmd.slice(0, 2000));
-        $("#customize").animate({ top: '0px' }, () => {
-            window.editor.replaceRange(data.cmd.slice(2000), {line: Infinity});
-        });
+        if (animate) {
+            window.editor.setValue(data.cmd.slice(0, 2000));
+            $("#customize").animate({ top: '0px' }, () => {
+                window.editor.replaceRange(data.cmd.slice(2000), {line: Infinity});
+            });
+        } else {
+            $("#customize").css({ top: '0px' })
+            window.editor.setValue(data.cmd);
+        }
     }
 
     // 编辑
