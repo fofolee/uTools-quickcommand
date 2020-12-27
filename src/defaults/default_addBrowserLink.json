@@ -1,0 +1,40 @@
+{
+    "features": {
+        "code": "default_addBrowserLink",
+        "explain": "添加当前网址至快捷命令",
+        "cmds": [
+            {
+                "label": "添加当前网址至快捷命令",
+                "type": "window",
+                "match": {
+                    "app": [
+                        "chrome.exe",
+                        "firefox.exe",
+                        "MicrosoftEdge.exe",
+                        "iexplore.exe",
+                        "msedge.exe",
+                        "Google Chrome.app",
+                        "Safari.app",
+                        "Microsoft Edge.app",
+                        "chrome",
+                        "firefox"
+                    ]
+                }
+            }
+        ],
+        "icon": "data:image/png;base64,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",
+        "platform": [
+            "win32",
+            "darwin",
+            "linux"
+        ]
+    },
+    "program": "quickcommand",
+    "cmd": "(async () => {\n    let url = utools.getCurrentBrowserUrl()\n    if (!/^http/.test(url)) {\n        let choise = await quickcommand.showButtonBox(['http', 'https'], '当前浏览器网址显示不完整，请问访问的页面是哪一种？')\n        url = choise.text + '://' + url\n    }\n    let title\n    try {\n        let req = await axios(url)\n        title = quickcommand.htmlParse(req.data).querySelector('title').innerText\n    } catch (e) {\n        title = quickcommand.enterData.payload.title\n    }\n    let base = /(http(s){0,1}:\\/\\/.*?(:\\d+){0,1})(\\/|$).*/.exec(url)[1]\n    let iconUrl = base + '/favicon.ico'\n    let iconPath = path.join(os.tmpdir(), 'quickcommandfavicon.ico')\n    let qc = {\n        \"features\": {\n            \"explain\": title,\n        },\n        \"program\": \"quickcommand\",\n        \"cmd\": `visit(\\\"${url}\\\")\\n`,\n        \"output\": \"ignore\",\n    }\n    try {\n        await quickcommand.downloadFile(iconUrl, iconPath)\n        qc.features.icon = iconPath\n    } catch (e) {}\n    utools.redirect('NewCommand', JSON.stringify(qc))\n})()",
+    "output": "text",
+    "hasSubInput": false,
+    "scptarg": "",
+    "tags": [
+        "默认"
+    ]
+}
