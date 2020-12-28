@@ -511,30 +511,30 @@
             let rules = cmds[0].match
             if (type == 'regex') {
                 if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-                qcType = `<div class="topchild">正则</div><div><span class="keyword re">${rules}</span></div>`;
+                qcType = `<div class="topchild">正则</div><div><span class="keyword re">${htmlEncode(rules, true)}</span></div>`;
             } else if (type == 'window') {
                 qcType += `<div class="topchild">窗口</div><div>`
                 if (!rules) {
                     qcType += `<span class="keyword win">所有窗口</span>`
                 } else if (rules.title || rules.class) {
-                    qcType += `<span class="keyword win">${JSON.stringify(rules).slice(0,  14) + '...'}</span>`;
+                    qcType += `<span class="keyword win">${htmlEncode(JSON.stringify(rules).slice(0,  14), true) + '...'}</span>`;
                 } else if (rules.app) {
                     rules = rules.app.join(",")
                     if (rules.length > 14) rules = rules.slice(0, 14) + '...';
                     rules.split(',').forEach(r => {
-                        qcType += `<span class="keyword win">${r}</span>`;
+                        qcType += `<span class="keyword win">${htmlEncode(r, true)}</span>`;
                     });
                 }
                 qcType += `</div>`
             } else if (type == 'files') {
                 if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-                qcType = `<div class="topchild">文件</div><div><span class="keyword fil">${rules}</span></div>`;
+                qcType = `<div class="topchild">文件</div><div><span class="keyword fil">${htmlEncode(rules, true)}</span></div>`;
             } else {
                 rules = features.cmds.join(",")
                 if (rules.length > 14) rules = rules.slice(0, 14) + '...';
                 qcType += `<div class="topchild">关键字</div><div>`
                 rules.split(',').forEach(r => {
-                    qcType += `<span class="keyword">${r}</span>`;
+                    qcType += `<span class="keyword">${htmlEncode(r, true)}</span>`;
                 });
                 qcType += `</div>`
             }
@@ -564,7 +564,7 @@
         return `<tr id="${features.code}">
         <td><img class="logo" src="${features.icon}"></td>
         <td>
-            <div class="topchild">${features.explain}</div>
+            <div class="topchild">${htmlEncode(features.explain, true)}</div>
             <div>
                 <span class="info">
                 <span style="margin: 0; font-size: smaller; color: ${fts.program == 'quickcommand' ? "#00af2c;" : programs[fts.program].color}">●</span>
