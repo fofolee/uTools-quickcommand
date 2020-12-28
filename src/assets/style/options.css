@@ -937,3 +937,7 @@ li.CodeMirror-hint {
     margin: 5px;
     user-select: none;
 }
+
+.swal2-input {
+    text-align: center;
+}
