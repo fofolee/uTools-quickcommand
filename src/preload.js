@@ -81,10 +81,9 @@ quickcommand = {
     },
 
     // 显示输入框
-    showInputBox: function (placeHolders, title = '') {
+    showInputBox: function (placeHolders = [""], title = '') {
         return new Promise((reslove, reject) => {
-            placeHolders || (placeHolders = [""])
-            if (!(placeHolders instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof placeHolders}`))
+            if (!(placeHolders instanceof Array)) placeHolders = [placeHolders.toString()]
             utools.setExpendHeight(600)
             var html = ""
             var inputBoxNumbers = placeHolders.length
@@ -448,7 +447,8 @@ let getSandboxFuns = () => {
         URLSearchParams: URLSearchParams,
         axios: axios,
         alert: alert,
-        confirm: confirm
+        confirm: confirm,
+        Audio: Audio
     }
     shortCodes.forEach(f => {
         sandbox[f.name] = f
