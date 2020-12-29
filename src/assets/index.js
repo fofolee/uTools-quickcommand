@@ -57,8 +57,7 @@
                 if (program == 'custom') customoptions = {
                     custombin: $('#custombin').val(),
                     customarg: $('#customarg').val(),
-                    customext: $('#customext').val(),
-                    customcodec: $('#customcodec').val()
+                    customext: $('#customext').val()
                 }
                 putDB({ cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, CFG_PREFIX + 'codeHistory')
             }
@@ -102,6 +101,7 @@
                 option = programs[db.program];
             }
             option.scptarg = db.scptarg
+            option.charset = db.charset ? db.charset : autoCharset(db.program)
             cmd = special(cmd);
             if (cmd.includes('{{type}}')) {
                 cmd = cmd.replace(/\{\{type\}\}/mg, type)
@@ -414,21 +414,18 @@
             bin: '',
             argv: '',
             ext: 'bat',
-            codec: 'gbk',
             color: '#C1F12E'
         },
         powershell: {
             bin: 'powershell',
             argv: '-NoProfile -File',
             ext: 'ps1',
-            codec: utools.isWindows() ? 'gbk' : '',
             color: '#012456'
         },
         python: {
             bin: 'python',
             argv: '-u',
             ext: 'py',
-            codec: utools.isWindows() ? 'gbk' : '',
             color: '#3572A5'
         },
         javascript: {
@@ -453,14 +450,12 @@
             bin: 'gcc',
             argv: '-o',
             ext: 'c',
-            codec: utools.isWindows() ? 'gbk' : '',
             color: '#555555'
         },
         csharp: {
             bin: 'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\csc.exe',
             argv: '/Nologo',
             ext: 'cs',
-            codec: 'gbk',
             color: '#178600'
         },
         lua: {
@@ -479,10 +474,18 @@
             bin: '',
             argv: '',
             ext: '',
-            codec: '',
             color: '#438eff'
         }
     }
+
+    // 自动设置编码
+    let autoCharset = program => {
+        let charset = { scriptCode: '', outputCode: '' }
+        if (!utools.isWindows()) return charset
+        if (program == 'powershell' || program == 'cmd') charset.scriptCode = 'GBK'
+        if (['cmd', 'powershell', 'python', 'c', 'csharp'].includes(program)) charset.outputCode = 'GBK'
+        return charset
+    }    
 
     let getCmdsType = cmds => {
         try {
@@ -689,8 +692,8 @@
                 <input type="text" id="custombin" placeholder="解释器路径">
                 <input type="text" id="customarg" placeholder="解释器参数">
                 <input type="text" id="customext" placeholder="后缀,不含.">
-                <input type="text" id="customcodec" placeholder="输出编码">
             </span>
+                <span id="charset" class="footBtn robot">编码设置</span>
                 <span class="quickactions">
                 <span id="addAction" class="footBtn robot">﹢动作</span>
                 <span id="addKey" class="footBtn robot">﹢按键</span>
@@ -698,7 +701,7 @@
                 <span id="beautifyCode" class="footBtn robot">格式化</span>
             </span>
         </p>
-        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等\n常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递\n给脚本的参数\ncustom：可以手动设置解释器路径、参数、脚本后缀及编码方式\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
+        <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等\n常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递\n给脚本的参数\ncustom：可以手动设置解释器路径、参数及脚本后缀\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
         <p class="bottom">
             <img id="win32" class="platform" src="./img/win32.svg">
             <img id="darwin" class="platform" src="./img/darwin.svg">
@@ -912,8 +915,9 @@
         let mode = $('#program').val();
         $('.customscript').hide();
         $('.quickactions').hide();
-        $('#scptarg').show();
+        $('#scptarg, #charset').show();
         $('#showInTerm').prop("disabled", false);
+        $('#charset').data(autoCharset(mode));
         if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
         switch (mode) {
             case 'custom':
@@ -923,7 +927,7 @@
                 break;
             case 'quickcommand':
                 $('.quickactions').show();
-                $('#scptarg').hide();
+                $('#scptarg, #charset').hide();
                 $('#showInTerm').prop("disabled", true);
                 mode = 'javascript';
                 break;
@@ -1065,10 +1069,10 @@
             $('#custombin').show().val(data.customOptions.bin);
             $('#customarg').show().val(data.customOptions.argv);
             $('#customext').show().val(data.customOptions.ext);
-            $('#customcodec').show().val(data.customOptions.codec);
         }
         typeCheck();
         programCheck();
+        if (data.charset) $("#charset").data(data.charset);
         // 分段载入，保障动画流畅
         if (animate) {
             window.editor.setValue(data.cmd.slice(0, 2000));
@@ -1086,6 +1090,31 @@
         let code = $(this).parents('tr').attr('id')
         let data = getDB(QC_PREFIX + code)
         editCurrentCommand(data)
+    })
+
+
+    // 编码设置
+    $("#options").on('click', '#charset', function () {
+        var html = `
+        脚本编码： <input id="scriptCode" class="swal2-input" placeholder="未出现乱码问题请留空">
+        输出解码： <input id="outputCode" class="swal2-input" placeholder="未出现乱码问题请留空">
+        `
+        Swal.fire({
+            title: "编码设置",
+            onBeforeOpen: () => {
+                let charset = $('#charset').data()
+                document.getElementById('scriptCode').value = charset.scriptCode || ''
+                document.getElementById('outputCode').value = charset.outputCode || ''
+            },
+            html: html,
+            showCancelButton: true,
+            footer: `基于 iconv-lite, 查看支持的<a href="#" onclick="utools.ubrowser.goto('https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings').run()">编码</a>`,
+            preConfirm: () => {
+                let scriptCode = document.getElementById('scriptCode').value
+                let outputCode = document.getElementById('outputCode').value
+                $('#charset').data({scriptCode: scriptCode, outputCode: outputCode})
+            }
+        })
     })
 
     // 添加模拟按键
@@ -1471,6 +1500,7 @@
                 code = $("#code").val(),
                 tags = $('#tags').val(),
                 rule = $('#rule').val(),
+                charset = $('#charset').data()
                 cmd = window.editor.getValue();
             if (tags && tags.includes("默认") && !isDev()) return
             if (type != "window" && !rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
@@ -1554,7 +1584,8 @@
                 cmd: cmd,
                 output: output,
                 hasSubInput: hasSubInput,
-                scptarg: scptarg
+                scptarg: scptarg,
+                charset: charset
             }
             if (extraInfo) {
                 Object.assign(pushData, extraInfo)
@@ -1568,8 +1599,7 @@
                 pushData.customOptions = {
                     "bin": $('#custombin').val(),
                     "argv": $('#customarg').val(),
-                    "ext": $('#customext').val(),
-                    'codec': $('#customcodec').val()
+                    "ext": $('#customext').val()
                 }
             }
             putDB(pushData, QC_PREFIX + code);
@@ -1690,10 +1720,10 @@
                 if (program == "custom") option = {
                     "bin": $('#custombin').val(),
                     "argv": $('#customarg').val(),
-                    "ext": $('#customext').val(),
-                    'codec': $('#customcodec').val()
+                    "ext": $('#customext').val()
                 }
                 option.scptarg = $('#scptarg').val()
+                option.charset = $('#charset').data()
                 runCodeFile(cmd, option, terminal, (stdout, stderr) => {
                     if (terminal) return
                     if (stderr) return showRunResult(stderr, raw, false)
@@ -1731,9 +1761,9 @@
             <input type="text" id="custombin" placeholder="解释器路径">
             <input type="text" id="customarg" placeholder="解释器参数">
             <input type="text" id="customext" placeholder="后缀,不含.">
-            <input type="text" id="customcodec" placeholder="输出编码">
         </span>
         <span id="runCode" class="footBtn robot">运  行</span>
+        <span id="charset" class="footBtn robot">编码设置</span>
         <input type="text" id="scptarg" placeholder="脚本参数">
         <span class="quickactions">
             <span id="beautifyCode" class="footBtn robot">格式化</span>
@@ -1766,7 +1796,6 @@
                 $('#custombin').val(custom.custombin)
                 $('#customarg').val(custom.customarg)
                 $('#customext').val(custom.customext)
-                $('#customcodec').val(custom.customcodec)
             }
         }
         programCheck()

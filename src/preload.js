@@ -776,10 +776,11 @@ runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,
         argv = option.argv,
         ext = option.ext,
+        charset = option.charset,
         scptarg = option.scptarg || "";
     let script = getQuickCommandScriptFile(ext)
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
-    if (ext == 'bat' || ext == 'ps1') cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), 'GBK');
+    if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);
     // var argvs = [script]
     // if (argv) {
@@ -828,12 +829,12 @@ runCodeFile = (cmd, option, terminal, callback) => {
     //     err_chunks = [];
     console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
-        if (option.codec) chunk = iconv.decode(chunk, option.codec)
+        if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode)
         callback(chunk.toString(), null)
         // chunks.push(chunk)
     })
     child.stderr.on('data', stderr => {
-        if (option.codec) stderr = iconv.decode(stderr, option.codec)
+        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
         callback(null, stderr.toString())
         // err_chunks.push(err_chunk)
     })
