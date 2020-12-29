@@ -245,7 +245,13 @@ body {
 
 #options #customize .robot {
     background: #3085d6;
-    padding: 5px;
+    padding: 0 10px;
+    height: 28px;
+    line-height: 28px;
+}
+
+#options #customize #charset.robot {
+    display: none;
 }
 
 #options #customize .robot:hover {
@@ -418,8 +424,8 @@ body {
     display: inline-block;
     font-size: 14px;
     border: 1px solid #1E88E5;
-    height: 24px;
-    line-height: 22px;
+    height: 28px;
+    line-height: 28px;
     padding: 0 5px;
     background-color: #E3F2FD;
 }
@@ -452,13 +458,18 @@ body {
     transition: 0.2s;
 }
 
+#scriptCode, #outputCode {
+    width: 75%;
+    margin: 0.5em 0
+}
+
 #options #customize input#scptarg {
     width: 150px;
     float: right;
     background: white;
     outline: none;
     border: 2px solid #3085d6;
-    height: 30px;
+    height: 28px;
     border-radius: 4px;
     padding: 2px 5px;
     margin: 0px 5px;
