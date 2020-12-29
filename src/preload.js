@@ -368,23 +368,23 @@ quickcommand = {
         let local = path.join(root, require('crypto').createHash('md5').update(url).digest('hex'))
         if (forceUpdate || !fs.existsSync(local)) await this.downloadFile(remote, local)
         return require(local)
-    },
-
-    // 运行vbs脚本
-    runVbs: function (script) {
-        if (process.platform != 'win32') return
-        return new Promise((reslove, reject) => {
-            var tempfile = path.join(os.tmpdir(), 'TempVBSScript.vbs')
-            fs.writeFile(tempfile, iconv.encode(script, 'gbk'), err => {
-                child_process.exec(`cscript.exe /nologo "${tempfile}"`, {
-                    encoding: "buffer"
-                }, (err, stdout, stderr) => {
-                    if (err) reject(iconv.decode(stderr, 'gbk'))
-                    else reslove(iconv.decode(stdout, 'gbk'))
-                });
-            })
-        })
     }
+}
+
+
+// 运行vbs脚本
+if (process.platform == 'win32') quickcommand.runVbs =  function (script) {
+    return new Promise((reslove, reject) => {
+        var tempfile = path.join(os.tmpdir(), 'TempVBSScript.vbs')
+        fs.writeFile(tempfile, iconv.encode(script, 'gbk'), err => {
+            child_process.exec(`cscript.exe /nologo "${tempfile}"`, {
+                encoding: "buffer"
+            }, (err, stdout, stderr) => {
+                if (err) reject(iconv.decode(stderr, 'gbk'))
+                else reslove(iconv.decode(stdout, 'gbk'))
+            });
+        })
+    })
 }
 
 swalOneByOne = options => {
