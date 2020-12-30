@@ -315,8 +315,8 @@
     // 导入默认命令
     let importDefaultCommands = () => {
         let defaultCommands = getDefaultCommands()
-        Object.values(defaultCommands).forEach(d => {
-            importCommand(d)
+        Object.values(defaultCommands).forEach(async d => {
+            await importCommand(d)
         })
     }
 
@@ -340,17 +340,26 @@
     }
 
     // 导入
-    let importCommand = file => {
-        var pushData, clipboardText = clipboardReadText()
-        if (!file) pushData = quickCommandParser(clipboardText)
-        if (!pushData) {
-            var options = file ? { type: 'file', argvs: file } : { type: 'dialog', argvs: { filters: [{ name: 'json', extensions: ['json'] }] } }
-            options.readfile = true
-            var fileinfo = getFileInfo(options)
+    let importCommand = async file => {
+        let options, fileinfo, command, pushData
+        if (file) {
+            options = { type: 'file', argvs: file, readfile: true }
+            fileinfo = getFileInfo(options)
             if (!fileinfo) return
-            pushData = quickCommandParser(fileinfo.data)
-            if (!pushData) return false
+            command = fileinfo.data
+        } else {
+            let choise = await quickcommand.showButtonBox(['从文件导入', '从剪贴板导入'])
+            if (choise.id == 0) {
+                options = { type: 'dialog', argvs: { filters: [{ name: 'json', extensions: ['json'] }] }, readfile: true }
+                fileinfo = getFileInfo(options)
+                if (!fileinfo) return
+                command = fileinfo.data
+            } else if (choise.id == 1) {
+                command = clipboardReadText()
+            }   
         }
+        pushData = quickCommandParser(command)
+        if (!pushData) return false
         // 单个命令导入
         if (pushData.single) {
             var code = pushData.qc.features.code;
@@ -988,7 +997,7 @@
     });
 
     // 底部功能按钮
-    $("#options").on('click', '.footBtn', function () {
+    $("#options").on('click', '.footBtn', async function () {
         switch ($(this).attr('id')) {
             case 'viewHelps': utools.createBrowserWindow('./helps/HELP.html', {width: 1280, height: 920});
                 break;
@@ -998,7 +1007,7 @@
                 $("#customize").animate({ top: '0px' });
                 break;
             case 'import':
-                var success = importCommand()
+                var success = await importCommand()
                 if (success) {
                     if (success instanceof Object) locateToCode(success.tags, success.code)
                     else showOptions()
@@ -1376,8 +1385,8 @@
         utools.setExpendHeight(600)
     }
 
-    $("#out").on('click', '#importSharedQc', function () {
-        importCommand() ? quickcommand.showMessageBox("导入成功") : quickcommand.showMessageBox("导入失败，格式错误", "error")
+    $("#out").on('click', '#importSharedQc', async function () {
+        await importCommand() ? quickcommand.showMessageBox("导入成功") : quickcommand.showMessageBox("导入失败，格式错误", "error")
         showOptions()
         utools.setExpendHeight(600)
         $('#out').empty()
