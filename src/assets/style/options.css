@@ -952,3 +952,13 @@ li.CodeMirror-hint {
 .swal2-input {
     text-align: center;
 }
+
+.circle {
+    position: absolute;
+    background: red;
+    border-radius: 50%;
+    padding: 1px;
+    top: -8px;
+    right: 160px;
+    display: none;
+}

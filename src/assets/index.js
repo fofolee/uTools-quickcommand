@@ -625,7 +625,7 @@
         <div class="foot">
             <div id="add" class="footBtn">新建命令</div>
             <div id="import" class="footBtn">导入命令</div>
-            <div id="getShares" class="footBtn">分享中心</div>
+            <div id="getShares" class="footBtn">分享中心<span class="circle"></span></div>
             <div id="viewHelps" class="footBtn">查看帮助</div>
             <div id="exportAll" class="footBtn">全部导出</div>
             <div id="enableAll" class="footBtn">启用本页</div>
@@ -633,6 +633,7 @@
             <div id="disableAll" class="footBtn danger">禁用本页</div>
         </div>`
         $("#options").append(sidebar + featureList + footer)
+        checkSharedQc()
     }
 
     // 显示新建命令界面
@@ -742,6 +743,19 @@
         }).on("select2:selecting", e => {
             (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !isDev() && e.preventDefault();
         })
+    }
+
+    let checkSharedQc = async () => {
+        let localShares = getDB(CFG_PREFIX + 'sharedQcCounts')[window.processPlatform] || 0
+        let remoteShares = await getDocsFromYuQue()
+        if (!remoteShares) return
+        let updates = remoteShares.length - localShares
+        if (updates == 0) {
+            $('.circle').hide()
+            return
+        }
+        if (updates > 99) updates = 99
+        $('.circle').text(updates).show()
     }
 
     let getSelect2Option = (data, width, dropdownAutoWidth = false) => {
@@ -1337,12 +1351,15 @@
         }
     }
 
-    let getSharedQCFromYuQue = async () => {
-        $('#options').hide()
-        let extraInfo = getDB(CFG_PREFIX + 'extraInfo')
+    let getDocsFromYuQue = async () => {
+        let res, extraInfo = getDB(CFG_PREFIX + 'extraInfo')
         if (extraInfo.yuQueToken) yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
-        let res = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs`)
-        let description, platform = window.processPlatform
+        try {
+            res = await yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs`)
+        } catch (error) {
+            return false
+        }
+        let platform = window.processPlatform
         let docs = res.data.data
             .filter(d => {
                 try {
@@ -1351,8 +1368,21 @@
                     console.log(error)
                 }
             })
+        return docs
+    }
+
+    let getSharedQCFromYuQue = async () => {
+        $('#options').hide()
+        let description
+        let docs = await getDocsFromYuQue()
+        if (!docs) return
+        let sharedQcCounts = getDB(CFG_PREFIX + 'sharedQcCounts')
+        sharedQcCounts[window.processPlatform] = docs.length
+        putDB(sharedQcCounts, CFG_PREFIX + 'sharedQcCounts')
+        $('.circle').hide()
+        docs = docs
             .sort((x, y) => {
-                if (y.updated_at > x.updated_at) return 1
+                if (y.published_at > x.published_at) return 1
                 else return -1
             })
             .map(d => {
