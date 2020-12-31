@@ -960,5 +960,7 @@ li.CodeMirror-hint {
     padding: 1px;
     top: -8px;
     right: 160px;
+    width: 20px;
+    text-align: center;
     display: none;
 }
