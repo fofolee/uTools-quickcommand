@@ -799,14 +799,14 @@ li.CodeMirror-hint {
     padding: 5px 10px;
     height: 40px;
     /* line-height: 50px; */
-    white-space: pre;
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 
 #quickselect .select2-results__option .title {
     font-size: 14px;
     line-height: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 #quickselect .select2-results__option .description {
