@@ -940,7 +940,7 @@
         $('.customscript').hide();
         $('.quickactions').hide();
         $('#scptarg, #charset').show();
-        $('#showInTerm').prop("disabled", false);
+        if (!utools.isLinux()) $('#showInTerm').prop("disabled", false)
         $('#charset').data(autoCharset(mode));
         if (!hasCustomIcon()) $("#icon").attr('src', `logo/${mode}.png`);
         switch (mode) {

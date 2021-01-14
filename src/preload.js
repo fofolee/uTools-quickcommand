@@ -371,7 +371,6 @@ quickcommand = {
     }
 }
 
-
 // 运行vbs脚本
 if (process.platform == 'win32') quickcommand.runVbs =  function (script) {
     return new Promise((reslove, reject) => {
@@ -385,6 +384,48 @@ if (process.platform == 'win32') quickcommand.runVbs =  function (script) {
             });
         })
     })
+}
+
+
+// 在终端中执行
+if (process.platform !== 'linux') quickcommand.runInTerminal = function (cmdline, dir) {
+    let command = getCommandToLaunchTerminal(cmdline, dir)
+    child_process.exec(command)
+}
+
+let getCommandToLaunchTerminal = (cmdline, dir) => {
+    let cd = ''
+    if (utools.isWindows()) {
+        let wtpath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/wt.exe')
+        if (fs.existsSync(wtpath)) {
+            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+            command = `wt ${cd} cmd /k "${cmdline}"`
+        } else {
+            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+            command = `${cd} start "" cmd /k "${cmdline}"`
+        }
+    } else {
+        let iterm
+        if (fs.existsSync('/Applications/iTerm 2.app')) {
+            iterm = 'iTerm 2'
+        } else if (fs.existsSync('/Applications/iTerm.app')) {
+            iterm = 'iTerm'
+        }
+        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+        cmdline = cmdline.replace(/"/g, `\\"`)
+        if (iterm) {
+            command = `osascript -e 'tell application "${iterm}"
+            create window with default profile
+            tell current session of current window to write text "clear && ${cd} ${cmdline}"
+    end tell'`
+        } else {
+            command = `osascript -e 'tell application "Terminal"
+        do script "clear && ${cd} ${cmdline}"
+        activate
+    end tell'`
+        }
+    }
+    return command
 }
 
 swalOneByOne = options => {
@@ -799,31 +840,32 @@ runCodeFile = (cmd, option, terminal, callback) => {
         cmdline = `${bin} ${argv} "${script}" ${scptarg}`
     }
     // 在终端中输出
-    if (terminal) {
-        if (utools.isWindows()) {
-            if (bin.slice(-7) == 'csc.exe' || bin == 'gcc') {
-                cmdline = cmdline.split("&&")
-                cmdline = cmdline[0] + "&& start cmd /k " + cmdline[1]
-            } else {
-                cmdline = `start cmd /k ${cmdline}`
-            }
-        } else if(utools.isMacOs()){
-            var appleScript = `if application "Terminal" is running then
-            tell application "Terminal"
-                do script "clear;${cmdline.replace(/"/g, `\\"`)}"
-                activate
-            end tell
-        else
-            tell application "Terminal"
-                do script "clear;${cmdline.replace(/"/g, `\\"`)}" in window 1
-                activate
-            end tell
-        end if`;
-            cmdline = `osascript -e '${appleScript}'`
-        } else {
-            return message('Linux 不支持在终端输出')
-        }
-    }
+    if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
+    // if (terminal) {
+    //     if (utools.isWindows()) {
+    //         if (bin.slice(-7) == 'csc.exe' || bin == 'gcc') {
+    //             cmdline = cmdline.split("&&")
+    //             cmdline = cmdline[0] + "&& start cmd /k " + cmdline[1]
+    //         } else {
+    //             cmdline = `start cmd /k ${cmdline}`
+    //         }
+    //     } else if(utools.isMacOs()){
+    //         var appleScript = `if application "Terminal" is running then
+    //         tell application "Terminal"
+    //             do script "clear;${cmdline.replace(/"/g, `\\"`)}"
+    //             activate
+    //         end tell
+    //     else
+    //         tell application "Terminal"
+    //             do script "clear;${cmdline.replace(/"/g, `\\"`)}" in window 1
+    //             activate
+    //         end tell
+    //     end if`;
+    //         cmdline = `osascript -e '${appleScript}'`
+    //     } else {
+    //         return message('Linux 不支持在终端输出')
+    //     }
+    // }
     child = child_process.spawn(cmdline, { encoding: 'buffer', shell: true })
     // var chunks = [],
     //     err_chunks = [];
