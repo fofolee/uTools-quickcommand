@@ -1,12 +1,4 @@
 !function () {
-    // 暗黑模式
-    if (utools.isDarkColors()) {
-        !$('#darkmode').length && $('head').append(`
-        <link id="darkmode" rel="stylesheet" href="assets/style/darkmode.css">
-        <link id="darkswal" rel="stylesheet" href="assets/plugins/sweetalert2/dark.min.css">`)
-    } else {
-        $('#darkmode').length && $('#darkmode, #darkswal').remove()
-    }
     // 禁用危险函数
     let utoolsFull = utools
     if (!isDev()) utools = getuToolsLite()
@@ -41,6 +33,14 @@
 
     // 进入插件
     utools.onPluginEnter(async ({ code, type, payload }) => {
+        // 暗黑模式
+        if (utools.isDarkColors()) {
+            !$('#darkmode').length && $('head').append(`
+            <link id="darkmode" rel="stylesheet" href="assets/style/darkmode.css">
+            <link id="darkswal" rel="stylesheet" href="assets/plugins/sweetalert2/dark.min.css">`)
+        } else {
+            $('#darkmode').length && $('#darkmode, #darkswal').remove()
+        }
         if (isRunningAtFirstTime()) {
             showChangeLog()
             importDefaultCommands()
@@ -623,14 +623,15 @@
         </div>`
         var footer = `
         <div class="foot">
-            <div id="add" class="footBtn">新建命令</div>
-            <div id="import" class="footBtn">导入命令</div>
-            <div id="getShares" class="footBtn">分享中心<span class="circle"></span></div>
-            <div id="viewHelps" class="footBtn">查看帮助</div>
-            <div id="exportAll" class="footBtn">全部导出</div>
-            <div id="enableAll" class="footBtn">启用本页</div>
-            <div id="clear" class="footBtn danger">清空数据</div>
-            <div id="disableAll" class="footBtn danger">禁用本页</div>
+            <div id="add" class="footBtn"><img src="img/add.svg"><span>新建命令</span></div>
+            <div id="import" class="footBtn"><img src="img/import.svg"><span>导入命令</span></div>
+            <div id="panel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
+            <div id="getShares" class="footBtn"><img src="img/share.svg"><span>分享中心</span><span class="circle"></span></div>
+            <div id="viewHelps" class="footBtn"><img src="img/help.svg"><span>查看帮助</span></div>
+            <div id="exportAll" class="footBtn"><img src="img/exportAll.svg"><span>全部导出</span></div>
+            <div id="enableAll" class="footBtn"><img src="img/enable.svg"><span>启用本页</span></div>
+            <div id="clear" class="footBtn danger"><img src="img/clear.svg"><span>清除数据</span></div>
+            <div id="disableAll" class="footBtn danger"><img src="img/disable.svg"><span>禁用本页</span></div>
         </div>`
         $("#options").append(sidebar + featureList + footer)
         checkSharedQc()

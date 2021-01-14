@@ -248,6 +248,8 @@ body {
     padding: 0 10px;
     height: 28px;
     line-height: 28px;
+    width: unset;
+    border-radius: 4px;
 }
 
 #options #customize #charset.robot {
@@ -281,27 +283,42 @@ body {
 
 #options .footBtn {
     float: right;
-    background: #00af2c;
-    border-radius: 4px;
+    background: #02b340;
     color: white;
     padding: 2px 5px;
     margin: 0px 5px;
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
     cursor: pointer;
+}
+
+#options .footBtn img{
+    width: 15px;
+    vertical-align: middle;
 }
 
 #options .footBtn.danger {
     float: left;
-    background: #df3f54;
+    background: #b80233;
 }
 
 #options .footBtn:hover {
     background: #068506;
-    transition: 0.5s;
+    width: 78px;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+#options .footBtn span{
+    vertical-align: middle;
+    font-size: 12px;
+    margin-left: 3px;
 }
 
 #options .footBtn.danger:hover {
     background: #b32033;
-    transition: 0.5s;
+    transition: 0.2s;
 }
 
 #options .foot {
