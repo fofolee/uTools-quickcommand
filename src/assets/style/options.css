@@ -244,11 +244,13 @@ body {
 }
 
 #options #customize .robot {
+    float: right;
+    color: white;
     background: #3085d6;
     padding: 0 10px;
     height: 28px;
     line-height: 28px;
-    width: unset;
+    width: auto;
     border-radius: 4px;
 }
 
@@ -282,7 +284,6 @@ body {
 }
 
 #options .footBtn {
-    float: right;
     background: #02b340;
     color: white;
     padding: 2px 5px;
@@ -291,6 +292,7 @@ body {
     width: 25px;
     border-radius: 50%;
     cursor: pointer;
+    overflow: hidden;
 }
 
 #options .footBtn img{
@@ -305,16 +307,11 @@ body {
 
 #options .footBtn:hover {
     background: #068506;
-    width: 78px;
+    height: 110px;
     border-radius: 4px;
     transition: 0.2s;
 }
 
-#options .footBtn span{
-    vertical-align: middle;
-    font-size: 12px;
-    margin-left: 3px;
-}
 
 #options .footBtn.danger:hover {
     background: #b32033;
@@ -323,6 +320,9 @@ body {
 
 #options .foot {
     position: absolute;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
     height: 30px;
     right: 0px;
     bottom: 0px;
@@ -968,16 +968,4 @@ li.CodeMirror-hint {
 
 .swal2-input {
     text-align: center;
-}
-
-.circle {
-    position: absolute;
-    background: red;
-    border-radius: 50%;
-    padding: 1px;
-    top: -8px;
-    right: 160px;
-    width: 20px;
-    text-align: center;
-    display: none;
 }

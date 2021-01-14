@@ -623,15 +623,15 @@
         </div>`
         var footer = `
         <div class="foot">
-            <div id="add" class="footBtn"><img src="img/add.svg"><span>新建命令</span></div>
-            <div id="import" class="footBtn"><img src="img/import.svg"><span>导入命令</span></div>
-            <div id="panel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
-            <div id="getShares" class="footBtn"><img src="img/share.svg"><span>分享中心</span><span class="circle"></span></div>
-            <div id="viewHelps" class="footBtn"><img src="img/help.svg"><span>查看帮助</span></div>
-            <div id="exportAll" class="footBtn"><img src="img/exportAll.svg"><span>全部导出</span></div>
-            <div id="enableAll" class="footBtn"><img src="img/enable.svg"><span>启用本页</span></div>
             <div id="clear" class="footBtn danger"><img src="img/clear.svg"><span>清除数据</span></div>
             <div id="disableAll" class="footBtn danger"><img src="img/disable.svg"><span>禁用本页</span></div>
+            <div id="enableAll" class="footBtn"><img src="img/enable.svg"><span>启用本页</span></div>
+            <div id="exportAll" class="footBtn"><img src="img/exportAll.svg"><span>全部导出</span></div>
+            <div id="viewHelps" class="footBtn"><img src="img/help.svg"><span>查看帮助</span></div>
+            <div id="getShares" class="footBtn"><img src="img/share.svg"><span>分享中心</span></div>
+            <div id="panel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
+            <div id="import" class="footBtn"><img src="img/import.svg"><span>导入命令</span></div>
+            <div id="add" class="footBtn"><img src="img/add.svg"><span>新建命令</span></div>
         </div>`
         $("#options").append(sidebar + featureList + footer)
         checkSharedQc()
@@ -752,11 +752,10 @@
         if (!remoteShares) return
         let updates = remoteShares.length - localShares
         if (updates == 0) {
-            $('.circle').hide()
             return
         }
-        if (updates > 99) updates = 99
-        $('.circle').text(updates).show()
+        $('#getShares span').text('有新分享')
+        $('#getShares').css({ 'background': '#b80233' })
     }
 
     let getSelect2Option = (data, width, dropdownAutoWidth = false) => {
@@ -1380,7 +1379,8 @@
         let sharedQcCounts = getDB(CFG_PREFIX + 'sharedQcCounts')
         sharedQcCounts[window.processPlatform] = docs.length
         putDB(sharedQcCounts, CFG_PREFIX + 'sharedQcCounts')
-        $('.circle').hide()
+        $('#getShares span').text('分享中心')
+        $('#getShares').attr('style', "")
         docs = docs
             .sort((x, y) => {
                 if (y.published_at > x.published_at) return 1
