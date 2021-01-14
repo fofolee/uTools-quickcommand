@@ -651,7 +651,7 @@ getBase64Ico = async filepath => {
     return compressedImage
 }
 
-getCompressedIco = async (img, width = 40) => {
+getCompressedIco = async (img, width = 80) => {
     let compressedImage = await pictureCompress({ img: img, width: width, height: width, type: 'png', quality: 1 })
     return compressedImage.img
 }
