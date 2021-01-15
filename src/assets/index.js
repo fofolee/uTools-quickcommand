@@ -62,7 +62,7 @@
                 putDB({ cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, CFG_PREFIX + 'codeHistory')
             }
             // 初始化
-            $("#options, #out").empty()
+            $("#options, #out, #quickpanel").empty()
             $('body').children(':not(#wrapper)').remove()
             $('body').css({overflow: 'hidden'})
             if (handleEnter) document.removeEventListener('keydown', handleEnter)
@@ -86,11 +86,15 @@
                 if (qcparser.single) qc = qcparser.qc
             }
             editCurrentCommand(qc, false)
+        } else if (code.slice(0,6) == 'panel_') {
+            utools.setExpendHeight(600)
+            let features = getPanelFeatures(payload)
+            showPanel(features)
         } else {
             // console.log(new Date().getTime() - window.startTime);
             $('body').css({overflow: 'auto'})
             utools.setExpendHeight(0);
-            $("#options").hide();
+            $("#options, #quickpanel").hide();
             var db = getDB(QC_PREFIX + code),
                 cmd = db.cmd;
             if (db.program == "custom") {
@@ -597,11 +601,22 @@
         </td>`
     }
 
+    let getCurrentFts = () => {
+        let features = utools.getFeatures()
+        let currentFts = []
+        let quickpanels = []
+        features.forEach(x => x.code.slice(0, 6) == 'panel_' ? quickpanels.push(decodeURI(x.code.slice(6))) : currentFts.push(x))
+        return {
+            currentFts: currentFts,
+            quickpanels: quickpanels,
+        }
+    }
+
     // 显示设置界面
     let showOptions = (tag = "默认") => {
         $("#options").empty().fadeIn();
-        var currentFts = utools.getFeatures(),
-            customFts = getAllQuickCommands();
+        var currentFts = getCurrentFts().currentFts
+        var customFts = getAllQuickCommands()
         var allTags = ["默认"]
         var featureList = `
         <div id="featureList">
@@ -616,11 +631,16 @@
             }
         })
         featureList += `</tr></table></div>`
-        var sidebar = `
-        <div class="sidebar">
-            ${allTags.map(a => (a == tag ? '<li class="currentTag">' : '<li>') + a + '</li>').join('')}
-            <li ${tag == '未分类' ? 'class="currentTag"' : ''}>未分类</li>
-        </div>`
+        var quickpanels = getCurrentFts().quickpanels
+        var sidebar = 
+        `<div class="sidebar">`+
+            allTags.map(x => {
+                let cla = []
+                if (x == tag) cla.push("currentTag")
+                if (quickpanels.includes(x)) cla.push("panelTag")
+                return `<li class="${cla.join(' ')}">${x}</li>`
+            }).join("")
+            +`<li ${tag == '未分类' ? 'class="currentTag"' : ''}>未分类</li></div>`
         var footer = `
         <div class="foot">
             <div id="clear" class="footBtn danger"><img src="img/clear.svg"><span>清除数据</span></div>
@@ -629,11 +649,14 @@
             <div id="exportAll" class="footBtn"><img src="img/exportAll.svg"><span>全部导出</span></div>
             <div id="viewHelps" class="footBtn"><img src="img/help.svg"><span>查看帮助</span></div>
             <div id="getShares" class="footBtn"><img src="img/share.svg"><span>分享中心</span></div>
-            <div id="panel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
+            <div id="addToPanel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
             <div id="import" class="footBtn"><img src="img/import.svg"><span>导入命令</span></div>
             <div id="add" class="footBtn"><img src="img/add.svg"><span>新建命令</span></div>
         </div>`
         $("#options").append(sidebar + featureList + footer)
+        if (tag != '默认' || tag != '未分类') {
+            if (quickpanels.includes(tag)) $('#addToPanel').css({ "filter": "none" })
+        }
         checkSharedQc()
     }
 
@@ -744,6 +767,33 @@
         }).on("select2:selecting", e => {
             (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !isDev() && e.preventDefault();
         })
+    }
+
+    let getPanelFeatures = tag => {
+        let activedCode = utools.getFeatures().map(x => x.code)
+        let features = utoolsFull.db.allDocs('qc_key_').filter(x => {
+            if (!x.data.tags) return false
+            if (!x.data.tags.includes(tag)) return false
+            if (x.data.features.platform && !x.data.features.platform.includes(window.processPlatform)) return false
+            if (!activedCode.includes(x.data.features.code)) return false
+            return true
+        })
+        return features
+    }
+
+    let showPanel = features => {
+        let panel = '<table>'
+        let n = 0
+        features.forEach(p => {
+            if (n % 6 == 0) panel += '<tr>'
+            panel += `<td>
+            <img src="${p.data.features.icon}" cmd="${p.data.features.cmds[0]}">
+            <div class="title">${p.data.features.explain}</div>
+            </td>`
+            n += 1
+            if (n % 6 == 0) panel +='</tr>'
+        });
+        $('#quickpanel').html(panel + '</table>').show()
     }
 
     let checkSharedQc = async () => {
@@ -1039,8 +1089,33 @@
                 break;
             case 'clear': clearAll();
                 break;
+            case 'addToPanel': addToPanel()
         }
     })
+
+    let addToPanel = () => {
+        let tag = $('.currentTag').text()
+        if (tag == '默认' || tag == '未分类') return quickcommand.showMessageBox('当前标签不支持', 'error')
+        let code = `panel_${encodeURI(tag)}`
+        if (!utoolsFull.removeFeature(code)) {
+            let features = getPanelFeatures(tag)
+            if (features.length == 0) return quickcommand.showMessageBox('快捷面板仅支持匹配模式为关键词的命令，当前标签不存在该类型命令或者该命令未启用', 'error', 8000)
+            let feature = {
+                code: code,
+                explain: `${tag}面板`,
+                cmds: [tag],
+                icon: "logo/quickpanel.png"
+            }
+            utoolsFull.setFeature(feature);
+            $('#addToPanel').css({ "filter": "none" })
+            $('.currentTag').addClass('panelTag')
+            quickcommand.showMessageBox(`已为当前标签启动快捷面板<br>utools 中直接输入<b style="color: #b80233;display: contents;">${tag}</b>即可进入`, 'success', 5000)
+        } else {
+            $('#addToPanel').attr("style", "")
+            $('.currentTag').removeClass('panelTag')
+            quickcommand.showMessageBox("已取消当前标签的快捷面板")
+        }
+    }
 
     let editCurrentCommand = async (data, animate = true) => {
         let features = data.features || {}
@@ -1053,6 +1128,7 @@
             fromShare: data.fromShare
         }
         if (data.tags && data.tags.includes("默认")) readonly = true
+        if($('#options').is(":empty")) showOptions()
         showCustomize(readonly);
         $('#customize').data('extraInfo', extraInfo)
         data.tags && $('#tags').val(data.tags).trigger('change')
@@ -1802,14 +1878,14 @@
             <input type="text" id="customarg" placeholder="解释器参数">
             <input type="text" id="customext" placeholder="后缀,不含.">
         </span>
-        <span id="runCode" class="footBtn robot">运  行</span>
-        <span id="charset" class="footBtn robot">编码设置</span>
+        <span id="runCode" class="robot">运  行</span>
+        <span id="charset" class="robot">编码设置</span>
         <input type="text" id="scptarg" placeholder="脚本参数">
         <span class="quickactions">
-            <span id="beautifyCode" class="footBtn robot">格式化</span>
-            <!--<span id="addAction" class="footBtn robot">﹢动作</span>
-            <span id="addKey" class="footBtn robot">﹢按键</span>-->
-            <span id="showHelp" class="footBtn robot">？文档</span>
+            <span id="beautifyCode" class="robot">格式化</span>
+            <!--<span id="addAction" class="robot">﹢动作</span>
+            <span id="addKey" class="robot">﹢按键</span>-->
+            <span id="showHelp" class="robot">？文档</span>
         </span>
         <textarea id="cmd" placeholder="可以直接拖放脚本文件至此处, 支持VSCode快捷键\nCtrl+B 运行\nCtrl+F 搜索\nAlt+Enter 全屏\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
         </div>
@@ -1818,7 +1894,7 @@
         createEditor()
         $(".CodeMirror").addClass('CodeMirror-coderunner')
         $("#customize").css({ top: '0px', padding: '0px' });
-        $("span.customscript > input").css({"height": "30px"})
+        $("span.customscript > input").css({"height": "26px"})
         var history = getDB(CFG_PREFIX + 'codeHistory')
         createProgramSelect2(140, true)
         if (file) {
@@ -1935,6 +2011,11 @@
             if ($('.disabled').length == 2) quickcommand.showMessageBox('至少保留一个平台', 'error')
             else $(this).addClass('disabled')
         }
+    })
+
+    $("#quickpanel").on('click', 'img', function () {
+        let cmd = $(this).attr('cmd')
+        utools.redirect(cmd)
     })
 
     Mousetrap.bind('ctrl+s', () => {
