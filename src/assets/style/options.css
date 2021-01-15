@@ -23,12 +23,6 @@ body {
     user-select: none;
 }
 
-#options * {
-    font-size: 15px;
-    font-family: consolas, monaco, "微软雅黑";
-    box-sizing: border-box;
-}
-
 #options .switch-btn {
     position: relative;
     display: inline-block;
@@ -58,8 +52,8 @@ body {
     border-radius: inherit;
     color: #fff;
     display: block;
-    font-size: 15px;
-    width: 60px;
+    font-size: 12px;
+    width: 57px;
     height: inherit;
     position: relative;
     text-transform: uppercase;
@@ -118,7 +112,7 @@ body {
 #options .toggle-btn {
     background: linear-gradient(#eee, #fafafa);
     border-radius: 5px;
-    height: 28px;
+    height: 30px;
     left: 1px;
     position: absolute;
     top: 1px;
@@ -252,6 +246,7 @@ body {
     line-height: 28px;
     width: auto;
     border-radius: 4px;
+    margin: 0px 5px;
 }
 
 #options #customize #charset.robot {
@@ -285,14 +280,19 @@ body {
 
 #options .footBtn {
     background: #02b340;
-    color: white;
-    padding: 2px 5px;
+    color: rgba(255, 255, 255, 0);
+    padding: 1px 5px;
     margin: 0px 5px;
     height: 25px;
     width: 25px;
     border-radius: 50%;
     cursor: pointer;
+    box-sizing: border-box;
     overflow: hidden;
+}
+
+#options #addToPanel.footBtn{
+    filter: grayscale(1);
 }
 
 #options .footBtn img{
@@ -307,7 +307,8 @@ body {
 
 #options .footBtn:hover {
     background: #068506;
-    height: 110px;
+    color: white;
+    height: 105px;
     border-radius: 4px;
     transition: 0.2s;
 }
@@ -354,6 +355,10 @@ body {
 
 #options .sidebar .currentTag {
     background-color: #c7c5c5;
+}
+
+#options .sidebar .panelTag {
+    color: #02b340;
 }
 
 /* #options td span {
@@ -455,8 +460,9 @@ body {
     border-top: 0px;
     border-left: 0px;
     border-right: 0px;
-    font-size: 15px;
-    margin-left: 10px;
+    font-size: 14px;
+    margin-left: 5px;
+    color: #444444;
     padding-left: 8px;
     outline: none;
 }
@@ -481,12 +487,12 @@ body {
 }
 
 #options #customize input#scptarg {
-    width: 150px;
+    width: 140px;
     float: right;
     background: white;
     outline: none;
     border: 2px solid #3085d6;
-    height: 28px;
+    height: 20px;
     border-radius: 4px;
     padding: 2px 5px;
     margin: 0px 5px;
@@ -968,4 +974,38 @@ li.CodeMirror-hint {
 
 .swal2-input {
     text-align: center;
+}
+
+#quickpanel img {
+    max-width: 60px;
+    max-height: 60px;
+    padding: 20px 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    user-select: none;
+}
+
+#quickpanel img:hover {
+    box-shadow: 0px 3px 3px 0px #BDBDBD;
+    transition: 0.5s;
+}
+
+#quickpanel {
+    padding: 10px 20px;
+    text-align: center;
+}
+
+#quickpanel .title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 120px;
+    user-select: none;
+    color: #757575;
+}
+
+#quickpanel .widebutton {
+    width: 80%;
+    height: 3rem;
+    margin: 5px
 }
