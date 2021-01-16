@@ -63,6 +63,7 @@ mainScriptTag.onload = mainScriptTag.onreadystatechange = function () {
         modes.concat(addons).forEach(s => {
             var scriptTag = document.createElement('script');
             scriptTag.setAttribute('src', s);
+            scriptTag.setAttribute('type', 'module');
             document.head.appendChild(scriptTag);      
         })
     }
