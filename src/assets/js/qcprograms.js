@@ -1,5 +1,5 @@
 // 环境
-export const programs = {
+export default {
     shell: {
         bin: 'bash',
         argv: '',
