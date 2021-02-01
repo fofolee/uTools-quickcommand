@@ -152,8 +152,7 @@ let setCommandCharset = program => {
 
 let hasCustomIcon = () => {
     var src = $("#icon").attr('src');
-    var iconame = $("#iconame").val();
-    return /data:image\/\w+;base64,/.test(src) || iconame
+    return /data:image\/\w+;base64,/.test(src)
 }
 
 // 获取特殊变量
@@ -166,20 +165,40 @@ let getSpecialVars = () => {
     localStorage['specialVars'] = specialVars
 }
 
+let showChangeIconWindow = () => {
+    Swal.fire({
+        title: "设置图标",
+        onBeforeOpen: () => {
+            iconpicker.getIcons8Icon('#networkImg', src => {
+                $("#icon").attr('src', src)
+            })
+            iconpicker.getLocalIcon('#localImg', src => {
+                $("#icon").attr('src', src)
+                Swal.close()
+            })
+            iconpicker.getRemoteIcon('#networkImgUrl', src => {
+                $("#icon").attr('src', src)
+            }) 
+        },
+        html: qctemplates.command.setIcon
+    })
+}
+
 // **************************************************
 // **********************编辑器***********************
 // **************************************************
 // 编辑器
-let createEditor = () => {
-    window.editor = CodeMirror.fromTextArea(document.getElementById("cmd"), {
-        lineNumbers: true,
+let createEditor = (selector = "#cmd") => {
+    let opts = {
         matchBrackets: true,
         // lineWrapping: true,
         autoCloseBrackets: true,
         styleActiveLine: true,
         keyMap: "sublime",
         theme: utools.isDarkColors() ? 'material-darker' : "mdn-like",
-        extraKeys: {
+    }
+    if ($("#customize").is(":parent")) {
+        opts.extraKeys = {
             "Alt-Enter": () => {
                 $('.CodeMirror').hasClass('CodeMirror-fullscreen') &&
                     $('.CodeMirror').removeClass('CodeMirror-fullscreen') ||
@@ -201,7 +220,9 @@ let createEditor = () => {
             "Alt-Down": "swapLineDown",
             "Shift-Alt-Down": "duplicateLine"
         }
-    });
+        opts.lineNumbers = true
+    }
+    window.editor = CodeMirror.fromTextArea(document.querySelector(selector), opts);
     window.editor.on("change", showHint);
     window.editor.setOption("mode", 'javascript');
 }
@@ -351,7 +372,7 @@ $("#options").on('click', '#addAction', function() {
 
 // 选择图标
 $("#options").on('click', '#icon', function() {
-    iconpicker.showChangeIconWindow()
+    showChangeIconWindow()
 })
 
 // 格式化
@@ -399,13 +420,8 @@ $("#options").on('change', '#customext', function() {
 })
 
 // 平台按钮
-$("#options").on('click', '.platform', function() {
-    if ($(this).hasClass('disabled')) {
-        $(this).removeClass('disabled')
-    } else {
-        if ($('.disabled').length == 2) quickcommand.showMessageBox('至少保留一个平台', 'error')
-        else $(this).addClass('disabled')
-    }
+$("#options").on('click', '.platform', function () {
+    $(this).hasClass('disabled') ? $(this).removeClass('disabled') : $('.disabled').length != 2 && $(this).addClass('disabled')
 })
 
 // **************************************************
@@ -488,7 +504,7 @@ let SaveCurrentCommand = async () => {
         }
         // platform
         var platform = []
-        $('.platform').not('.disabled').each(function() { platform.push($(this).attr('id')) })
+        $('.platform').not('.disabled').each((x, y) => platform.push(y.id))
         // 添加特性
         var extraInfo = $('#customize').data('extraInfo')
         var pushData = {
@@ -521,7 +537,7 @@ let SaveCurrentCommand = async () => {
                 "ext": $('#customext').val()
             }
         }
-        UTOOLS.putDB(pushData, UTOOLS.QC_PREFIX + code);
+        UTOOLS.putDB(pushData, UTOOLS.DBPRE.QC + code);
         $("#customize").animate({ top: '100%' }, () => {
             $("#customize").empty()
             if ($('#customize').data('returnShare')) {
@@ -744,7 +760,7 @@ let showCodeEditor = file => {
     $("span.customscript > input").css({
         "height": "26px"
     })
-    var history = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'codeHistory')
+    var history = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'codeHistory')
     createProgramSelect2(140, true)
     if (file) {
         var fileinfo = getFileInfo({
@@ -884,6 +900,7 @@ let typeCheck = () => {
 export default {
     showCommandEditor,
     showCodeEditor,
+    createEditor,
     editCurrentCommand,
     getCommandType,
     setCommandCharset

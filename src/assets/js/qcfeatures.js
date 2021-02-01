@@ -4,6 +4,7 @@ import qccommands from "./qccommands.js"
 import qcparser from "./qcparser.js"
 import qcprograms from "./qcprograms.js"
 import qctemplates from "./qctemplates.js"
+import qcpanel from "./qcpanel.js"
 
 // **************************************************
 // *********************功能列表**********************
@@ -38,10 +39,11 @@ let showFeatureList = (tag = "默认") => {
         `<li ${tag == '未分类' ? 'class="currentTag"' : ''}>未分类</li></div>`
     var footer = qctemplates.featurelist.footer
     $("#options").append(sidebar + featureList + footer)
-    if (tag != '默认' || tag != '未分类') {
-        if (quickpanels.includes(tag)) $('#addToPanel').css({
-            "filter": "none"
-        })
+    if (tag == '默认' || tag == '未分类') {
+        $('#addToPanel').css({
+            "filter": "grayscale(1)",
+            "cursor": "not-allowed"
+        }).prop('disabled', true)
     }
     checkSharedQc()
 }
@@ -49,7 +51,7 @@ let showFeatureList = (tag = "默认") => {
 // 获取所有 qc，等效于 1.6 版本 getDB('customFts')
 let getAllQuickCommands = () => {
     let allQcs = {}
-    UTOOLS.getDocs(UTOOLS.QC_PREFIX).forEach(x => allQcs[x.data.features.code] = x.data)
+    UTOOLS.getDocs(UTOOLS.DBPRE.QC).forEach(x => allQcs[x.data.features.code] = x.data)
     return allQcs
 }
 
@@ -58,7 +60,7 @@ let getCurrentFts = () => {
     let features = utools.getFeatures()
     let currentFts = []
     let quickpanels = []
-    features.forEach(x => x.code.slice(0, 6) == 'panel_' ? quickpanels.push(decodeURI(x.code.slice(6))) : currentFts.push(x))
+    features.forEach(x => x.code.slice(0, 6) == 'panel_' ? quickpanels.push(hexDecode(x.code.slice(6))) : currentFts.push(x))
     return {
         currentFts: currentFts,
         quickpanels: quickpanels,
@@ -165,20 +167,25 @@ $("#options").on('change', 'input[type=checkbox]', function() {
 // 编辑
 $("#options").on('click', '.editBtn', function() {
     let code = $(this).parents('tr').attr('id')
-    let data = UTOOLS.getDB(UTOOLS.QC_PREFIX + code)
+    let data = UTOOLS.getDB(UTOOLS.DBPRE.QC + code)
     qccommands.editCurrentCommand(data)
 })
 
 // 删除
-$("#options").on('click', '.delBtn', function() {
+$("#options").on('click', '.delBtn', function () {
     quickcommand.showConfirmBox('删除这个快捷命令').then(x => {
         if (!x) return
         var code = $(this).parents('tr').attr('id')
-        utools.copyText(JSON.stringify(UTOOLS.getDB(UTOOLS.QC_PREFIX + code)))
-        UTOOLS.delDB(UTOOLS.QC_PREFIX + code)
+        utools.copyText(JSON.stringify(UTOOLS.getDB(UTOOLS.DBPRE.QC + code)))
+        UTOOLS.delDB(UTOOLS.DBPRE.QC + code)
         UTOOLS.whole.removeFeature(code);
         var currentTag = $('.currentTag').text()
-        if ($('#featureList tr').length == 1) currentTag = "默认"
+        // 当前标签下最后一个命令的处理
+        if ($('#featureList tr').length == 1) {
+            UTOOLS.delDB(UTOOLS.DBPRE.PAN + hexEncode(currentTag))
+            UTOOLS.whole.removeFeature("panel_" + hexEncode(currentTag))
+            currentTag = "默认"
+        }
         showFeatureList(currentTag);
         quickcommand.showMessageBox('删除成功，为防止误操作，已将删除的命令复制到剪贴板')
     })
@@ -187,7 +194,7 @@ $("#options").on('click', '.delBtn', function() {
 // 导出
 $("#options").on('click', '.exportBtn', async function() {
     var code = $(this).parents('tr').attr('id')
-    var jsonQc = UTOOLS.getDB(UTOOLS.QC_PREFIX + code)
+    var jsonQc = UTOOLS.getDB(UTOOLS.DBPRE.QC + code)
     var stringifyQc = JSON.stringify(jsonQc, null, 4)
     var choise = await quickcommand.showButtonBox(createShareMenu(jsonQc))
     switch (choise.text) {
@@ -230,7 +237,7 @@ $("#options").on('click', '.exportBtn', async function() {
 // 分享菜单
 let createShareMenu = jsonQc => {
     let menu = ['复制到剪贴板', '导出到文件', '', '设置 Token']
-    let extraInfo = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'extraInfo')
+    let extraInfo = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'extraInfo')
     if (jsonQc.authorId) {
         if (jsonQc.authorId == extraInfo.authorId) menu[2] = '更新分享'
         else if (jsonQc.fromShare) menu[2] = '评论'
@@ -254,7 +261,7 @@ let setYuQueToken = async () => {
             authorId: res.data.data.account_id,
             authorName: res.data.data.name
         }
-        UTOOLS.putDB(extraInfo, UTOOLS.CFG_PREFIX + 'extraInfo')
+        UTOOLS.putDB(extraInfo, UTOOLS.DBPRE.CFG + 'extraInfo')
         quickcommand.showMessageBox("设置成功~")
     } catch (e) {
         quickcommand.showMessageBox('Token 校验失败', "error")
@@ -310,7 +317,7 @@ $("#options").on('click', '.footBtn', async function() {
 
 // 检查分享中心更新
 let checkSharedQc = async () => {
-    let localShares = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'sharedQcCounts')[window.processPlatform] || 0
+    let localShares = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'sharedQcCounts')[window.processPlatform] || 0
     let remoteShares = await qcshare.getDocsFromYuQue()
     if (!remoteShares) return
     let updates = remoteShares.length - localShares
@@ -326,41 +333,7 @@ let checkSharedQc = async () => {
 // 快捷面板
 let addToPanel = () => {
     let tag = $('.currentTag').text()
-    if (tag == '默认' || tag == '未分类') return quickcommand.showMessageBox('当前标签不支持', 'error')
-    let code = `panel_${encodeURI(tag)}`
-    if (!UTOOLS.whole.removeFeature(code)) {
-        let features = getPanelFeatures(tag)
-        if (features.length == 0) return quickcommand.showMessageBox('快捷面板仅支持匹配模式为关键词的命令，当前标签不存在该类型命令或者该命令未启用', 'error', 8000)
-        let feature = {
-            code: code,
-            explain: `${tag}面板`,
-            cmds: [tag],
-            icon: "logo/quickpanel.png"
-        }
-        UTOOLS.whole.setFeature(feature);
-        $('#addToPanel').css({
-            "filter": "none"
-        })
-        $('.currentTag').addClass('panelTag')
-        quickcommand.showMessageBox(`已为当前标签启动快捷面板<br>utools 中直接输入<b style="color: #b80233;display: contents;">${tag}</b>即可进入`, 'success', 5000)
-    } else {
-        $('#addToPanel').attr("style", "")
-        $('.currentTag').removeClass('panelTag')
-        quickcommand.showMessageBox("已取消当前标签的快捷面板")
-    }
-}
-
-// 获取可添加至面板的功能
-let getPanelFeatures = tag => {
-    let activedCode = utools.getFeatures().map(x => x.code)
-    let features = UTOOLS.whole.db.allDocs('qc_key_').filter(x => {
-        if (!x.data.tags) return false
-        if (!x.data.tags.includes(tag)) return false
-        if (x.data.features.platform && !x.data.features.platform.includes(window.processPlatform)) return false
-        if (!activedCode.includes(x.data.features.code)) return false
-        return true
-    })
-    return features
+    qcpanel.panelConf(tag)
 }
 
 // 全部导出
@@ -387,7 +360,7 @@ let clearAll = () => {
     quickcommand.showConfirmBox('将会清空所有自定义命令，请确认！').then(x => {
         if (!x) return
         exportAll(true)
-        UTOOLS.getDocs(UTOOLS.QC_PREFIX).map(x => x._id).forEach(y => UTOOLS.delDB(y))
+        UTOOLS.getDocs(UTOOLS.DBPRE.QC).map(x => x._id).forEach(y => UTOOLS.delDB(y))
         importDefaultCommands();
         clearAllFeatures();
         showFeatureList();
@@ -436,7 +409,7 @@ let importCommand = async file => {
     // 单个命令导入
     if (pushData.single) {
         var code = pushData.qc.features.code;
-        UTOOLS.putDB(pushData.qc, UTOOLS.QC_PREFIX + code);
+        UTOOLS.putDB(pushData.qc, UTOOLS.DBPRE.QC + code);
         return {
             tags: pushData.qc.tags,
             code: code
@@ -444,7 +417,7 @@ let importCommand = async file => {
         // 多个命令导入
     } else {
         for (var code of Object.keys(pushData.qc)) {
-            UTOOLS.putDB(pushData.qc[code], UTOOLS.QC_PREFIX + code);
+            UTOOLS.putDB(pushData.qc[code], UTOOLS.DBPRE.QC + code);
         }
         return true
     }
@@ -479,5 +452,4 @@ $("#options").on('click', '.sidebar li', function() {
 export default {
     showFeatureList,
     locateToFeature,
-    getPanelFeatures
 }

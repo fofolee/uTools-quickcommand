@@ -35,7 +35,7 @@ import qcparser from "./qcparser.js"
                     customarg: $('#customarg').val(),
                     customext: $('#customext').val()
                 }
-                UTOOLS.putDB({ cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, UTOOLS.CFG_PREFIX + 'codeHistory')
+                UTOOLS.putDB({ cmd: cmd, program: program, scptarg: scptarg, customoptions: customoptions }, UTOOLS.DBPRE.CFG + 'codeHistory')
             }
             // 初始化
             $("#options, #out, #quickpanel").empty()
@@ -65,14 +65,13 @@ import qcparser from "./qcparser.js"
             qccommands.editCurrentCommand(qc, false)
         } else if (code.slice(0, 6) == 'panel_') {
             utools.setExpendHeight(600)
-            let features = qcfeatures.getPanelFeatures(payload)
-            qcpanel.showPanel(features)
+            qcpanel.showPanel(hexDecode(code.slice(6)))
         } else {
             // console.log(new Date().getTime() - window.startTime);
             $('body').css({ overflow: 'auto' })
             utools.setExpendHeight(0);
             $("#options, #quickpanel").hide();
-            var db = UTOOLS.getDB(UTOOLS.QC_PREFIX + code);
+            var db = UTOOLS.getDB(UTOOLS.DBPRE.QC + code);
             var cmd = db.cmd;
             var option
             if (db.program == "custom") {

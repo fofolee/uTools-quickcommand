@@ -23,7 +23,7 @@ body {
     user-select: none;
 }
 
-#options .switch-btn {
+.switch-btn {
     position: relative;
     display: inline-block;
     vertical-align: top;
@@ -34,19 +34,19 @@ body {
     zoom: 0.7;
 }
 
-#options .switch-btn:hover {
+.switch-btn:hover {
     filter: drop-shadow(0 0 5px black);
     transition: 0.2s;
 }
 
-#options .checked-switch {
+.checked-switch {
     position: absolute;
     top: 0;
     left: 0;
     opacity: 0;
 }
 
-#options .text-switch {
+.text-switch {
     background-color: #cccccc;
     border: 1px solid #dddddd;
     border-radius: inherit;
@@ -59,8 +59,8 @@ body {
     text-transform: uppercase;
 }
 
-#options .text-switch:before,
-#options .text-switch:after {
+.text-switch:before,
+.text-switch:after {
     position: absolute;
     top: 50%;
     margin-top: -.5em;
@@ -71,45 +71,45 @@ body {
     transition: inherit;
 }
 
-#options .text-switch:before {
+.text-switch:before {
     content: 'OF';
     right: 6px;
 }
 
-#options .text-switch:after {
+.text-switch:after {
     content: 'ON';
     left: 6px;
     color: #FFFFFF;
     opacity: 0;
 }
 
-#options .checked-switch:checked~.text-switch {
+.checked-switch:checked~.text-switch {
     background-color: #00af2c;
     border: 1px solid #068506;
 }
 
-#options .checked-switch:disabled~.text-switch {
+.checked-switch:disabled~.text-switch {
     cursor: no-drop;
 }
 
-#options .checked-switch:disabled~.text-switch~.toggle-btn {
+.checked-switch:disabled~.text-switch~.toggle-btn {
     cursor: no-drop;
 }
 
-#options .checked-switch:disabled~.text-switch:before {
+.checked-switch:disabled~.text-switch:before {
     content: '▬';
     right: 11px;
 }
 
-#options .checked-switch:checked~.text-switch:before {
+.checked-switch:checked~.text-switch:before {
     opacity: 0;
 }
 
-#options .checked-switch:checked~.text-switch:after {
+.checked-switch:checked~.text-switch:after {
     opacity: 1;
 }
 
-#options .toggle-btn {
+.toggle-btn {
     background: linear-gradient(#eee, #fafafa);
     border-radius: 5px;
     height: 30px;
@@ -117,26 +117,27 @@ body {
     position: absolute;
     top: 1px;
     width: 28px;
+    margin: 1px;
 }
 
-#options .checked-switch:checked~.toggle-btn {
+.checked-switch:checked~.toggle-btn {
     left: 30px;
 }
 
-#options .text-switch,
-#options .toggle-btn {
+.text-switch,
+.toggle-btn {
     transition: All 0.3s ease;
     -webkit-transition: All 0.3s ease;
     -moz-transition: All 0.3s ease;
     -o-transition: All 0.3s ease;
 }
 
-#options .no-radius,
-#options .no-radius .toggle-btn {
+.no-radius,
+.no-radius .toggle-btn {
     border-radius: 0;
 }
 
-#options .circle-style .toggle-btn::before {
+.circle-style .toggle-btn::before {
     background: linear-gradient(#dedede, #cacaca);
     border-radius: 50%;
     content: "";
@@ -291,11 +292,7 @@ body {
     overflow: hidden;
 }
 
-#options #addToPanel.footBtn{
-    filter: grayscale(1);
-}
-
-#options .footBtn img{
+#options .footBtn img {
     width: 15px;
     vertical-align: middle;
 }
@@ -372,6 +369,7 @@ body {
 
 #options span.Btn img {
     height: 20px;
+    vertical-align: middle;
 }
 
 #options span.Btn img:hover {
@@ -481,7 +479,8 @@ body {
     transition: 0.2s;
 }
 
-#scriptCode, #outputCode {
+#scriptCode,
+#outputCode {
     width: 75%;
     margin: 0.5em 0
 }
@@ -575,12 +574,6 @@ input::-webkit-input-placeholder {
     font-size: 15px
 }
 
-#options #customize input#iconame {
-    width: 35%;
-    cursor: pointer;
-    display: none;
-}
-
 #options #customize #icon {
     float: right;
     max-width: 40px;
@@ -588,7 +581,8 @@ input::-webkit-input-placeholder {
     cursor: pointer;
 }
 
-#options #customize #icon:hover {
+#options #customize #icon:hover,
+#panelConf #icon:hover {
     transform: rotate(360deg);
     transition: 0.3s;
 }
@@ -610,21 +604,30 @@ input::-webkit-input-placeholder {
     transition: 0.5s;
 }
 
-#options #customize .platform {
-    max-width: 26px;
+#options #customize .platform,
+#panelConf .platform {
+    max-width: 25px;
+    vertical-align: middle;
     cursor: pointer;
 }
 
-#options #customize .platform:hover {
+.platform:visited{
+    filter: grayscale();
+}
+
+#options #customize .platform:hover,
+#panelConf .platform:hover {
     box-shadow: 0px 1px 1px 0px #3085d6;
     transition: 0.1s;
 }
 
-#options #customize .disabled {
+#options #customize .disabled,
+#panelConf .disabled{
     filter: grayscale();
 }
 
-#options #customize .button {
+#options #customize .button,
+.swal2-shown .button {
     width: 150px;
     height: 30px;
     border-width: 0px;
@@ -633,37 +636,52 @@ input::-webkit-input-placeholder {
     outline: none;
     color: white;
     width: 60px;
-}
-
-#options #customize .button.cmdBtn {
-    float: right;
     margin: 0px 10px;
 }
 
-#options #customize .button.cancel {
+#options #customize .button.cmdBtn{
+    float: right;
+}
+
+#options #customize .button.cancel,
+.swal2-shown .button.cancel {
     background: #808080c9;
 }
 
-#options #customize .button.cancel:hover {
+#options #customize .button.cancel:hover,
+.swal2-shown .button.cancel:hover {
     background: #a5a2a2c9;
     transition: 0.5s;
 }
 
-#options #customize .button.save {
+#options #customize .button.save,
+.swal2-shown .button.enable {
     background: #1E90FF;
 }
 
-#options #customize .button.save:hover {
+#options #customize .button.save:hover,
+.swal2-shown .button.enable:hover {
     background: #5599FF;
     transition: 0.5s;
 }
 
-#options #customize .button.run {
+#options #customize .button.run,
+.swal2-shown .button.modify {
     background: #15a86bc9;
 }
 
-#options #customize .button.run:hover {
+#options #customize .button.run:hover,
+.swal2-shown .button.modify:hover {
     background: #27c583c9;
+    transition: 0.5s;
+}
+
+.swal2-shown .button.disable {
+    background: #d33;
+}
+
+.swal2-shown .button.disable:hover {
+    background:  #f54a4a;
     transition: 0.5s;
 }
 
@@ -824,6 +842,10 @@ li.CodeMirror-hint {
     /* line-height: 50px; */
 }
 
+.select2-container .select2-search__field {
+    outline: none;
+}
+
 #quickselect .select2-results__option .title {
     font-size: 14px;
     line-height: 20px;
@@ -869,17 +891,16 @@ li.CodeMirror-hint {
     z-index: 1070;
 }
 
-.swal2-content .select2-container .select2-selection--single,
-.swal2-content .select2-container .select2-selection--single .select2-selection__arrow {
+#iconpicker .select2-container .select2-selection--single,
+#iconpicker .select2-container .select2-selection--single .select2-selection__arrow {
     height: 3rem;
 }
 
-
-.swal2-content .select2-container .select2-selection--single .select2-selection__rendered {
+#iconpicker .select2-container .select2-selection--single .select2-selection__rendered {
     line-height: 3rem;
 }
 
-.swal2-shown img.networkImg {
+#iconpicker img.networkImg {
     vertical-align: middle;
     max-width: 35px;
 }
@@ -977,22 +998,31 @@ li.CodeMirror-hint {
 }
 
 #quickpanel img {
-    max-width: 60px;
-    max-height: 60px;
-    padding: 20px 30px;
+    width: 60px;
+    height: 60px;
+    margin: 15px 25px;
     border-radius: 50%;
     cursor: pointer;
+    background: linear-gradient(to bottom, #ECE9E6, #FFFFFF);
     user-select: none;
 }
 
 #quickpanel img:hover {
-    box-shadow: 0px 3px 3px 0px #BDBDBD;
     transition: 0.5s;
+    box-shadow: 0px 1px 4px 1px #0000007a;
 }
 
 #quickpanel {
     padding: 10px 20px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    color: #888787;
     text-align: center;
+    /* background-size: 100%;
+    background-image: url("../../img/bg.jpg"); */
 }
 
 #quickpanel .title {
@@ -1001,11 +1031,69 @@ li.CodeMirror-hint {
     white-space: nowrap;
     width: 120px;
     user-select: none;
-    color: #757575;
 }
 
 #quickpanel .widebutton {
     width: 80%;
     height: 3rem;
     margin: 5px
+}
+
+#panelConf {
+    text-align: left;
+}
+
+#panelConf input,
+#panelConf .select2-selection--single {
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 1px solid #dbdbdb;
+    height: 28px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+#panelConf .select2-selection--single {
+    border-radius: 0;
+    padding-bottom: 3px;
+}
+
+#panelConf #panelWord {
+    width: 160px
+}
+
+#panelConf #panelDesc {
+    width: 240px;
+}
+
+#panelConf #networkImgUrl {
+    width: 260px;
+}
+
+#panelConf #icon {
+    max-width: 30px;
+    max-height: 30px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+#panelConf .CodeMirror {
+    font-size: 14px;
+    font-family: "Monaco", "consolas";
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    width: auto;
+    height: 80px;
+    margin-top: 10px;
+}
+
+#panelConf img.networkImg,
+.select2-results img.networkImg{
+    vertical-align: middle;
+    max-width: 25px;
+}
+
+.swal2-shown .CodeMirror-hints {
+    z-index: 1070;
 }

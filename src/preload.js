@@ -48,16 +48,16 @@ const shortCodes = [
     }
 ]
 
+ctlKey = utools.isMacOs() ? 'command' : 'control'
+
 quickcommand = {
     // 模拟复制操作
     simulateCopy: function() {
-        var ctlKey = utools.isMacOs() ? 'command' : 'control';
         utools.simulateKeyboardTap('c', ctlKey);
     },
 
     // 模拟粘贴操作
     simulatePaste: function() {
-        var ctlKey = utools.isMacOs() ? 'command' : 'control';
         utools.simulateKeyboardTap('v', ctlKey);
     },
 
@@ -658,9 +658,12 @@ getNodeJsCommand = () => {
     return obj
 }
 
-htmlEncode = (value, raw) => {
+htmlEncode = (value, raw=true) => {
     return raw ? String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;") : value
 }
+
+hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
+hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
 
 py_beautify = (code, cb) => {
     var file = getQuickCommandScriptFile('py')

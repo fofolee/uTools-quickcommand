@@ -4,11 +4,11 @@ let featurelist = {
         <div id="clear" class="footBtn danger"><img src="img/clear.svg"><span>清除数据</span></div>
         <div id="disableAll" class="footBtn danger"><img src="img/disable.svg"><span>禁用本页</span></div>
         <div id="enableAll" class="footBtn"><img src="img/enable.svg"><span>启用本页</span></div>
-        <div id="exportAll" class="footBtn"><img src="img/exportAll.svg"><span>全部导出</span></div>
         <div id="viewHelps" class="footBtn"><img src="img/help.svg"><span>查看帮助</span></div>
         <div id="getShares" class="footBtn"><img src="img/share.svg"><span>分享中心</span></div>
-        <div id="addToPanel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
+        <div id="exportAll" class="footBtn"><img src="img/exportAll.svg"><span>全部导出</span></div>
         <div id="import" class="footBtn"><img src="img/import.svg"><span>导入命令</span></div>
+        <div id="addToPanel" class="footBtn"><img src="img/panel.svg"><span>快捷面板</span></div>
         <div id="add" class="footBtn"><img src="img/add.svg"><span>新建命令</span></div>
     </div>`
 }
@@ -30,7 +30,6 @@ let command = {
             </select>
             <span class="word">标&#12288;签</span>
             <select id="tags" multiple="multiple"></select>
-            <input type="text" readonly id="iconame" placeholder="更改图标">
         </p>
         <p class="varoutput">
             <span class="word">变&#12288;量</span>
@@ -130,12 +129,52 @@ let command = {
     <input type="checkbox" checked id="isString" style="margin-left: 60%;">加引号`,
 
     setIcon: `
-    <button id="localImg" class="swal2-confirm swal2-styled" style="width: 80%; height: 3rem; margin: 1em">选择本地图标</button>
-    <select id="networkImg"></select>
-    <input id="networkImgUrl" placeholder="使用网络图片" class="swal2-input" style="width: 80%; height: 3rem; text-align: center">`
+    <div id="iconpicker">
+        <button id="localImg" class="swal2-confirm swal2-styled" style="width: 80%; height: 3rem; margin: 1em">选择本地图标</button>
+        <select style="width: 80%" id="networkImg"></select>
+        <input id="networkImgUrl" placeholder="使用网络图片" class="swal2-input" style="width: 80%; height: 3rem; text-align: center">
+    </div>`
+}
+
+let panel = {
+    conf: `
+    <div id="panelConf">
+        <p>
+            关键字： <input id="panelWord" placeholder="多个关键字逗号隔开">
+            描述： <input id="panelDesc" placeholder="快捷面板的功能描述">
+        </p>
+        <p>
+            图&#12288;标：
+            <select style="width: 160px" id="networkImg"></select>
+            <input id="networkImgUrl" placeholder="填入网络地址或点击右边选择本地图标">
+            <img id="icon" src="logo/quickpanel.png">
+        </p>
+        <p>
+            平&#12288;台：
+            <span style="margin-right: 75px;"><img id="win32" class="platform" src="./img/win32.svg">
+            <img id="darwin" class="platform" src="./img/darwin.svg">
+            <img id="linux" class="platform" src="./img/linux.svg"></span>
+            自动分离：<label class="switch-btn">
+            <input class="checked-switch" type="checkbox" checked>
+            <span class="text-switch"></span>
+            <span class="toggle-btn"></span>
+        </label>
+        </p>
+        <p style="display:none">
+            搜索框：<textarea id="cmd" placeholder="激活面板的搜索框，并执行命令, 留空则不使用搜索框。\n和 quickcommand 环境下使用 {{subinput}} 的方法一样。\n如 visit('https://www.baidu.com/s?wd={{subinput}}')"></textarea>
+        </p>
+        <p style="text-align: center"><br>
+            <button class="button enable">启用</button>
+            <button class="button modify">修改</button>
+            <button class="button disable">禁用</button>
+            <button class="button cancel">取消</button>
+        </p>
+    </div>
+    `
 }
 
 export default {
     featurelist,
-    command
+    command,
+    panel
 }

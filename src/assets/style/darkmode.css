@@ -53,7 +53,8 @@
 
 #options #customize input,
 #options #customize select,
-#options #customize input#scptarg {
+#options #customize input#scptarg,
+#panelConf input {
     background: #303133;
     color: #e4e4e4;
 }
@@ -63,11 +64,13 @@
     border-bottom: 1px solid #696666;
 }
 
-#options #customize .CodeMirror {
+#options #customize .CodeMirror,
+#panelConf .CodeMirror {
     border: 1px solid #676767
 }
 
-#options #customize .CodeMirror-focused {
+#options #customize .CodeMirror-focused,
+#panelConf .CodeMirror-focused {
     border: 1px solid #676767 !important;
     box-shadow: 0px 0px 2px 0px #839ba8;
 }
@@ -79,21 +82,27 @@
 
 /*select2*/
 #options #customize .select2-selection--single,
-#options #customize .select2-selection--multiple {
+#options #customize .select2-selection--multiple,
+.swal2-container .select2-selection--single,
+.swal2-container .select2-selection--multiple {
     border-bottom: 1px solid #696666;
     background: #303133;
     color: #e4e4e4;
 }
 
-#options #customize .select2-selection__rendered {
+#options #customize .select2-selection__rendered,
+.swal2-container .select2-selection__rendered {
     color: #e4e4e4;
 }
 
-#options #customize .select2-selection__choice {
+#options #customize .select2-selection__choice,
+.swal2-container .select2-selection__choice {
     border: 1px solid #717171
 }
 
-#options #customize .select2-dropdown {
+#options #customize .select2-dropdown,
+.select2-container .select2-dropdown,
+.select2-container .select2-search__field {
     background: #303133;
     color: #e4e4e4;
     border: 1px solid #565656;
@@ -108,7 +117,8 @@
 }
 
 #options #customize .select2-results__option--selected,
-#quickselect .select2-results__option--selected {
+#quickselect .select2-results__option--selected,
+.swal2-container .select2-results__option--selected {
     background-color: #3e3e3e;
 }
 
@@ -139,11 +149,12 @@ body .swal2-range,
 body .swal2-radio,
 body .swal2-checkbox {
     background: #303133;
-    /* box-shadow: 0 0 0.625em #0a0a0a; */
+    box-shadow: 0 0 0.625em #0a0a0a;
 }
 
-body .swal2-container.swal2-backdrop-show, body .swal2-container.swal2-noanimation {
-    background: rgb(48,49,51,0.75)
+body .swal2-container.swal2-backdrop-show,
+body .swal2-container.swal2-noanimation {
+    background: rgb(48, 49, 51, 0.75)
 }
 
 body .swal2-input:focus {
@@ -151,16 +162,16 @@ body .swal2-input:focus {
     box-shadow: 0 0 3px #03A9F4;
 }
 
-body.swal2-no-backdrop .swal2-container > .swal2-modal {
-    box-shadow: 0 0 10px rgb(48,49,51,0.75)
+body.swal2-no-backdrop .swal2-container>.swal2-modal {
+    box-shadow: 0 0 10px rgb(48, 49, 51, 0.75)
 }
 
 /*搜索框*/
-#out > #outputSearch {
+#out>#outputSearch {
     background: #2d2d2d;
 }
 
-#out > #outputSearch input {
+#out>#outputSearch input {
     background: #242729;
     color: #e4e4e4;
     border: 1px solid #403f3f;
