@@ -1,7 +1,6 @@
-import qctemplates from "./qctemplates.js"
-
 // 从 icons8 选择图标
-let getIcons8Icon = () => {
+let getIcons8Icon = (selector, callback) => {
+    if (!$(selector).is('select')) return
     let showIcon = icon => {
         return $(`<img class="networkImg" src="https://img.icons8.com/color/1x/${icon.commonName}.png"> <span>${icon.name}</span>`)
     }
@@ -11,12 +10,14 @@ let getIcons8Icon = () => {
     }
     let showSelection = selection => {
         if (!selection.commonName) return selection.text
-        $('#networkImgUrl').val(`https://img.icons8.com/color/1x/${selection.commonName}.png`)
+        let imgUrl = `https://img.icons8.com/color/1x/${selection.commonName}.png`
+        getImg(imgUrl, src => {
+            src && callback(src)
+        })
         return showIcon(selection)
     }
-    $('#networkImg').select2({
+    $(selector).select2({
         dataType: 'json',
-        width: '80%',
         delay: 250,
         ajax: {
             url: 'https://search.icons8.com/api/iconsets/v5/search',
@@ -47,45 +48,43 @@ let getIcons8Icon = () => {
     })
 }
 
-let getRemoteImg = async imgUrl => {
-    try {
-        let imgInfo = window.getFileInfo({ type: 'file', argvs: imgUrl, readfile: false })
-        let imgPath = window.getQuickCommandScriptFile(imgInfo.ext)
-        await quickcommand.downloadFile(imgUrl, imgPath)
-        $("#iconame").val(imgInfo.name);
-        let src = await window.getBase64Ico(imgPath);
-        $("#icon").attr('src', src);
-    } catch (error) {
-        quickcommand.showMessageBox('图片地址有误！', 'error')
-    }
-}
-
-let showChangeIconWindow = () => {
-    Swal.fire({
-        title: "设置图标",
-        onBeforeOpen: () => {
-            getIcons8Icon()
-            $('#localImg').click(async () => {
-                var options = { buttonLabel: '选择', properties: ['openFile'] }
-                var file = window.getFileInfo({ type: 'dialog', argvs: options, readfile: false })
-                if (file) {
-                    $("#iconame").val(file.name);
-                    let src = await window.getBase64Ico(file.path);
-                    $("#icon").attr('src', src);
-                    Swal.close()
-                }
+let getLocalIcon = (selector, callback) => {
+    $(selector).click(async () => {
+        var options = { buttonLabel: '选择', properties: ['openFile'] }
+        var file = window.getFileInfo({ type: 'dialog', argvs: options, readfile: false })
+        if (file) {
+            window.getBase64Ico(file.path).then(src => {
+                callback(src)
             })
-        },
-        html: qctemplates.command.setIcon,
-        showCancelButton: true,
-        preConfirm: async () => {
-            let imgUrl = $('#networkImgUrl').val()
-            if (imgUrl) await getRemoteImg(imgUrl)
-            else quickcommand.showMessageBox('没有输入图标地址', 'warning')
         }
     })
 }
 
+let getRemoteIcon = (selector, callback) => {
+    if (!$(selector).is('input')) return
+    $(selector).blur(async () => {
+        let imgUrl = $(selector).val()
+        if (!imgUrl) return
+        getImg(imgUrl, src => {
+            src && callback(src)
+        })
+    })
+}
+
+let getImg = (imgUrl, callback) => {
+    let imgInfo = window.getFileInfo({ type: 'file', argvs: imgUrl, readfile: false })
+    let imgPath = window.getQuickCommandScriptFile(imgInfo.ext)
+    quickcommand.downloadFile(imgUrl, imgPath).then(() => {
+        window.getBase64Ico(imgPath).then(src => {
+            callback(src)
+        })
+    }).catch(e => {
+        utools.showNotification('图片地址有误！')
+    })
+}
+
 export default {
-    showChangeIconWindow
+    getIcons8Icon,
+    getLocalIcon,
+    getRemoteIcon
 }
