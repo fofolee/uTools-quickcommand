@@ -32,18 +32,18 @@ let oldVersionFix = () => {
             fts.features.code = code
         }
         // 每一个命令一个 id
-        UTOOLS.putDB(fts, UTOOLS.QC_PREFIX + code)
+        UTOOLS.putDB(fts, UTOOLS.DBPRE.QC + code)
     })
     UTOOLS.delDB('customFts')
 }
 
 let showChangeLog = () => {
-    UTOOLS.putDB(pluginInfo().version, UTOOLS.CFG_PREFIX + 'version')
+    UTOOLS.putDB(pluginInfo().version, UTOOLS.DBPRE.CFG + 'version')
     utools.createBrowserWindow('./helps/CHANGELOG.html', { width: 1280, height: 920 })
 }
 
 let isRunningAtFirstTime = () => {
-    var historyVersion = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'version')
+    var historyVersion = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'version')
     if (historyVersion instanceof Object) return 'init'
     if (pluginInfo().version > historyVersion) return 'update'
     return false

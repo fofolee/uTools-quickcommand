@@ -3,8 +3,11 @@ let whole = window.utools
 if (!window.isDev()) window.utools = window.getuToolsLite()
 
 // 数据库前缀
-const QC_PREFIX = 'qc_'
-const CFG_PREFIX = 'cfg_'
+const DBPRE = {
+    QC: 'qc_',
+    CFG: 'cfg_',
+    PAN: 'pan_'
+}
 
 // 数据库函数封装
 let getDB = id => {
@@ -39,6 +42,5 @@ export default {
     putDB,
     delDB,
     getDocs,
-    QC_PREFIX,
-    CFG_PREFIX
+    DBPRE
 }

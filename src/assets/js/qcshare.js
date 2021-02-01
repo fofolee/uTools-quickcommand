@@ -13,7 +13,7 @@ const yuQueShareVars = {
 
 // 一键分享到语雀
 let shareQCToYuQue = async jsonQc => {
-    let extraInfo = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'extraInfo')
+    let extraInfo = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'extraInfo')
     if (!extraInfo.yuQueToken) return quickcommand.showMessageBox("请先设置 Token，点击底部「查看帮助」可查看 Token 设置方法", "error")
     jsonQc.authorId = extraInfo.authorId
     jsonQc.authorName = extraInfo.authorName
@@ -55,7 +55,7 @@ let shareQCToYuQue = async jsonQc => {
 
 // 获取语雀数据
 let getDocsFromYuQue = async () => {
-    let res, extraInfo = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'extraInfo')
+    let res, extraInfo = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'extraInfo')
     if (extraInfo.yuQueToken) window.yuQueClient.defaults.headers['X-Auth-Token'] = extraInfo.yuQueToken
     try {
         res = await window.yuQueClient(`repos/${yuQueShareVars.releaseRepo}/docs`)
@@ -80,9 +80,9 @@ let getSharedQCFromYuQue = async () => {
     let description
     let docs = await getDocsFromYuQue()
     if (!docs) return
-    let sharedQcCounts = UTOOLS.getDB(UTOOLS.CFG_PREFIX + 'sharedQcCounts')
+    let sharedQcCounts = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'sharedQcCounts')
     sharedQcCounts[window.processPlatform] = docs.length
-    UTOOLS.putDB(sharedQcCounts, UTOOLS.CFG_PREFIX + 'sharedQcCounts')
+    UTOOLS.putDB(sharedQcCounts, UTOOLS.DBPRE.CFG + 'sharedQcCounts')
     $('#getShares span').text('分享中心')
     $('#getShares').attr('style', "")
     docs = docs
