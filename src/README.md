@@ -1,8 +1,8 @@
 
 
-# 快捷命令 V2.2.0
+# 快捷命令 V2.3.0
 
-[![GitHub stars](https://img.shields.io/github/stars/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/network/members) [![GitHub license](https://img.shields.io/github/license/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/blob/master/LICENSE) [![version]( https://img.shields.io/badge/dynamic/json?color=f58142&label=version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Ffofolee%2FuTools-QuickerCommand%2Fmaster%2Fsrc%2Fplugin.json&style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/blob/master/src/helps/CHANGELOG.md) [![猿料](https://img.shields.io/badge/%E7%8C%BF%E6%96%99-%2Fd%2F424-red?style=flat-square)](https://yuanliao.info/d/424) [![评论](https://img.shields.io/badge/dynamic/json?color=%2350e3c2&label=%E8%AF%84%E8%AE%BA&query=%24.data.attributes.commentCount&url=https%3A%2F%2Fyuanliao.info%2Fapi%2Fdiscussions%2F424&style=flat-square)](https://yuanliao.info/d/424) [![下载](https://img.shields.io/badge/dynamic/json?label=%E4%B8%8B%E8%BD%BD&query=quickcommand&url=http%3A%2F%2Flccl.cf%3A8888%2FdownloadsStatistics.php&style=flat-square)](https://yuanliao.info/d/424)
+[![GitHub stars](https://img.shields.io/github/stars/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/network/members) [![GitHub license](https://img.shields.io/github/license/fofolee/uTools-QuickerCommand?style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/blob/master/LICENSE) [![version]( https://img.shields.io/badge/dynamic/json?color=f58142&label=version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Ffofolee%2FuTools-QuickerCommand%2Fmaster%2Fsrc%2Fplugin.json&style=flat-square)](https://github.com/fofolee/uTools-QuickerCommand/blob/master/src/helps/CHANGELOG.md) [![猿料](https://img.shields.io/badge/%E7%8C%BF%E6%96%99-%2Fd%2F424-red?style=flat-square)](https://yuanliao.info/d/424) [![评论](https://img.shields.io/badge/dynamic/json?color=%2350e3c2&label=%E8%AF%84%E8%AE%BA&query=%24.data.attributes.commentCount&url=https%3A%2F%2Fyuanliao.info%2Fapi%2Fdiscussions%2F424&style=flat-square)](https://yuanliao.info/d/424) [![下载](https://img.shields.io/badge/dynamic/json?label=%E4%B8%8B%E8%BD%BD&query=quickcommand&url=https%3A%2F%2Ffofolee.cn1.utools.club%2Fapi%2Fqcdownloads&style=flat-square)](https://yuanliao.info/d/424)
 
 ## 简介
 
@@ -64,6 +64,13 @@
 - 模拟按键 （通过点击`+按键`按钮进行添加）
 
 ![UawViR.png](https://s1.ax1x.com/2020/07/14/UawViR.png)
+
+### 4.快捷面板
+
+ - 将某一个标签下的命令以面板形式展现
+ - 可实现网址导航面板、软件启动面板之类的功能
+
+ ![](https://ae01.alicdn.com/kf/Ub8111ccc203b4eefb91baae44a7f9cadW.jpg)
 
 #### 进阶
 

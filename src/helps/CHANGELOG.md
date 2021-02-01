@@ -1,7 +1,25 @@
+## v2.3.0
+ - 新增快捷面板 beta
+    - 将某一个标签下的命令以面板形式展现
+    - 可快速实现网址导航面板、软件启动面板之类的功能
+    - 可以结合分享中心的`收藏网址`、`收藏软件`、`收藏文件`使用
+
+    ![](https://ae01.alicdn.com/kf/U2312f3f62f2b4e3cb24f3caf7f8e9a4bs.jpg)
+    
+![](https://ae01.alicdn.com/kf/Ub8111ccc203b4eefb91baae44a7f9cadW.jpg)
+    
+ - 新增 quickcommand.runInTermial
+
+ - 导入命令式会弹出选择窗口，而不是直接导入
+
+ - 代码格式调整
+
+ - 修复一个样式 bug
+
 ## v2.2.0
 
  - 支持通过网络路径，本地路径和在线搜索三种形式来设置命令图标
-  ![](https://ae01.alicdn.com/kf/Ue062ff565e594ec8a6be0ad26423e986r.jpg)
+    ![](https://ae01.alicdn.com/kf/Ue062ff565e594ec8a6be0ad26423e986r.jpg)
  - 新增两个特殊变量 {{type}} 和 {{payload}}，适用于非 quickcommand 环境下的专业模式
  - 增加 quickcommand.runVbs，可以运行 vbs 脚本
  - 支持手动设置脚本保存时的文件编码和运行输出结果的解码方式
@@ -9,7 +27,7 @@
  - 修复分享中心调整图标显示bug
  - 新增`NewCommand`功能，方便快速进入新建命令界面
  - 去除`运行脚本`功能
- - 在分享中心上线三个新的快捷命令，分别为`添加当前网址至快捷命令`,`朗读`, 和新版的`运行脚本`
+ - 在分享中心上线三个新的快捷命令，分别为`收藏网址`,`朗读`, 和新版的`运行脚本`
 
 ## v2.1.1
 
