@@ -57,7 +57,7 @@ import qcparser from "./qcparser.js"
         } else if (code == 'newcommand') {
             utools.setExpendHeight(600)
             $("#options").empty().fadeIn();
-            qc = { "program": "quickcommand", "cmd": "", "output": "ignore" }
+            let qc = { "program": "quickcommand", "cmd": "", "output": "ignore" }
             if (payload != 'NewCommand' && payload != '新建快捷命令') {
                 let parser = qcparser(payload, false)
                 if (parser.single) qc = parser.qc
