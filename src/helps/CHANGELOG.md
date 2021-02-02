@@ -2,11 +2,11 @@
  - 新增快捷面板 beta
     - 将某一个标签下的命令以面板形式展现
     - 可快速实现网址导航面板、软件启动面板之类的功能
-    - 可以结合分享中心的`收藏网址`、`收藏软件`、`收藏文件`使用
+    - 可以结合分享中心的`收藏网址`、`收藏文件`使用
 
     ![](https://ae01.alicdn.com/kf/U2312f3f62f2b4e3cb24f3caf7f8e9a4bs.jpg)
     
-![](https://ae01.alicdn.com/kf/Ub8111ccc203b4eefb91baae44a7f9cadW.jpg)
+    ![](https://ae01.alicdn.com/kf/Ub8111ccc203b4eefb91baae44a7f9cadW.jpg)
     
  - 新增 quickcommand.runInTermial
 

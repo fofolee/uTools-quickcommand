@@ -903,5 +903,6 @@ export default {
     createEditor,
     editCurrentCommand,
     getCommandType,
-    setCommandCharset
+    setCommandCharset,
+    getTypeSheet
 }

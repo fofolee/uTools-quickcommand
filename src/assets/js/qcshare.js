@@ -21,7 +21,7 @@ let shareQCToYuQue = async jsonQc => {
     if (stringifyQc.length > 5000000) return quickcommand.showMessageBox('命令大小超过5M无法分享，请检查图标或脚本内容是否过大', "error")
     let type = jsonQc.features.cmds[0].type || 'key'
     let tags = jsonQc.tags ? jsonQc.tags.join(' ') : ""
-    let typeDescription = getTypeSheet().filter(x => x.id == type)[0].text
+    let typeDescription = qccommands.getTypeSheet().filter(x => x.id == type)[0].text
     let custom_description = {
         authorName: jsonQc.authorName,
         program: jsonQc.program,
