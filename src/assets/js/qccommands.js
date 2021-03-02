@@ -180,7 +180,8 @@ let showChangeIconWindow = () => {
                 $("#icon").attr('src', src)
             }) 
         },
-        html: qctemplates.command.setIcon
+        html: qctemplates.command.setIcon,
+        footer: '图标搜索来自<a href="#" onclick=utools.shellOpenExternal("https://icons8.com/")>icon8s</a>'
     })
 }
 

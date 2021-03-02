@@ -143,7 +143,8 @@ let panelConf = tag => {
             loadConf(tag)
         },
         html: qctemplates.panel.conf,
-        showConfirmButton: false
+        showConfirmButton: false,
+        footer: '图标搜索来自<a href="#" onclick=utools.shellOpenExternal("https://icons8.com/")>icon8s</a>'
     })
 }
 

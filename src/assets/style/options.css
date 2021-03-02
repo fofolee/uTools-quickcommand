@@ -23,15 +23,17 @@ body {
     user-select: none;
 }
 
+.switch-btn * {
+    box-sizing: border-box;
+}
+
 .switch-btn {
     position: relative;
     display: inline-block;
     vertical-align: top;
-    width: 65px;
-    height: 30px;
+    height: 24px;
     border-radius: 5px;
     cursor: pointer;
-    zoom: 0.7;
 }
 
 .switch-btn:hover {
@@ -53,7 +55,7 @@ body {
     color: #fff;
     display: block;
     font-size: 12px;
-    width: 57px;
+    width: 51px;
     height: inherit;
     position: relative;
     text-transform: uppercase;
@@ -73,12 +75,12 @@ body {
 
 .text-switch:before {
     content: 'OF';
-    right: 6px;
+    right: 5px;
 }
 
 .text-switch:after {
     content: 'ON';
-    left: 6px;
+    left: 5px;
     color: #FFFFFF;
     opacity: 0;
 }
@@ -111,17 +113,16 @@ body {
 
 .toggle-btn {
     background: linear-gradient(#eee, #fafafa);
-    border-radius: 5px;
-    height: 30px;
+    border-radius: 4px;
+    height: 22px;
     left: 1px;
     position: absolute;
     top: 1px;
-    width: 28px;
-    margin: 1px;
+    width: 22px;
 }
 
 .checked-switch:checked~.toggle-btn {
-    left: 30px;
+    left: 28px;
 }
 
 .text-switch,
@@ -293,6 +294,7 @@ body {
 }
 
 #options .footBtn img {
+    margin-top: 1px;
     width: 15px;
     vertical-align: middle;
 }

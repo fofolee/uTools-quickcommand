@@ -371,7 +371,7 @@ let clearAll = () => {
 let importDefaultCommands = () => {
     let defaultCommands = window.getDefaultCommands()
     Object.values(defaultCommands).forEach(async d => {
-        await qcfeatures.importCommand(d)
+        await importCommand(d)
     })
 }
 
@@ -452,4 +452,5 @@ $("#options").on('click', '.sidebar li', function() {
 export default {
     showFeatureList,
     locateToFeature,
+    importDefaultCommands
 }

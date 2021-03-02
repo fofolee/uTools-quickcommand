@@ -27,7 +27,7 @@ let getIcons8Icon = (selector, callback) => {
                     offset: (params.page - 1) * 10 || 0,
                     platform: 'color',
                     amount: 10,
-                    token: 'JpOyWT5TW8yYThBIk1fCbsNDd3ISSChSD5vPgCON',
+                    // token: 'JpOyWT5TW8yYThBIk1fCbsNDd3ISSChSD5vPgCON',
                     language: /[\u4e00-\u9fa5]/.test(params.term) ? 'zh' : 'en'
                 }
             },
@@ -41,7 +41,7 @@ let getIcons8Icon = (selector, callback) => {
             },
             cache: true
         },
-        placeholder: '搜索icons8图标',
+        placeholder: '搜索网络图标',
         minimumInputLength: 1,
         templateResult: showItems,
         templateSelection: showSelection
