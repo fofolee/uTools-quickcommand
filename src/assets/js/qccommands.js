@@ -430,7 +430,7 @@ $("#options").on('click', '.platform', function () {
 // **************************************************
 // 保存命令
 let SaveCurrentCommand = async () => {
-    if ($('#tags').is(":parent")) {
+    if ($('#output').is(":parent")) {
         var type = $('#type').val(),
             code = $("#code").val(),
             tags = $('#tags').val(),
