@@ -92,7 +92,7 @@ quickcommand.showInputBox(["要替换的内容，两边加 / 使用正则", "替
 #### `showSelectList(selects, options)`
 
 - selects: Array  每一个元素对应一个列表选项
-- options: Array | undefined 列表的选项
+- options: Object | undefined 列表的选项
   - placeholder: String 搜索框占位符
   - optionType:  String 选项的格式，有`plaintext`、`html`、`json`三种，默认为`plaintext`
 - 返回: Promise

@@ -1,3 +1,12 @@
+## V2.3.4
+ - 有子输入框的情况下，如果5s内复制了内容再呼出，会自动执行复制的内容
+ - 修复暗黑模式下的一些配色 bug
+ - 完善脚本的报错信息，更容易定位到错误点
+ - 修复了如果通过 newcommand 创建命令，会出现页面无法点击的 bug
+
+## V2.3.3
+ - 修复新安装插件的用户，如不填写标签会无法保存的 bug
+
 ## V2.3.2
  - 修复 icon8s 图标无法搜索的 bug
 
@@ -222,7 +231,7 @@
   - 该模式同样适用于本机没有任何语言环境的或环境变量失效的用户，不需要安装nodejs即可执行js代码
   - 虽然没有提供`特殊变量`的下拉框，但实际是支持的
 - 脚本报错时提供跳转至临时脚本目录的选项
-- 添加一个`下载命令`的按钮，可以跳转到[样例命令库]( https://github.com/fofolee/uTools-QuickerCommand/tree/master/CommandCollections )，如果你不知道怎么去编写一个目录，可以尝试下载导入进行参考
+- 添加一个`下载命令`的按钮，可以跳转到[样例命令库]( https://github.com/fofolee/uTools-quickcommand/tree/master/CommandCollections )，如果你不知道怎么去编写一个目录，可以尝试下载导入进行参考
 - （貌似）修复了执行完命令后，再次呼出uTools会短暂显示命令关键词的bug，该bug可能是由先隐藏uTools再退出插件所引起
 
 ![JU0UAS.png](https://s1.ax1x.com/2020/04/22/JU0UAS.png)
@@ -247,14 +256,14 @@
 - 新增一个特殊变量`当前窗口信息`，输出`json`格式的窗口相关信息，将原先的特殊变量`用户名`改为`本机唯一ID`，方便针对不同电脑编写脚本，两个变量均通过官方API获取
 - 弃用原先模拟按键的方式，获取资源管理器路径、选中文件、浏览器地址均借助官方API
 - 新增`发送系统通知`的输出模式 By [imxiny](https://github.com/imxiny)
-- 新增`在终端显示`的输出模式, 用以解决脚本需要显示动态输出的问题, 如 curl 命令 [issue](https://github.com/fofolee/uTools-QuickerCommand/issues/3)
-- 上传一些命令至仓库的`CommandCollections`文件夹，用以作为编写命令的样例，同时大家可以提交PR丰富这个命令库 [CommandCollections](https://github.com/fofolee/uTools-QuickerCommand/tree/master/CommandCollections)
+- 新增`在终端显示`的输出模式, 用以解决脚本需要显示动态输出的问题, 如 curl 命令 [issue](https://github.com/fofolee/uTools-quickcommand/issues/3)
+- 上传一些命令至仓库的`CommandCollections`文件夹，用以作为编写命令的样例，同时大家可以提交PR丰富这个命令库 [CommandCollections](https://github.com/fofolee/uTools-quickcommand/tree/master/CommandCollections)
 
 ### BUG 修复
 
 - 修复 php 无法输入 <? 问题，修复MacOS环境变量问题，修复脚本不能带参数问题 By [dofy](https://github.com/dofy)
 - 修复中文乱码问题
-- 修复当使用子输入框时，会多次触发脚本的问题 [issue](https://github.com/fofolee/uTools-QuickerCommand/issues/5)
+- 修复当使用子输入框时，会多次触发脚本的问题 [issue](https://github.com/fofolee/uTools-quickcommand/issues/5)
 - 修复当使用多行批处理脚本时，执行会报错的问题，该问题源于之前插件保存的批处理脚本的换行符是`LF`, windows 无法识别 [issue](https://yuanliao.info/d/424/70)
 
 ### 用户体验
