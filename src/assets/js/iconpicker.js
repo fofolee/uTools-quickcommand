@@ -10,7 +10,7 @@ let getIcons8Icon = (selector, callback) => {
     }
     let showSelection = selection => {
         if (!selection.commonName) return selection.text
-        let imgUrl = `https://img.icons8.com/color/1x/${selection.commonName}.png`
+        let imgUrl = `https://img.icons8.com/color/2x/${selection.commonName}.png`
         getImg(imgUrl, src => {
             src && callback(src)
         })
