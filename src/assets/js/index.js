@@ -56,6 +56,7 @@ import qcparser from "./qcparser.js"
             qccommands.showCodeEditor(file)
         } else if (code == 'newcommand') {
             utools.setExpendHeight(600)
+            $("#quickpanel").hide()
             $("#options").empty().fadeIn();
             let qc = { "program": "quickcommand", "cmd": "", "output": "ignore" }
             if (payload != 'NewCommand' && payload != '新建快捷命令') {
@@ -141,12 +142,17 @@ import qcparser from "./qcparser.js"
                         subinput = text;
                     }, placeholder.slice(1));
                 }
-                handleEnter = (event) => {
-                    if (event.keyCode == 13) {
-                        $("#out").append(`<p style="color: #438eff">>> ${new Date()}</p>`);
-                        var cmdToRun = cmd.replace(new RegExp(rule, 'g'), subinput);
-                        runQuickCommand(cmdToRun, option, db.output, true);
-                    }
+                var querySubInput = () => {
+                    $("#out").append(`<p style="color: #438eff">>> ${new Date()}</p>`);
+                    var cmdToRun = cmd.replace(new RegExp(rule, 'g'), subinput);
+                    runQuickCommand(cmdToRun, option, db.output, true);
+                }
+                // 自动粘贴的情况下自动执行
+                setTimeout(() => {
+                    if (subinput) querySubInput()
+                }, 100)
+                handleEnter = event => {
+                    if (event.keyCode == 13) querySubInput()
                 };
                 setSubInput();
                 document.addEventListener('keydown', handleEnter);
