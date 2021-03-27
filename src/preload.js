@@ -558,24 +558,28 @@ runCodeInVm = (cmd, cb, enterData = {}) => {
         cb(null, stderr.toString())
     });
 
+    let liteErr = e => {
+        return e.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim()
+    }
+
     // 错误处理
     try {
         vm.run(cmd, path.join(__dirname, 'preload.js'));
-    } catch (error) {
-        console.log(error)
-        cb(null, error.toString())
+    } catch (e) {
+        console.log('Error: ',e)
+        cb(null, liteErr(e))
     }
 
     let cbUnhandledError = e => {
         removeAllListener()
-        console.log(e)
-        cb(null, e.error.toString())
+        console.log('UnhandledError: ', e)
+        cb(null, liteErr(e.error))
     }
 
     let cbUnhandledRejection = e => {
         removeAllListener()
-        console.log(e)
-        cb(null, e.reason.toString())
+        console.log('UnhandledRejection: ',e)
+        cb(null, liteErr(e.reason))
     }
 
     let removeAllListener = () => {
@@ -687,11 +691,12 @@ getBase64Ico = async filepath => {
     if (['png', 'jpg', 'jpeg', 'bmp', 'ico', 'gif', 'svg'].includes(ext)) {
         if (ext == 'svg') ext = 'svg+xml'
         sourceImage = `data:image/${ext};base64,` + fs.readFileSync(filepath, 'base64')
+        if (ext == 'png') return sourceImage
     } else {
         sourceImage = utools.getFileIcon(filepath)
+        return sourceImage
     }
     let compressedImage = await getCompressedIco(sourceImage)
-    if (sourceImage.length < compressedImage.length && ext == 'png') compressedImage = sourceImage
     return compressedImage
 }
 
