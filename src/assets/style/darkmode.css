@@ -7,6 +7,14 @@
     color: #e4e4e4;
 }
 
+#featureList .toggle-btn {
+    background: #fafafa;
+}
+
+#featureList .checked-switch:checked~.text-switch {
+    background-color: #00af2c;
+}
+
 .error {
     color: #fbbac2;
 }
@@ -54,6 +62,8 @@
 #options #customize input,
 #options #customize select,
 #options #customize input#scptarg,
+#options #customize input#rule,
+#options #customize input.customize,
 #panelConf input {
     background: #303133;
     color: #e4e4e4;
