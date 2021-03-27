@@ -389,7 +389,8 @@ if (process.platform == 'win32') quickcommand.runVbs =  function (script) {
 
 // 在终端中执行
 if (process.platform !== 'linux') quickcommand.runInTerminal = function (cmdline, dir) {
-    let command = getCommandToLaunchTerminal(cmdline, dir)
+    let command = getCommandToLaunchTerminal(cmdline.replace(/"/g, `\\"`), dir)
+    console.log(command);
     child_process.exec(command)
 }
 
@@ -412,7 +413,6 @@ let getCommandToLaunchTerminal = (cmdline, dir) => {
             iterm = 'iTerm'
         }
         if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
-        cmdline = cmdline.replace(/"/g, `\\"`)
         if (iterm) {
             command = `osascript -e 'tell application "${iterm}"
             create window with default profile
