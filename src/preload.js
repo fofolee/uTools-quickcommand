@@ -395,17 +395,19 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function (cmdline
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
     let cd = ''
-    cmdline = cmdline.replace(/"/g, `\\"`)
     if (utools.isWindows()) {
         let wtpath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/wt.exe')
         if (fs.existsSync(wtpath)) {
+            cmdline = cmdline.replace(/"/g, `\\"`)
             if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
             command = `wt ${cd} cmd /k "${cmdline}"`
         } else {
+            cmdline = cmdline.replace(/"/g, `^"`)
             if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
             command = `${cd} start "" cmd /k "${cmdline}"`
         }
     } else {
+        cmdline = cmdline.replace(/"/g, `\\"`)
         if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
@@ -419,6 +421,7 @@ let getCommandToLaunchTerminal = (cmdline, dir) => {
     end tell'`
         }
     }
+    console.log(command);
     return command
 }
 
@@ -445,7 +448,7 @@ let GetFilePath = (Path, File) => {
 let getSleepCodeByShell = ms => {
     var cmd, tempFilePath
     if (utools.isWindows()) {
-        tempFilePath = getQuickCommandScriptFile('vbs')
+        tempFilePath = getQuickcommandTempFile('vbs')
         cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
     } else {
         cmd = `sleep ${ms / 1000}`
@@ -664,7 +667,7 @@ hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
 hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
 
 py_beautify = (code, cb) => {
-    var file = getQuickCommandScriptFile('py')
+    var file = getQuickcommandTempFile('py')
     fs.writeFile(file, code, { encoding: 'utf8' }, err => {
         var cmd = `python "${GetFilePath('assets/plugins', 'autopep8.py')}" "${file}"`
         child_process.exec(cmd, { encoding: "buffer" }, (err, stdout, stderr) => {
@@ -676,8 +679,8 @@ py_beautify = (code, cb) => {
 
 processPlatform = process.platform
 
-getQuickCommandScriptFile = ext => {
-    return path.join(os.tmpdir(), `QuickCommandTempScript.${ext}`)
+getQuickcommandTempFile = ext => {
+    return path.join(os.tmpdir(), `quickcommandTempFile.${ext}`)
 }
 
 getBase64Ico = async filepath => {
@@ -821,7 +824,7 @@ runCodeFile = (cmd, option, terminal, callback) => {
         ext = option.ext,
         charset = option.charset,
         scptarg = option.scptarg || "";
-    let script = getQuickCommandScriptFile(ext)
+    let script = getQuickcommandTempFile(ext)
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);

@@ -38,7 +38,7 @@ let oldVersionFix = () => {
 }
 
 let showChangeLog = () => {
-    let ignoreVersions = ['2.3.5']
+    let ignoreVersions = ['2.3.5', '2.3.6']
     if (ignoreVersions.includes(pluginInfo().version)) return
     UTOOLS.putDB(pluginInfo().version, UTOOLS.DBPRE.CFG + 'version')
     utools.createBrowserWindow('./helps/CHANGELOG.html', { width: 1280, height: 920 })
