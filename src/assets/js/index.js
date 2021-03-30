@@ -177,7 +177,7 @@ import qcparser from "./qcparser.js"
             }, option.enterData)
         } else {
             var terminal = output == 'terminal' ? true : false
-            outputOpts.scriptPath = window.getQuickCommandScriptFile(option.ext)
+            outputOpts.scriptPath = window.getQuickcommandTempFile(option.ext)
             // 执行脚本
             window.runCodeFile(cmd, option, terminal, (stdout, stderr) => {
                 switchQuickCommandResult(stdout, stderr, outputOpts)

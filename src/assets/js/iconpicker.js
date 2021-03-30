@@ -73,7 +73,7 @@ let getRemoteIcon = (selector, callback) => {
 
 let getImg = (imgUrl, callback) => {
     let imgInfo = window.getFileInfo({ type: 'file', argvs: imgUrl, readfile: false })
-    let imgPath = window.getQuickCommandScriptFile(imgInfo.ext)
+    let imgPath = window.getQuickcommandTempFile(imgInfo.ext)
     quickcommand.downloadFile(imgUrl, imgPath).then(() => {
         window.getBase64Ico(imgPath).then(src => {
             callback(src)
