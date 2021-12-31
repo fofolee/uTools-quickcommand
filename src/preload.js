@@ -545,6 +545,7 @@ let parseItem = item => {
     return item.toString()
 }
 
+// The vm module of Node.js is deprecated in the renderer process and will be removed
 runCodeInVm = (cmd, cb, enterData = {}) => {
     const vm = createNodeVM(enterData)
     //重定向 console

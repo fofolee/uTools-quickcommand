@@ -55,6 +55,15 @@ let getAllQuickCommands = () => {
     return allQcs
 }
 
+let searchFeatures = keyword => {
+    let fts = UTOOLS.getDocs(UTOOLS.DBPRE.QC).filter(x => x.data.features.explain.toLowerCase().includes(keyword.toLowerCase()))
+    if (!fts.length) return quickcommand.showMessageBox(`${keyword} 未找到！`, "warning")
+    if (fts.length == 1) return locateToFeature(fts[0].data.tags, fts[0].data.features.code)
+    quickcommand.showButtonBox(fts.map(x => x.data.features.explain)).then(y =>
+        locateToFeature(fts[y.id].data.tags, fts[y.id].data.features.code)
+    )
+}
+
 
 let getCurrentFts = () => {
     let features = utools.getFeatures()
@@ -126,7 +135,7 @@ let showCommandByType = features => {
             if (!rules) {
                 qcType += `<span class="keyword win">所有窗口</span>`
             } else if (rules.title || rules.class) {
-                qcType += `<span class="keyword win">${window.htmlEncode(JSON.stringify(rules).slice(0,  14), true) + '...'}</span>`;
+                qcType += `<span class="keyword win">${window.htmlEncode(JSON.stringify(rules).slice(0, 14), true) + '...'}</span>`;
             } else if (rules.app) {
                 rules = rules.app.join(",")
                 if (rules.length > 14) rules = rules.slice(0, 14) + '...';
@@ -154,7 +163,7 @@ let showCommandByType = features => {
 
 // let linkKeywords = features => {
 //     if ($(`#${features.code} .checked-switch`).prop('checked')) {
-        
+
 //     }
 // }
 
@@ -163,7 +172,7 @@ let showCommandByType = features => {
 // *********************功能按钮**********************
 // **************************************************
 // 开关
-$("#options").on('change', 'input[type=checkbox]', function() {
+$("#options").on('change', 'input[type=checkbox]', function () {
     var customFts = getAllQuickCommands(),
         code = $(this).parents('tr').attr('id')
     if (!UTOOLS.whole.removeFeature(code)) {
@@ -172,7 +181,7 @@ $("#options").on('change', 'input[type=checkbox]', function() {
 });
 
 // 编辑
-$("#options").on('click', '.editBtn', function() {
+$("#options").on('click', '.editBtn', function () {
     let code = $(this).parents('tr').attr('id')
     let data = UTOOLS.getDB(UTOOLS.DBPRE.QC + code)
     qccommands.editCurrentCommand(data)
@@ -199,7 +208,7 @@ $("#options").on('click', '.delBtn', function () {
 })
 
 // 导出
-$("#options").on('click', '.exportBtn', async function() {
+$("#options").on('click', '.exportBtn', async function () {
     var code = $(this).parents('tr').attr('id')
     var jsonQc = UTOOLS.getDB(UTOOLS.DBPRE.QC + code)
     var stringifyQc = JSON.stringify(jsonQc, null, 4)
@@ -212,7 +221,7 @@ $("#options").on('click', '.exportBtn', async function() {
             window.saveFile(stringifyQc, {
                 title: '选择保存位置',
                 defaultPath: `${jsonQc.features.explain}.json`,
-                filters: [{ name: 'json', extensions: ['json'] }, ]
+                filters: [{ name: 'json', extensions: ['json'] },]
             })
             break;
         case '分享命令':
@@ -278,7 +287,11 @@ let setYuQueToken = async () => {
 // **************************************************
 // *********************底部按钮**********************
 // **************************************************
-$("#options").on('click', '.footBtn', async function() {
+$("#options").on('change', '#searchFts', function () {
+    searchFeatures($("#searchFts").val())
+})
+
+$("#options").on('click', '.footBtn', async function () {
     switch ($(this).attr('id')) {
         case 'viewHelps':
             utools.createBrowserWindow('./helps/HELP.html', {
@@ -352,7 +365,7 @@ let exportAll = (copy = false) => {
         filters: [{
             name: 'json',
             extensions: ['json']
-        }, ]
+        },]
     };
     if (!window.isDev()) Object.keys(allQcs).forEach(k => {
         if (k.includes('default_')) delete allQcs[k]
@@ -452,7 +465,7 @@ let locateToFeature = (tags, code) => {
 }
 
 // 切换TAGS
-$("#options").on('click', '.sidebar li', function() {
+$("#options").on('click', '.sidebar li', function () {
     showFeatureList($(this).text());
 })
 

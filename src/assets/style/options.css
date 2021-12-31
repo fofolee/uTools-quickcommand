@@ -333,6 +333,17 @@ body {
     padding: 3px;
 }
 
+#options .foot input {
+    height: 60%;
+    width: 200px;
+    position: absolute;
+    left: 10px;
+    bottom: 5px;
+    border: 1px solid #068506;
+    border-radius: 5px;
+    outline: none;
+}
+
 #options .sidebar {
     position: absolute;
     top: 0;
