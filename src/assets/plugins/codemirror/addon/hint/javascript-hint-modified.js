@@ -133,7 +133,7 @@
     Math: Math,
     Date: Date,
     ArrayBuffer: ArrayBuffer,
-    SharedArrayBuffer: SharedArrayBuffer,
+    // SharedArrayBuffer: SharedArrayBuffer,
     Atomics: Atomics,
     DataView: DataView,
     JSON: JSON,
