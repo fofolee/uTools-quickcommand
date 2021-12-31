@@ -342,6 +342,7 @@ body {
     border: 1px solid #068506;
     border-radius: 5px;
     outline: none;
+    background-color: #eeeeee1f;
 }
 
 #options .sidebar {

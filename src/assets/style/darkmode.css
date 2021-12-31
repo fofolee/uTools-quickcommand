@@ -34,6 +34,10 @@
     box-shadow: 0px 0px 9px 0px #000000ab;
 }
 
+#options .foot input {
+    color: #e4e4e4;
+}
+
 #options .sidebar .currentTag {
     background-color: #484848;
 }

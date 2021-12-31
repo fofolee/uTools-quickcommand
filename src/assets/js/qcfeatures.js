@@ -287,8 +287,11 @@ let setYuQueToken = async () => {
 // **************************************************
 // *********************底部按钮**********************
 // **************************************************
-$("#options").on('change', '#searchFts', function () {
-    searchFeatures($("#searchFts").val())
+$("#options").on('keydown', '#searchFts', function (e) {
+    if (e.keyCode == 13) {
+        searchFeatures($("#searchFts").val())
+        e.preventDefault()
+    }
 })
 
 $("#options").on('click', '.footBtn', async function () {
@@ -461,7 +464,10 @@ let locateToFeature = (tags, code) => {
         redirectTag = "未分类"
     }
     showFeatureList(redirectTag);
-    location.href = '#' + code
+    location.href = '#' + code;
+    $(`#${code}`).fadeOut(function(){
+        $(this).fadeIn();
+    });
 }
 
 // 切换TAGS
