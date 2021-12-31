@@ -36,6 +36,12 @@ export default {
         ext: 'js',
         color: '#f1e05a'
     },
+    // go: {
+    //     bin: 'go',
+    //     argv: 'run',
+    //     ext: 'go',
+    //     color: '#6fcce5'
+    // },
     ruby: {
         bin: 'ruby',
         argv: '',

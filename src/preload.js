@@ -396,11 +396,12 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function (cmdline
 let getCommandToLaunchTerminal = (cmdline, dir) => {
     let cd = ''
     if (utools.isWindows()) {
-        let wtpath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/wt.exe')
-        if (fs.existsSync(wtpath)) {
+        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+        // 直接 existsSync wt.exe 无效
+        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
             cmdline = cmdline.replace(/"/g, `\\"`)
             if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `wt ${cd} cmd /k "${cmdline}"`
+            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
         } else {
             cmdline = cmdline.replace(/"/g, `^"`)
             if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
@@ -486,7 +487,8 @@ let getSandboxFuns = () => {
         axios: axios,
         alert: alert,
         confirm: confirm,
-        Audio: Audio
+        Audio: Audio,
+        fetch: fetch
     }
     shortCodes.forEach(f => {
         sandbox[f.name] = f

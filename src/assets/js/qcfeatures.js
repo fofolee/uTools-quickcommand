@@ -143,6 +143,7 @@ let showCommandByType = features => {
             if (rules.length > 14) rules = rules.slice(0, 14) + '...';
             qcType += `<div class="topchild">关键字</div><div>`
             rules.split(',').forEach(r => {
+                // qcType += `<span class="keyword"><a href="javascript:utools.redirect('${window.htmlEncode(r, true)}')">${window.htmlEncode(r, true)}</a></span>`;
                 qcType += `<span class="keyword">${window.htmlEncode(r, true)}</span>`;
             });
             qcType += `</div>`
@@ -150,6 +151,12 @@ let showCommandByType = features => {
     }
     return qcType
 }
+
+// let linkKeywords = features => {
+//     if ($(`#${features.code} .checked-switch`).prop('checked')) {
+        
+//     }
+// }
 
 
 // **************************************************

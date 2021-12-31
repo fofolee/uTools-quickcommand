@@ -18,8 +18,8 @@ import qcparser from "./qcparser.js"
             $('#darkmode').length && $('#darkmode, #darkswal').remove()
         }
         if (init.isRunningAtFirstTime()) {
-            init.showChangeLog()
-            init.oldVersionFix()
+            // init.showChangeLog()
+            // init.oldVersionFix()
             qcfeatures.importDefaultCommands()
         }
         var handleEnter
