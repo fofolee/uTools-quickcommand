@@ -182,6 +182,7 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
     width: 95%;
+    font-weight: bold;
 }
 
 #options table tr {
