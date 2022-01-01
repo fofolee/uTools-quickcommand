@@ -65,7 +65,8 @@ quickcommand = {
     sleep: function(ms) {
         var start = new Date().getTime()
         try {
-            child_process.execSync(getSleepCodeByShell(ms), { timeout: ms })
+            // node 16.13.1
+            child_process.execSync(getSleepCodeByShell(ms), { timeout: ms, windowsHide: true })
         } catch (ex) { }
         var end = new Date().getTime()
         return (end - start)
