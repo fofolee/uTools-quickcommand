@@ -128,8 +128,13 @@ let showCommandByType = features => {
     } else {
         let rules = cmds[0].match
         if (type == 'regex') {
-            if (rules.length > 14) rules = rules.slice(0, 14) + '...';
-            qcType = `<div class="topchild">正则</div><div><span class="keyword re">${window.htmlEncode(rules, true)}</span></div>`;
+            qcType += `<div class="topchild">文本</div><div>`
+            if (!rules) {
+                qcType += `<span class="keyword win">所有文本</span>`
+            } else {
+                if (rules.length > 14) rules = rules.slice(0, 14) + '...';
+                qcType += `<span class="keyword re">${window.htmlEncode(rules, true)}</span></div>`;
+            }
         } else if (type == 'window') {
             qcType += `<div class="topchild">窗口</div><div>`
             // if (!rules) {

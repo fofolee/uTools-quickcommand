@@ -131,6 +131,7 @@ let getCommandType = cmds => {
     if (cmds.length == 1) {
         let type = cmds[0].type
         if (!type) return 'key'
+        if (type == 'over') return 'regex'
         if (type == 'window' || cmds[0].minNum) return type
         return 'professional'
     }
@@ -438,7 +439,8 @@ let SaveCurrentCommand = async () => {
             charset = $('#charset').data()
         var cmd = window.editor.getValue();
         if (tags && tags.includes("默认") && !isDev()) return
-        if (!rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
+        // 留空检测
+        if (type != "regex" && !rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
         if (!cmdCheck(type, cmd)) return
         if (!code) {
             // 生成唯一code
@@ -456,15 +458,24 @@ let SaveCurrentCommand = async () => {
         if (type == 'key') {
             cmds = rule.split(",").map(x => x.trim())
         } else if (type == 'regex') {
-            if (!/^\/.*?\/[igm]*$/.test(rule)) {
-                rule = "/" + rule + "/"
+            // 留空匹配所有文本
+            if (!rule) {
+                cmds = [{
+                    "label": desc,
+                    "type": "over",
+                    "minNum": 1
+                }];
+            } else {
+                if (!/^\/.*?\/[igm]*$/.test(rule)) {
+                    rule = "/" + rule + "/"
+                }
+                cmds = [{
+                    "label": desc,
+                    "type": "regex",
+                    "match": rule,
+                    "minNum": 1
+                }]; 
             }
-            cmds = [{
-                "label": desc,
-                "type": "regex",
-                "match": rule,
-                "minNum": 1
-            }];
         } else if (type == 'window') {
             var cmdOfWin = {
                 "label": desc,
@@ -866,25 +877,25 @@ let typeCheck = () => {
         case 'key':
             $("#ruleWord").html("关键字");
             $(".var.regex, .var.window, .var.files").prop("disabled", true)
-            $("#rule").prop("placeholder", '多个关键字用逗号隔开');
+            $("#rule").prop("placeholder", '例：mycommand,cs');
             break;
         case 'regex':
             $("#ruleWord").html("正&#12288;则");
             $(".var.window, .var.files").prop("disabled", true)
             $(".var.regex").prop("disabled", false)
-            $("#rule").prop("placeholder", '匹配文本的正则，如 /.*?\\.exe$/i');
+            $("#rule").prop("placeholder", '例：/\\d{18}/，留空匹配所有文本');
             break;
         case 'files':
             $("#ruleWord").html("正&#12288;则");
             $(".var.regex, .var.window").prop("disabled", true)
             $(".var.files").prop("disabled", false)
-            $("#rule").prop("placeholder", '匹配文件的正则，如 /.*?\\.exe$/i');
+            $("#rule").prop("placeholder", '例：/.*?\\.exe$/i');
             break;
         case 'window':
             $("#ruleWord").html("进&#12288;程");
             $(".var.regex, .var.files").prop("disabled", true)
             $(".var.window").prop("disabled", false)
-            $("#rule").prop("placeholder", '多个窗口进程逗号隔开');
+            $("#rule").prop("placeholder", '例：word.exe,excel.exe');
             break;
         case 'professional':
             $("#ruleWord").html("配&#12288;置");

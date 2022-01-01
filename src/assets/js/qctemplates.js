@@ -20,7 +20,7 @@ let command = {
         <p><input type="text" id="code" style="display: none">
             <span class="word">匹&#12288;配</span>
             <select id="type"></select>
-            <span class="word" id="ruleWord">关键字</span><input class="customize" type="text" id="rule" placeholder="多个关键字用逗号隔开"><img id="expandBtn" src="./img/expand.svg"></p>
+            <span class="word" id="ruleWord">关键字</span><input class="customize" type="text" id="rule" placeholder="例：mycommand,cs"><img id="expandBtn" src="./img/expand.svg"></p>
         <p><span class="word">说&#12288;明</span><input class="customize" type="text" id="desc" placeholder="命令功能的描述">
             <img id="icon" src="">
         </p>
