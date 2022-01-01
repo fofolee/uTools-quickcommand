@@ -132,9 +132,10 @@ let showCommandByType = features => {
             qcType = `<div class="topchild">正则</div><div><span class="keyword re">${window.htmlEncode(rules, true)}</span></div>`;
         } else if (type == 'window') {
             qcType += `<div class="topchild">窗口</div><div>`
-            if (!rules) {
-                qcType += `<span class="keyword win">所有窗口</span>`
-            } else if (rules.title || rules.class) {
+            // if (!rules) {
+            //     qcType += `<span class="keyword win">所有窗口</span>`
+            // } else if (rules.title || rules.class) {
+            if (rules.title || rules.class) {
                 qcType += `<span class="keyword win">${window.htmlEncode(JSON.stringify(rules).slice(0, 14), true) + '...'}</span>`;
             } else if (rules.app) {
                 rules = rules.app.join(",")

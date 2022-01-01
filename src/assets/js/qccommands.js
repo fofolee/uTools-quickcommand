@@ -438,7 +438,7 @@ let SaveCurrentCommand = async () => {
             charset = $('#charset').data()
         var cmd = window.editor.getValue();
         if (tags && tags.includes("默认") && !isDev()) return
-        if (type != "window" && !rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
+        if (!rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
         if (!cmdCheck(type, cmd)) return
         if (!code) {
             // 生成唯一code
@@ -884,7 +884,7 @@ let typeCheck = () => {
             $("#ruleWord").html("进&#12288;程");
             $(".var.regex, .var.files").prop("disabled", true)
             $(".var.window").prop("disabled", false)
-            $("#rule").prop("placeholder", '多个窗口进程逗号隔开，留空匹配所有窗口');
+            $("#rule").prop("placeholder", '多个窗口进程逗号隔开');
             break;
         case 'professional':
             $("#ruleWord").html("配&#12288;置");
