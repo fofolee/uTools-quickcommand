@@ -1,7 +1,7 @@
 let featurelist = {
     footer: `
     <div class="foot">
-        <input id="searchFts" placeholder="search">
+        <input id="searchFts" placeholder="🔍 click here to search">
         <div id="clear" class="footBtn danger"><img src="img/clear.svg"><span>清除数据</span></div>
         <div id="disableAll" class="footBtn danger"><img src="img/disable.svg"><span>禁用本页</span></div>
         <div id="enableAll" class="footBtn"><img src="img/enable.svg"><span>启用本页</span></div>

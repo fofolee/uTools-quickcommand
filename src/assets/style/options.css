@@ -339,10 +339,10 @@ body {
     position: absolute;
     left: 10px;
     bottom: 5px;
-    border: 1px solid #068506;
+    border: 0px;
     border-radius: 5px;
     outline: none;
-    background-color: #eeeeee1f;
+    background-color: #eeeeee00;
 }
 
 #options .sidebar {
