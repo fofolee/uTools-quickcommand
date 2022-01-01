@@ -11,7 +11,7 @@ import qcpanel from "./qcpanel.js"
 // **************************************************
 let showFeatureList = (tag = "默认") => {
     $("#options").empty().fadeIn();
-    var currentFts = getCurrentFts().currentFts
+    var currentFtsCode = getCurrentFts().currentFts.map(x => x.code)
     var customFts = getAllQuickCommands()
     var allTags = ["默认"]
     var featureList = `
@@ -21,7 +21,7 @@ let showFeatureList = (tag = "默认") => {
         // 跳过有问题的命令
         try {
             if (fts.tags) fts.tags.map(t => !allTags.includes(t) && allTags.push(t))
-            featureList += getEveryFeature(fts, currentFts, tag)
+            featureList += getEveryFeature(fts, currentFtsCode, tag)
         } catch (e) {
             console.log(e)
         }
@@ -76,7 +76,7 @@ let getCurrentFts = () => {
     }
 }
 
-let getEveryFeature = (fts, currentFts, tag) => {
+let getEveryFeature = (fts, currentFtsCode, tag) => {
     if (tag == "未分类") {
         if (fts.tags && fts.tags.length) return ''
     } else {
@@ -84,14 +84,8 @@ let getEveryFeature = (fts, currentFts, tag) => {
         if (!fts.tags.includes(tag)) return ''
     }
     var features = fts.features;
-    var qcType = showCommandByType(features);
-    var isChecked = '';
-    for (var c of currentFts) {
-        if (c.code == features.code) {
-            isChecked = 'checked';
-            break;
-        }
-    }
+    var isChecked = currentFtsCode.includes(features.code) ? 'checked' : ''
+    var qcType = showCommandByType(features, isChecked == 'checked');
     var platformIcons
     if (features.platform) platformIcons = features.platform.map(x => `<img src="img/${x}.svg">`)
     else platformIcons = ['<img src="img/win32.svg">', '<img src="img/darwin.svg">', '<img src="img/linux.svg">']
@@ -119,7 +113,7 @@ let getEveryFeature = (fts, currentFts, tag) => {
     </td>`
 }
 
-let showCommandByType = features => {
+let showCommandByType = (features, isActivated) => {
     let qcType = ''
     let cmds = features.cmds
     let type = qccommands.getCommandType(cmds)
@@ -157,21 +151,18 @@ let showCommandByType = features => {
             rules = features.cmds.join(",")
             if (rules.length > 14) rules = rules.slice(0, 14) + '...';
             qcType += `<div class="topchild">关键字</div><div>`
+            let he, kws
             rules.split(',').forEach(r => {
-                // qcType += `<span class="keyword"><a href="javascript:utools.redirect('${window.htmlEncode(r, true)}')">${window.htmlEncode(r, true)}</a></span>`;
-                qcType += `<span class="keyword">${window.htmlEncode(r, true)}</span>`;
+                he = window.htmlEncode(r, true)
+                // 关键词可以点击跳转
+                kws = `<a style="color: #2c8b1f;" href="javascript:utools.redirect('${he}')">${he}</a>`
+                qcType += `<span class="keyword">${kws}</span>`;
             });
             qcType += `</div>`
         }
     }
     return qcType
 }
-
-// let linkKeywords = features => {
-//     if ($(`#${features.code} .checked-switch`).prop('checked')) {
-
-//     }
-// }
 
 
 // **************************************************
@@ -471,7 +462,7 @@ let locateToFeature = (tags, code) => {
     }
     showFeatureList(redirectTag);
     location.href = '#' + code;
-    $(`#${code}`).fadeOut(function(){
+    $(`#${code}`).fadeOut(function () {
         $(this).fadeIn();
     });
 }
