@@ -120,7 +120,7 @@ let getSharedQCFromYuQue = async () => {
         $('#options').show()
         $('#customize').removeData('returnShare')
     }
-    utools.setExpendHeight(600)
+    utools.setExpendHeight(550)
 }
 
 export default {

@@ -85,7 +85,7 @@ quickcommand = {
     showInputBox: function (placeHolders = [""], title = '') {
         return new Promise((reslove, reject) => {
             if (!(placeHolders instanceof Array)) placeHolders = [placeHolders.toString()]
-            utools.setExpendHeight(600)
+            utools.setExpendHeight(550)
             var html = ""
             var inputBoxNumbers = placeHolders.length
             for (let i = 0; i < inputBoxNumbers; i++) {
@@ -98,7 +98,7 @@ quickcommand = {
                     $('.swal2-content').keydown(function (e) {
                         e.which == 13 && swal.clickConfirm()
                     })
-                    $(".output").is(":parent") ? utools.setExpendHeight(600) : modWindowHeight($('.swal2-popup').outerHeight() + 20)
+                    $(".output").is(":parent") ? utools.setExpendHeight(550) : modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
                 title: title,
                 html: html,
@@ -120,7 +120,7 @@ quickcommand = {
     showButtonBox: function (buttons, title = '') {
         return new Promise((reslove, reject) => {
             if (!(buttons instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof buttons}`))
-            utools.setExpendHeight(600)
+            utools.setExpendHeight(550)
             var html = ``
             var buttonBoxNumbers = buttons.length
             for (let i = 0; i < buttonBoxNumbers; i++) {
@@ -132,7 +132,7 @@ quickcommand = {
                         reslove({ id: i, text: buttons[i] })
                         swal.clickConfirm()
                     }
-                    $(".output").is(":parent") && utools.setExpendHeight(600) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
+                    $(".output").is(":parent") && utools.setExpendHeight(550) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
                 },
                 html: html,
                 title: title,
@@ -270,7 +270,7 @@ quickcommand = {
     // 显示文本输入框
     showTextAera: function (placeholder = "", value = "") {
         return new Promise((reslove, reject) => {
-            utools.setExpendHeight(600)
+            utools.setExpendHeight(550)
             var html = `
             <div id="quicktextarea">
                 <textarea placeholder="${placeholder}">${value}</textarea>
@@ -296,7 +296,7 @@ quickcommand = {
             confirmButtonText: '确定！',
             cancelButtonText: '手抖...'
         }
-        utools.setExpendHeight(600)
+        utools.setExpendHeight(550)
         let result = await Swal.fire(options)
         if (result.value) return true;
     },

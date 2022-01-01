@@ -45,17 +45,17 @@ import qcparser from "./qcparser.js"
         })
         // 配置页面
         if (code == 'options') {
-            utools.setExpendHeight(600);
+            utools.setExpendHeight(550);
             $("#quickpanel").hide()
             // $("#options").show();
             qcfeatures.showFeatureList();
         } else if (code == 'code') {
             var file = ""
-            // utools.setExpendHeight(600);
+            // utools.setExpendHeight(550);
             if (type == 'files') file = payload[0].path
             qccommands.showCodeEditor(file)
         } else if (code == 'newcommand') {
-            utools.setExpendHeight(600)
+            utools.setExpendHeight(550)
             $("#quickpanel").hide()
             $("#options").empty().fadeIn();
             let qc = { "program": "quickcommand", "cmd": "", "output": "ignore" }
@@ -65,7 +65,7 @@ import qcparser from "./qcparser.js"
             }
             qccommands.editCurrentCommand(qc, false)
         } else if (code.slice(0, 6) == 'panel_') {
-            utools.setExpendHeight(600)
+            utools.setExpendHeight(550)
             qcpanel.showPanel(hexDecode(code.slice(6)))
         } else {
             // console.log(new Date().getTime() - window.startTime);
