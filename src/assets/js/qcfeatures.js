@@ -155,7 +155,7 @@ let showCommandByType = (features, isActivated) => {
             rules.split(',').forEach(r => {
                 he = window.htmlEncode(r, true)
                 // 关键词可以点击跳转
-                kws = `<a style="color: #2c8b1f;" href="javascript:utools.redirect('${he}')">${he}</a>`
+                kws = `<a style="color: #cddc39;background: #0000;" href="javascript:utools.redirect('${he}')">${he}</a>`
                 qcType += `<span class="keyword">${kws}</span>`;
             });
             qcType += `</div>`
