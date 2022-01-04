@@ -52,17 +52,17 @@ ctlKey = utools.isMacOs() ? 'command' : 'control'
 
 quickcommand = {
     // 模拟复制操作
-    simulateCopy: function() {
+    simulateCopy: function () {
         utools.simulateKeyboardTap('c', ctlKey);
     },
 
     // 模拟粘贴操作
-    simulatePaste: function() {
+    simulatePaste: function () {
         utools.simulateKeyboardTap('v', ctlKey);
     },
 
     // setTimout 不能在 vm2 中使用，同时在 electron 中有 bug
-    sleep: function(ms) {
+    sleep: function (ms) {
         var start = new Date().getTime()
         try {
             // node 16.13.1
@@ -73,7 +73,7 @@ quickcommand = {
     },
 
     // 重写 setTimeout
-    setTimeout: function(callback, ms) {
+    setTimeout: function (callback, ms) {
         var start = new Date().getTime()
         child_process.exec(getSleepCodeByShell(ms), { timeout: ms }, (err, stdout, stderr) => {
             var end = new Date().getTime()
@@ -180,7 +180,7 @@ quickcommand = {
                     s.title && (item.text += `<div class="title">${s.title}</div>`)
                     s.description && (item.text += `<div class="description">${s.description}</div>`)
                 } else {
-                    item = {id: i, text: s}
+                    item = { id: i, text: s }
                 }
                 data.push(item)
             })
@@ -217,9 +217,9 @@ quickcommand = {
             $('#selectBox').select2('open')
             $("#quickselect .select2-search__field").focus()
             $('#quickselect .select2').hide()
-            opt.optionType == 'plaintext' && $('.select2-results').css({'line-height': '40px'})
+            opt.optionType == 'plaintext' && $('.select2-results').css({ 'line-height': '40px' })
             modWindowHeight($('.select2-results').outerHeight())
-            opt.enableSearch && utools.setSubInput(({text})=>{
+            opt.enableSearch && utools.setSubInput(({ text }) => {
                 $("#quickselect .select2-search__field").val(text).trigger('input')
                 modWindowHeight($('.select2-results').outerHeight())
             }, opt.placeholder)
@@ -244,7 +244,7 @@ quickcommand = {
 
     // 更新选项列表
     updateSelectList: function (opt, id) {
-        if(!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
+        if (!$('#selectBox').length) throw '当前没有选择列表, 请结合 quickcommand.showSelectList 使用'
         let data = $('#selectBox').data('options')
         let num = data.length
         typeof id == 'undefined' && (id = num)
@@ -332,7 +332,7 @@ quickcommand = {
     },
 
     // 上传文件
-    uploadFile: function(url, file = {}, name = 'file', formData = {}) {
+    uploadFile: function (url, file = {}, name = 'file', formData = {}) {
         return new Promise((reslove, reject) => {
             var objfile
             if (file instanceof File) {
@@ -373,7 +373,7 @@ quickcommand = {
 }
 
 // 运行vbs脚本
-if (process.platform == 'win32') quickcommand.runVbs =  function (script) {
+if (process.platform == 'win32') quickcommand.runVbs = function (script) {
     return new Promise((reslove, reject) => {
         var tempfile = path.join(os.tmpdir(), 'TempVBSScript.vbs')
         fs.writeFile(tempfile, iconv.encode(script, 'gbk'), err => {
@@ -443,7 +443,7 @@ let GetFilePath = (Path, File) => {
     if (isDev()) {
         return path.join(__dirname, Path, File)
     } else {
-        return path.join(__dirname.replace(/([a-zA-Z0-9\-]+\.asar)/,'$1.unpacked'), Path, File)
+        return path.join(__dirname.replace(/([a-zA-Z0-9\-]+\.asar)/, '$1.unpacked'), Path, File)
     }
 }
 
@@ -465,9 +465,16 @@ let modWindowHeight = height => {
 // 屏蔽危险函数
 getuToolsLite = () => {
     var utoolsLite = Object.assign({}, utools)
+    // 数据库相关接口
     delete utoolsLite.db
+    delete utoolsLite.dbStorage
     delete utoolsLite.removeFeature
     delete utoolsLite.setFeature
+    // 支付相关接口
+    delete utoolsLite.fetchUserServerTemporaryToken
+    delete utoolsLite.getUser
+    delete utoolsLite.openPayment
+    delete utoolsLite.fetchUserPayments
     return utoolsLite
 }
 
@@ -567,7 +574,7 @@ runCodeInVm = (cmd, cb, enterData = {}) => {
     try {
         vm.run(cmd, path.join(__dirname, 'preload.js'));
     } catch (e) {
-        console.log('Error: ',e)
+        console.log('Error: ', e)
         cb(null, liteErr(e))
     }
 
@@ -579,7 +586,7 @@ runCodeInVm = (cmd, cb, enterData = {}) => {
 
     let cbUnhandledRejection = e => {
         removeAllListener()
-        console.log('UnhandledRejection: ',e)
+        console.log('UnhandledRejection: ', e)
         cb(null, liteErr(e.reason))
     }
 
@@ -601,7 +608,7 @@ getShellCommand = () => {
     var shellCommands = localStorage['shellCommands']
     if (shellCommands) return
     localStorage['shellCommands'] = '[]'
-    if(utools.isWindows()) return
+    if (utools.isWindows()) return
     process.env.PATH.split(':').forEach(d => {
         fs.readdir(d, (err, files) => {
             if (!err) {
@@ -617,7 +624,7 @@ getCmdCommand = () => {
     var cmdCommands = localStorage['cmdCommands']
     if (cmdCommands) return
     localStorage['cmdCommands'] = '[]'
-    if(!utools.isWindows()) return
+    if (!utools.isWindows()) return
     process.env.Path.split(';').forEach(d => {
         fs.readdir(d, (err, files) => {
             if (!err) {
@@ -659,11 +666,11 @@ dirPythonMod = (mod, cb) => {
 getNodeJsCommand = () => {
     var obj = getSandboxFuns()
     obj.Buffer = Buffer
-    obj.quickcommand.enterData = {code: '', type: '', payload: ''}
+    obj.quickcommand.enterData = { code: '', type: '', payload: '' }
     return obj
 }
 
-htmlEncode = (value, raw=true) => {
+htmlEncode = (value, raw = true) => {
     return raw ? String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;") : value
 }
 
@@ -789,38 +796,38 @@ clipboardReadText = () => {
     return electron.clipboard.readText()
 },
 
-special = cmd => {
-    // 判断是否 windows 系统
-    if (cmd.includes('{{isWin}}')) {
-        let repl = utools.isWindows() ? 1 : 0;
-        cmd = cmd.replace(/\{\{isWin\}\}/mg, repl)
-    }
+    special = cmd => {
+        // 判断是否 windows 系统
+        if (cmd.includes('{{isWin}}')) {
+            let repl = utools.isWindows() ? 1 : 0;
+            cmd = cmd.replace(/\{\{isWin\}\}/mg, repl)
+        }
 
-    // 获取本机唯一ID
-    if (cmd.includes('{{LocalId}}')) {
-        let repl = utools.getLocalId();
-        cmd = cmd.replace(/\{\{LocalId\}\}/mg, repl)
-    }
+        // 获取本机唯一ID
+        if (cmd.includes('{{LocalId}}')) {
+            let repl = utools.getLocalId();
+            cmd = cmd.replace(/\{\{LocalId\}\}/mg, repl)
+        }
 
-    // 获取浏览器当前链接
-    if (cmd.includes('{{BrowserUrl}}')) {
-        let repl = utools.getCurrentBrowserUrl();
-        cmd = cmd.replace(/\{\{BrowserUrl\}\}/mg, repl)
-    }
+        // 获取浏览器当前链接
+        if (cmd.includes('{{BrowserUrl}}')) {
+            let repl = utools.getCurrentBrowserUrl();
+            cmd = cmd.replace(/\{\{BrowserUrl\}\}/mg, repl)
+        }
 
-    // 获取剪切板的文本
-    if (cmd.includes('{{ClipText}}')) {
-        let repl = clipboardReadText();
-        cmd = cmd.replace(/\{\{ClipText\}\}/mg, repl)
-    }
+        // 获取剪切板的文本
+        if (cmd.includes('{{ClipText}}')) {
+            let repl = clipboardReadText();
+            cmd = cmd.replace(/\{\{ClipText\}\}/mg, repl)
+        }
 
-    // 获取选中的文本
-    // if (cmd.includes('{{SelectText}}')) {
-    //     let repl = getSelectText();
-    //     cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
-    // }
-    return cmd;
-}
+        // 获取选中的文本
+        // if (cmd.includes('{{SelectText}}')) {
+        //     let repl = getSelectText();
+        //     cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
+        // }
+        return cmd;
+    }
 
 runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,
