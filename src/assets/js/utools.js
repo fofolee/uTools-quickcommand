@@ -1,6 +1,6 @@
 // 禁用危险函数
 let whole = window.utools
-if (!window.isDev()) window.utools = window.getuToolsLite()
+if (!utools.isDev()) window.utools = window.getuToolsLite()
 
 // 数据库前缀
 const DBPRE = {

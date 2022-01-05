@@ -109,7 +109,7 @@ let getEveryFeature = (fts, currentFtsCode, tag) => {
     </td>
     <td>
         <span class="Btn editBtn"><img src="img/${tag == "默认" ? "view" : "edit"}.svg"></span>
-        ${(tag == "默认" && !window.isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
+        ${(tag == "默认" && !utools.isDev()) ? "" : `<span class="Btn exportBtn"><img src="img/export.svg"> </span><span class="Btn delBtn"><img src="img/del.svg"></span>`}
     </td>`
 }
 
@@ -367,7 +367,7 @@ let exportAll = (copy = false) => {
             extensions: ['json']
         },]
     };
-    if (!window.isDev()) Object.keys(allQcs).forEach(k => {
+    if (!utools.isDev()) Object.keys(allQcs).forEach(k => {
         if (k.includes('default_')) delete allQcs[k]
     })
     let stringifyQcs = JSON.stringify(allQcs)

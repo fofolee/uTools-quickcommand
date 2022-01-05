@@ -435,12 +435,9 @@ pluginInfo = () => {
     return JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')))
 }
 
-isDev = () => {
-    return /[a-zA-Z0-9\-]+\.asar/.test(__dirname) ? false : true
-}
 
 let GetFilePath = (Path, File) => {
-    if (isDev()) {
+    if (utools.isDev()) {
         return path.join(__dirname, Path, File)
     } else {
         return path.join(__dirname.replace(/([a-zA-Z0-9\-]+\.asar)/, '$1.unpacked'), Path, File)
@@ -465,6 +462,7 @@ let modWindowHeight = height => {
 // 屏蔽危险函数
 getuToolsLite = () => {
     var utoolsLite = Object.assign({}, utools)
+    if (utools.isDev()) return utoolsLite
     // 数据库相关接口
     delete utoolsLite.db
     delete utoolsLite.dbStorage

@@ -22,7 +22,7 @@ let showCommandEditor = (readonly = false) => {
     $("#options").append(qctemplates.command.commandEditor)
     $("#program").append(programOpt)
     $("#tags").html(tagsOpt)
-    if (readonly && !isDev()) $(".button .cmdBtn .save").remove()
+    if (readonly && !utools.isDev()) $(".button .cmdBtn .save").remove()
     $("#icon").attr('src', 'logo/quickcommand.png');
     getSpecialVars()
     createEditor()
@@ -45,9 +45,9 @@ let showCommandEditor = (readonly = false) => {
         maximumSelectionLength: 3,
         dropdownParent: $("#customize")
     }).on("select2:unselecting", e => {
-        (e.params.args.data.text == "默认") && !isDev() && e.preventDefault();
+        (e.params.args.data.text == "默认") && !utools.isDev() && e.preventDefault();
     }).on("select2:selecting", e => {
-        (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !isDev() && e.preventDefault();
+        (e.params.args.data.text == "默认" || e.params.args.data.text == "未分类") && !utools.isDev() && e.preventDefault();
     })
 }
 
@@ -438,7 +438,7 @@ let SaveCurrentCommand = async () => {
             rule = $('#rule').val(),
             charset = $('#charset').data()
         var cmd = window.editor.getValue();
-        if (tags && tags.includes("默认") && !isDev()) return
+        if (tags && tags.includes("默认") && !utools.isDev()) return
         // 留空检测
         if (type != "regex" && !rule) return quickcommand.showMessageBox(`${$('#ruleWord').text().replace("　", "")} 不能留空！`, 'error')
         if (!cmdCheck(type, cmd)) return
