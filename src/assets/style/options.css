@@ -207,6 +207,11 @@ body {
     margin-right: 5px;
 }
 
+#options .keyword a {
+    color: #ff6c9e;
+    background: #0000;
+}
+
 #options .keyword.re {
     color: rgb(105, 40, 97);
 }
