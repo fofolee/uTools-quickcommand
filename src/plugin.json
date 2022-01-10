@@ -4,10 +4,10 @@
     "main": "index.html",
     "homepage": "https://github.com/fofolee/uTools-quickcommand",
     "publishPage": "https://yuanliao.info/d/424",
-    "version": "2.4.0",
+    "version": "2.4.2",
     "author": "云之轩",
     "unpack":"autopep8.py",
-    "logo": "logo.png",
+    "logo": "logo_spring_festival.png",
     "preload": "preload.js",
     "pluginSetting": {
         "single": false

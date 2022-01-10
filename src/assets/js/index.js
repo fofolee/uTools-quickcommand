@@ -6,9 +6,22 @@ import qcfeatures from "./qcfeatures.js"
 import qcpanel from "./qcpanel.js"
 import qcparser from "./qcparser.js"
 
-! function() {
+! function () {
+    // 春节彩蛋
+    let showSpringFestivalEgg = () => {
+        let eggs = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'eggs')
+        let thisYear = (new Date()).getFullYear()
+        if (!eggs.years) eggs.years = []
+        if (eggs.years.includes(thisYear)) return
+        let egg = window.springFestivalEgg()
+        if (!egg.springFestival) return
+        utools.showNotification(egg.msg)
+        eggs.years.push(thisYear)
+        UTOOLS.putDB(eggs, UTOOLS.DBPRE.CFG + 'eggs')
+    }
     // 进入插件
     utools.onPluginEnter(async ({ code, type, payload }) => {
+        showSpringFestivalEgg()
         // 暗黑模式
         if (utools.isDarkColors()) {
             !$('#darkmode').length && $('head').append(`
@@ -133,7 +146,7 @@ import qcparser from "./qcparser.js"
                 // 启动子命令输入
                 // 清空输出
                 // $("#out").empty();
-                var rule = String.raw `\{\{subinput(:.+?){0,1}\}\}`
+                var rule = String.raw`\{\{subinput(:.+?){0,1}\}\}`
                 var matched = cmd.match(new RegExp(rule))
                 var placeholder = matched[1] || ':请输入'
                 var subinput = '';

@@ -3,11 +3,12 @@ const os = require('os');
 const child_process = require("child_process")
 const iconv = require('iconv-lite')
 const electron = require('electron')
-const { NodeVM } = require('vm2')
+const { NodeVM } = require('./assets/plugins/vm2')
 const path = require("path")
 const util = require("util")
 const PinyinMatch = require('pinyin-match');
 const axios = require('axios');
+const solarLunar = require("solarLunar")
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
@@ -874,4 +875,21 @@ runCodeFile = (cmd, option, terminal, callback) => {
     //     let stderr = err_chunks.join("");
     //     callback(stdout, stderr)
     // })
+}
+
+window.springFestivalEgg = () => {
+    let today = new Date()
+    const solar2lunarData = solarLunar.solar2lunar(today.getFullYear(), today.getMonth() + 1, today.getDate())
+    let springFestivalDays = ["初一", "初二", "初三", "初四", "初五", "初六"]
+    if (solar2lunarData.monthCn == "正月" && springFestivalDays.includes(solar2lunarData.dayCn)) {
+        return {
+            springFestival: true,
+            msg: "今天是农历" + solar2lunarData.yearCn + solar2lunarData.monthCn + solar2lunarData.dayCn + ", 春节快乐！"
+        }
+    } else {
+        return {
+            springFestival: false,
+            msg: "今天是农历" + solar2lunarData.yearCn + solar2lunarData.monthCn + solar2lunarData.dayCn
+        }
+    }
 }
