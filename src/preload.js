@@ -471,7 +471,7 @@ getuToolsLite = () => {
     delete utoolsLite.setFeature
     // 支付相关接口
     delete utoolsLite.fetchUserServerTemporaryToken
-    delete utoolsLite.getUser
+    delete utoolsLite.getUserServerTemporaryToken
     delete utoolsLite.openPayment
     delete utoolsLite.fetchUserPayments
     return utoolsLite
@@ -877,9 +877,8 @@ runCodeFile = (cmd, option, terminal, callback) => {
     // })
 }
 
-window.springFestivalEgg = () => {
-    let today = new Date()
-    const solar2lunarData = solarLunar.solar2lunar(today.getFullYear(), today.getMonth() + 1, today.getDate())
+window.springFestivalEgg = date => {
+    const solar2lunarData = solarLunar.solar2lunar(date.year, date.month, date.day)
     let springFestivalDays = ["初一", "初二", "初三", "初四", "初五", "初六"]
     if (solar2lunarData.monthCn == "正月" && springFestivalDays.includes(solar2lunarData.dayCn)) {
         return {

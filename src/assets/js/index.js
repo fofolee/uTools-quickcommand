@@ -7,21 +7,54 @@ import qcpanel from "./qcpanel.js"
 import qcparser from "./qcparser.js"
 
 ! function () {
+    // 解析日期
+    let parseDate = dateString => {
+        return {
+            year: dateString.getFullYear(),
+            month: dateString.getMonth() + 1,
+            day: dateString.getDate(),
+            hour: dateString.getHours(),
+            minute: dateString.getMinutes(),
+            second: dateString.getSeconds()
+        }
+    }
     // 春节彩蛋
-    let showSpringFestivalEgg = () => {
+    let showSpringFestivalEgg = parsedDate => {
         let eggs = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'eggs')
-        let thisYear = (new Date()).getFullYear()
+        let thisYear = parsedDate.year
         if (!eggs.years) eggs.years = []
         if (eggs.years.includes(thisYear)) return
-        let egg = window.springFestivalEgg()
+        let egg = window.springFestivalEgg(parsedDate)
         if (!egg.springFestival) return
         utools.showNotification(egg.msg)
         eggs.years.push(thisYear)
         UTOOLS.putDB(eggs, UTOOLS.DBPRE.CFG + 'eggs')
     }
+    // 使用情况统计
+    let usageStatistics = (commandName, commandCode, runTime) => {
+        let statisticsData = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'statisticsData')
+        let thisYear = runTime.year
+        if (!statisticsData[thisYear]) statisticsData[thisYear] = []
+        delete runTime.year
+        delete runTime.second
+        statisticsData[thisYear].push({
+            command: {
+                name: commandName,
+                code: commandCode
+            },
+            time: runTime
+        })
+        UTOOLS.putDB(statisticsData, UTOOLS.DBPRE.CFG + 'statisticsData')
+    }
     // 进入插件
     utools.onPluginEnter(async ({ code, type, payload }) => {
-        showSpringFestivalEgg()
+        var enterDate = new Date()
+        var parsedDate = parseDate(enterDate)
+        var db = UTOOLS.getDB(UTOOLS.DBPRE.QC + code);
+        // 使用情况统计
+        usageStatistics(db.features ? db.features.explain : payload, code, parsedDate)
+        // 春节彩蛋
+        showSpringFestivalEgg(parsedDate)
         // 暗黑模式
         if (utools.isDarkColors()) {
             !$('#darkmode').length && $('head').append(`
@@ -29,6 +62,13 @@ import qcparser from "./qcparser.js"
             <link id="darkswal" rel="stylesheet" href="assets/plugins/sweetalert2/dark.min.css">`)
         } else {
             $('#darkmode').length && $('#darkmode, #darkswal').remove()
+        }
+        // 会员皮肤 ~ 然而没啥卵用
+        if (utools.getUser() && utools.getUser().type == 'member') {
+            !$('#membermode').length && $('head').append(`
+            <link id="membermode" rel="stylesheet" href="assets/style/member.css">`)
+        } else {
+            $('#membermode').length && $('#membermode').remove()
         }
         if (init.isRunningAtFirstTime()) {
             // init.showChangeLog()
@@ -85,7 +125,6 @@ import qcparser from "./qcparser.js"
             $('body').css({ overflow: 'auto' })
             utools.setExpendHeight(0);
             $("#options, #quickpanel").hide();
-            var db = UTOOLS.getDB(UTOOLS.DBPRE.QC + code);
             var cmd = db.cmd;
             var option
             if (db.program == "custom") {
