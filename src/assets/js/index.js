@@ -5,6 +5,7 @@ import qccommands from "./qccommands.js"
 import qcfeatures from "./qcfeatures.js"
 import qcpanel from "./qcpanel.js"
 import qcparser from "./qcparser.js"
+import spring from "./springeggs.js"
 
 ! function () {
     // 解析日期
@@ -24,9 +25,7 @@ import qcparser from "./qcparser.js"
         let thisYear = parsedDate.year
         if (!eggs.years) eggs.years = []
         if (eggs.years.includes(thisYear)) return
-        let egg = window.springFestivalEgg(parsedDate)
-        if (!egg.springFestival) return
-        utools.showNotification(egg.msg)
+        spring.springFestivalEgg(parsedDate)
         eggs.years.push(thisYear)
         UTOOLS.putDB(eggs, UTOOLS.DBPRE.CFG + 'eggs')
     }
@@ -35,14 +34,17 @@ import qcparser from "./qcparser.js"
         let statisticsData = UTOOLS.getDB(UTOOLS.DBPRE.CFG + 'statisticsData')
         let thisYear = runTime.year
         if (!statisticsData[thisYear]) statisticsData[thisYear] = []
-        delete runTime.year
-        delete runTime.second
         statisticsData[thisYear].push({
             command: {
                 name: commandName,
                 code: commandCode
             },
-            time: runTime
+            time: {
+                month: runTime.month,
+                day: runTime.day,
+                hour: runTime.hour,
+                minute: runTime.minute
+            }
         })
         UTOOLS.putDB(statisticsData, UTOOLS.DBPRE.CFG + 'statisticsData')
     }
