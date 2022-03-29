@@ -289,8 +289,9 @@ body {
 
 #options .footBtn {
     background: #02b340;
-    color: rgba(255, 255, 255, 0);
-    padding: 1px 5px;
+    color: white;
+    font-size: 0px;
+    text-align: center;
     margin: 0px 5px;
     height: 25px;
     width: 25px;
@@ -301,7 +302,7 @@ body {
 }
 
 #options .footBtn img {
-    margin-top: 1px;
+    margin-top: 5px;
     width: 15px;
     vertical-align: middle;
 }
@@ -313,10 +314,11 @@ body {
 
 #options .footBtn:hover {
     background: #068506;
-    color: white;
-    height: 105px;
+    font-size: medium;
+    height: auto;
+    padding: 4px;
     border-radius: 4px;
-    transition: 0.2s;
+    transition: 0.1s;
 }
 
 

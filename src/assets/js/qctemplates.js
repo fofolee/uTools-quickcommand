@@ -69,12 +69,12 @@ let command = {
                 <input type="text" id="customarg" placeholder="解释器参数">
                 <input type="text" id="customext" placeholder="后缀,不含.">
             </span>
-            <span id="charset" class="footBtn robot">编码设置</span>
+            <span id="charset" class="robot">编码设置</span>
             <span class="quickactions">
-                <span id="addAction" class="footBtn robot">﹢动作</span>
-                <span id="addKey" class="footBtn robot">﹢按键</span>
-                <span id="showHelp" class="footBtn robot">？文档</span>
-                <span id="beautifyCode" class="footBtn robot">格式化</span>
+                <span id="addAction" class="robot">﹢动作</span>
+                <span id="addKey" class="robot">﹢按键</span>
+                <span id="showHelp" class="robot">？文档</span>
+                <span id="beautifyCode" class="robot">格式化</span>
             </span>
         </p>
         <textarea id="cmd" placeholder="◆基础◆\nquickcommand环境下，点击“﹢按键”来执行模拟按键的操作;点击“﹢动作”添加打开软件，访问网址等\n常用动作\n◆进阶◆\nquickcommand：可使用nodejs、electron、uTools、quickCommand的api，详情查看文档\n其他脚本：本机装了相应环境即可执行，可以直接拖放脚本文件至此处，可在脚本参数输入框处填写传递\n给脚本的参数\ncustom：可以手动设置解释器路径、参数及脚本后缀\n◆快捷键◆\n支持VSCode快捷键\nAlt+Enter 全屏\nCtrl+B 运行\nCtrl+F 搜索\nShift+Alt+F 格式化（仅JS/PY）"></textarea>
