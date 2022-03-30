@@ -114,7 +114,7 @@
         </q-toolbar>
         <q-card-section class="row items-center">
           <pre
-            :class="runResultStatus ? 'text-green' : 'text-red'"
+            :class="runResultStatus ? '' : 'text-red'"
             v-html="runResult"
           ></pre>
         </q-card-section>
@@ -160,6 +160,7 @@ export default {
   },
   methods: {
     initEditor() {
+      let that = this;
       this.editor = monaco.editor.create(
         document.getElementById("monocaEditor"),
         {
@@ -172,6 +173,12 @@ export default {
           minimap: {
             enabled: false,
           },
+        }
+      );
+      this.editor.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
+        function () {
+          that.runCurrentCommand();
         }
       );
     },
