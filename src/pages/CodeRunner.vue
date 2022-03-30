@@ -98,12 +98,23 @@
         "
       />
     </div>
+    <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
+      <q-card style="width: 90vh">
+        <q-card-section class="row items-center">
+          <span v-html="runResult"></span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="关闭" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import globalVars from "components/GlobalVars";
 import * as monaco from "monaco-editor";
+import { toRaw } from "vue";
 
 export default {
   data() {
@@ -115,6 +126,9 @@ export default {
       scptarg: "",
       scriptCode: "",
       outputCode: "",
+      output: "",
+      isResultShow: false,
+      runResult: "",
     };
   },
   mounted() {
@@ -143,6 +157,9 @@ export default {
           },
         }
       );
+    },
+    getEditorValue() {
+      return toRaw(this.editor).getValue();
     },
     matchLanguage() {
       let language = Object.values(globalVars.programs).filter(
@@ -174,6 +191,77 @@ export default {
           if (res) [this.scriptCode, this.outputCode] = res;
         }
       );
+    },
+    async runCurrentCommand() {
+      let cmd = this.getEditorValue();
+      cmd = window.special(cmd);
+      cmd = await this.replaceTempInputVals(cmd);
+      let terminal = false;
+      let raw = true;
+      switch (this.output) {
+        case "html":
+          raw = false;
+          break;
+        case "terminal":
+          terminal = true;
+          break;
+        case "ignore":
+          utools.hideMainWindow();
+          break;
+      }
+      if (this.program === "quickcommand") {
+        window.runCodeInVm(cmd, (stdout, stderr) => {
+          if (stderr) return this.showRunResult(stderr, raw, false);
+          this.showRunResult(stdout, raw, true);
+        });
+      } else {
+        let option = globalVars.programs[this.program];
+        if (program === "custom")
+          option = {
+            bin: this.customOptions.bin,
+            argv: this.customOptions.argv,
+            ext: this.customOptions.ext,
+          };
+        option.scptarg = this.scptarg;
+        option.charset = {
+          scriptCode: this.scriptCode,
+          outputCode: this.outputCode,
+        };
+        window.runCodeFile(cmd, option, terminal, (stdout, stderr) => {
+          if (terminal) return;
+          if (stderr) return this.showRunResult(stderr, raw, false);
+          this.showRunResult(stdout, raw, true);
+        });
+      }
+    },
+    async replaceTempInputVals(cmd) {
+      let tempInputVals = [];
+      let specilaVals = [
+        "input",
+        "subinput",
+        "pwd",
+        "SelectFile",
+        "WindowInfo",
+        "MatchedFiles",
+      ];
+      specilaVals.forEach((x) => {
+        let m = cmd.match(new RegExp("{{" + x + ".*?}}", "g"));
+        m &&
+          m.forEach((y) => tempInputVals.includes(y) || tempInputVals.push(y));
+      });
+      if (!tempInputVals.length) return cmd;
+      let inputs = await quickcommand.showInputBox(
+        tempInputVals,
+        "需要临时为以下变量赋值"
+      );
+      tempInputVals.forEach((t, n) => {
+        cmd = cmd.replace(new RegExp(t, "g"), inputs[n]);
+      });
+      return cmd;
+    },
+    showRunResult(content, raw, success) {
+      this.isResultShow = true;
+      this.runResult += content;
     },
   },
 };
