@@ -100,8 +100,23 @@
     </div>
     <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
       <q-card style="width: 90vh">
+        <q-toolbar>
+          <q-avatar>
+            <q-icon
+              :class="runResultStatus ? 'text-green' : 'text-red'"
+              style="font-size: 30px"
+              :name="runResultStatus ? 'task_alt' : 'error'"
+            ></q-icon>
+          </q-avatar>
+          <q-toolbar-title
+            ><span class="text-weight-bold">运行结果</span></q-toolbar-title
+          >
+        </q-toolbar>
         <q-card-section class="row items-center">
-          <span v-html="runResult"></span>
+          <pre
+            :class="runResultStatus ? 'text-green' : 'text-red'"
+            v-html="runResult"
+          ></pre>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="关闭" color="primary" v-close-popup />
@@ -129,6 +144,8 @@ export default {
       output: "",
       isResultShow: false,
       runResult: "",
+      runResultStatus: true,
+      resultMaxLength: 10000,
     };
   },
   mounted() {
@@ -216,7 +233,7 @@ export default {
         });
       } else {
         let option = globalVars.programs[this.program];
-        if (program === "custom")
+        if (this.program === "custom")
           option = {
             bin: this.customOptions.bin,
             argv: this.customOptions.argv,
@@ -259,9 +276,18 @@ export default {
       });
       return cmd;
     },
-    showRunResult(content, raw, success) {
+    showRunResult(content, raw, isSuccess) {
       this.isResultShow = true;
-      this.runResult += content;
+      this.runResultStatus = isSuccess;
+      let contlength = content.length;
+      if (contlength > this.resultMaxLength)
+        content =
+          content.slice(0, this.resultMaxLength - 100) +
+          `\n\n...\n${
+            contlength - this.resultMaxLength - 100
+          } 字省略\n...\n\n` +
+          content.slice(contlength - 100);
+      this.runResult += htmlEncode(content, raw);
     },
   },
 };
