@@ -1,6 +1,9 @@
 import { route } from 'quasar/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
+import quickcommand from '../api/quickcommand'
+
+window.quickcommand = quickcommand
 
 /*
  * If not building with SSR mode, you can
