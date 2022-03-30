@@ -10,7 +10,7 @@
 
 
 const ESLintPlugin = require('eslint-webpack-plugin')
-
+const MonacoEditorPlugin = require("monaco-editor-webpack-plugin");
 
 const { configure } = require('quasar/wrappers');
 
@@ -76,8 +76,9 @@ module.exports = configure(function (ctx) {
       chainWebpack (chain) {
         chain.plugin('eslint-webpack-plugin')
           .use(ESLintPlugin, [{ extensions: [ 'js', 'vue' ] }])
-      }
-      
+        chain.plugin("monaco-editor-webpack-plugin")
+          .use(MonacoEditorPlugin);
+        },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-devServer

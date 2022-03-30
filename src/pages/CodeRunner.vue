@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md q-gutter-sm">
+  <div class="q-pa-md">
     <div class="row q-gutter-sm">
       <div class="col-3">
         <div style="max-width: 300px">
@@ -32,13 +32,29 @@
       <div class="col">
         <div class="row q-gutter-sm" v-show="program === 'custom'">
           <div class="col">
-            <q-input dense v-model="customOptions.bin" label="解释器路径" />
+            <q-input
+              dense
+              v-model="customOptions.bin"
+              stack-label
+              label="解释器路径"
+            />
           </div>
           <div class="col">
-            <q-input dense v-model="customOptions.argv" label="解释器参数" />
+            <q-input
+              dense
+              v-model="customOptions.argv"
+              stack-label
+              label="解释器参数"
+            />
           </div>
           <div class="col">
-            <q-input dense v-model="customOptions.ext" label="后缀,不含." />
+            <q-input
+              dense
+              v-model="customOptions.ext"
+              @blur="matchLanguage"
+              label="后缀,不含."
+              stack-label
+            />
           </div>
         </div>
       </div>
@@ -55,16 +71,13 @@
           <q-btn
             color="primary"
             label="文档"
-            v-show="program === 'quickcommand'"
-          />
-          <q-btn
-            color="primary"
-            label="格式化"
+            @click="showHelp"
             v-show="program === 'quickcommand'"
           />
           <q-btn
             color="primary"
             label="编码设置"
+            @click="showCoding = true"
             v-show="program !== 'quickcommand'"
           />
           <q-btn color="primary" label="运行" />
@@ -72,26 +85,131 @@
       </div>
     </div>
     <div class="row">
-      <textarea style="width: 100%; height: 85vh"></textarea>
+      <div
+        id="monocaEditor"
+        style="
+          position: fixed;
+          bottom: 1px;
+          left: 1px;
+          right: 1px;
+          top: 70px;
+          border-radius: 4px;
+          border: 2px solid #3376cd;
+        "
+      />
     </div>
+    <q-dialog v-model="showCoding" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h5" align="center">编码设置</div>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+          <q-input
+            outlined
+            v-model="scriptCode"
+            label="脚本编码"
+            hint="未出现乱码问题请留空"
+            hide-hint
+            autofocus
+            @keyup.enter="showCoding = false"
+          />
+          <q-input
+            outlined
+            v-model="outputCode"
+            label="输出编码"
+            hint="未出现乱码问题请留空"
+            hide-hint
+            @keyup.enter="showCoding = false"
+          />
+        </q-card-section>
+        <q-card-actions align="right" class="text-primary">
+          <q-btn color="primary" label="帮助" @click="showSupportEncodings()" />
+          <q-btn color="primary" label="确定" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import GlobalVars from "components/GlobalVars";
+import * as monaco from "monaco-editor";
+
 export default {
   data() {
     return {
       options: Object.keys(GlobalVars.programs),
       program: "quickcommand",
-      editor: "",
+      editor: null,
       customOptions: { bin: "", argv: "", ext: "" },
-      scptarg: ""
+      scptarg: "",
+      showCoding: false,
+      scriptCode: "",
+      outputCode: "",
     };
+  },
+  mounted() {
+    this.initEditor();
   },
   computed: {},
   created() {},
-  methods: {},
+  watch: {
+    program(val) {
+      this.setLanguage(val);
+    },
+  },
+  methods: {
+    initEditor() {
+      this.editor = monaco.editor.create(
+        document.getElementById("monocaEditor"),
+        {
+          value: "",
+          language: "javascript",
+          automaticLayout: true,
+          foldingStrategy: "indentation",
+          autoClosingBrackets: true,
+          tabSize: 2,
+          minimap: {
+            enabled: false,
+          },
+        }
+      );
+      this.editor.onDidChangeModelContent((e) => {
+        console.log(e);
+      });
+    },
+    getValue() {
+      this.editor.getValue();
+    },
+    matchLanguage() {
+      let language = Object.values(GlobalVars.programs).filter(
+        (program) => program.ext === this.customOptions.ext
+      );
+      if (language.length) {
+        this.setLanguage(language[0].name);
+      }
+    },
+    setLanguage(language) {
+      let highlight = GlobalVars.programs[language].highlight;
+      monaco.editor.setModelLanguage(
+        this.editor.getModel(),
+        highlight ? highlight : language
+      );
+    },
+    showHelp() {
+      utools.createBrowserWindow("./helps/quickcommand.html", {
+        width: 1280,
+        height: 920,
+      });
+    },
+    showSupportEncodings() {
+      utools.ubrowser
+        .goto(
+          "https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings"
+        )
+        .run({ width: 1280, height: 920 });
+    },
+  },
 };
 </script>
 
