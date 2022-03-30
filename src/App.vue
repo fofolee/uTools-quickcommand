@@ -8,14 +8,19 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "App",
   data() {
-    return {
-    };
+    return {};
   },
   computed: {},
   created: function () {
-    // this.$router.push("/configuration");
-    this.$router.push("/code");
+    this.pluginEnterEvent();
   },
-  methods: {},
+  methods: {
+    pluginEnterEvent() {
+      utools.onPluginEnter((enter) => {
+        localStorage["enterData"] = JSON.stringify(enter);
+        this.$router.push(enter.code);
+      });
+    },
+  },
 });
 </script>
