@@ -85,8 +85,8 @@
       </div>
     </div>
     <div class="row">
-      <div
-        id="monocaEditor"
+      <MonocaEditor
+        ref="editor"
         style="
           position: fixed;
           bottom: 1px;
@@ -128,20 +128,14 @@
 
 <script>
 import globalVars from "components/GlobalVars";
-import * as monaco from "monaco-editor";
-import { toRaw } from "vue";
-import utoolsApi from "!raw-loader!../types/utools.api.d.ts";
-import quickcommandApi from "!raw-loader!../types/quickcommand.api.d.ts";
-import electronApi from "!raw-loader!../types/electron.d.ts";
-import nodeApi from "!raw-loader!../types/node.api.d.ts";
-import commonApi from "!raw-loader!../types/common.d.ts";
+import MonocaEditor from "components/MonocaEditor";
 
 export default {
+  components: { MonocaEditor },
   data() {
     return {
       options: Object.keys(globalVars.programs),
       program: "quickcommand",
-      editor: null,
       customOptions: { bin: "", argv: "", ext: "" },
       scptarg: "",
       scriptCode: "",
@@ -154,7 +148,7 @@ export default {
     };
   },
   mounted() {
-    this.initEditor();
+    this.bindKeys();
   },
   computed: {},
   created() {},
@@ -164,45 +158,12 @@ export default {
     },
   },
   methods: {
-    initEditor() {
+    bindKeys() {
       let that = this;
-      this.editor = monaco.editor.create(
-        document.getElementById("monocaEditor"),
-        {
-          value: "",
-          language: "javascript",
-          automaticLayout: true,
-          foldingStrategy: "indentation",
-          autoClosingBrackets: true,
-          tabSize: 2,
-          minimap: {
-            enabled: false,
-          },
-        }
-      );
-      this.editor.addCommand(
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
-        function () {
-          that.runCurrentCommand();
-        }
-      );
-      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: true,
-        noSyntaxValidation: false,
+      // ctrl+b 运行
+      this.$refs.editor.addEditorCommand(2048 | 32, function () {
+        that.runCurrentCommand();
       });
-      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.ES6,
-        allowNonTsExtensions: true,
-        allowJs: true,
-        lib: [],
-      });
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(
-        quickcommandApi + utoolsApi + electronApi + nodeApi + commonApi,
-        "api.d.ts"
-      );
-    },
-    getEditorValue() {
-      return toRaw(this.editor).getValue();
     },
     matchLanguage() {
       let language = Object.values(globalVars.programs).filter(
@@ -214,10 +175,7 @@ export default {
     },
     setLanguage(language) {
       let highlight = globalVars.programs[language].highlight;
-      monaco.editor.setModelLanguage(
-        this.editor.getModel(),
-        highlight ? highlight : language
-      );
+      this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
     showHelp() {
       utools.createBrowserWindow("./helps/quickcommand.html", {
@@ -236,7 +194,7 @@ export default {
       );
     },
     async runCurrentCommand() {
-      let cmd = this.getEditorValue();
+      let cmd = this.$refs.editor.getEditorValue();
       cmd = window.special(cmd);
       cmd = await this.replaceTempInputVals(cmd);
       let terminal = false;
