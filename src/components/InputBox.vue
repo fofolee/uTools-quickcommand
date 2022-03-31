@@ -29,13 +29,14 @@
 export default {
   data() {
     return {
-      results: new Array(this.labels.length),
+      results: this.values,
     };
   },
   props: {
     labels: Array,
     title: String,
-    hints: Array
+    hints: Array,
+    values: Array
   },
   emits: ["ok", "hide"],
   methods: {
