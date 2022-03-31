@@ -127,8 +127,9 @@
 </template>
 
 <script>
-import allProgrammings from "../api/programs.js";
+import allProgrammings from "../js/programs.js";
 import MonocaEditor from "components/MonocaEditor";
+import UTOOLS from "../js/utools.js";
 
 export default {
   components: { MonocaEditor },
@@ -149,6 +150,7 @@ export default {
   },
   mounted() {
     this.bindKeys();
+    this.loadOrSaveHistory();
   },
   computed: {},
   created() {},
@@ -158,6 +160,30 @@ export default {
     },
   },
   methods: {
+    loadOrSaveHistory() {
+      // 读取
+      var history = UTOOLS.getDB(UTOOLS.DBPRE.CFG + "codeHistory");
+      if (history.program) {
+        this.$refs.editor.setEditorValue(history.cmd);
+        this.program = history.program;
+        this.scptarg = history.scptarg || "";
+        this.scriptCode = history.scriptCode || "";
+        this.outputCode = history.outputCode || "";
+        if (history.customOptions) this.customOptions = history.customOptions;
+      }
+      utools.onPluginOut(() => {
+        var saveData = {
+          cmd: this.$refs.editor.getEditorValue(),
+          program: this.program,
+          scptarg: this.scptarg,
+          scriptCode: this.scriptCode,
+          outputCode: this.outputCode,
+          customOptions: JSON.parse(JSON.stringify(this.customOptions))
+        };
+        // 保存
+        UTOOLS.putDB(saveData, UTOOLS.DBPRE.CFG + "codeHistory");
+      });
+    },
     bindKeys() {
       let that = this;
       // ctrl+b 运行
@@ -184,14 +210,18 @@ export default {
       });
     },
     showCodingPage() {
-      quickcommand.showInputBox(
-        ["文件编码", "输出编码"],
-        "编码设置",
-        ["基于iconv-lite进行编码，无乱码请留空", "无乱码请留空"],
-        (res) => {
+      quickcommand
+        .showInputBox(
+          {
+            labels: ["文件编码", "输出编码"],
+            hints: ["基于iconv-lite进行编码，无乱码请留空", "无乱码请留空"],
+            values: [this.scriptCode, this.outputCode],
+          },
+          "编码设置"
+        )
+        .then((res) => {
           if (res) [this.scriptCode, this.outputCode] = res;
-        }
-      );
+        });
     },
     async runCurrentCommand() {
       let cmd = this.$refs.editor.getEditorValue();

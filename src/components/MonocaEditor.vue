@@ -5,7 +5,7 @@
 <script>
 import * as monaco from "monaco-editor";
 import { toRaw } from "vue";
-import importAll from "../api/importAll.js";
+import importAll from "../js/importAll.js";
 
 // 批量导入声明文件
 let apis = importAll(
@@ -134,6 +134,9 @@ export default {
     },
     getEditorValue() {
       return toRaw(this.editor).getValue();
+    },
+    setEditorValue(value) {
+      toRaw(this.editor).setValue(value);
     },
     setEditorLanguage(language) {
       monaco.editor.setModelLanguage(this.editor.getModel(), language);

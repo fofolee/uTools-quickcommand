@@ -1,3 +1,7 @@
+/**
+ * 所有支持的编程语言
+*/
+
 const programs = {
   quickcommand: {
     name: "quickcommand",

@@ -14,8 +14,8 @@ let showInputBox = (options = [], title = "") => {
         if (!(options instanceof Object)) return reject(new TypeError("必须为数组或对象"))
         if (options instanceof Array) props.labels = options
         else props = options
-        if (!props.values) props.values = options.map(() => "")
-        if (!props.hints) props.hints = options.map(() => "")
+        if (!props.values) props.values = options.labels.map(() => "")
+        if (!props.hints) props.hints = options.labels.map(() => "")
         Dialog.create({
             component: inputBox,
             componentProps: props
