@@ -18,6 +18,10 @@ const routes = [
     {
         path: '/panel_:tags(\\w+)',
         component: () => import('pages/QuickPanel.vue')
+    },
+    {
+        path: '/needupdate/:version-:requiredversion',
+        component: () => import('pages/NeedUpdate.vue')
     }
 
 ]
