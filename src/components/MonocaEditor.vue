@@ -5,11 +5,17 @@
 <script>
 import * as monaco from "monaco-editor";
 import { toRaw } from "vue";
-import utoolsApi from "!raw-loader!../types/utools.api.d.ts";
-import quickcommandApi from "!raw-loader!../types/quickcommand.api.d.ts";
-import electronApi from "!raw-loader!../types/electron.d.ts";
-import nodeApi from "!raw-loader!../types/node.api.d.ts";
-import commonApi from "!raw-loader!../types/common.d.ts";
+import importAll from "../api/importAll.js";
+
+// 批量导入声明文件
+let apis = importAll(
+  require.context("!raw-loader!../plugins/monaco/types/", false, /\.ts$/)
+);
+
+// 批量导入关键字补全
+let languageCompletions = importAll(
+  require.context("../plugins/monaco/completions/", false, /\.js$/)
+);
 
 export default {
   data() {
@@ -36,6 +42,10 @@ export default {
           },
         }
       );
+      this.loadTypes();
+      this.registerLanguage();
+    },
+    loadTypes() {
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
         noSemanticValidation: true,
         noSyntaxValidation: false,
@@ -46,10 +56,81 @@ export default {
         allowJs: true,
         lib: [],
       });
+      // 引入声明文件
       monaco.languages.typescript.javascriptDefaults.addExtraLib(
-        quickcommandApi + utoolsApi + electronApi + nodeApi + commonApi,
+        Object.values(apis)
+          .map((x) => x.default)
+          .join("\n"),
         "api.d.ts"
       );
+    },
+    registerLanguage() {
+      let that = this;
+      const identifierPattern = "([a-zA-Z_]\\w*)";
+      let getTokens = (code) => {
+        let identifier = new RegExp(identifierPattern, "g");
+        let tokens = [];
+        let array1;
+        while ((array1 = identifier.exec(code)) !== null) {
+          tokens.push(array1[0]);
+        }
+        return Array.from(new Set(tokens));
+      };
+      let createDependencyProposals = (range, keyWords, editor, curWord) => {
+        let keys = [];
+        let tokens = getTokens(editor.getModel().getValue());
+        // 自定义变量、字符串
+        for (const item of tokens) {
+          if (item != curWord.word) {
+            keys.push({
+              label: item,
+              kind: monaco.languages.CompletionItemKind.Text,
+              documentation: "",
+              insertText: item,
+              range: range,
+            });
+          }
+        }
+        // 关键字、函数
+        Object.keys(keyWords).forEach((ItemKind) => {
+          keyWords[ItemKind].forEach((item) => {
+            keys.push({
+              label: item,
+              kind: monaco.languages.CompletionItemKind[ItemKind],
+              documentation: "",
+              insertText: item,
+              range: range,
+            });
+          });
+        });
+        return keys;
+      };
+      // 注册 applescript
+      monaco.languages.register({
+        id: "applescript",
+      });
+      // 注册自动补全
+      Object.keys(languageCompletions).forEach((language) => {
+        monaco.languages.registerCompletionItemProvider(language, {
+          provideCompletionItems: function (model, position) {
+            var word = model.getWordUntilPosition(position);
+            var range = {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: word.startColumn,
+              endColumn: word.endColumn,
+            };
+            return {
+              suggestions: createDependencyProposals(
+                range,
+                languageCompletions[language].default,
+                toRaw(that.editor),
+                word
+              ),
+            };
+          },
+        });
+      });
     },
     getEditorValue() {
       return toRaw(this.editor).getValue();

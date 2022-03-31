@@ -1,4 +1,3 @@
-<script type="text/javascript">
 const programs = {
   quickcommand: {
     name: "quickcommand",
@@ -101,7 +100,4 @@ const programs = {
     color: "#438eff",
   },
 };
-export default {
-  programs,
-};
-</script>
+export default programs

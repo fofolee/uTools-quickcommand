@@ -85,8 +85,8 @@ declare function fetch(
 
 // console
 declare var console: {
-  log(message?: any, ...optionalParams: any[]): void,
-  error(message?: any, ...optionalParams: any[]): void
+  log(message?: any): void,
+  error(message?: any): void
 }
 
 // process

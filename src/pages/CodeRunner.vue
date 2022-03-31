@@ -127,14 +127,14 @@
 </template>
 
 <script>
-import globalVars from "components/GlobalVars";
+import allProgrammings from "../api/programs.js";
 import MonocaEditor from "components/MonocaEditor";
 
 export default {
   components: { MonocaEditor },
   data() {
     return {
-      options: Object.keys(globalVars.programs),
+      options: Object.keys(allProgrammings),
       program: "quickcommand",
       customOptions: { bin: "", argv: "", ext: "" },
       scptarg: "",
@@ -166,7 +166,7 @@ export default {
       });
     },
     matchLanguage() {
-      let language = Object.values(globalVars.programs).filter(
+      let language = Object.values(allProgrammings).filter(
         (program) => program.ext === this.customOptions.ext
       );
       if (language.length) {
@@ -174,7 +174,7 @@ export default {
       }
     },
     setLanguage(language) {
-      let highlight = globalVars.programs[language].highlight;
+      let highlight = allProgrammings[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
     showHelp() {
@@ -216,7 +216,7 @@ export default {
           this.showRunResult(stdout, raw, true);
         });
       } else {
-        let option = globalVars.programs[this.program];
+        let option = allProgrammings[this.program];
         if (this.program === "custom")
           option = {
             bin: this.customOptions.bin,
