@@ -160,6 +160,7 @@ export default {
     },
   },
   methods: {
+    // 读取历史记录
     loadOrSaveHistory() {
       // 读取
       var history = UTOOLS.getDB(UTOOLS.DBPRE.CFG + "codeHistory");
@@ -184,6 +185,7 @@ export default {
         UTOOLS.putDB(saveData, UTOOLS.DBPRE.CFG + "codeHistory");
       });
     },
+    // 绑定快捷键
     bindKeys() {
       let that = this;
       // ctrl+b 运行
@@ -191,6 +193,7 @@ export default {
         that.runCurrentCommand();
       });
     },
+    // 匹配编程语言
     matchLanguage() {
       let language = Object.values(allProgrammings).filter(
         (program) => program.ext === this.customOptions.ext
@@ -199,16 +202,19 @@ export default {
         this.setLanguage(language[0].name);
       }
     },
+    // 设置编程语言
     setLanguage(language) {
       let highlight = allProgrammings[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
+    // 打开文档
     showHelp() {
       utools.createBrowserWindow("./helps/quickcommand.html", {
         width: 1280,
         height: 920,
       });
     },
+    // 编码设置页面
     showCodingPage() {
       quickcommand
         .showInputBox(
@@ -223,6 +229,7 @@ export default {
           if (res) [this.scriptCode, this.outputCode] = res;
         });
     },
+    // 运行命令
     async runCurrentCommand() {
       let cmd = this.$refs.editor.getEditorValue();
       cmd = window.special(cmd);
@@ -265,6 +272,7 @@ export default {
         });
       }
     },
+    // 替换特殊变量
     async replaceTempInputVals(cmd) {
       let tempInputVals = [];
       let specilaVals = [
@@ -290,6 +298,7 @@ export default {
       });
       return cmd;
     },
+    // 显示运行结果
     showRunResult(content, raw, isSuccess) {
       this.isResultShow = true;
       this.runResultStatus = isSuccess;
