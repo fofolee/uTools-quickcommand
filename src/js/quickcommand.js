@@ -9,7 +9,6 @@ import {
 } from 'quasar'
 import inputBox from "../components/InputBox"
 
-console.log(Notify);
 
 let showInputBox = (options = [], title = "") => {
     return new Promise((reslove, reject) => {
@@ -28,11 +27,24 @@ let showInputBox = (options = [], title = "") => {
             reslove(Array.from(results))
         }).onCancel(() => {
             console.log('取消')
-        }).onDismiss(() => {
-            console.log('对话框被关闭')
         })
     })
 };
+
+let showConfirmBox = (message = "", title = "提示") => {
+    return new Promise((reslove, reject) => {
+        Dialog.create({
+            title: title,
+            message: message,
+            cancel: true,
+            persistent: true
+        }).onOk(() => {
+            reslove(true)
+        }).onCancel(() => {
+            reslove(false)
+        })
+    })
+}
 
 let showMessageBox = (message, icon = 'success', time = 3000) => {
     if (icon === 'success') icon = 'positive'
@@ -44,7 +56,10 @@ let showMessageBox = (message, icon = 'success', time = 3000) => {
         position: 'top',
     })
 }
+
+
 export default {
     showInputBox,
-    showMessageBox
+    showMessageBox,
+    showConfirmBox
 };

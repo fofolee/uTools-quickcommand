@@ -133,9 +133,10 @@ interface quickcommandApi {
   *     confirmed && console.log('点击了确定')
   * })
   * ```
+  * @param message 提示的内容
   * @param title 提示的标题
   */
-  showConfirmBox(title?: string): Promise<boolean>;
+  showConfirmBox(message?: string, title?: string): Promise<boolean>;
 
   /**
   * 同步等待，会阻塞进程
