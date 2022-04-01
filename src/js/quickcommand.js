@@ -4,9 +4,12 @@
  */
 
 import {
-    Dialog
+    Dialog,
+    Notify
 } from 'quasar'
 import inputBox from "../components/InputBox"
+
+console.log(Notify);
 
 let showInputBox = (options = [], title = "") => {
     return new Promise((reslove, reject) => {
@@ -30,6 +33,18 @@ let showInputBox = (options = [], title = "") => {
         })
     })
 };
+
+let showMessageBox = (message, icon = 'success', time = 3000) => {
+    if (icon === 'success') icon = 'positive'
+    if (icon === 'error') icon = 'negative'
+    Notify.create({
+        type: icon,
+        message: message,
+        timeout: time,
+        position: 'top',
+    })
+}
 export default {
     showInputBox,
+    showMessageBox
 };

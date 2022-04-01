@@ -123,7 +123,7 @@ interface quickcommandApi {
   * @param icon 图标，默认为 success
   * @param time 多少毫秒后消失，默认为 3000
   */
-  showMessageBox(message: string, icon?: 'success' | 'error' | 'warning' | 'info' | 'question', time?: number): void;
+  showMessageBox(message: string, icon?: 'success' | 'error' | 'warning' | 'info' , time?: number): void;
 
   /**
   * 显示一个确认框，返回是否点击了确认
