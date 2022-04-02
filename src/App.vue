@@ -26,10 +26,20 @@ export default defineComponent({
         return;
       }
       utools.onPluginEnter((enter) => {
+        // 暗黑模式
+        this.$q.dark.set(utools.isDarkColors());
+        // 数据传递
         localStorage["enterData"] = JSON.stringify(enter);
+        // 路由跳转
         this.$router.push(enter.code);
       });
     },
   },
 });
 </script>
+
+<style>
+body.body--dark {
+  background: #1d1d1d;
+}
+</style>
