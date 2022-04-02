@@ -33,12 +33,18 @@
             <q-tooltip anchor="top middle" self="center middle">
               导出
             </q-tooltip>
-            <q-menu>
+            <q-menu transition-show="jump-down" transition-hide="jump-up">
               <q-list style="min-width: 100px">
                 <q-item clickable v-close-popup @click="exportCommandFile">
+                  <q-item-section side>
+                    <q-icon name="save" />
+                  </q-item-section>
                   <q-item-section>导出</q-item-section>
                 </q-item>
                 <q-item clickable v-close-popup @click="exportCommandRaw">
+                  <q-item-section side>
+                    <q-icon name="content_paste_go" />
+                  </q-item-section>
                   <q-item-section>复制到剪贴板</q-item-section>
                 </q-item>
               </q-list>

@@ -6,6 +6,8 @@
           <q-select
             dense
             outlined
+            transition-show="jump-down"
+            transition-hide="jump-up"
             label-color="primary"
             v-model="program"
             :options="options"
@@ -179,7 +181,7 @@ export default {
           scptarg: this.scptarg,
           scriptCode: this.scriptCode,
           outputCode: this.outputCode,
-          customOptions: JSON.parse(JSON.stringify(this.customOptions))
+          customOptions: JSON.parse(JSON.stringify(this.customOptions)),
         };
         // 保存
         UTOOLS.putDB(saveData, UTOOLS.DBPRE.CFG + "codeHistory");
