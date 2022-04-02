@@ -10,9 +10,19 @@
       <q-tab
         v-for="tag in allQuickCommandTags"
         :key="tag"
-        :label="tag"
         :name="tag"
-      />
+        :label="tag"
+      >
+        <div>
+          <q-badge
+            v-if="activatedQuickPanels.includes(tag)"
+            floating
+            rounded
+            color="teal"
+            ><q-icon name="near_me"
+          /></q-badge>
+        </div>
+      </q-tab>
     </q-tabs>
     <!-- 标签对应的面板 -->
     <q-tab-panels
