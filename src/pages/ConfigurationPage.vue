@@ -37,28 +37,38 @@
       vertical
     >
       <q-tab-panel
-        style="padding: 8px"
+        style="padding: 0"
         v-for="tag in allQuickCommandTags"
         :key="tag"
         :name="tag"
       >
-        <div class="row center">
-          <CommandCard
-            v-for="commandInfo in currentTagQuickCommands"
-            :key="commandInfo.features.code"
-            :commandInfo="commandInfo"
-            :activated="
-              activatedQuickCommandFeatureCodes.includes(
-                commandInfo.features.code
-              )
-            "
-            @commandChanged="commandChanged"
-            :style="{
-              width: cmmandCardWidth,
-            }"
-            class="relative-position q-pa-sm"
-          ></CommandCard>
-        </div>
+        <q-scroll-area
+          style="height: 100%"
+          :thumb-style="{
+            background: 'grey',
+            width: '6px',
+            opacity: 0.5,
+          }"
+        >
+          <div class="row center q-pa-xs">
+            <CommandCard
+              v-for="commandInfo in currentTagQuickCommands"
+              :key="commandInfo.features.code"
+              :commandInfo="commandInfo"
+              :activated="
+                activatedQuickCommandFeatureCodes.includes(
+                  commandInfo.features.code
+                )
+              "
+              :cardStyle="commandCardStyleSheet[commandCardStyle]"
+              @commandChanged="commandChanged"
+              :style="{
+                width: commandCardStyleSheet[commandCardStyle].width,
+              }"
+              class="relative-position q-pa-sm"
+            ></CommandCard>
+          </div>
+        </q-scroll-area>
       </q-tab-panel>
     </q-tab-panels>
     <!-- 底栏 -->
@@ -85,10 +95,28 @@ export default {
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
       allQuickCommands: [],
-      cmmandCardWidth: "33%",
       tabBarWidth: "80px",
       footerBarHeight: "35px",
       barShadow: "2px 0 5px 2px #0000001f",
+      commandCardStyle: "normal",
+      commandCardStyleSheet: {
+        mini: {
+          width: "25%",
+          code: 1,
+        },
+        small: {
+          width: "33%",
+          code: 2,
+        },
+        normal: {
+          width: "50%",
+          code: 3,
+        },
+        large: {
+          width: "100%",
+          code: 4,
+        },
+      },
     };
   },
   computed: {
@@ -131,8 +159,7 @@ export default {
       this.activatedQuickPanels = activatedFeatures.quickpanels;
       // 所有的快捷命令
       this.allQuickCommands = this.getAllQuickCommands();
-      // 所有的 tags
-      console.log(this);
+      console.log("ConfigurationPage", this);
     },
     // 获取所有已启用的命令的 features 以及面板名称
     getActivatedFeatures() {
