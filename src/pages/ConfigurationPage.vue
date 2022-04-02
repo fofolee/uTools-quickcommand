@@ -1,34 +1,35 @@
 <template>
   <div>
+    <!-- 标签栏 -->
     <q-tabs
       v-model="currentTag"
       vertical
       class="text-teal fixed-left"
-      style="width: 80px; border-right: 1px solid #0000001f"
+      :style="{
+        width: tabBarWidth,
+        boxShadow: barShadow,
+        zIndex: 1,
+      }"
     >
       <!-- 所有标签 -->
-      <q-tab
-        v-for="tag in allQuickCommandTags"
-        :key="tag"
-        :name="tag"
-        :label="tag"
-      >
-        <div>
-          <q-badge
+      <q-tab v-for="tag in allQuickCommandTags" :key="tag" :name="tag">
+        <div class="flex items-center">
+          <q-icon
             v-if="activatedQuickPanels.includes(tag)"
-            floating
-            rounded
-            color="teal"
-            ><q-icon name="near_me"
-          /></q-badge>
+            name="star"
+            style="margin-right: 2px"
+          />{{ tag }}
         </div>
       </q-tab>
     </q-tabs>
-    <!-- 标签对应的面板 -->
+    <!-- 面板栏 -->
     <q-tab-panels
       animated
       class="fixed-right"
-      style="left: 80px"
+      :style="{
+        bottom: footerBarHeight,
+        left: tabBarWidth,
+      }"
       v-model="currentTag"
       transition-prev="slide-down"
       transition-next="slide-up"
@@ -43,21 +44,32 @@
       >
         <div class="row center">
           <CommandCard
-            v-for="quickcommand in currentTagQuickCommands"
-            :key="quickcommand.features.code"
-            :quickcommand="quickcommand"
+            v-for="commandInfo in currentTagQuickCommands"
+            :key="commandInfo.features.code"
+            :commandInfo="commandInfo"
             :activated="
               activatedQuickCommandFeatureCodes.includes(
-                quickcommand.features.code
+                commandInfo.features.code
               )
             "
             @commandChanged="commandChanged"
-            style="width: 50%"
+            :style="{
+              width: cmmandCardWidth,
+            }"
             class="relative-position q-pa-sm"
           ></CommandCard>
         </div>
       </q-tab-panel>
     </q-tab-panels>
+    <!-- 底栏 -->
+    <div
+      class="fixed-bottom"
+      :style="{
+        height: footerBarHeight,
+        left: tabBarWidth,
+        boxShadow: barShadow,
+      }"
+    ></div>
   </div>
 </template>
 
@@ -73,6 +85,10 @@ export default {
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
       allQuickCommands: [],
+      cmmandCardWidth: "33%",
+      tabBarWidth: "80px",
+      footerBarHeight: "35px",
+      barShadow: "2px 0 5px 2px #0000001f",
     };
   },
   computed: {

@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper" :style="isCommandActivated ? '' : 'color:#9e9e9ea6'">
+  <div class="wrapper" :style="isCommandActivated ? '' : 'color:##9e9e9ea6'">
     <div>
       <!-- 开关 -->
       <div class="absolute" style="z-index: 1; left: 20px; bottom: 16px">
@@ -46,18 +46,18 @@
         <q-card-section>
           <!-- logo -->
           <div class="row">
-            <q-img width="48px" :src="quickcommand.features.icon" />
+            <q-img width="48px" :src="commandInfo.features.icon" />
           </div>
           <!-- 名称 -->
           <div class="row justify-end">
             <div class="text-h6 ellipsis">
-              {{ quickcommand.features.explain }}
+              {{ commandInfo.features.explain }}
             </div>
           </div>
           <!-- 匹配模式 -->
           <div class="row justify-end q-gutter-xs">
-            <div class="scrollArea">
-              <span v-for="cmd in quickcommand.features.cmds" :key="cmd">
+            <div class="matchTypesBox">
+              <span v-for="cmd in commandInfo.features.cmds" :key="cmd">
                 <span v-if="typeof cmd === 'string'">
                   <q-badge rounded color="teal"
                     ><q-icon class="q-mr-xs" name="font_download" />{{
@@ -135,14 +135,14 @@
           <!-- 语言类型及适配系统 -->
           <div class="row justify-end items-center q-gutter-xs">
             <span
-              :style="'color:' + allProgrammings[quickcommand.program].color"
+              :style="'color:' + allProgrammings[commandInfo.program].color"
               >●</span
             >
-            <span class="text-subtitle2">{{ quickcommand.program }}</span
+            <span class="text-subtitle2">{{ commandInfo.program }}</span
             ><span>|</span>
             <img
               width="16"
-              v-for="platform in quickcommand.features.platform"
+              v-for="platform in commandInfo.features.platform"
               :key="platform"
               :src="'/img/' + platform + '.svg'"
             />
@@ -167,29 +167,29 @@ export default {
   computed: {
     canCommandRun() {
       return (
-        this.quickcommand.features.cmds.filter((x) => x.length).length &&
+        this.commandInfo.features.cmds.filter((x) => x.length).length &&
         this.isCommandActivated
       );
     },
   },
   props: {
-    quickcommand: Object,
+    commandInfo: Object,
     activated: Boolean,
   },
   methods: {
     runCommand() {
       utools.redirect(
-        this.quickcommand.features.cmds.filter((x) => x.length)[0]
+        this.commandInfo.features.cmds.filter((x) => x.length)[0]
       );
     },
     toggleCommandActivated() {
       let event = {
         type: "disable",
-        data: this.quickcommand.features.code,
+        data: this.commandInfo.features.code,
       };
-      if (!UTOOLS.whole.removeFeature(this.quickcommand.features.code)) {
+      if (!UTOOLS.whole.removeFeature(this.commandInfo.features.code)) {
         UTOOLS.whole.setFeature(
-          JSON.parse(JSON.stringify(this.quickcommand.features))
+          JSON.parse(JSON.stringify(this.commandInfo.features))
         );
         event.type = "enable";
       }
@@ -198,8 +198,8 @@ export default {
     removeCommand() {
       quickcommand.showConfirmBox("删除这个快捷命令").then((x) => {
         if (!x) return;
-        let code = this.quickcommand.features.code;
-        utools.copyText(JSON.stringify(this.quickcommand, null, 4));
+        let code = this.commandInfo.features.code;
+        utools.copyText(JSON.stringify(this.commandInfo, null, 4));
         UTOOLS.delDB(UTOOLS.DBPRE.QC + code);
         UTOOLS.whole.removeFeature(code);
         this.isCommandAlive = false;
@@ -213,13 +213,13 @@ export default {
       });
     },
     exportCommandRaw() {
-      utools.copyText(JSON.stringify(this.quickcommand, null, 4)) &&
+      utools.copyText(JSON.stringify(this.commandInfo, null, 4)) &&
         quickcommand.showMessageBox("已复制到剪贴板");
     },
     exportCommandFile() {
-      window.saveFile(JSON.stringify(this.quickcommand), {
+      window.saveFile(JSON.stringify(this.commandInfo), {
         title: "选择保存位置",
-        defaultPath: `${this.quickcommand.features.explain}.json`,
+        defaultPath: `${this.commandInfo.features.explain}.json`,
         filters: [{ name: "json", extensions: ["json"] }],
       });
     },
@@ -241,7 +241,7 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.scrollArea {
+.matchTypesBox {
   height: 23px;
   width: 60%;
   overflow: hidden;
