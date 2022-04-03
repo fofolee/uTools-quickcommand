@@ -6,6 +6,8 @@
       <q-tabs
         v-model="currentTag"
         vertical
+        outside-arrows
+        :shrink="false"
         class="text-teal fixed-left"
         :style="{
           width: tabBarWidth,
@@ -14,18 +16,22 @@
         }"
       >
         <!-- 所有标签 -->
-        <q-tab v-for="tag in allQuickCommandTags" :key="tag" :name="tag">
-          <div class="flex items-center">
-            <q-icon
-              v-if="activatedQuickPanels.includes(tag)"
-              name="star"
-              style="margin-right: 2px"
-            />{{ tag }}
-            <q-tooltip v-if="tag === '未分类'">
-              所有没有添加标签的命令都会归在未分类 <br />
-              可以在新建命令时在标签一栏选择或直接键入标签名来添加标签
-            </q-tooltip>
-          </div>
+        <q-tab
+          :alert="activatedQuickPanels.includes(tag)"
+          alert-icon="star"
+          v-for="tag in allQuickCommandTags"
+          :key="tag"
+          :name="tag"
+          :content-class="
+            tag === '搜索结果' ? 'text-primary text-weight-bold' : ''
+          "
+          v-show="!(tag === '搜索结果' && !commandSearchKeyword)"
+        >
+          {{ tag }}
+          <q-tooltip v-if="tag === '未分类'">
+            所有没有添加标签的命令都会归在未分类 <br />
+            可以在新建命令时在标签一栏选择或直接键入标签名来添加标签
+          </q-tooltip>
         </q-tab>
       </q-tabs>
     </div>
@@ -92,10 +98,12 @@
         <div class="col">
           <q-input
             v-model="commandSearchKeyword"
-            debounce="1000"
+            debounce="200"
             filled
             dense
-            @change="searchCommand"
+            clearable
+            clear-icon="close"
+            @update:model-value="updateSearch"
             placeholder="搜索"
           >
             <template v-slot:prepend>
@@ -183,7 +191,17 @@
                     </q-item-section>
                     <q-item-section>全部导出</q-item-section>
                   </q-item>
-                  <q-item clickable v-close-popup>
+                  <q-item
+                    v-if="activatedQuickPanels.includes(currentTag)"
+                    clickable
+                    v-close-popup
+                  >
+                    <q-item-section side>
+                      <q-icon name="star_border" />
+                    </q-item-section>
+                    <q-item-section>取消收藏</q-item-section>
+                  </q-item>
+                  <q-item v-else clickable v-close-popup>
                     <q-item-section side>
                       <q-icon name="star" />
                     </q-item-section>
@@ -195,6 +213,7 @@
                       类似于旧版本的「快捷面板」</q-tooltip
                     >
                   </q-item>
+
                   <q-item clickable v-close-popup>
                     <q-item-section side>
                       <q-icon name="help" />
@@ -227,6 +246,7 @@ export default {
   data() {
     return {
       currentTag: "默认",
+      lastTag: "",
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
       allQuickCommands: [],
@@ -258,11 +278,19 @@ export default {
     // 当前标签下的所有快捷命令
     currentTagQuickCommands() {
       let commands = Object.values(this.allQuickCommands);
-      return this.currentTag === "未分类"
-        ? commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0)
-        : commands.filter(
+      switch (this.currentTag) {
+        case "未分类":
+          return commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0);
+        case "搜索结果":
+          if (this.commandSearchKeyword)
+            return commands.filter((cmd) =>
+              cmd.features.explain.includes(this.commandSearchKeyword)
+            );
+        default:
+          return commands.filter(
             (cmd) => cmd.tags && cmd.tags.includes(this.currentTag)
           );
+      }
     },
     // 所有命令对应的标签
     allQuickCommandTags() {
@@ -274,7 +302,7 @@ export default {
               ["默认"],
               Object.values(this.allQuickCommands).map((x) => x.tags)
             )
-            .concat(["未分类"])
+            .concat(["未分类", "搜索结果"])
         ),
       ].filter((x) => x);
     },
@@ -418,16 +446,26 @@ export default {
       }, 50);
     },
     // 搜索
-    searchCommand() {
-      let matchesCommand = Object.values(this.allQuickCommands).filter((x) =>
-        x.features.explain.includes(this.commandSearchKeyword)
-      );
-      if (matchesCommand.length)
-        this.locateToCommand(
-          matchesCommand[0].tags,
-          matchesCommand[0].features.code
-        );
+    updateSearch() {
+      // 记录当前标签页
+      if (this.currentTag !== "搜索结果") this.lastTag = this.currentTag;
+      if (this.commandSearchKeyword) {
+        // 搜索时跳转到搜索结果标签
+        setTimeout(() => {
+          this.currentTag = "搜索结果";
+        }, 50);
+      } else {
+        // 清空搜索回跳到之前标签
+        if (this.currentTag !== this.lastTag) this.currentTag = this.lastTag;
+      }
     },
   },
 };
 </script>
+
+<style scoped>
+.q-tab {
+  word-break: break-all;
+  white-space: normal;
+}
+</style>
