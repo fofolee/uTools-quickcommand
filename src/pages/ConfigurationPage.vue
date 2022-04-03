@@ -1,27 +1,34 @@
 <template>
   <div>
     <!-- 标签栏 -->
-    <q-tabs
-      v-model="currentTag"
-      vertical
-      class="text-teal fixed-left"
-      :style="{
-        width: tabBarWidth,
-        boxShadow: barShadow,
-        zIndex: 1,
-      }"
-    >
-      <!-- 所有标签 -->
-      <q-tab v-for="tag in allQuickCommandTags" :key="tag" :name="tag">
-        <div class="flex items-center">
-          <q-icon
-            v-if="activatedQuickPanels.includes(tag)"
-            name="star"
-            style="margin-right: 2px"
-          />{{ tag }}
-        </div>
-      </q-tab>
-    </q-tabs>
+    <!-- 面板视图不显示标签栏 -->
+    <div v-show="commandCardStyle !== 'mini'">
+      <q-tabs
+        v-model="currentTag"
+        vertical
+        class="text-teal fixed-left"
+        :style="{
+          width: tabBarWidth,
+          boxShadow: barShadow,
+          zIndex: 1,
+        }"
+      >
+        <!-- 所有标签 -->
+        <q-tab v-for="tag in allQuickCommandTags" :key="tag" :name="tag">
+          <div class="flex items-center">
+            <q-icon
+              v-if="activatedQuickPanels.includes(tag)"
+              name="star"
+              style="margin-right: 2px"
+            />{{ tag }}
+            <q-tooltip v-if="tag === '未分类'">
+              所有没有添加标签的命令都会归在未分类 <br />
+              可以在新建命令时在标签一栏选择或直接键入标签名来添加标签
+            </q-tooltip>
+          </div>
+        </q-tab>
+      </q-tabs>
+    </div>
     <!-- 面板栏 -->
     <q-tab-panels
       animated
@@ -79,12 +86,140 @@
         left: tabBarWidth,
         boxShadow: barShadow,
       }"
-    ></div>
+    >
+      <div class="row">
+        <!-- 搜索栏 -->
+        <div class="col">
+          <q-input
+            v-model="commandSearchKeyword"
+            debounce="1000"
+            filled
+            dense
+            @change="searchCommand"
+            placeholder="搜索"
+          >
+            <template v-slot:prepend>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </div>
+        <!-- 按钮组 -->
+        <div class="col-auto justify-end flex">
+          <q-btn-group>
+            <!-- 切换视图 -->
+            <q-btn-toggle
+              v-model="commandCardStyle"
+              toggle-color="teal"
+              flat
+              :options="[
+                { slot: 'normal', value: 'normal' },
+                { slot: 'dense', value: 'dense' },
+                { slot: 'mini', value: 'mini' },
+              ]"
+            >
+              <template v-slot:normal>
+                <q-icon name="dashboard" />普通
+                <q-tooltip>按两列排列的基础视图</q-tooltip>
+              </template>
+              <template v-slot:dense>
+                <q-icon name="apps" />紧凑
+                <q-tooltip
+                  >按三列排列的紧凑视图，但不会显示适用的操作系统</q-tooltip
+                >
+              </template>
+              <template v-slot:mini>
+                <q-icon name="view_comfy" />面板
+                <q-tooltip
+                  >按四列排列的面板视图<br />
+                  老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
+                  面板视图下只显示图标、描述和匹配类型,且不显示匹配类型为窗口的命令<br />
+                  点击卡片时会直接运行命令而不是编辑命令</q-tooltip
+                >
+              </template>
+            </q-btn-toggle>
+            <q-separator vertical />
+            <!-- 新建按钮 -->
+            <q-btn split flat label="新建" color="teal" icon="add"></q-btn>
+            <q-separator vertical />
+            <!-- 下拉菜单 -->
+            <q-btn color="teal" flat icon="menu" size="xs">
+              <q-menu transition-show="jump-up" transition-hide="jump-down">
+                <q-list>
+                  <q-item clickable>
+                    <q-item-section side>
+                      <q-icon name="keyboard_arrow_left" />
+                    </q-item-section>
+                    <q-item-section>导入</q-item-section>
+                    <q-menu anchor="top end" self="top start">
+                      <q-list>
+                        <q-item
+                          clickable
+                          v-close-popup
+                          class="items-end"
+                          @click="importCommandAndLocate"
+                        >
+                          <q-item-section side>
+                            <q-icon name="text_snippet" />
+                          </q-item-section>
+                          <q-item-section>从文件导入</q-item-section>
+                        </q-item>
+                        <q-item
+                          clickable
+                          v-close-popup
+                          class="items-end"
+                          @click="importCommandAndLocate(false)"
+                        >
+                          <q-item-section side>
+                            <q-icon name="content_paste" />
+                          </q-item-section>
+                          <q-item-section>从剪贴板导入</q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-item>
+                  <q-item clickable v-close-popup class="items-end">
+                    <q-item-section side>
+                      <q-icon name="file_upload" />
+                    </q-item-section>
+                    <q-item-section>全部导出</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup>
+                    <q-item-section side>
+                      <q-icon name="star" />
+                    </q-item-section>
+                    <q-item-section>收藏标签</q-item-section>
+                    <q-tooltip
+                      >收藏后，会将当前标签名作为全局关键字，可在 uTools
+                      的主输入框进行搜索 <br />
+                      搜索进入后，默认进入当前标签的面板视图 <br />
+                      类似于旧版本的「快捷面板」</q-tooltip
+                    >
+                  </q-item>
+                  <q-item clickable v-close-popup>
+                    <q-item-section side>
+                      <q-icon name="help" />
+                    </q-item-section>
+                    <q-item-section>帮助</q-item-section></q-item
+                  >
+                  <q-item style="color: red" clickable v-close-popup>
+                    <q-item-section side>
+                      <q-icon name="delete" />
+                    </q-item-section>
+                    <q-item-section>清空数据</q-item-section>
+                  </q-item>
+                </q-list></q-menu
+              >
+            </q-btn>
+          </q-btn-group>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import UTOOLS from "../js/utools.js";
+import quickcommandParser from "../js/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 
 export default {
@@ -95,16 +230,16 @@ export default {
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
       allQuickCommands: [],
-      tabBarWidth: "80px",
-      footerBarHeight: "35px",
+      commandSearchKeyword: "",
+      footerBarHeight: "40px",
       barShadow: "2px 0 5px 2px #0000001f",
       commandCardStyle: "normal",
       commandCardStyleSheet: {
         mini: {
-          width: "25%",
+          width: "20%",
           code: 1,
         },
-        small: {
+        dense: {
           width: "33%",
           code: 2,
         },
@@ -142,6 +277,10 @@ export default {
             .concat(["未分类"])
         ),
       ].filter((x) => x);
+    },
+    // 标签栏宽度
+    tabBarWidth() {
+      return this.commandCardStyle === "mini" ? "0" : "80px";
     },
   },
   mounted() {
@@ -184,6 +323,7 @@ export default {
       );
       return allQcs;
     },
+    // 监听命令变更时间
     commandChanged(event) {
       switch (event.type) {
         case "remove":
@@ -203,6 +343,90 @@ export default {
         default:
           return;
       }
+    },
+    // 从文件导入命令
+    importCommandFromFile(file) {
+      // 指定文件时直接读取否则弹出选择文件对话框
+      let options = file
+        ? {
+            type: "file",
+            argvs: file,
+            readfile: true,
+          }
+        : {
+            type: "dialog",
+            argvs: { filters: [{ name: "json", extensions: ["json"] }] },
+            readfile: true,
+          };
+      let fileContent = window.getFileInfo(options);
+      return fileContent ? fileContent.data : false;
+    },
+    // 从剪贴板导入命令
+    importCommandFromClipboard() {
+      return window.clipboardReadText();
+    },
+    // 导入命令
+    importCommand(fromFile = true, filePath = false) {
+      let quickCommandInfo = fromFile
+        ? this.importCommandFromFile(filePath)
+        : this.importCommandFromClipboard();
+      if (!quickCommandInfo)
+        return {
+          data: "导入未完成！",
+          success: false,
+        };
+      console.log(quickCommandInfo);
+      let dataToPushed = quickcommandParser(quickCommandInfo);
+      if (!dataToPushed)
+        return {
+          data: "格式错误",
+          success: false,
+        };
+      // 单个命令导入
+      if (dataToPushed.single) {
+        UTOOLS.putDB(
+          dataToPushed.qc,
+          UTOOLS.DBPRE.QC + dataToPushed.qc.features.code
+        );
+        this.allQuickCommands[dataToPushed.qc.features.code] = dataToPushed.qc;
+        // 多个命令导入
+      } else {
+        for (var code of Object.keys(dataToPushed.qc)) {
+          UTOOLS.putDB(dataToPushed.qc[code], UTOOLS.DBPRE.QC + code);
+        }
+        Object.assign(this.allQuickCommands, dataToPushed.qc);
+      }
+      return {
+        success: true,
+        data: dataToPushed,
+      };
+    },
+    // 导入命令且定位
+    importCommandAndLocate(fromFile = true) {
+      let result = this.importCommand(fromFile);
+      if (!result.success)
+        return quickcommand.showMessageBox(result.data, "warning");
+      quickcommand.showMessageBox("导入成功！");
+      if (result.data.single)
+        this.locateToCommand(result.data.qc.tags, result.data.qc.features.code);
+    },
+    // 定位命令
+    locateToCommand(tags, code) {
+      this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
+      setTimeout(() => {
+        document.getElementById(code).scrollIntoViewIfNeeded();
+      }, 50);
+    },
+    // 搜索
+    searchCommand() {
+      let matchesCommand = Object.values(this.allQuickCommands).filter((x) =>
+        x.features.explain.includes(this.commandSearchKeyword)
+      );
+      if (matchesCommand.length)
+        this.locateToCommand(
+          matchesCommand[0].tags,
+          matchesCommand[0].features.code
+        );
     },
   },
 };
