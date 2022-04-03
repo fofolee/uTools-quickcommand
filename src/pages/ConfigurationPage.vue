@@ -67,6 +67,7 @@
             <CommandCard
               v-for="commandInfo in currentTagQuickCommands"
               :key="commandInfo.features.code"
+              :ref="commandInfo.features.code"
               :commandInfo="commandInfo"
               :activated="
                 activatedQuickCommandFeatureCodes.includes(
@@ -153,6 +154,7 @@
             <q-btn color="teal" flat icon="menu" size="xs">
               <q-menu transition-show="jump-up" transition-hide="jump-down">
                 <q-list>
+                  <!-- 导入 -->
                   <q-item clickable>
                     <q-item-section side>
                       <q-icon name="keyboard_arrow_left" />
@@ -163,7 +165,6 @@
                         <q-item
                           clickable
                           v-close-popup
-                          class="items-end"
                           @click="importCommandAndLocate"
                         >
                           <q-item-section side>
@@ -174,7 +175,6 @@
                         <q-item
                           clickable
                           v-close-popup
-                          class="items-end"
                           @click="importCommandAndLocate(false)"
                         >
                           <q-item-section side>
@@ -185,12 +185,45 @@
                       </q-list>
                     </q-menu>
                   </q-item>
-                  <q-item clickable v-close-popup class="items-end">
+                  <!-- 导出 -->
+                  <q-item clickable v-close-popup @click="exportAllCommands">
                     <q-item-section side>
                       <q-icon name="file_upload" />
                     </q-item-section>
                     <q-item-section>全部导出</q-item-section>
                   </q-item>
+                  <!-- 批量启用禁用 -->
+                  <q-item clickable>
+                    <q-item-section side>
+                      <q-icon name="keyboard_arrow_left" />
+                    </q-item-section>
+                    <q-item-section>批处理</q-item-section>
+                    <q-menu anchor="top end" self="top start">
+                      <q-list>
+                        <q-item
+                          clickable
+                          v-close-popup
+                          @click="enableAllCommands"
+                        >
+                          <q-item-section side>
+                            <q-icon name="checklist_rtl" />
+                          </q-item-section>
+                          <q-item-section>启用本页所有命令</q-item-section>
+                        </q-item>
+                        <q-item
+                          clickable
+                          v-close-popup
+                          @click="disableAllCommands"
+                        >
+                          <q-item-section side>
+                            <q-icon name="remove_done" />
+                          </q-item-section>
+                          <q-item-section>禁用本页所有命令</q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-item>
+                  <!-- 收藏 -->
                   <q-item
                     v-if="activatedQuickPanels.includes(currentTag)"
                     clickable
@@ -213,14 +246,20 @@
                       类似于旧版本的「快捷面板」</q-tooltip
                     >
                   </q-item>
-
+                  <!-- 帮助 -->
                   <q-item clickable v-close-popup>
                     <q-item-section side>
                       <q-icon name="help" />
                     </q-item-section>
                     <q-item-section>帮助</q-item-section></q-item
                   >
-                  <q-item style="color: red" clickable v-close-popup>
+                  <!-- 清空 -->
+                  <q-item
+                    style="color: red"
+                    clickable
+                    v-close-popup
+                    @click="clearAllCommands"
+                  >
                     <q-item-section side>
                       <q-icon name="delete" />
                     </q-item-section>
@@ -403,7 +442,6 @@ export default {
           data: "导入未完成！",
           success: false,
         };
-      console.log(quickCommandInfo);
       let dataToPushed = quickcommandParser(quickCommandInfo);
       if (!dataToPushed)
         return {
@@ -441,9 +479,65 @@ export default {
     // 定位命令
     locateToCommand(tags, code) {
       this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
-      setTimeout(() => {
-        document.getElementById(code).scrollIntoViewIfNeeded();
-      }, 50);
+      // 等待 dom 渲染
+      this.$nextTick(() => {
+        this.$refs[code][0].$el.nextElementSibling.scrollIntoViewIfNeeded();
+      });
+    },
+    // 全部导出
+    exportAllCommands(saveAsFile = true) {
+      let options = {
+        title: "选择保存位置",
+        defaultPath: "quickCommand",
+        filters: [
+          {
+            name: "json",
+            extensions: ["json"],
+          },
+        ],
+      };
+      let stringifyCommands = JSON.stringify(this.allQuickCommands);
+      if (saveAsFile) {
+        window.saveFile(stringifyCommands, options);
+        quickcommand.showMessageBox("导出成功！");
+      } else {
+        utools.copyText(stringifyCommands);
+      }
+    },
+    // 清空
+    clearAllCommands() {
+      quickcommand
+        .showConfirmBox("将会清空所有自定义命令，请确认！")
+        .then((isConfirmed) => {
+          if (!isConfirmed)
+            return quickcommand.showMessageBox("取消操作", "info");
+          this.exportAllCommands(false);
+          UTOOLS.getDocs(UTOOLS.DBPRE.QC)
+            .map((x) => x._id)
+            .forEach((y) => UTOOLS.delDB(y));
+          this.importDefaultCommands();
+          this.clearAllFeatures();
+          Object.keys(this.allQuickCommands).forEach((featureCode) => {
+            if (!featureCode.includes("default_"))
+              delete this.allQuickCommands[featureCode];
+          });
+          quickcommand.showMessageBox(
+            "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
+          );
+        });
+    },
+    // 删除所有 features
+    clearAllFeatures() {
+      for (var feature of utools.getFeatures()) {
+        UTOOLS.whole.removeFeature(feature.code);
+      }
+    },
+    // 导入默认命令
+    importDefaultCommands() {
+      let defaultCommands = window.getDefaultCommands();
+      Object.values(defaultCommands).forEach((commandFilePath) => {
+        this.importCommand(true, commandFilePath);
+      });
     },
     // 搜索
     updateSearch() {
@@ -451,12 +545,24 @@ export default {
       if (this.currentTag !== "搜索结果") this.lastTag = this.currentTag;
       if (this.commandSearchKeyword) {
         // 搜索时跳转到搜索结果标签
-        setTimeout(() => {
+        this.$nextTick(() => {
           this.currentTag = "搜索结果";
-        }, 50);
+        });
       } else {
         // 清空搜索回跳到之前标签
         if (this.currentTag !== this.lastTag) this.currentTag = this.lastTag;
+      }
+    },
+    // 启用全部
+    enableAllCommands() {
+      for (var key in this.$refs) {
+        this.$refs[key][0].isCommandActivated = true;
+      }
+    },
+    // 禁用全部
+    disableAllCommands() {
+      for (var key in this.$refs) {
+        this.$refs[key][0].isCommandActivated = false;
       }
     },
   },
