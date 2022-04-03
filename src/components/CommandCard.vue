@@ -235,8 +235,7 @@ export default {
     // 默认命令不可删除
     canCommandEdit() {
       if (utools.isDev()) return true;
-      let tags = this.commandInfo.tags;
-      return tags && tags.includes("默认") ? false : true;
+      return this.commandInfo.tags?.includes("默认") ? false : true;
     },
     // 匹配类型的颜色
     cmdBadgeColor() {

@@ -325,7 +325,8 @@ export default {
             );
         default:
           return commands.filter(
-            (cmd) => cmd.tags && cmd.tags.includes(this.currentTag)
+            // 可选链操作符
+            (cmd) => cmd.tags?.includes(this.currentTag)
           );
       }
     },
