@@ -27,7 +27,7 @@
 export default {
   data() {
     return {
-      requiredversion: this.$route.params.requiredversion,
+      requiredversion: this.$route.params.requiredVersion,
       version: this.$route.params.version,
     };
   },

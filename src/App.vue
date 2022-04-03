@@ -21,17 +21,26 @@ export default defineComponent({
       let version = utools.getAppVersion();
       if (version < requiredVersion) {
         this.$router.push({
-          path: `/needupdate/${version}-${requiredVersion}`,
+          name: "needupdate",
+          params: { version: version, requiredVersion: requiredVersion },
         });
         return;
       }
       utools.onPluginEnter((enter) => {
         // 暗黑模式
         this.$q.dark.set(utools.isDarkColors());
-        // 数据传递
-        localStorage["enterData"] = JSON.stringify(enter);
         // 路由跳转
-        this.$router.push(enter.code);
+        let routeData = {
+          from: "uTools",
+          action: "run",
+          data: enter,
+        };
+        this.$router.push({
+          name: enter.code,
+          params: {
+            data: JSON.stringify(routeData),
+          },
+        });
       });
     },
   },

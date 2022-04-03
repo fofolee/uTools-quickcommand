@@ -1,10 +1,14 @@
 const routes = [
     {
         path: '/configuration',
+        name: "configuration",
+        props: true,
         component: () => import('pages/ConfigurationPage.vue')
     },
     {
         path: '/code',
+        name: "code",
+        props: true,
         component: () => import('pages/CodeRunner.vue')
     },
     {
@@ -20,7 +24,9 @@ const routes = [
         component: () => import('pages/QuickPanel.vue')
     },
     {
-        path: '/needupdate/:version-:requiredversion',
+        path: '/needupdate',
+        name: 'needupdate',
+        props: true,
         component: () => import('pages/NeedUpdate.vue')
     }
 
