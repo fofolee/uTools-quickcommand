@@ -147,7 +147,14 @@
             </q-btn-toggle>
             <q-separator vertical />
             <!-- 新建按钮 -->
-            <q-btn split flat label="新建" color="teal" icon="add"></q-btn>
+            <q-btn
+              split
+              flat
+              label="新建"
+              @click="addNewCommand"
+              color="teal"
+              icon="add"
+            ></q-btn>
             <q-separator vertical />
             <!-- 下拉菜单 -->
             <q-btn color="teal" flat icon="menu" size="xs">
@@ -355,6 +362,8 @@ export default {
   methods: {
     // 初始化
     initPage() {
+      console.log(this.$route);
+      window.configuration = this;
       // 已启用的 features
       let activatedFeatures = this.getActivatedFeatures();
       // 已启用的命令的 featureCode
@@ -368,7 +377,6 @@ export default {
         this.$utools.DBPRE.CFG + "preferences"
       );
       this.commandCardStyle = userPreferences.commandCardStyle || "normal";
-      console.log("ConfigurationPage", this);
       utools.onPluginOut(() => {
         userPreferences.commandCardStyle = this.commandCardStyle;
         this.$utools.putDB(
@@ -586,6 +594,22 @@ export default {
       document
         .querySelectorAll(".q-toggle[aria-checked='true']")
         .forEach((x) => x.click());
+    },
+    // 新建命令
+    addNewCommand() {
+      let routeData = {
+        from: "configuration",
+        action: "new",
+        data: {
+          currentTag: this.currentTag,
+        },
+      };
+      this.$router.push({
+        name: "code",
+        params: {
+          data: JSON.stringify(routeData),
+        },
+      });
     },
   },
 };

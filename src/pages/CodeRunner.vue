@@ -10,13 +10,13 @@
             transition-show="jump-down"
             transition-hide="jump-up"
             label-color="teal"
-            v-model="program"
+            v-model="quickcommandInfo.program"
             :options="options"
             label="编程语言"
           >
             <template v-slot:append>
               <q-avatar rounded>
-                <img :src="'/logo/' + program + '.png'" />
+                <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
               </q-avatar>
             </template>
             <template v-slot:option="scope">
@@ -33,12 +33,15 @@
         </div>
       </div>
       <div class="col">
-        <div class="row q-gutter-sm" v-show="program === 'custom'">
+        <div
+          class="row q-gutter-sm"
+          v-show="quickcommandInfo.program === 'custom'"
+        >
           <div class="col">
             <q-input
               dense
               color="teal"
-              v-model="customOptions.bin"
+              v-model="quickcommandInfo.customOptions.bin"
               stack-label
               label="解释器路径"
             />
@@ -47,7 +50,7 @@
             <q-input
               dense
               color="teal"
-              v-model="customOptions.argv"
+              v-model="quickcommandInfo.customOptions.argv"
               stack-label
               label="解释器参数"
             />
@@ -56,7 +59,7 @@
             <q-input
               dense
               color="teal"
-              v-model="customOptions.ext"
+              v-model="quickcommandInfo.customOptions.ext"
               @blur="matchLanguage"
               label="后缀,不含."
               stack-label
@@ -71,9 +74,9 @@
             outlined
             color="teal"
             input-style="width: 120px;"
-            v-model="scptarg"
+            v-model="quickcommandInfo.scptarg"
             label="脚本参数"
-            v-show="program !== 'quickcommand'"
+            v-show="quickcommandInfo.program !== 'quickcommand'"
           />
           <q-btn-group>
             <q-btn
@@ -82,7 +85,7 @@
               flat
               icon="description"
               @click="showHelp"
-              v-show="program === 'quickcommand'"
+              v-show="quickcommandInfo.program === 'quickcommand'"
               ><q-tooltip>查看文档</q-tooltip></q-btn
             >
             <q-btn
@@ -91,7 +94,7 @@
               flat
               icon="format_size"
               @click="showCodingPage()"
-              v-show="program !== 'quickcommand'"
+              v-show="quickcommandInfo.program !== 'quickcommand'"
               ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
             >
             <q-btn
@@ -156,54 +159,78 @@ export default {
   data() {
     return {
       options: Object.keys(this.$programmings),
-      program: "quickcommand",
-      customOptions: { bin: "", argv: "", ext: "" },
-      scptarg: "",
-      scriptCode: "",
-      outputCode: "",
-      output: "",
+      quickcommandInfo: {
+        features: {
+          explain: "",
+          cmds: [],
+          platform: [],
+        },
+        program: "quickcommand",
+        cmd: "",
+        output: "",
+        hasSubInput: false,
+        scptarg: "",
+        charset: {
+          scriptCode: "",
+          outputCode: "",
+        },
+        tags: [],
+        customOptions: {
+          bin: "",
+          argv: "",
+          ext: "",
+        },
+      },
       isResultShow: false,
       runResult: "",
       runResultStatus: true,
       resultMaxLength: 10000,
+      routeData: JSON.parse(this.$route.params.data),
     };
   },
   mounted() {
-    this.bindKeys();
-    this.loadOrSaveHistory();
+    this.init();
   },
-  computed: {},
+  computed: {
+    currentProgram() {
+      return this.quickcommandInfo.program;
+    },
+  },
   created() {},
   watch: {
-    program(val) {
+    currentProgram(val) {
       this.setLanguage(val);
     },
   },
   methods: {
-    // 读取历史记录
-    loadOrSaveHistory() {
-      // 读取
-      var history = this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
-      if (history.program) {
-        this.$refs.editor.setEditorValue(history.cmd);
-        this.program = history.program;
-        this.scptarg = history.scptarg || "";
-        this.scriptCode = history.scriptCode || "";
-        this.outputCode = history.outputCode || "";
-        if (history.customOptions) this.customOptions = history.customOptions;
-      }
+    init() {
+      this.bindKeys();
+      let quickCommandInfo =
+        this.routeData.action === "edit"
+          ? this.routeData.data
+          : this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
+      quickCommandInfo = this.fillDefaultKeys(quickCommandInfo);
+      this.$refs.editor.setEditorValue(quickCommandInfo.cmd);
+      this.quickcommandInfo = quickCommandInfo;
+      // 只有新建或运行时才保存记录
+      if (this.routeData.action === "edit") return;
       utools.onPluginOut(() => {
-        var saveData = {
-          cmd: this.$refs.editor.getEditorValue(),
-          program: this.program,
-          scptarg: this.scptarg,
-          scriptCode: this.scriptCode,
-          outputCode: this.outputCode,
-          customOptions: JSON.parse(JSON.stringify(this.customOptions)),
-        };
-        // 保存
-        this.$utools.putDB(saveData, this.$utools.DBPRE.CFG + "codeHistory");
+        this.quickcommandInfo.cmd = this.$refs.editor.getEditorValue();
+        // 保存本次编辑记录
+        this.$utools.putDB(
+          JSON.parse(JSON.stringify(this.quickcommandInfo)),
+          this.$utools.DBPRE.CFG + "codeHistory"
+        );
       });
+    },
+    // 补充没有的键值
+    fillDefaultKeys(command) {
+      let commandKeys = Object.keys(command);
+      Object.keys(this.quickcommandInfo).forEach((key) => {
+        if (!commandKeys.includes(key))
+          command[key] = this.quickcommandInfo[key];
+      });
+      return command;
     },
     // 绑定快捷键
     bindKeys() {
@@ -216,7 +243,7 @@ export default {
     // 匹配编程语言
     matchLanguage() {
       let language = Object.values(this.$programmings).filter(
-        (program) => program.ext === this.customOptions.ext
+        (program) => program.ext === this.quickcommandInfo.customOptions.ext
       );
       if (language.length) {
         this.setLanguage(language[0].name);
@@ -241,12 +268,19 @@ export default {
           {
             labels: ["文件编码", "输出编码"],
             hints: ["基于iconv-lite进行编码，无乱码请留空", "无乱码请留空"],
-            values: [this.scriptCode, this.outputCode],
+            values: [
+              this.quickcommandInfo.charset?.scriptCode,
+              this.quickcommandInfo.charset?.outputCode,
+            ],
           },
           "编码设置"
         )
         .then((res) => {
-          if (res) [this.scriptCode, this.outputCode] = res;
+          if (res)
+            [
+              this.quickcommandInfo.charset.scriptCode,
+              this.quickcommandInfo.charset.outputCode,
+            ] = res;
         });
     },
     // 运行命令
@@ -267,24 +301,17 @@ export default {
           utools.hideMainWindow();
           break;
       }
-      if (this.program === "quickcommand") {
+      if (this.quickcommandInfo.program === "quickcommand") {
         window.runCodeInVm(cmd, (stdout, stderr) => {
           if (stderr) return this.showRunResult(stderr, raw, false);
           this.showRunResult(stdout, raw, true);
         });
       } else {
         let option = this.$programmings[this.program];
-        if (this.program === "custom")
-          option = {
-            bin: this.customOptions.bin,
-            argv: this.customOptions.argv,
-            ext: this.customOptions.ext,
-          };
-        option.scptarg = this.scptarg;
-        option.charset = {
-          scriptCode: this.scriptCode,
-          outputCode: this.outputCode,
-        };
+        if (this.quickcommandInfo.program === "custom")
+          option = this.quickcommandInfo.customOptions;
+        option.scptarg = this.quickcommandInfo.scptarg;
+        option.charset = this.quickcommandInfo.charset;
         window.runCodeFile(cmd, option, terminal, (stdout, stderr) => {
           if (terminal) return;
           if (stderr) return this.showRunResult(stderr, raw, false);

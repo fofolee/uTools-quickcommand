@@ -276,7 +276,17 @@ export default {
     },
     // 编辑命令
     editCommand() {
-      console.log(this.commandInfo);
+      let routeData = {
+        from: "configuration",
+        action: "edit",
+        data: this.commandInfo,
+      };
+      this.$router.push({
+        name: "code",
+        params: {
+          data: JSON.stringify(routeData),
+        },
+      });
     },
     // 运行命令
     runCommand() {
