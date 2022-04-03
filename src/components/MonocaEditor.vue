@@ -28,19 +28,21 @@ export default {
   },
   methods: {
     initEditor() {
+      let monacoEditorPreferences = {
+        value: "",
+        language: "javascript",
+        automaticLayout: true,
+        foldingStrategy: "indentation",
+        autoClosingBrackets: true,
+        tabSize: 2,
+        minimap: {
+          enabled: false,
+        },
+      };
+      if (this.$q.dark.isActive) monacoEditorPreferences.theme = "vs-dark";
       this.editor = monaco.editor.create(
         document.getElementById("monocaEditor"),
-        {
-          value: "",
-          language: "javascript",
-          automaticLayout: true,
-          foldingStrategy: "indentation",
-          autoClosingBrackets: true,
-          tabSize: 2,
-          minimap: {
-            enabled: false,
-          },
-        }
+        monacoEditorPreferences
       );
       this.loadTypes();
       this.registerLanguage();
