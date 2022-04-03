@@ -26,6 +26,11 @@ export default {
   mounted() {
     this.initEditor();
   },
+  computed: {
+    rawEditor() {
+      return toRaw(this.editor);
+    },
+  },
   methods: {
     initEditor() {
       let monacoEditorPreferences = {
@@ -80,7 +85,7 @@ export default {
       };
       let createDependencyProposals = (range, keyWords, editor, curWord) => {
         let keys = [];
-        let tokens = getTokens(editor.getModel().getValue());
+        let tokens = getTokens(toRaw(editor).getModel().getValue());
         // 自定义变量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
@@ -135,16 +140,16 @@ export default {
       });
     },
     getEditorValue() {
-      return toRaw(this.editor).getValue();
+      return this.rawEditor.getValue();
     },
     setEditorValue(value) {
-      toRaw(this.editor).setValue(value);
+      this.rawEditor.setValue(value);
     },
     setEditorLanguage(language) {
-      monaco.editor.setModelLanguage(this.editor.getModel(), language);
+      monaco.editor.setModelLanguage(this.rawEditor.getModel(), language);
     },
     addEditorCommand(key, callback) {
-      this.editor.addCommand(key, callback);
+      this.rawEditor.addCommand(key, callback);
     },
   },
 };

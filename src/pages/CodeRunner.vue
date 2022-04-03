@@ -6,9 +6,10 @@
           <q-select
             dense
             outlined
+            color="teal"
             transition-show="jump-down"
             transition-hide="jump-up"
-            label-color="primary"
+            label-color="teal"
             v-model="program"
             :options="options"
             label="编程语言"
@@ -36,6 +37,7 @@
           <div class="col">
             <q-input
               dense
+              color="teal"
               v-model="customOptions.bin"
               stack-label
               label="解释器路径"
@@ -44,6 +46,7 @@
           <div class="col">
             <q-input
               dense
+              color="teal"
               v-model="customOptions.argv"
               stack-label
               label="解释器参数"
@@ -52,6 +55,7 @@
           <div class="col">
             <q-input
               dense
+              color="teal"
               v-model="customOptions.ext"
               @blur="matchLanguage"
               label="后缀,不含."
@@ -65,24 +69,40 @@
           <q-input
             dense
             outlined
-            style="width: 90px"
+            color="teal"
+            input-style="width: 120px;"
             v-model="scptarg"
             label="脚本参数"
             v-show="program !== 'quickcommand'"
           />
-          <q-btn
-            color="primary"
-            label="文档"
-            @click="showHelp"
-            v-show="program === 'quickcommand'"
-          />
-          <q-btn
-            color="primary"
-            label="编码设置"
-            @click="showCodingPage()"
-            v-show="program !== 'quickcommand'"
-          />
-          <q-btn color="primary" @click="runCurrentCommand()" label="运行" />
+          <q-btn-group>
+            <q-btn
+              rounded
+              color="teal"
+              flat
+              icon="description"
+              @click="showHelp"
+              v-show="program === 'quickcommand'"
+              ><q-tooltip>查看文档</q-tooltip></q-btn
+            >
+            <q-btn
+              rounded
+              color="teal"
+              flat
+              icon="format_size"
+              @click="showCodingPage()"
+              v-show="program !== 'quickcommand'"
+              ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
+            >
+            <q-btn
+              rounded
+              flat
+              color="teal"
+              icon="send"
+              @click="runCurrentCommand()"
+              ><q-tooltip>运行命令</q-tooltip></q-btn
+            >
+          </q-btn-group>
         </div>
       </div>
     </div>
@@ -91,12 +111,12 @@
         ref="editor"
         style="
           position: fixed;
-          bottom: 1px;
-          left: 1px;
-          right: 1px;
+          bottom: 2px;
+          left: 2px;
+          right: 2px;
           top: 70px;
           border-radius: 4px;
-          border: 2px solid #3376cd;
+          border: 1px solid #8080808c;
         "
       />
     </div>
@@ -121,7 +141,7 @@
           ></pre>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="关闭" color="primary" v-close-popup />
+          <q-btn flat label="关闭" color="teal" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
