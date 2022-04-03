@@ -508,7 +508,13 @@ export default {
           },
         ],
       };
-      let stringifyCommands = JSON.stringify(this.allQuickCommands);
+      let commandsToExport = JSON.parse(JSON.stringify(this.allQuickCommands));
+      // 不导出默认命令
+      if (!utools.isDev())
+        Object.keys(commandsToExport).forEach((code) => {
+          if (code.includes("default_")) delete commandsToExport[code];
+        });
+      let stringifyCommands = JSON.stringify(commandsToExport);
       if (saveAsFile) {
         window.saveFile(stringifyCommands, options);
         quickcommand.showMessageBox("导出成功！");

@@ -30,7 +30,7 @@
               运行
             </q-tooltip></q-btn
           >
-          <q-btn flat round color="primary" icon="share">
+          <q-btn v-if="canCommandEdit" flat round color="primary" icon="share">
             <q-tooltip anchor="top middle" self="center middle">
               导出
             </q-tooltip>
@@ -51,7 +51,13 @@
               </q-list>
             </q-menu>
           </q-btn>
-          <q-btn flat round color="red" icon="close" @click="removeCommand"
+          <q-btn
+            v-if="canCommandEdit"
+            flat
+            round
+            color="red"
+            icon="close"
+            @click="removeCommand"
             ><q-tooltip anchor="top middle" self="center middle">
               删除
             </q-tooltip></q-btn
@@ -59,7 +65,11 @@
         </div>
       </div>
       <!-- 未启用的命令文字为灰色 -->
-      <q-card v-ripple :style="isCommandActivated ? '' : 'color:grey'">
+      <q-card
+        @click="handleCardClick"
+        v-ripple
+        :style="isCommandActivated ? '' : 'color:grey'"
+      >
         <q-card-section>
           <!-- logo -->
           <div class="row" :class="cardStyleVars.logoPosition">
@@ -222,6 +232,12 @@ export default {
       if (cmd.type && cmd.type === "window") return false;
       return true;
     },
+    // 默认命令不可删除
+    canCommandEdit() {
+      if (utools.isDev()) return true;
+      let tags = this.commandInfo.tags;
+      return tags && tags.includes("默认") ? false : true;
+    },
     // 匹配类型的颜色
     cmdBadgeColor() {
       return (cmdType = "keyword") => {
@@ -250,6 +266,18 @@ export default {
         shortStr += str[i];
       }
       return shortStr === str ? shortStr : shortStr + "...";
+    },
+    // 命令卡片点击事件
+    handleCardClick() {
+      // 视图模式下直接运行命令
+      if (this.cardStyle.code === 1) return this.runCommand();
+      if (!this.canCommandEdit)
+        return quickcommand.showMessageBox("默认命令不可编辑", "warning");
+      this.editCommand();
+    },
+    // 编辑命令
+    editCommand() {
+      console.log(this.commandInfo);
     },
     // 运行命令
     runCommand() {
