@@ -2,11 +2,12 @@
   <!-- mini 模式下如果命令未启用或者不可直接运行则隐藏卡片面板 -->
   <div
     class="wrapper"
-    v-show="!(cardStyle.code === 1 && (!isCommandActivated || !canCommandRun))"
+    v-show="!cardStyleVars.hideCard"
+    :id="commandInfo.features.code"
   >
     <div>
       <!-- mini 模式下不显示各类按钮 -->
-      <div v-show="cardStyle.code > 1">
+      <div v-show="cardStyleVars.showButtons">
         <!-- 开关 -->
         <div class="absolute" style="z-index: 1; left: 20px; bottom: 16px">
           <q-toggle
@@ -61,24 +62,24 @@
       <q-card v-ripple :style="isCommandActivated ? '' : 'color:grey'">
         <q-card-section>
           <!-- logo -->
-          <div class="row">
+          <div class="row" :class="cardStyleVars.logoPosition">
             <q-img width="48px" :src="commandInfo.features.icon" />
           </div>
           <!-- 名称 -->
           <!-- mini 和 small 模式下命令标题字体变小 -->
-          <div class="row justify-end">
+          <div :class="'row ' + cardStyleVars.fontPosition">
             <div
               class="ellipsis"
               :style="{
-                fontSize: cardStyle.code > 2 ? '1.25rem' : '1.1rem',
+                fontSize: cardStyleVars.showBiggerTitle ? '1.25rem' : '1.1rem',
               }"
             >
               {{ commandInfo.features.explain }}
             </div>
           </div>
           <!-- 匹配模式 -->
-          <div class="row justify-end q-gutter-xs">
-            <div class="matchTypesBox">
+          <div class="row">
+            <div :class="'matchTypesBox flex q-gutter-xs ' + cardStyleVars.fontPosition">
               <span v-for="cmd in commandInfo.features.cmds" :key="cmd">
                 <span v-if="typeof cmd === 'string'">
                   <q-badge rounded :color="cmdBadgeColor()"
@@ -150,7 +151,7 @@
           <!-- 语言类型 -->
           <div
             class="row justify-end items-center q-gutter-xs"
-            v-show="cardStyle.code > 1"
+            v-show="cardStyleVars.showLanguages"
           >
             <span :style="'color:' + allProgrammings[commandInfo.program].color"
               >●</span
@@ -158,7 +159,7 @@
             <span class="text-subtitle2">{{ commandInfo.program }}</span>
             <!-- mini 和 small 模式下不显示适配系统 -->
             <!-- 适配系统 -->
-            <div class="flex" v-show="cardStyle.code > 2">
+            <div class="flex" v-show="cardStyleVars.showPlatforms">
               |&nbsp;
               <img
                 width="16"
@@ -195,12 +196,30 @@ export default {
     };
   },
   computed: {
-    // 命令是否可直接运行
+    //   控制卡片样式的具体参数
+    cardStyleVars() {
+      return {
+        showButtons: this.cardStyle.code > 1,
+        showPlatforms: this.cardStyle.code > 2,
+        showLanguages: this.cardStyle.code > 1,
+        showBiggerTitle: this.cardStyle.code > 2,
+        logoPosition:
+          this.cardStyle.code > 1 ? "justify-start" : "justify-center",
+        fontPosition:
+          this.cardStyle.code > 1 ? "justify-end" : "justify-center",
+        hideCard:
+          this.cardStyle.code === 1 &&
+          (!this.isCommandActivated || !this.canCommandRun),
+      };
+    },
+    // 命令是否可直接运行, 无论 cmds 长度为多少，只运行 cmds[0]
     canCommandRun() {
-      return (
-        this.commandInfo.features.cmds.filter((x) => x.length).length &&
-        this.isCommandActivated
-      );
+      // 未启用
+      if (!this.isCommandActivated) return false;
+      let cmd = this.commandInfo.features.cmds[0];
+      // 窗口模式
+      if (cmd.type && cmd.type === "window") return false;
+      return true;
     },
     // 匹配类型的颜色
     cmdBadgeColor() {
@@ -302,7 +321,7 @@ export default {
 }
 .matchTypesBox {
   height: 23px;
-  width: 80%;
+  width: 100%;
   overflow: hidden;
   text-align: right;
 }
