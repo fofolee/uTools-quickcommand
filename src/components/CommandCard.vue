@@ -1,6 +1,10 @@
 <template>
   <!-- mini 模式下如果命令未启用或者不可直接运行则隐藏卡片面板 -->
-  <div class="wrapper" v-show="!cardStyleVars.hideCard">
+  <div
+    class="wrapper"
+    v-show="!cardStyleVars.hideCard"
+    :id="commandInfo.features.code"
+  >
     <div>
       <!-- mini 模式下不显示各类按钮 -->
       <div v-show="cardStyleVars.showButtons">
@@ -10,6 +14,7 @@
             v-model="isCommandActivated"
             checked-icon="flash_on"
             color="orange-6"
+            @click="toggleCommandActivated"
           />
         </div>
         <!-- 选项按钮 -->
@@ -175,7 +180,6 @@
 </template>
 
 <script>
-
 export default {
   data() {
     return {
@@ -191,11 +195,6 @@ export default {
         img: "deep-orange",
       },
     };
-  },
-  watch: {
-    isCommandActivated() {
-      this.toggleCommandActivated();
-    },
   },
   computed: {
     //   控制卡片样式的具体参数
@@ -238,7 +237,7 @@ export default {
     cardStyle: Object,
   },
   mounted() {
-    console.log(this.commandInfo.features.code, this);
+    // console.log(this.commandInfo.features.code, this);
   },
   methods: {
     // 匹配类型太长的话截断

@@ -67,7 +67,6 @@
             <CommandCard
               v-for="commandInfo in currentTagQuickCommands"
               :key="commandInfo.features.code"
-              :ref="commandInfo.features.code"
               :commandInfo="commandInfo"
               :activated="
                 activatedQuickCommandFeatureCodes.includes(
@@ -494,7 +493,7 @@ export default {
       this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
       // 等待 dom 渲染
       this.$nextTick(() => {
-        this.$refs[code][0].$el.nextElementSibling.scrollIntoViewIfNeeded();
+        document.getElementById(code).scrollIntoViewIfNeeded();
       });
     },
     // 全部导出
@@ -569,15 +568,17 @@ export default {
     },
     // 启用全部
     enableAllCommands() {
-      for (var key in this.$refs) {
-        this.$refs[key][0].isCommandActivated = true;
-      }
+      // dom 操作
+      document
+        .querySelectorAll(".q-toggle[aria-checked='false']")
+        .forEach((x) => x.click());
     },
     // 禁用全部
     disableAllCommands() {
-      for (var key in this.$refs) {
-        this.$refs[key][0].isCommandActivated = false;
-      }
+      // dom 操作
+      document
+        .querySelectorAll(".q-toggle[aria-checked='true']")
+        .forEach((x) => x.click());
     },
   },
 };
