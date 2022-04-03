@@ -129,15 +129,13 @@
 </template>
 
 <script>
-import allProgrammings from "../js/programs.js";
 import MonocaEditor from "components/MonocaEditor";
-import UTOOLS from "../js/utools.js";
 
 export default {
   components: { MonocaEditor },
   data() {
     return {
-      options: Object.keys(allProgrammings),
+      options: Object.keys(this.$programmings),
       program: "quickcommand",
       customOptions: { bin: "", argv: "", ext: "" },
       scptarg: "",
@@ -165,7 +163,7 @@ export default {
     // 读取历史记录
     loadOrSaveHistory() {
       // 读取
-      var history = UTOOLS.getDB(UTOOLS.DBPRE.CFG + "codeHistory");
+      var history = this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
       if (history.program) {
         this.$refs.editor.setEditorValue(history.cmd);
         this.program = history.program;
@@ -184,7 +182,7 @@ export default {
           customOptions: JSON.parse(JSON.stringify(this.customOptions)),
         };
         // 保存
-        UTOOLS.putDB(saveData, UTOOLS.DBPRE.CFG + "codeHistory");
+        this.$utools.putDB(saveData, this.$utools.DBPRE.CFG + "codeHistory");
       });
     },
     // 绑定快捷键
@@ -197,7 +195,7 @@ export default {
     },
     // 匹配编程语言
     matchLanguage() {
-      let language = Object.values(allProgrammings).filter(
+      let language = Object.values(this.$programmings).filter(
         (program) => program.ext === this.customOptions.ext
       );
       if (language.length) {
@@ -206,7 +204,7 @@ export default {
     },
     // 设置编程语言
     setLanguage(language) {
-      let highlight = allProgrammings[language].highlight;
+      let highlight = this.$programmings[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
     // 打开文档
@@ -255,7 +253,7 @@ export default {
           this.showRunResult(stdout, raw, true);
         });
       } else {
-        let option = allProgrammings[this.program];
+        let option = this.$programmings[this.program];
         if (this.program === "custom")
           option = {
             bin: this.customOptions.bin,

@@ -175,13 +175,11 @@
 </template>
 
 <script>
-import allProgrammings from "../js/programs.js";
-import UTOOLS from "../js/utools.js";
 
 export default {
   data() {
     return {
-      allProgrammings: allProgrammings,
+      allProgrammings: this.$programmings,
       isCommandActivated: this.activated,
       maxCmdStingLen: 8,
       cmdBadgeSheet: {
@@ -266,8 +264,8 @@ export default {
         type: "disable",
         data: this.commandInfo.features.code,
       };
-      if (!UTOOLS.whole.removeFeature(this.commandInfo.features.code)) {
-        UTOOLS.whole.setFeature(
+      if (!this.$utools.whole.removeFeature(this.commandInfo.features.code)) {
+        this.$utools.whole.setFeature(
           JSON.parse(JSON.stringify(this.commandInfo.features))
         );
         event.type = "enable";
@@ -280,8 +278,8 @@ export default {
         if (!x) return;
         let code = this.commandInfo.features.code;
         utools.copyText(JSON.stringify(this.commandInfo, null, 4));
-        UTOOLS.delDB(UTOOLS.DBPRE.QC + code);
-        UTOOLS.whole.removeFeature(code);
+        this.$utools.delDB(this.$utools.DBPRE.QC + code);
+        this.$utools.whole.removeFeature(code);
         this.isCommandAlive = false;
         this.$emit("commandChanged", {
           type: "remove",

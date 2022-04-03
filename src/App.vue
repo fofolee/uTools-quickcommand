@@ -12,10 +12,10 @@ export default defineComponent({
   },
   computed: {},
   created: function () {
-    this.pluginEnterEvent();
+    this.init();
   },
   methods: {
-    pluginEnterEvent() {
+    init() {
       // 版本检测
       const requiredVersion = "2.6.1";
       let version = utools.getAppVersion();

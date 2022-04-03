@@ -276,7 +276,6 @@
 </template>
 
 <script>
-import UTOOLS from "../js/utools.js";
 import quickcommandParser from "../js/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 
@@ -365,7 +364,18 @@ export default {
       this.activatedQuickPanels = activatedFeatures.quickpanels;
       // 所有的快捷命令
       this.allQuickCommands = this.getAllQuickCommands();
+      let userPreferences = this.$utools.getDB(
+        this.$utools.DBPRE.CFG + "preferences"
+      );
+      this.commandCardStyle = userPreferences.commandCardStyle || "normal";
       console.log("ConfigurationPage", this);
+      utools.onPluginOut(() => {
+        userPreferences.commandCardStyle = this.commandCardStyle;
+        this.$utools.putDB(
+          userPreferences,
+          this.$utools.DBPRE.CFG + "preferences"
+        );
+      });
     },
     // 获取所有已启用的命令的 features 以及面板名称
     getActivatedFeatures() {
@@ -385,9 +395,9 @@ export default {
     // 获取所有的快捷命令（导出的格式）
     getAllQuickCommands() {
       let allQcs = {};
-      UTOOLS.getDocs(UTOOLS.DBPRE.QC).forEach(
-        (x) => (allQcs[x.data.features.code] = x.data)
-      );
+      this.$utools
+        .getDocs(this.$utools.DBPRE.QC)
+        .forEach((x) => (allQcs[x.data.features.code] = x.data));
       return allQcs;
     },
     // 监听命令变更时间
@@ -450,15 +460,18 @@ export default {
         };
       // 单个命令导入
       if (dataToPushed.single) {
-        UTOOLS.putDB(
+        this.$utools.putDB(
           dataToPushed.qc,
-          UTOOLS.DBPRE.QC + dataToPushed.qc.features.code
+          this.$utools.DBPRE.QC + dataToPushed.qc.features.code
         );
         this.allQuickCommands[dataToPushed.qc.features.code] = dataToPushed.qc;
         // 多个命令导入
       } else {
         for (var code of Object.keys(dataToPushed.qc)) {
-          UTOOLS.putDB(dataToPushed.qc[code], UTOOLS.DBPRE.QC + code);
+          this.$utools.putDB(
+            dataToPushed.qc[code],
+            this.$utools.DBPRE.QC + code
+          );
         }
         Object.assign(this.allQuickCommands, dataToPushed.qc);
       }
@@ -512,9 +525,10 @@ export default {
           if (!isConfirmed)
             return quickcommand.showMessageBox("取消操作", "info");
           this.exportAllCommands(false);
-          UTOOLS.getDocs(UTOOLS.DBPRE.QC)
+          this.$utools
+            .getDocs(this.$utools.DBPRE.QC)
             .map((x) => x._id)
-            .forEach((y) => UTOOLS.delDB(y));
+            .forEach((y) => this.$utools.delDB(y));
           this.importDefaultCommands();
           this.clearAllFeatures();
           Object.keys(this.allQuickCommands).forEach((featureCode) => {
@@ -529,7 +543,7 @@ export default {
     // 删除所有 features
     clearAllFeatures() {
       for (var feature of utools.getFeatures()) {
-        UTOOLS.whole.removeFeature(feature.code);
+        this.$utools.whole.removeFeature(feature.code);
       }
     },
     // 导入默认命令
