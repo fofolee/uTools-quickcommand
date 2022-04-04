@@ -185,8 +185,10 @@ export default {
       runResult: "",
       runResultStatus: true,
       resultMaxLength: 10000,
-      routeData: JSON.parse(this.$route.params.data),
     };
+  },
+  props: {
+    action: Object,
   },
   mounted() {
     this.init();
@@ -205,14 +207,15 @@ export default {
   methods: {
     init() {
       this.bindKeys();
+
       let quickCommandInfo =
-        this.routeData.action === "edit"
-          ? this.routeData.data
+        this.action.type === "edit"
+          ? this.action.data
           : this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
-      Object.assign(this.quickcommandInfo, quickCommandInfo)
+      Object.assign(this.quickcommandInfo, quickCommandInfo);
       this.$refs.editor.setEditorValue(quickCommandInfo.cmd);
       // 只有新建或运行时才保存记录
-      if (this.routeData.action === "edit") return;
+      if (this.action.type === "edit") return;
       utools.onPluginOut(() => {
         this.quickcommandInfo.cmd = this.$refs.editor.getEditorValue();
         // 保存本次编辑记录

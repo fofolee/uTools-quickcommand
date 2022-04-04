@@ -3,5 +3,7 @@
 </template>
 
 <script>
+console.log(quickcommand.enterData);
+
 export default {};
 </script>

@@ -30,17 +30,8 @@ export default defineComponent({
         // 暗黑模式
         this.$q.dark.set(utools.isDarkColors());
         // 路由跳转
-        let routeData = {
-          from: "uTools",
-          action: "run",
-          data: enter,
-        };
-        this.$router.push({
-          name: enter.code,
-          params: {
-            data: JSON.stringify(routeData),
-          },
-        });
+        quickcommand.enterData = enter
+        this.$router.push(enter.code);
       });
     },
   },
