@@ -145,129 +145,20 @@
             <q-btn
               split
               flat
-              label="新建"
               @click="addNewCommand"
               color="teal"
+              label="新建"
               icon="add"
-            ></q-btn>
+            />
             <q-separator vertical />
             <!-- 下拉菜单 -->
-            <q-btn color="teal" flat icon="menu" size="xs">
-              <q-menu transition-show="jump-up" transition-hide="jump-down">
-                <q-list>
-                  <!-- 导入 -->
-                  <q-item clickable>
-                    <q-item-section side>
-                      <q-icon name="keyboard_arrow_left" />
-                    </q-item-section>
-                    <q-item-section>导入</q-item-section>
-                    <q-menu anchor="top end" self="top start">
-                      <q-list>
-                        <q-item
-                          clickable
-                          v-close-popup
-                          @click="importCommandAndLocate"
-                        >
-                          <q-item-section side>
-                            <q-icon name="text_snippet" />
-                          </q-item-section>
-                          <q-item-section>从文件导入</q-item-section>
-                        </q-item>
-                        <q-item
-                          clickable
-                          v-close-popup
-                          @click="importCommandAndLocate(false)"
-                        >
-                          <q-item-section side>
-                            <q-icon name="content_paste" />
-                          </q-item-section>
-                          <q-item-section>从剪贴板导入</q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-item>
-                  <!-- 导出 -->
-                  <q-item clickable v-close-popup @click="exportAllCommands">
-                    <q-item-section side>
-                      <q-icon name="file_upload" />
-                    </q-item-section>
-                    <q-item-section>全部导出</q-item-section>
-                  </q-item>
-                  <!-- 批量启用禁用 -->
-                  <q-item clickable>
-                    <q-item-section side>
-                      <q-icon name="keyboard_arrow_left" />
-                    </q-item-section>
-                    <q-item-section>批处理</q-item-section>
-                    <q-menu anchor="top end" self="top start">
-                      <q-list>
-                        <q-item
-                          clickable
-                          v-close-popup
-                          @click="enableAllCommands"
-                        >
-                          <q-item-section side>
-                            <q-icon name="checklist_rtl" />
-                          </q-item-section>
-                          <q-item-section>启用本页所有命令</q-item-section>
-                        </q-item>
-                        <q-item
-                          clickable
-                          v-close-popup
-                          @click="disableAllCommands"
-                        >
-                          <q-item-section side>
-                            <q-icon name="remove_done" />
-                          </q-item-section>
-                          <q-item-section>禁用本页所有命令</q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-item>
-                  <!-- 收藏 -->
-                  <q-item
-                    v-if="activatedQuickPanels.includes(currentTag)"
-                    clickable
-                    v-close-popup
-                  >
-                    <q-item-section side>
-                      <q-icon name="star_border" />
-                    </q-item-section>
-                    <q-item-section>取消收藏</q-item-section>
-                  </q-item>
-                  <q-item v-else clickable v-close-popup>
-                    <q-item-section side>
-                      <q-icon name="star" />
-                    </q-item-section>
-                    <q-item-section>收藏标签</q-item-section>
-                    <q-tooltip
-                      >收藏后，会将当前标签名作为全局关键字，可在 uTools
-                      的主输入框进行搜索 <br />
-                      搜索进入后，默认进入当前标签的面板视图 <br />
-                      类似于旧版本的「快捷面板」</q-tooltip
-                    >
-                  </q-item>
-                  <!-- 帮助 -->
-                  <q-item clickable v-close-popup>
-                    <q-item-section side>
-                      <q-icon name="help" />
-                    </q-item-section>
-                    <q-item-section>帮助</q-item-section></q-item
-                  >
-                  <!-- 清空 -->
-                  <q-item
-                    style="color: red"
-                    clickable
-                    v-close-popup
-                    @click="clearAllCommands"
-                  >
-                    <q-item-section side>
-                      <q-icon name="delete" />
-                    </q-item-section>
-                    <q-item-section>清空数据</q-item-section>
-                  </q-item>
-                </q-list></q-menu
-              >
+            <q-btn color="teal" flat size="xs"
+              ><q-spinner-bars color="teal" size="1.5em" />
+              <ConfigurationMenu
+                :allQuickcommandsLength="Object.keys(allQuickCommands).length"
+                :allFeaturesLength="activatedQuickCommandFeatureCodes.length"
+                :isTagStared="allQuickCommandTags.includes(currentTag)"
+              ></ConfigurationMenu>
             </q-btn>
           </q-btn-group>
         </div>
@@ -324,9 +215,10 @@
 import quickcommandParser from "../js/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor.vue";
+import ConfigurationMenu from "components/ConfigurationMenu.vue";
 
 export default {
-  components: { CommandCard, CommandEditor },
+  components: { CommandCard, CommandEditor, ConfigurationMenu },
   data() {
     return {
       currentTag: "默认",
@@ -336,7 +228,7 @@ export default {
       allQuickCommands: [],
       commandSearchKeyword: "",
       isCommandEditorShow: false,
-      maximizedToggle:true,
+      maximizedToggle: true,
       commandEditorAction: {},
       footerBarHeight: "40px",
       commandCardStyle: "normal",
@@ -528,32 +420,27 @@ export default {
           data: "导入未完成！",
           success: false,
         };
-      let dataToPushed = quickcommandParser(quickCommandInfo);
-      if (!dataToPushed)
+      let parsedData = quickcommandParser(quickCommandInfo);
+      if (!parsedData)
         return {
           data: "格式错误",
           success: false,
         };
       // 单个命令导入
-      if (dataToPushed.single) {
-        this.$utools.putDB(
-          dataToPushed.qc,
-          this.$utools.DBPRE.QC + dataToPushed.qc.features.code
-        );
-        this.allQuickCommands[dataToPushed.qc.features.code] = dataToPushed.qc;
-        // 多个命令导入
+      let dataToPushed = {};
+      if (parsedData.single) {
+        dataToPushed[parsedData.qc.features.code] = parsedData.qc;
+        // 多个
       } else {
-        for (var code of Object.keys(dataToPushed.qc)) {
-          this.$utools.putDB(
-            dataToPushed.qc[code],
-            this.$utools.DBPRE.QC + code
-          );
-        }
-        Object.assign(this.allQuickCommands, dataToPushed.qc);
+        dataToPushed = parsedData.qc;
       }
+      for (var code of Object.keys(dataToPushed)) {
+        this.$utools.putDB(dataToPushed[code], this.$utools.DBPRE.QC + code);
+      }
+      Object.assign(this.allQuickCommands, dataToPushed);
       return {
         success: true,
-        data: dataToPushed,
+        data: parsedData,
       };
     },
     // 导入命令且定位
@@ -570,7 +457,15 @@ export default {
       this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
       // 等待 dom 渲染
       this.$nextTick(() => {
-        document.getElementById(code).scrollIntoViewIfNeeded();
+        let el = document.getElementById(code);
+        el.scrollIntoViewIfNeeded();
+        // 闪一下
+        el.style.filter = "invert(1) drop-shadow(1px 1px 5px #0000008e)";
+        el.style.transform = "translateY(-5px)";
+        setTimeout(() => {
+          el.style.filter = "";
+          el.style.transform = "";
+        }, 500);
       });
     },
     // 全部导出
@@ -648,20 +543,6 @@ export default {
         // 清空搜索回跳到之前标签
         if (this.currentTag !== this.lastTag) this.currentTag = this.lastTag;
       }
-    },
-    // 启用全部
-    enableAllCommands() {
-      // dom 操作
-      document
-        .querySelectorAll(".q-toggle[aria-checked='false']")
-        .forEach((x) => x.click());
-    },
-    // 禁用全部
-    disableAllCommands() {
-      // dom 操作
-      document
-        .querySelectorAll(".q-toggle[aria-checked='true']")
-        .forEach((x) => x.click());
     },
     // 新建命令
     addNewCommand() {
