@@ -12,14 +12,15 @@ import inputBox from "../components/InputBox"
 
 let showInputBox = (options = [], title = "") => {
     return new Promise((reslove, reject) => {
-        let props = {}
+        let props = {
+            labels: [],
+            values: [],
+            hints: [],
+            title: title
+        }
         if (!(options instanceof Object)) return reject(new TypeError("必须为数组或对象"))
         if (options instanceof Array) props.labels = options
-        else props = options
-        if (!props.labels) return reject(new SyntaxError("缺少必须要的参数"))
-        if (!props.values) props.values = props.labels.map(() => "")
-        if (!props.hints) props.hints = props.labels.map(() => "")
-        props.title = title
+        else Object.assign(props, options)
         Dialog.create({
             component: inputBox,
             componentProps: props

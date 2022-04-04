@@ -332,7 +332,6 @@ export default {
             );
         default:
           return commands.filter(
-            // 可选链操作符
             (cmd) => cmd.tags?.includes(this.currentTag)
           );
       }

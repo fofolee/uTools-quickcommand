@@ -209,9 +209,8 @@ export default {
         this.routeData.action === "edit"
           ? this.routeData.data
           : this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
-      quickCommandInfo = this.fillDefaultKeys(quickCommandInfo);
+      Object.assign(this.quickcommandInfo, quickCommandInfo)
       this.$refs.editor.setEditorValue(quickCommandInfo.cmd);
-      this.quickcommandInfo = quickCommandInfo;
       // 只有新建或运行时才保存记录
       if (this.routeData.action === "edit") return;
       utools.onPluginOut(() => {
@@ -222,15 +221,6 @@ export default {
           this.$utools.DBPRE.CFG + "codeHistory"
         );
       });
-    },
-    // 补充没有的键值
-    fillDefaultKeys(command) {
-      let commandKeys = Object.keys(command);
-      Object.keys(this.quickcommandInfo).forEach((key) => {
-        if (!commandKeys.includes(key))
-          command[key] = this.quickcommandInfo[key];
-      });
-      return command;
     },
     // 绑定快捷键
     bindKeys() {
