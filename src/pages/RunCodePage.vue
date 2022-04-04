@@ -1,14 +1,14 @@
 <template>
   <div>
-    <CodeRunner :action="action"></CodeRunner>
+    <CommandEditor :action="action"></CommandEditor>
   </div>
 </template>
 
 <script>
-import CodeRunner from "components/CodeRunner";
+import CommandEditor from "components/CommandEditor";
 
 export default {
-  components: { CodeRunner },
+  components: { CommandEditor },
   data() {
     return {
       action: {
