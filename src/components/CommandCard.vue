@@ -276,17 +276,11 @@ export default {
     },
     // 编辑命令
     editCommand() {
-      let routeData = {
-        from: "configuration",
-        action: "edit",
-        data: this.commandInfo,
+      let event = {
+        type: "edit",
+        data: this.commandInfo.features.code,
       };
-      this.$router.push({
-        name: "code",
-        params: {
-          data: JSON.stringify(routeData),
-        },
-      });
+      this.$emit("commandChanged", event);
     },
     // 运行命令
     runCommand() {
@@ -297,33 +291,21 @@ export default {
     // 启用/禁用命令
     toggleCommandActivated() {
       let event = {
-        type: "disable",
         data: this.commandInfo.features.code,
       };
-      if (!this.$utools.whole.removeFeature(this.commandInfo.features.code)) {
-        this.$utools.whole.setFeature(
-          JSON.parse(JSON.stringify(this.commandInfo.features))
-        );
-        event.type = "enable";
-      }
+      event.type = this.isCommandActivated ? "enable" : "disable";
       this.$emit("commandChanged", event);
     },
     // 移除命令
     removeCommand() {
       quickcommand.showConfirmBox("删除这个快捷命令").then((x) => {
         if (!x) return;
-        let code = this.commandInfo.features.code;
-        utools.copyText(JSON.stringify(this.commandInfo, null, 4));
-        this.$utools.delDB(this.$utools.DBPRE.QC + code);
-        this.$utools.whole.removeFeature(code);
         this.isCommandAlive = false;
+        let code = this.commandInfo.features.code;
         this.$emit("commandChanged", {
           type: "remove",
           data: code,
         });
-        quickcommand.showMessageBox(
-          "删除成功，为防止误操作，已将删除的命令复制到剪贴板"
-        );
       });
     },
     // 导出到剪贴板

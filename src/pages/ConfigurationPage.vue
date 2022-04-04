@@ -1,20 +1,16 @@
 <template>
-  <div>
+  <div class="relative">
     <!-- 标签栏 -->
     <!-- 面板视图不显示标签栏 -->
-    <div v-show="commandCardStyle !== 'mini'">
-      <q-tabs
-        v-model="currentTag"
-        vertical
-        outside-arrows
-        :shrink="false"
-        class="text-teal fixed-left"
-        :style="{
-          width: tabBarWidth,
-          boxShadow: barShadow,
-          zIndex: 1,
-        }"
-      >
+    <div
+      v-show="commandCardStyle !== 'mini'"
+      class="absolute-left"
+      :style="{
+        width: tabBarWidth,
+        zIndex: 1,
+      }"
+    >
+      <q-tabs v-model="currentTag" vertical outside-arrows class="text-teal">
         <!-- 所有标签 -->
         <q-tab
           :alert="activatedQuickPanels.includes(tag)"
@@ -38,7 +34,7 @@
     <!-- 面板栏 -->
     <q-tab-panels
       animated
-      class="fixed-right"
+      class="absolute-right"
       :style="{
         bottom: footerBarHeight,
         left: tabBarWidth,
@@ -86,11 +82,10 @@
     </q-tab-panels>
     <!-- 底栏 -->
     <div
-      class="fixed-bottom"
+      class="absolute-bottom"
       :style="{
         height: footerBarHeight,
         left: tabBarWidth,
-        boxShadow: barShadow,
       }"
     >
       <div class="row">
@@ -278,15 +273,60 @@
         </div>
       </div>
     </div>
+    <!-- 命令编辑界面 -->
+    <q-dialog
+      v-model="isCommandEditorShow"
+      persistent
+      :maximized="maximizedToggle"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <q-card>
+        <q-bar>
+          <q-space />
+          <q-btn
+            dense
+            flat
+            icon="minimize"
+            @click="maximizedToggle = false"
+            :disable="!maximizedToggle"
+          >
+            <q-tooltip
+              v-if="maximizedToggle"
+              content-class="bg-white text-primary"
+              >Minimize</q-tooltip
+            >
+          </q-btn>
+          <q-btn
+            dense
+            flat
+            icon="crop_square"
+            @click="maximizedToggle = true"
+            :disable="maximizedToggle"
+          >
+            <q-tooltip
+              v-if="!maximizedToggle"
+              content-class="bg-white text-primary"
+              >Maximize</q-tooltip
+            >
+          </q-btn>
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <CommandEditor :action="commandEditorAction"></CommandEditor>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import quickcommandParser from "../js/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
+import CommandEditor from "components/CommandEditor.vue";
 
 export default {
-  components: { CommandCard },
+  components: { CommandCard, CommandEditor },
   data() {
     return {
       currentTag: "默认",
@@ -295,8 +335,10 @@ export default {
       activatedQuickPanels: [],
       allQuickCommands: [],
       commandSearchKeyword: "",
+      isCommandEditorShow: false,
+      maximizedToggle:true,
+      commandEditorAction: {},
       footerBarHeight: "40px",
-      barShadow: "2px 0 5px 2px #0000001f",
       commandCardStyle: "normal",
       commandCardStyleSheet: {
         mini: {
@@ -331,9 +373,7 @@ export default {
               cmd.features.explain.includes(this.commandSearchKeyword)
             );
         default:
-          return commands.filter(
-            (cmd) => cmd.tags?.includes(this.currentTag)
-          );
+          return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
       }
     },
     // 所有命令对应的标签
@@ -361,7 +401,6 @@ export default {
   methods: {
     // 初始化
     initPage() {
-      console.log(this.$route);
       window.configuration = this;
       // 已启用的 features
       let activatedFeatures = this.getActivatedFeatures();
@@ -407,26 +446,56 @@ export default {
         .forEach((x) => (allQcs[x.data.features.code] = x.data));
       return allQcs;
     },
-    // 监听命令变更时间
+    // 监听命令变更事件
     commandChanged(event) {
       switch (event.type) {
         case "remove":
-          delete this.allQuickCommands[event.data];
-          if (!this.allQuickCommandTags.includes(this.currentTag))
-            this.currentTag = "默认";
+          this.removeCommand(event.data);
           return;
         case "enable":
-          this.activatedQuickCommandFeatureCodes.push(event.data);
+          this.enableCommand(event.data);
           return;
         case "disable":
-          this.activatedQuickCommandFeatureCodes =
-            this.activatedQuickCommandFeatureCodes.filter(
-              (x) => x !== event.data
-            );
+          this.disableCommand(event.data);
           return;
+        case "edit":
+          this.editCommand(event.data);
         default:
           return;
       }
+    },
+    // 启用命令
+    enableCommand(code) {
+      this.$utools.whole.setFeature(
+        JSON.parse(JSON.stringify(this.allQuickCommands[code].features))
+      );
+      this.activatedQuickCommandFeatureCodes.push(code);
+    },
+    // 禁用命令
+    disableCommand(code) {
+      this.$utools.whole.removeFeature(code);
+      this.activatedQuickCommandFeatureCodes =
+        this.activatedQuickCommandFeatureCodes.filter((x) => x !== code);
+    },
+    // 删除命令
+    removeCommand(code) {
+      utools.copyText(JSON.stringify(this.allQuickCommands[code], null, 4));
+      delete this.allQuickCommands[code];
+      this.$utools.delDB(this.$utools.DBPRE.QC + code);
+      this.disableCommand(code);
+      if (!this.allQuickCommandTags.includes(this.currentTag))
+        this.currentTag = "默认";
+      quickcommand.showMessageBox(
+        "删除成功，为防止误操作，已将删除的命令复制到剪贴板"
+      );
+    },
+    // 编辑命令
+    editCommand(code) {
+      this.commandEditorAction = {
+        type: "edit",
+        data: this.allQuickCommands[code],
+      };
+      this.isCommandEditorShow = true;
     },
     // 从文件导入命令
     importCommandFromFile(file) {
@@ -596,19 +665,11 @@ export default {
     },
     // 新建命令
     addNewCommand() {
-      let routeData = {
-        from: "configuration",
-        action: "new",
-        data: {
-          currentTag: this.currentTag,
-        },
+      this.commandEditorAction = {
+        type: "new",
+        data: {},
       };
-      this.$router.push({
-        name: "code",
-        params: {
-          data: JSON.stringify(routeData),
-        },
-      });
+      this.isCommandEditorShow = true;
     },
   },
 };
