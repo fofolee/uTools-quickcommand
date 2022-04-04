@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md relative">
+  <div class="relative">
     <!-- 匹配类型 -->
     <div class="row q-gutter-sm q-py-xs" v-if="notRunCodePage">
       <div class="col">
@@ -63,9 +63,9 @@
     </div>
     <!-- 说明、图标及标签 -->
     <div class="row q-gutter-sm q-py-xs" v-if="notRunCodePage">
-        <div class="col-auto">
-            <q-img width="40px" src="/logo/quickcommand.png"></q-img>
-        </div>
+      <div class="col-auto">
+        <q-img width="40px" src="/logo/quickcommand.png"></q-img>
+      </div>
       <div class="col">
         <q-select
           dense
@@ -187,12 +187,14 @@
       </div>
     </div>
     <!-- 编程语言 -->
-    <div class="row q-gutter-sm q-py-xs">
+    <div class="row">
       <div class="col">
         <div>
           <q-select
             dense
-            outlined
+            filled
+            square
+            hide-bottom-space
             color="teal"
             transition-show="jump-down"
             transition-hide="jump-up"
@@ -202,8 +204,12 @@
             :options="programLanguages"
             label="编程语言"
           >
-            <template v-slot:append>
-              <q-avatar rounded>
+            <template v-slot:prepend>
+              <q-avatar
+                size="lg"
+                square
+                :src="'/logo/' + quickcommandInfo.program + '.png'"
+              >
                 <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
               </q-avatar>
             </template>
@@ -220,94 +226,57 @@
           </q-select>
         </div>
       </div>
+      <q-separator vertical />
       <div class="col-auto">
-        <div
-          style="max-width: 300px"
-          class="row q-gutter-sm"
-          v-show="quickcommandInfo.program === 'custom'"
-        >
-          <div class="col">
-            <q-input
-              dense
-              color="teal"
-              v-model="quickcommandInfo.customOptions.bin"
-              stack-label
-              label="解释器路径"
-            />
-          </div>
-          <div class="col">
-            <q-input
-              dense
-              color="teal"
-              v-model="quickcommandInfo.customOptions.argv"
-              stack-label
-              label="解释器参数"
-            />
-          </div>
-          <div class="col">
-            <q-input
-              dense
-              color="teal"
-              v-model="quickcommandInfo.customOptions.ext"
-              @blur="matchLanguage"
-              label="后缀,不含."
-              stack-label
-            />
-          </div>
-        </div>
+        <q-input
+          dense
+          filled
+          square
+          hide-bottom-space
+          color="teal"
+          input-style="width: 120px;"
+          v-model="quickcommandInfo.scptarg"
+          label="脚本参数"
+          v-show="quickcommandInfo.program !== 'quickcommand'"
+        />
       </div>
-      <div class="col-auto doc-container">
-        <div class="row q-gutter-sm items-center justify-end">
-          <q-input
-            dense
-            outlined
+      <div class="col-auto justify-end flex">
+        <q-btn-group>
+          <q-btn
+            flat
             color="teal"
-            input-style="width: 120px;"
-            v-model="quickcommandInfo.scptarg"
-            label="脚本参数"
+            icon="help"
+            @click="showHelp"
+            v-show="quickcommandInfo.program === 'quickcommand'"
+            ><q-tooltip>查看文档</q-tooltip></q-btn
+          >
+          <q-btn
+            flat
+            color="teal"
+            icon="code"
+            @click="showCustomOptions"
             v-show="quickcommandInfo.program !== 'quickcommand'"
-          />
-          <q-btn-group>
-            <q-btn
-              rounded
-              color="teal"
-              flat
-              icon="description"
-              @click="showHelp"
-              v-show="quickcommandInfo.program === 'quickcommand'"
-              ><q-tooltip>查看文档</q-tooltip></q-btn
-            >
-            <q-btn
-              rounded
-              color="teal"
-              flat
-              icon="format_size"
-              @click="showCodingPage()"
-              v-show="quickcommandInfo.program !== 'quickcommand'"
-              ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
-            >
-            <q-btn
-              rounded
-              flat
-              color="teal"
-              icon="send"
-              @click="runCurrentCommand()"
-              ><q-tooltip>运行命令</q-tooltip></q-btn
-            >
-          </q-btn-group>
-        </div>
+            ><q-tooltip>其他编程语言或自定义解释器路径</q-tooltip></q-btn
+          >
+          <q-btn
+            flat
+            color="teal"
+            icon="format_size"
+            @click="showCodingPage()"
+            v-show="quickcommandInfo.program !== 'quickcommand'"
+            ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
+          >
+          <q-btn flat color="teal" icon="send" @click="runCurrentCommand()"
+            ><q-tooltip>运行命令</q-tooltip></q-btn
+          >
+        </q-btn-group>
       </div>
     </div>
     <MonocaEditor
-      class="absolute"
+      class="absolute-bottom"
       ref="editor"
       :style="{
-        bottom: '2px',
-        left: '2px',
-        right: '2px',
-        top: this.action.type === 'run' ? '70px' : '250px',
-        borderRadius: '4px',
-        border: '1px solid #8080808c',
+        top: this.action.type === 'run' ? '40px' : '250px',
       }"
     />
     <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
@@ -464,6 +433,35 @@ export default {
             ] = res;
         });
     },
+    // 自定义解释器路径界面
+    showCustomOptions() {
+      quickcommand
+        .showInputBox(
+          {
+            labels: ["解释器路径", "解释器参数", "脚本后缀"],
+            hints: [
+              "绝对路径，如：/home/.bin/python",
+              "运行参数，如：-u",
+              "脚本的后缀，不含点，如：py",
+            ],
+            values: [
+              this.quickcommandInfo.customOptions?.bin,
+              this.quickcommandInfo.customOptions?.argv,
+              this.quickcommandInfo.customOptions?.ext,
+            ],
+          },
+          "其他编程语言或自定义解释器路径"
+        )
+        .then((res) => {
+          if (res)
+            [
+              this.quickcommandInfo.customOptions.bin,
+              this.quickcommandInfo.customOptions.argv,
+              this.quickcommandInfo.customOptions.ext,
+            ] = res;
+            this.matchLanguage(this.quickcommandInfo.customOptions.ext)
+        });
+    },
     // 运行命令
     async runCurrentCommand() {
       let cmd = this.$refs.editor.getEditorValue();
@@ -543,6 +541,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-</style>
