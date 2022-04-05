@@ -1,193 +1,54 @@
 <template>
   <div class="relative">
-    <!-- 匹配类型 -->
-    <div class="row q-gutter-sm q-py-xs" v-if="notRunCodePage">
-      <div class="col">
-        <q-select
-          dense
-          outlined
-          color="teal"
-          transition-show="jump-down"
-          transition-hide="jump-up"
-          label-color="teal"
-          v-model="currentMatchType"
-          :options="matchTypes"
-          label="匹配类型"
-        >
-          <template v-slot:append>
-            <q-avatar rounded>
-              <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
-            </q-avatar>
-          </template>
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label v-html="scope.opt" />
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </div>
-      <div class="col">
-        <q-select
-          dense
-          outlined
-          color="teal"
-          transition-show="jump-down"
-          transition-hide="jump-up"
-          label-color="teal"
-          v-model="quickcommandInfo.program"
-          :options="programLanguages"
-          label="匹配规则"
-        >
-          <template v-slot:append>
-            <q-avatar rounded>
-              <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
-            </q-avatar>
-          </template>
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label v-html="scope.opt" />
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </div>
-    </div>
-    <!-- 说明、图标及标签 -->
-    <div class="row q-gutter-sm q-py-xs" v-if="notRunCodePage">
-      <div class="col-auto">
-        <q-img width="40px" src="/logo/quickcommand.png"></q-img>
-      </div>
-      <div class="col">
-        <q-select
-          dense
-          outlined
-          color="teal"
-          transition-show="jump-down"
-          transition-hide="jump-up"
-          label-color="teal"
-          v-model="currentMatchType"
-          :options="matchTypes"
+    <!-- 命令设置栏 -->
+    <div
+      class="absolute-left"
+      :style="{
+        top: languageBarHeight,
+        width: sideBarWidth,
+        background: $q.dark.isActive? '#2d2d2d' : '#f2f2f2',
+      }"
+      v-if="notRunCodePage"
+    >
+      <div class="row q-pa-md q-gutter-md">
+        <q-img width="48px" :src="commandIcon" />
+        <div>
+        <q-input standout="bg-teal text-white" dense square
+          v-model="quickcommandInfo.features.explain"
+          type="text"
           label="说明"
-        >
-          <template v-slot:append>
-            <q-avatar rounded>
-              <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
-            </q-avatar>
-          </template>
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label v-html="scope.opt" />
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
+        />
+        <q-input standout="bg-teal text-white" dense square v-model="commandType" type="text" label="匹配类型" />
+        <q-input standout="bg-teal text-white" dense square
+          v-model="quickcommandInfo.features.cmds[0]"
+          type="text"
+          label="关键字"
+        />
+        <q-input standout="bg-teal text-white" dense square v-model="quickcommandInfo.tags" type="text" label="标签" />
+        <q-input standout="bg-teal text-white" dense square type="text" label="变量" />
+        <q-input standout="bg-teal text-white" dense square type="text" label="输出" />
+        <q-input standout="bg-teal text-white" dense square
+          v-model="quickcommandInfo.features.platform"
+          type="text"
+          label="平台"
+        />
+        </div>
       </div>
-      <div class="col-6">
-        <q-select
-          dense
-          outlined
-          color="teal"
-          transition-show="jump-down"
-          transition-hide="jump-up"
-          label-color="teal"
-          v-model="quickcommandInfo.program"
-          :options="programLanguages"
-          label="标签"
-        >
-          <template v-slot:append>
-            <q-avatar rounded>
-              <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
-            </q-avatar>
-          </template>
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label v-html="scope.opt" />
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
+      <div>
+        <q-btn-group spread class="absolute-bottom">
+          <q-btn color="red" icon="close" label="退出" @click="closeEditor" />
+          <q-btn
+            color="primary"
+            icon="save"
+            label="保存"
+            @click="clickHandler2"
+          />
+        </q-btn-group>
       </div>
+      <div class="row"></div>
     </div>
-    <!-- 特殊变量、输出 -->
-    <div class="row q-gutter-sm q-py-xs" v-if="notRunCodePage">
-      <div class="col">
-        <q-select
-          dense
-          outlined
-          color="teal"
-          transition-show="jump-down"
-          transition-hide="jump-up"
-          label-color="teal"
-          v-model="currentMatchType"
-          :options="matchTypes"
-          label="变量"
-        >
-          <template v-slot:append>
-            <q-avatar rounded>
-              <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
-            </q-avatar>
-          </template>
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label v-html="scope.opt" />
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </div>
-      <div class="col">
-        <q-select
-          dense
-          outlined
-          color="teal"
-          transition-show="jump-down"
-          transition-hide="jump-up"
-          label-color="teal"
-          v-model="quickcommandInfo.program"
-          :options="programLanguages"
-          label="输出"
-        >
-          <template v-slot:append>
-            <q-avatar rounded>
-              <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
-            </q-avatar>
-          </template>
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label v-html="scope.opt" />
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </div>
-    </div>
-    <!-- 编程语言 -->
-    <div class="row">
+    <!-- 编程语言栏 -->
+    <div class="row" v-show="languageBarHeight">
       <div class="col">
         <div>
           <q-select
@@ -204,13 +65,9 @@
             :options="programLanguages"
             label="编程语言"
           >
-            <template v-slot:prepend>
-              <q-avatar
-                size="lg"
-                square
-                :src="'/logo/' + quickcommandInfo.program + '.png'"
-              >
-                <img :src="'/logo/' + quickcommandInfo.program + '.png'" />
+            <template v-slot:append>
+              <q-avatar size="lg" square>
+                <img :src="currentProgramLogo" />
               </q-avatar>
             </template>
             <template v-slot:option="scope">
@@ -276,7 +133,8 @@
       class="absolute-bottom"
       ref="editor"
       :style="{
-        top: this.action.type === 'run' ? '40px' : '250px',
+        top: languageBarHeight,
+        left: this.action.type === 'run' ? '0' : sideBarWidth,
       }"
     />
     <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
@@ -317,6 +175,8 @@ export default {
       programLanguages: Object.keys(this.$programmings),
       matchTypes: ["关键字", "正则", "窗口", "文件", "专业模式"],
       currentMatchType: "关键字",
+      sideBarWidth: "200px",
+      languageBarHeight: "40px",
       quickcommandInfo: {
         features: {
           explain: "",
@@ -354,6 +214,16 @@ export default {
   computed: {
     notRunCodePage() {
       return this.action.type !== "run";
+    },
+    commandIcon() {
+      return this.quickcommandInfo.features?.icon || this.currentProgramLogo;
+    },
+    currentProgramLogo() {
+      return "/logo/" + this.quickcommandInfo.program + ".png";
+    },
+    commandType() {
+      let cmd = this.quickcommandInfo.features.cmds[0];
+      return typeof cmd === "string" ? "关键字" : cmd?.type;
     },
   },
   created() {},
@@ -459,7 +329,7 @@ export default {
               this.quickcommandInfo.customOptions.argv,
               this.quickcommandInfo.customOptions.ext,
             ] = res;
-            this.matchLanguage(this.quickcommandInfo.customOptions.ext)
+          this.matchLanguage(this.quickcommandInfo.customOptions.ext);
         });
     },
     // 运行命令
@@ -537,6 +407,12 @@ export default {
           } 字省略\n...\n\n` +
           content.slice(contlength - 100);
       this.runResult += htmlEncode(content, raw);
+    },
+    closeEditor() {
+      this.$emit("editorEvent", {
+        type: "close",
+        data: {},
+      });
     },
   },
 };

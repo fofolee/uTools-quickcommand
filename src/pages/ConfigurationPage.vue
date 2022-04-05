@@ -173,39 +173,10 @@
       transition-hide="slide-down"
     >
       <q-card>
-        <q-bar>
-          <q-space />
-          <q-btn
-            dense
-            flat
-            icon="minimize"
-            @click="maximizedToggle = false"
-            :disable="!maximizedToggle"
-          >
-            <q-tooltip
-              v-if="maximizedToggle"
-              content-class="bg-white text-primary"
-              >Minimize</q-tooltip
-            >
-          </q-btn>
-          <q-btn
-            dense
-            flat
-            icon="crop_square"
-            @click="maximizedToggle = true"
-            :disable="maximizedToggle"
-          >
-            <q-tooltip
-              v-if="!maximizedToggle"
-              content-class="bg-white text-primary"
-              >Maximize</q-tooltip
-            >
-          </q-btn>
-          <q-btn dense flat icon="close" v-close-popup>
-            <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
-          </q-btn>
-        </q-bar>
-        <CommandEditor :action="commandEditorAction"></CommandEditor>
+        <CommandEditor
+          :action="commandEditorAction"
+          @editorEvent="editorEvent"
+        ></CommandEditor>
       </q-card>
     </q-dialog>
   </div>
@@ -551,6 +522,15 @@ export default {
         data: {},
       };
       this.isCommandEditorShow = true;
+    },
+    editorEvent(event) {
+      switch (event.type) {
+        case "close":
+          this.isCommandEditorShow = false;
+          return;
+        default:
+          return;
+      }
     },
   },
 };
