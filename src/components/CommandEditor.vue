@@ -1,7 +1,10 @@
 <template>
   <div class="relative">
     <!-- 命令设置栏 -->
-    <div
+    <q-scroll-area
+      :thumb-style="{
+        width: '3px',
+      }"
       class="absolute-left shadow-10"
       :style="{
         width: sideBarWidth,
@@ -11,47 +14,91 @@
       v-if="showSidebar"
     >
       <div class="row q-pa-md q-gutter-md">
-        <div class="row">
-          <q-btn
-            dense
-            flat
-            color="grey"
-            icon="arrow_back_ios_new"
-            @click="closeEditor"
-          />
-          <div class="q-pa-md">
-            <q-img class="commandLogo" width="80px" :src="commandIcon" />
-          </div>
-        </div>
+        <q-btn
+          dense
+          flat
+          color="grey"
+          icon="arrow_back_ios_new"
+          @click="closeEditor"
+        />
+        <q-img class="commandLogo" width="64px" :src="commandIcon" />
         <div class="row">
           <div>
+            <!-- 说明 -->
             <q-input
               standout="bg-primary text-white"
-              dense
               square
               v-model="quickcommandInfo.features.explain"
               type="text"
               label="说明"
-            />
-            <q-input
+            >
+              <template v-slot:prepend>
+                <q-icon name="drive_file_rename_outline" />
+              </template>
+            </q-input>
+            <!-- 匹配类型 -->
+            <q-select
               standout="bg-primary text-white"
-              dense
               square
-              v-model="commandType"
+              options-dense
+              @update:model-value="cmdMatch = null"
+              :options="commandTypesOptions"
+              v-model="cmdType"
               type="text"
               label="匹配类型"
-            />
-            <q-input
+            >
+              <template v-slot:prepend>
+                <q-icon :name="cmdType.icon" />
+              </template>
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+                  <q-item-section avatar>
+                    <q-icon :name="scope.opt.icon" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label v-html="scope.opt.name" />
+                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template></q-select
+            >
+            <!-- 匹配规则 -->
+            <q-select
+              v-if="cmdType.valueType === 'array'"
               standout="bg-primary text-white"
-              dense
               square
-              v-model="quickcommandInfo.features.cmds[0]"
+              v-model="cmdMatch"
+              use-input
+              use-chips
+              multiple
+              hide-dropdown-icon
+              input-debounce="0"
+              new-value-mode="add-unique"
               type="text"
-              label="关键字"
-            />
+              placeholder="回车添加"
+              :label="cmdType.matchLabel"
+            >
+              <template v-slot:prepend>
+                <q-icon name="square_foot" />
+              </template>
+            </q-select>
+            <q-input
+              v-else
+              autogrow
+              standout="bg-primary text-white"
+              square
+              v-model="cmdMatch"
+              :readonly="cmdType.inputType === 'null'"
+              type="text"
+              :label="cmdType.matchLabel"
+            >
+              <template v-slot:prepend>
+                <q-icon name="square_foot" />
+              </template>
+            </q-input>
+            <!-- 标签 -->
             <q-input
               standout="bg-primary text-white"
-              dense
               square
               v-model="quickcommandInfo.tags"
               type="text"
@@ -59,21 +106,18 @@
             />
             <q-input
               standout="bg-primary text-white"
-              dense
               square
               type="text"
               label="变量"
             />
             <q-input
               standout="bg-primary text-white"
-              dense
               square
               type="text"
               label="输出"
             />
             <q-input
               standout="bg-primary text-white"
-              dense
               square
               v-model="quickcommandInfo.features.platform"
               type="text"
@@ -83,7 +127,7 @@
         </div>
       </div>
       <div></div>
-    </div>
+    </q-scroll-area>
     <!-- 编程语言栏 -->
     <div
       class="absolute-top"
@@ -131,6 +175,7 @@
             dense
             standout="bg-primary text-white"
             square
+            stack-label
             hide-bottom-space
             color="primary"
             input-style="width: 120px;"
@@ -222,20 +267,25 @@
 
 <script>
 import MonocaEditor from "components/MonocaEditor";
+import commandTypes from "../js/commandTypes.js";
+let commandTypesOptions = Object.values(commandTypes);
 
 export default {
   components: { MonocaEditor },
   data() {
     return {
+      reg: "i",
       programLanguages: Object.keys(this.$programmings),
-      matchTypes: ["关键字", "正则", "窗口", "文件", "专业模式"],
       currentMatchType: "关键字",
-      sideBarWidth: "200px",
+      sideBarWidth: "240px",
       languageBarHeight: "40px",
+      commandTypes: commandTypes,
+      commandTypesOptions: commandTypesOptions,
+      cmdType: commandTypesOptions[0],
+      cmdMatch: "",
       quickcommandInfo: {
         features: {
           explain: "",
-          cmds: [],
           platform: [],
         },
         program: "quickcommand",
@@ -276,10 +326,6 @@ export default {
     currentProgramLogo() {
       return "/logo/" + this.quickcommandInfo.program + ".png";
     },
-    commandType() {
-      let cmd = this.quickcommandInfo.features.cmds[0];
-      return typeof cmd === "string" ? "关键字" : cmd?.type;
-    },
   },
   created() {},
   methods: {
@@ -291,6 +337,12 @@ export default {
           ? this.action.data
           : this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
       Object.assign(this.quickcommandInfo, quickCommandInfo);
+      // 获取当前命令的匹配类型及匹配规则
+      let currentQuickCommandCmds = this.getCommandType();
+      // 设置匹配类型下拉框的值（Object）及匹配规则的值
+      this.cmdType = this.commandTypes[currentQuickCommandCmds.type];
+      this.cmdMatch = currentQuickCommandCmds.match;
+      // monoca 相关
       this.setLanguage(this.quickcommandInfo.program);
       this.$refs.editor.setEditorValue(quickCommandInfo.cmd);
       // 只有新建或运行时才保存记录
@@ -471,6 +523,24 @@ export default {
     },
     // 保存
     saveCurrentCommand() {},
+    // 判断命令类型
+    getCommandType() {
+      let data = {};
+      let cmds = this.quickcommandInfo.features.cmds;
+      if (cmds.length === 1) {
+        let { type, match } = cmds[0];
+        data.type = type ? type : "keyword";
+        data.match =
+          data.type === "keyword" ? cmds[0] : match?.app ? match.app : match;
+      } else {
+        data.type = cmds.filter((x) => !x.length).length
+          ? "professional"
+          : "keyword";
+        data.match =
+          data.type === "keyword" ? cmds : JSON.stringify(cmds, null, 4);
+      }
+      return data;
+    },
   },
 };
 </script>

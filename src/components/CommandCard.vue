@@ -79,7 +79,7 @@
         v-ripple
         :style="{
           color: isCommandActivated ? 'unset' : 'grey',
-          background: $q.dark.isActive ? '#ffffff08' : '#00000008'
+          background: $q.dark.isActive ? '#ffffff08' : '#00000008',
         }"
       >
         <q-card-section>
@@ -108,9 +108,10 @@
               <span v-for="cmd in commandInfo.features.cmds" :key="cmd">
                 <span v-if="typeof cmd === 'string'">
                   <q-badge rounded :color="cmdBadgeColor()"
-                    ><q-icon class="q-mr-xs" name="font_download" />{{
-                      getShortStrByByte(cmd)
-                    }}</q-badge
+                    ><q-icon
+                      class="q-mr-xs"
+                      :name="commandTypes.keyword.icon"
+                    />{{ getShortStrByByte(cmd) }}</q-badge
                   >
                   <q-tooltip>
                     <div class="text-subtitle2">
@@ -120,9 +121,10 @@
                 </span>
                 <span v-else-if="cmd.type === 'window' && cmd.match">
                   <q-badge rounded :color="cmdBadgeColor(cmd.type)"
-                    ><q-icon class="q-mr-xs" name="widgets" />{{
-                      getShortStrByByte(cmd.match.app[0])
-                    }}
+                    ><q-icon
+                      class="q-mr-xs"
+                      :name="commandTypes.window.icon"
+                    />{{ getShortStrByByte(cmd.match.app[0]) }}
                   </q-badge>
                   <q-tooltip>
                     <div
@@ -136,7 +138,7 @@
                 </span>
                 <span v-else-if="cmd.type === 'files'">
                   <q-badge rounded :color="cmdBadgeColor(cmd.type)"
-                    ><q-icon class="q-mr-xs" name="description" />
+                    ><q-icon class="q-mr-xs" :name="commandTypes.files.icon" />
                     {{
                       (cmd.match && getShortStrByByte(cmd.match)) || "所有文件"
                     }}</q-badge
@@ -149,9 +151,10 @@
                 </span>
                 <span v-else-if="cmd.type === 'regex'">
                   <q-badge rounded :color="cmdBadgeColor(cmd.type)"
-                    ><q-icon class="q-mr-xs" name="playlist_add_check" />{{
-                      getShortStrByByte(cmd.match)
-                    }}
+                    ><q-icon
+                      class="q-mr-xs"
+                      :name="commandTypes.regex.icon"
+                    />{{ getShortStrByByte(cmd.match) }}
                   </q-badge>
                   <q-tooltip>
                     <div class="text-subtitle2">
@@ -161,12 +164,15 @@
                 </span>
                 <span v-else-if="cmd.type === 'over'">
                   <q-badge rounded :color="cmdBadgeColor(cmd.type)"
-                    ><q-icon class="q-mr-xs" name="clear_all" />所有文本
+                    ><q-icon
+                      class="q-mr-xs"
+                      :name="commandTypes.over.icon"
+                    />所有文本
                   </q-badge>
                 </span>
                 <span v-else-if="cmd.type === 'img'">
                   <q-badge rounded :color="cmdBadgeColor(cmd.type)" label="">
-                    <q-icon class="q-mr-xs" name="panorama" />图片
+                    <q-icon class="q-mr-xs" :name="commandTypes.img.icon" />图片
                   </q-badge>
                 </span>
               </span>
@@ -201,12 +207,15 @@
 </template>
 
 <script>
+import commandTypes from "../js/commandTypes.js";
+
 export default {
   data() {
     return {
       allProgrammings: this.$programmings,
       isCommandActivated: this.activated,
       maxCmdStingLen: 8,
+      commandTypes: commandTypes,
       cmdBadgeSheet: {
         keyword: "primary",
         files: "light-blue",
