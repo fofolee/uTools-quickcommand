@@ -95,9 +95,8 @@
               :style="{
                 fontSize: cardStyleVars.showBiggerTitle ? '1.25rem' : '1.1rem',
               }"
-            >
-              {{ commandInfo.features.explain }}
-            </div>
+              v-html="commandInfo.features.explain"
+            />
           </div>
           <!-- 匹配模式 -->
           <div class="row">

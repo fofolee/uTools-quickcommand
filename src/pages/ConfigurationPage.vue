@@ -21,7 +21,7 @@
           :content-class="
             tag === '搜索结果' ? 'text-blue-9 text-weight-bold' : ''
           "
-          v-show="!(tag === '搜索结果' && !commandSearchKeyword)"
+          v-show="!(tag === '搜索结果' && commandSearchKeyword?.length < 2)"
         >
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
@@ -104,7 +104,7 @@
             clearable
             clear-icon="close"
             @update:model-value="updateSearch"
-            placeholder="搜索"
+            placeholder="搜索，支持拼音首字母"
           >
             <template v-slot:prepend>
               <q-icon name="search" />
@@ -236,15 +236,35 @@ export default {
   computed: {
     // 当前标签下的所有快捷命令
     currentTagQuickCommands() {
-      let commands = Object.values(this.allQuickCommands);
+      let commands = Object.values(
+        JSON.parse(JSON.stringify(this.allQuickCommands))
+      );
       switch (this.currentTag) {
         case "未分类":
           return commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0);
         case "搜索结果":
-          if (this.commandSearchKeyword)
-            return commands.filter((cmd) =>
-              cmd.features.explain.includes(this.commandSearchKeyword)
+          if (this.commandSearchKeyword?.length < 2) return;
+          let searchResult = [];
+          commands.forEach((cmd) => {
+            // 拼音搜索
+            let explain = cmd.features.explain;
+            let matchedWordPositions = window.pinYinMatch.match(
+              explain,
+              this.commandSearchKeyword
             );
+            if (!matchedWordPositions) return;
+            let matchedWords = explain.slice(
+              matchedWordPositions[0],
+              matchedWordPositions[1] + 1
+            );
+            // 高亮
+            cmd.features.explain = explain.replace(
+              matchedWords,
+              `<strong style="color:#ed6237">${matchedWords}</strong>`
+            );
+            searchResult.push(cmd);
+          });
+          return searchResult;
         default:
           return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
       }
@@ -475,7 +495,7 @@ export default {
     updateSearch() {
       // 记录当前标签页
       if (this.currentTag !== "搜索结果") this.lastTag = this.currentTag;
-      if (this.commandSearchKeyword) {
+      if (this.commandSearchKeyword?.length > 1) {
         // 搜索时跳转到搜索结果标签
         this.$nextTick(() => {
           this.currentTag = "搜索结果";
