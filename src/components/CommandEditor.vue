@@ -2,165 +2,186 @@
   <div class="relative">
     <!-- 命令设置栏 -->
     <div
-      class="absolute-left"
+      class="absolute-left shadow-10"
       :style="{
-        top: languageBarHeight,
         width: sideBarWidth,
         background: $q.dark.isActive ? '#2d2d2d' : '#f2f2f2',
+        zIndex: 1,
       }"
-      v-if="notRunCodePage"
+      v-if="showSidebar"
     >
       <div class="row q-pa-md q-gutter-md">
-        <q-img width="48px" :src="commandIcon" />
-        <div>
-          <q-input
-            standout="bg-primary text-white"
+        <div class="row">
+          <q-btn
             dense
-            square
-            v-model="quickcommandInfo.features.explain"
-            type="text"
-            label="说明"
+            flat
+            color="grey"
+            icon="arrow_back_ios_new"
+            @click="closeEditor"
           />
-          <q-input
-            standout="bg-primary text-white"
-            dense
-            square
-            v-model="commandType"
-            type="text"
-            label="匹配类型"
-          />
-          <q-input
-            standout="bg-primary text-white"
-            dense
-            square
-            v-model="quickcommandInfo.features.cmds[0]"
-            type="text"
-            label="关键字"
-          />
-          <q-input
-            standout="bg-primary text-white"
-            dense
-            square
-            v-model="quickcommandInfo.tags"
-            type="text"
-            label="标签"
-          />
-          <q-input
-            standout="bg-primary text-white"
-            dense
-            square
-            type="text"
-            label="变量"
-          />
-          <q-input
-            standout="bg-primary text-white"
-            dense
-            square
-            type="text"
-            label="输出"
-          />
-          <q-input
-            standout="bg-primary text-white"
-            dense
-            square
-            v-model="quickcommandInfo.features.platform"
-            type="text"
-            label="平台"
-          />
+          <div class="q-pa-md">
+            <q-img class="commandLogo" width="80px" :src="commandIcon" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              v-model="quickcommandInfo.features.explain"
+              type="text"
+              label="说明"
+            />
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              v-model="commandType"
+              type="text"
+              label="匹配类型"
+            />
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              v-model="quickcommandInfo.features.cmds[0]"
+              type="text"
+              label="关键字"
+            />
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              v-model="quickcommandInfo.tags"
+              type="text"
+              label="标签"
+            />
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              type="text"
+              label="变量"
+            />
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              type="text"
+              label="输出"
+            />
+            <q-input
+              standout="bg-primary text-white"
+              dense
+              square
+              v-model="quickcommandInfo.features.platform"
+              type="text"
+              label="平台"
+            />
+          </div>
         </div>
       </div>
-      <div>
-        <q-btn-group spread class="absolute-bottom">
-          <q-btn color="red" icon="close" label="退出" @click="closeEditor" />
-          <q-btn
-            color="blue-9"
-            icon="save"
-            label="保存"
-            @click="clickHandler2"
-          />
-        </q-btn-group>
-      </div>
-      <div class="row"></div>
+      <div></div>
     </div>
     <!-- 编程语言栏 -->
-    <div class="row" v-show="languageBarHeight">
-      <div class="col">
-        <div>
-          <q-select
+    <div
+      class="absolute-top"
+      :style="{
+        left: showSidebar ? sideBarWidth : 0,
+      }"
+    >
+      <div class="row" v-show="languageBarHeight">
+        <div class="col">
+          <div>
+            <q-select
+              dense
+              standout="bg-primary text-white"
+              square
+              hide-bottom-space
+              color="primary"
+              transition-show="jump-down"
+              transition-hide="jump-up"
+              @update:model-value="programChanged"
+              v-model="quickcommandInfo.program"
+              :options="programLanguages"
+              label="编程语言"
+            >
+              <template v-slot:append>
+                <q-avatar size="lg" square>
+                  <img :src="currentProgramLogo" />
+                </q-avatar>
+              </template>
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section avatar>
+                    <img width="32" :src="'/logo/' + scope.opt + '.png'" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label v-html="scope.opt" />
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+          </div>
+        </div>
+        <q-separator vertical />
+        <div class="col-auto">
+          <q-input
             dense
             standout="bg-primary text-white"
             square
             hide-bottom-space
             color="primary"
-            transition-show="jump-down"
-            transition-hide="jump-up"
-            @update:model-value="programChanged"
-            v-model="quickcommandInfo.program"
-            :options="programLanguages"
-            label="编程语言"
-          >
-            <template v-slot:append>
-              <q-avatar size="lg" square>
-                <img :src="currentProgramLogo" />
-              </q-avatar>
-            </template>
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section avatar>
-                  <img width="32" :src="'/logo/' + scope.opt + '.png'" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label v-html="scope.opt" />
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+            input-style="width: 120px;"
+            v-model="quickcommandInfo.scptarg"
+            label="脚本参数"
+            v-show="quickcommandInfo.program !== 'quickcommand'"
+          />
         </div>
-      </div>
-      <q-separator vertical />
-      <div class="col-auto">
-        <q-input
-          dense
-          standout="bg-primary text-white"
-          square
-          hide-bottom-space
-          color="primary"
-          input-style="width: 120px;"
-          v-model="quickcommandInfo.scptarg"
-          label="脚本参数"
-          v-show="quickcommandInfo.program !== 'quickcommand'"
-        />
-      </div>
-      <div class="col-auto justify-end flex">
-        <q-btn-group>
-          <q-btn
-            flat
-            color="primary"
-            icon="help"
-            @click="showHelp"
-            v-show="quickcommandInfo.program === 'quickcommand'"
-            ><q-tooltip>查看文档</q-tooltip></q-btn
-          >
-          <q-btn
-            flat
-            color="primary"
-            icon="code"
-            @click="showCustomOptions"
-            v-show="quickcommandInfo.program !== 'quickcommand'"
-            ><q-tooltip>其他编程语言或自定义解释器路径</q-tooltip></q-btn
-          >
-          <q-btn
-            flat
-            color="primary"
-            icon="format_size"
-            @click="showCodingPage()"
-            v-show="quickcommandInfo.program !== 'quickcommand'"
-            ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
-          >
-          <q-btn flat color="primary" icon="send" @click="runCurrentCommand()"
-            ><q-tooltip>运行命令</q-tooltip></q-btn
-          >
-        </q-btn-group>
+        <div class="col-auto justify-end flex">
+          <q-btn-group>
+            <q-btn
+              flat
+              color="primary"
+              icon="help"
+              @click="showHelp"
+              v-show="quickcommandInfo.program === 'quickcommand'"
+              ><q-tooltip>查看文档</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              color="primary"
+              icon="code"
+              @click="showCustomOptions"
+              v-show="quickcommandInfo.program !== 'quickcommand'"
+              ><q-tooltip>其他编程语言或自定义解释器路径</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              color="primary"
+              icon="format_size"
+              @click="showCodingPage()"
+              v-show="quickcommandInfo.program !== 'quickcommand'"
+              ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              color="primary"
+              icon="play_arrow"
+              @click="runCurrentCommand()"
+              ><q-tooltip>运行命令 {{ commandString }}+b</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              v-if="!isRunCodePage"
+              color="primary"
+              icon="save"
+              @click="saveCurrentCommand()"
+              ><q-tooltip>保存 {{ commandString }}+s</q-tooltip></q-btn
+            >
+          </q-btn-group>
+        </div>
       </div>
     </div>
     <MonocaEditor
@@ -237,6 +258,9 @@ export default {
       runResult: "",
       runResultStatus: true,
       resultMaxLength: 10000,
+      showSidebar: this.action.type !== "run",
+      isRunCodePage: this.action.type === "run",
+      commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
     };
   },
   props: {
@@ -246,9 +270,6 @@ export default {
     this.init();
   },
   computed: {
-    notRunCodePage() {
-      return this.action.type !== "run";
-    },
     commandIcon() {
       return this.quickcommandInfo.features?.icon || this.currentProgramLogo;
     },
@@ -448,6 +469,20 @@ export default {
         data: {},
       });
     },
+    // 保存
+    saveCurrentCommand() {},
   },
 };
 </script>
+
+<style scoped>
+.commandLogo {
+  cursor: pointer;
+  transition: 10s;
+  filter: drop-shadow(2px 1px 1px grey);
+}
+.commandLogo:hover {
+  transition: 10s;
+  transform: rotate(360deg);
+}
+</style>
