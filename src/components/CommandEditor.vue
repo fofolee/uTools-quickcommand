@@ -88,7 +88,9 @@
               standout="bg-primary text-white"
               square
               v-model="cmdMatch"
-              :readonly="cmdType.inputType === 'null'"
+              hide-bottom-space
+              @blur="cmdMatchVerify"
+              :readonly="cmdType.valueType === 'null'"
               type="text"
               :label="cmdType.matchLabel"
             >
@@ -97,32 +99,62 @@
               </template>
             </q-input>
             <!-- 标签 -->
-            <q-input
+            <q-select
               standout="bg-primary text-white"
               square
               v-model="quickcommandInfo.tags"
               type="text"
               label="标签"
+              use-input
+              use-chips
+              multiple
+              new-value-mode="add-unique"
+              input-debounce="0"
+              :options="allQuickCommandTags"
             />
-            <q-input
+            <!-- 特殊变量 -->
+            <q-select
               standout="bg-primary text-white"
               square
-              type="text"
-              label="变量"
+              label="特殊变量"
             />
-            <q-input
+            <!-- 输出 -->
+            <q-select
               standout="bg-primary text-white"
               square
-              type="text"
+              options-dense
+              color="primary"
+              v-model="quickcommandInfo.output"
+              :display-value="outputTypes[quickcommandInfo.output].label"
+              :options="outputTypesOptions"
               label="输出"
-            />
-            <q-input
+            >
+              <template v-slot:prepend>
+                <q-icon :name="outputTypes[quickcommandInfo.output].icon" />
+              </template>
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section avatar>
+                    <q-icon :name="outputTypes[scope.opt].icon" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label v-html="outputTypes[scope.opt].label" />
+                  </q-item-section>
+                </q-item> </template
+            ></q-select>
+            <!-- 平台 -->
+            <q-select
               standout="bg-primary text-white"
               square
+              :options="['win32', 'darwin', 'linux']"
+              use-chips
+              @blur="platformVerify()"
               v-model="quickcommandInfo.features.platform"
-              type="text"
+              multiple
+              options-dense
               label="平台"
-            />
+              ><template v-slot:prepend> <q-icon name="window" /> </template
+            ></q-select>
           </div>
         </div>
       </div>
@@ -178,7 +210,7 @@
             stack-label
             hide-bottom-space
             color="primary"
-            input-style="width: 120px;"
+            input-style="width: 60px;"
             v-model="quickcommandInfo.scptarg"
             label="脚本参数"
             v-show="quickcommandInfo.program !== 'quickcommand'"
@@ -200,7 +232,7 @@
               icon="code"
               @click="showCustomOptions"
               v-show="quickcommandInfo.program !== 'quickcommand'"
-              ><q-tooltip>其他编程语言或自定义解释器路径</q-tooltip></q-btn
+              ><q-tooltip>自定义解释器路径</q-tooltip></q-btn
             >
             <q-btn
               flat
@@ -267,14 +299,15 @@
 
 <script>
 import MonocaEditor from "components/MonocaEditor";
-import commandTypes from "../js/commandTypes.js";
+import commandTypes from "../js/options/commandTypes.js";
+import outputTypes from "../js/options/outputTypes.js";
+
 let commandTypesOptions = Object.values(commandTypes);
 
 export default {
   components: { MonocaEditor },
   data() {
     return {
-      reg: "i",
       programLanguages: Object.keys(this.$programmings),
       currentMatchType: "关键字",
       sideBarWidth: "240px",
@@ -283,6 +316,9 @@ export default {
       commandTypesOptions: commandTypesOptions,
       cmdType: commandTypesOptions[0],
       cmdMatch: "",
+      outputTypes: outputTypes,
+      outputTypesOptions: Object.keys(outputTypes),
+      specilaVar: "{{input}}",
       quickcommandInfo: {
         features: {
           explain: "",
@@ -290,7 +326,7 @@ export default {
         },
         program: "quickcommand",
         cmd: "",
-        output: "",
+        output: "text",
         hasSubInput: false,
         scptarg: "",
         charset: {
@@ -311,6 +347,7 @@ export default {
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
       commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
+      configurationPage: this.$parent.$parent.$parent.$parent,
     };
   },
   props: {
@@ -326,6 +363,11 @@ export default {
     currentProgramLogo() {
       return "/logo/" + this.quickcommandInfo.program + ".png";
     },
+    allQuickCommandTags() {
+      return this.configurationPage.allQuickCommandTags.filter(
+        (x) => x !== "默认" && x !== "未分类" && x !== "搜索结果"
+      );
+    },
   },
   created() {},
   methods: {
@@ -336,7 +378,10 @@ export default {
         this.action.type === "edit"
           ? this.action.data
           : this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
-      Object.assign(this.quickcommandInfo, quickCommandInfo);
+      Object.assign(
+        this.quickcommandInfo,
+        JSON.parse(JSON.stringify(quickCommandInfo))
+      );
       // 获取当前命令的匹配类型及匹配规则
       let currentQuickCommandCmds = this.getCommandType();
       // 设置匹配类型下拉框的值（Object）及匹配规则的值
@@ -427,7 +472,7 @@ export default {
               this.quickcommandInfo.customOptions?.ext,
             ],
           },
-          "其他编程语言或自定义解释器路径"
+          "自定义解释器路径"
         )
         .then((res) => {
           if (res)
@@ -540,6 +585,17 @@ export default {
           data.type === "keyword" ? cmds : JSON.stringify(cmds, null, 4);
       }
       return data;
+    },
+    // 正则不和规则自动加斜杠
+    cmdMatchVerify() {
+      this.cmdType.valueType === "regex" &&
+        !/^\/.*?\/[igm]*$/.test(this.cmdMatch) &&
+        (this.cmdMatch = `/${this.cmdMatch}/`);
+    },
+    // 平台为空自动补充
+    platformVerify() {
+      this.quickcommandInfo.features.platform > 0 ||
+        this.quickcommandInfo.features.platform.push(window.processPlatform);
     },
   },
 };

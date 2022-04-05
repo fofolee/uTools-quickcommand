@@ -207,7 +207,7 @@
 </template>
 
 <script>
-import commandTypes from "../js/commandTypes.js";
+import commandTypes from "../js/options/commandTypes.js";
 
 export default {
   data() {

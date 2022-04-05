@@ -2,7 +2,7 @@ import {
     boot
 } from 'quasar/wrappers'
 import UTOOLS from "../js/utools.js";
-import programmings from '../js/programs.js';
+import programmings from '../js/options/programs.js';
 
 // 配置数据存取
 let defaultProfile = {
