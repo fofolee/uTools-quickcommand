@@ -31,7 +31,7 @@
               运行
             </q-tooltip></q-btn
           >
-          <q-btn v-if="canCommandEdit" dense flat round color="primary" icon="share">
+          <q-btn v-if="canCommandEdit" dense flat round color="blue-9" icon="share">
             <q-tooltip anchor="top middle" self="center middle">
               导出
             </q-tooltip>

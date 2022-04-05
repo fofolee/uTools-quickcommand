@@ -10,7 +10,12 @@
         zIndex: 1,
       }"
     >
-      <q-tabs v-model="currentTag" vertical outside-arrows class="text-teal">
+      <q-tabs
+        v-model="currentTag"
+        vertical
+        outside-arrows
+        class="text-primary"
+      >
         <!-- 所有标签 -->
         <q-tab
           :alert="activatedQuickPanels.includes(tag)"
@@ -19,7 +24,7 @@
           :key="tag"
           :name="tag"
           :content-class="
-            tag === '搜索结果' ? 'text-primary text-weight-bold' : ''
+            tag === '搜索结果' ? 'text-blue-9 text-weight-bold' : ''
           "
           v-show="!(tag === '搜索结果' && !commandSearchKeyword)"
         >
@@ -112,8 +117,8 @@
             <!-- 切换视图 -->
             <q-btn-toggle
               v-model="commandCardStyle"
-              @click="$userProfile.commandCardStyle = commandCardStyle"
-              toggle-color="teal"
+              @click="$profile.commandCardStyle = commandCardStyle"
+              toggle-color="primary"
               flat
               :options="[
                 { slot: 'normal', value: 'normal' },
@@ -147,18 +152,18 @@
               split
               flat
               @click="addNewCommand"
-              color="teal"
+              color="primary"
               label="新建"
               icon="add"
             />
             <q-separator vertical />
             <!-- 下拉菜单 -->
-            <q-btn color="teal" flat size="xs"
-              ><q-spinner-bars color="teal" size="1.5em" />
+            <q-btn color="primary" flat size="xs"
+              ><q-spinner-bars color="primary" size="1.5em" />
               <ConfigurationMenu
                 :allQuickcommandsLength="Object.keys(allQuickCommands).length"
                 :allFeaturesLength="activatedQuickCommandFeatureCodes.length"
-                :isTagStared="allQuickCommandTags.includes(currentTag)"
+                :isTagStared="activatedQuickPanels.includes(currentTag)"
               ></ConfigurationMenu>
             </q-btn>
           </q-btn-group>
@@ -207,7 +212,7 @@ export default {
       maximizedToggle: true,
       commandEditorAction: {},
       footerBarHeight: "40px",
-      commandCardStyle: this.$userProfile.commandCardStyle,
+      commandCardStyle: this.$profile.commandCardStyle,
       commandCardStyleSheet: {
         mini: {
           width: "20%",
@@ -454,7 +459,7 @@ export default {
             if (!featureCode.includes("default_"))
               delete this.allQuickCommands[featureCode];
           });
-          this.currentTag = "默认"
+          this.currentTag = "默认";
           quickcommand.showMessageBox(
             "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
           );

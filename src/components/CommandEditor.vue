@@ -6,39 +6,74 @@
       :style="{
         top: languageBarHeight,
         width: sideBarWidth,
-        background: $q.dark.isActive? '#2d2d2d' : '#f2f2f2',
+        background: $q.dark.isActive ? '#2d2d2d' : '#f2f2f2',
       }"
       v-if="notRunCodePage"
     >
       <div class="row q-pa-md q-gutter-md">
         <q-img width="48px" :src="commandIcon" />
         <div>
-        <q-input standout="bg-teal text-white" dense square
-          v-model="quickcommandInfo.features.explain"
-          type="text"
-          label="说明"
-        />
-        <q-input standout="bg-teal text-white" dense square v-model="commandType" type="text" label="匹配类型" />
-        <q-input standout="bg-teal text-white" dense square
-          v-model="quickcommandInfo.features.cmds[0]"
-          type="text"
-          label="关键字"
-        />
-        <q-input standout="bg-teal text-white" dense square v-model="quickcommandInfo.tags" type="text" label="标签" />
-        <q-input standout="bg-teal text-white" dense square type="text" label="变量" />
-        <q-input standout="bg-teal text-white" dense square type="text" label="输出" />
-        <q-input standout="bg-teal text-white" dense square
-          v-model="quickcommandInfo.features.platform"
-          type="text"
-          label="平台"
-        />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            v-model="quickcommandInfo.features.explain"
+            type="text"
+            label="说明"
+          />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            v-model="commandType"
+            type="text"
+            label="匹配类型"
+          />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            v-model="quickcommandInfo.features.cmds[0]"
+            type="text"
+            label="关键字"
+          />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            v-model="quickcommandInfo.tags"
+            type="text"
+            label="标签"
+          />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            type="text"
+            label="变量"
+          />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            type="text"
+            label="输出"
+          />
+          <q-input
+            standout="bg-primary text-white"
+            dense
+            square
+            v-model="quickcommandInfo.features.platform"
+            type="text"
+            label="平台"
+          />
         </div>
       </div>
       <div>
         <q-btn-group spread class="absolute-bottom">
           <q-btn color="red" icon="close" label="退出" @click="closeEditor" />
           <q-btn
-            color="primary"
+            color="blue-9"
             icon="save"
             label="保存"
             @click="clickHandler2"
@@ -53,13 +88,12 @@
         <div>
           <q-select
             dense
-            filled
+            standout="bg-primary text-white"
             square
             hide-bottom-space
-            color="teal"
+            color="primary"
             transition-show="jump-down"
             transition-hide="jump-up"
-            label-color="teal"
             @update:model-value="programChanged"
             v-model="quickcommandInfo.program"
             :options="programLanguages"
@@ -87,10 +121,10 @@
       <div class="col-auto">
         <q-input
           dense
-          filled
+          standout="bg-primary text-white"
           square
           hide-bottom-space
-          color="teal"
+          color="primary"
           input-style="width: 120px;"
           v-model="quickcommandInfo.scptarg"
           label="脚本参数"
@@ -101,7 +135,7 @@
         <q-btn-group>
           <q-btn
             flat
-            color="teal"
+            color="primary"
             icon="help"
             @click="showHelp"
             v-show="quickcommandInfo.program === 'quickcommand'"
@@ -109,7 +143,7 @@
           >
           <q-btn
             flat
-            color="teal"
+            color="primary"
             icon="code"
             @click="showCustomOptions"
             v-show="quickcommandInfo.program !== 'quickcommand'"
@@ -117,13 +151,13 @@
           >
           <q-btn
             flat
-            color="teal"
+            color="primary"
             icon="format_size"
             @click="showCodingPage()"
             v-show="quickcommandInfo.program !== 'quickcommand'"
             ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
           >
-          <q-btn flat color="teal" icon="send" @click="runCurrentCommand()"
+          <q-btn flat color="primary" icon="send" @click="runCurrentCommand()"
             ><q-tooltip>运行命令</q-tooltip></q-btn
           >
         </q-btn-group>
@@ -158,7 +192,7 @@
           ></pre>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="关闭" color="teal" v-close-popup />
+          <q-btn flat label="关闭" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>

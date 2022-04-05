@@ -40,7 +40,7 @@
           <q-tooltip>当前启用的「快捷命令』数</q-tooltip>
         </q-chip>
         <q-chip dense square>
-          <q-avatar color="teal" text-color="white">
+          <q-avatar color="primary" text-color="white">
             {{ userLevel.number }}</q-avatar
           >Level
           <q-tooltip
@@ -148,6 +148,40 @@
           类似于旧版本的「快捷面板」</q-tooltip
         >
       </q-item>
+      <!-- 选项 -->
+      <q-item clickable>
+        <q-item-section side>
+          <q-icon name="keyboard_arrow_left" />
+        </q-item-section>
+        <q-item-section>偏好设置</q-item-section>
+        <q-menu anchor="top end" self="top start">
+          <q-list>
+            <q-item clickable>
+              <q-item-section side>
+                <q-icon name="color_lens" />
+              </q-item-section>
+              <q-item-section>主颜色</q-item-section>
+              <q-tooltip>你可以更改界面的主题色，Level 2 以上限定</q-tooltip>
+              <q-menu nchor="top left" self="bottom end">
+                <q-card>
+                  <q-color
+                    no-header
+                    no-footer
+                    @change="setPrimaryColor"
+                    v-model="$profile.primaryColor"
+                  />
+                  <q-btn
+                    color="primary"
+                    label="重置为默认"
+                    class="full-width"
+                    @click="resetPrimary"
+                  />
+                </q-card>
+              </q-menu>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </q-item>
       <!-- 帮助 -->
       <q-item clickable v-close-popup>
         <q-item-section side>
@@ -160,6 +194,8 @@
 </template>
 
 <script>
+import { setCssVar } from "quasar";
+
 export default {
   data() {
     return {
@@ -169,6 +205,7 @@ export default {
         process: 0.4,
       },
       configurationPage: this.$parent.$parent.$parent,
+      setCssVar: setCssVar,
     };
   },
   mounted() {
@@ -205,6 +242,13 @@ export default {
       document
         .querySelectorAll(".q-toggle[aria-checked='true']")
         .forEach((x) => x.click());
+    },
+    setPrimaryColor() {
+      this.setCssVar("primary", this.$profile.primaryColor);
+    },
+    resetPrimary() {
+      this.$profile.primaryColor = "#419488";
+      this.setPrimaryColor();
     },
   },
 };

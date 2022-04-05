@@ -18,7 +18,7 @@
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn color="primary" label="确定" @click="onOKClick" />
+        <q-btn color="blue-9" label="确定" @click="onOKClick" />
         <q-btn color="negative" label="取消" @click="onCancelClick" />
       </q-card-actions>
     </q-card>
