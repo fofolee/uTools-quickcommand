@@ -31,7 +31,14 @@
               运行
             </q-tooltip></q-btn
           >
-          <q-btn v-if="canCommandEdit" dense flat round color="blue-9" icon="share">
+          <q-btn
+            v-if="canCommandEdit"
+            dense
+            flat
+            round
+            color="blue-9"
+            icon="share"
+          >
             <q-tooltip anchor="top middle" self="center middle">
               导出
             </q-tooltip>
@@ -70,7 +77,10 @@
       <q-card
         @click="handleCardClick"
         v-ripple
-        :style="isCommandActivated ? '' : 'color:grey'"
+        :style="{
+          color: isCommandActivated ? 'unset' : 'grey',
+          background: $q.dark.isActive ? '#ffffff08' : '#00000008'
+        }"
       >
         <q-card-section>
           <!-- logo -->
@@ -199,7 +209,7 @@ export default {
       isCommandActivated: this.activated,
       maxCmdStingLen: 8,
       cmdBadgeSheet: {
-        keyword: "teal",
+        keyword: "primary",
         files: "light-blue",
         window: "indigo",
         regex: "cyan",

@@ -10,12 +10,7 @@
         zIndex: 1,
       }"
     >
-      <q-tabs
-        v-model="currentTag"
-        vertical
-        outside-arrows
-        class="text-primary"
-      >
+      <q-tabs v-model="currentTag" vertical outside-arrows class="text-primary">
         <!-- 所有标签 -->
         <q-tab
           :alert="activatedQuickPanels.includes(tag)"
@@ -43,6 +38,11 @@
       :style="{
         bottom: footerBarHeight,
         left: tabBarWidth,
+        background:
+          commandCardStyle === 'mini' && $profile.backgroundImg
+            ? 'url(file:///' + $profile.backgroundImg + ')'
+            : 'none',
+        backgroundSize: 'cover',
       }"
       v-model="currentTag"
       transition-prev="slide-down"

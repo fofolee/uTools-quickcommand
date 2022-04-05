@@ -4,13 +4,13 @@
 
 <script>
 import { defineComponent } from "vue";
-import { setCssVar } from 'quasar'
+import { setCssVar } from "quasar";
 
 export default defineComponent({
   name: "App",
   data() {
     return {
-        setCssVar: setCssVar
+      setCssVar: setCssVar,
     };
   },
   computed: {},
@@ -30,12 +30,12 @@ export default defineComponent({
         return;
       }
       // 默认主题色
-      this.setCssVar("primary", this.$profile.primaryColor)
+      this.setCssVar("primary", this.$profile.primaryColor);
       utools.onPluginEnter((enter) => {
         // 暗黑模式
         this.$q.dark.set(utools.isDarkColors());
         // 路由跳转
-        quickcommand.enterData = enter
+        quickcommand.enterData = enter;
         this.$router.push(enter.code);
       });
     },

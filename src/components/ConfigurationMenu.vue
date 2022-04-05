@@ -161,7 +161,7 @@
                 <q-icon name="color_lens" />
               </q-item-section>
               <q-item-section>主颜色</q-item-section>
-              <q-tooltip>你可以更改界面的主题色，Level 2 以上限定</q-tooltip>
+              <q-tooltip>你可以更改界面的主题色，Level 3 以上限定</q-tooltip>
               <q-menu nchor="top left" self="bottom end">
                 <q-card>
                   <q-color
@@ -175,6 +175,38 @@
                     label="重置为默认"
                     class="full-width"
                     @click="resetPrimary"
+                  />
+                </q-card>
+              </q-menu>
+            </q-item>
+            <q-item clickable>
+              <q-item-section side>
+                <q-icon name="image" />
+              </q-item-section>
+              <q-item-section>面板视图背景图片</q-item-section>
+              <q-tooltip
+                >为面板视图设置一张背景图片，Level 2 以上限定<br />请不要选择尺寸太大的图片，将影响插件载入速度</q-tooltip
+              >
+              <q-menu nchor="top left" self="bottom end">
+                <q-card>
+                  <q-file
+                    dense
+                    standout="bg-primary text-white"
+                    v-model="selectFile"
+                    autofocus
+                    @update:model-value="changeBackground()"
+                    accept="image/*"
+                    label="请选择一张图片"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="attach_file" />
+                    </template>
+                  </q-file>
+                  <q-btn
+                    color="negative"
+                    label="取消背景"
+                    class="full-width"
+                    @click="changeBackground(1)"
                   />
                 </q-card>
               </q-menu>
@@ -195,6 +227,7 @@
 
 <script>
 import { setCssVar } from "quasar";
+import { ref } from "vue";
 
 export default {
   data() {
@@ -206,6 +239,7 @@ export default {
       },
       configurationPage: this.$parent.$parent.$parent,
       setCssVar: setCssVar,
+      selectFile: ref(null),
     };
   },
   mounted() {
@@ -249,6 +283,10 @@ export default {
     resetPrimary() {
       this.$profile.primaryColor = this.$profile.defaultPrimaryColor;
       this.setPrimaryColor();
+    },
+    changeBackground(reset = false) {
+      this.$profile.backgroundImg = reset ? null : this.selectFile.path;
+      this.configurationPage.$forceUpdate();
     },
   },
 };
