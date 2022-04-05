@@ -112,6 +112,7 @@
             <!-- 切换视图 -->
             <q-btn-toggle
               v-model="commandCardStyle"
+              @click="$userProfile.commandCardStyle = commandCardStyle"
               toggle-color="teal"
               flat
               :options="[
@@ -187,6 +188,10 @@ import quickcommandParser from "../js/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor.vue";
 import ConfigurationMenu from "components/ConfigurationMenu.vue";
+import importAll from "../js/importAll.js";
+
+// 默认命令
+let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
 
 export default {
   components: { CommandCard, CommandEditor, ConfigurationMenu },
@@ -202,7 +207,7 @@ export default {
       maximizedToggle: true,
       commandEditorAction: {},
       footerBarHeight: "40px",
-      commandCardStyle: "normal",
+      commandCardStyle: this.$userProfile.commandCardStyle,
       commandCardStyleSheet: {
         mini: {
           width: "20%",
@@ -274,17 +279,7 @@ export default {
       this.activatedQuickPanels = activatedFeatures.quickpanels;
       // 所有的快捷命令
       this.allQuickCommands = this.getAllQuickCommands();
-      let userPreferences = this.$utools.getDB(
-        this.$utools.DBPRE.CFG + "preferences"
-      );
-      this.commandCardStyle = userPreferences.commandCardStyle || "normal";
-      utools.onPluginOut(() => {
-        userPreferences.commandCardStyle = this.commandCardStyle;
-        this.$utools.putDB(
-          userPreferences,
-          this.$utools.DBPRE.CFG + "preferences"
-        );
-      });
+      Object.assign(this.allQuickCommands, defaultCommands);
     },
     // 获取所有已启用的命令的 features 以及面板名称
     getActivatedFeatures() {
@@ -361,19 +356,12 @@ export default {
       this.isCommandEditorShow = true;
     },
     // 从文件导入命令
-    importCommandFromFile(file) {
-      // 指定文件时直接读取否则弹出选择文件对话框
-      let options = file
-        ? {
-            type: "file",
-            argvs: file,
-            readfile: true,
-          }
-        : {
-            type: "dialog",
-            argvs: { filters: [{ name: "json", extensions: ["json"] }] },
-            readfile: true,
-          };
+    importCommandFromFile() {
+      let options = {
+        type: "dialog",
+        argvs: { filters: [{ name: "json", extensions: ["json"] }] },
+        readfile: true,
+      };
       let fileContent = window.getFileInfo(options);
       return fileContent ? fileContent.data : false;
     },
@@ -382,21 +370,14 @@ export default {
       return window.clipboardReadText();
     },
     // 导入命令
-    importCommand(fromFile = true, filePath = false) {
+    importCommand(fromFile = true) {
       let quickCommandInfo = fromFile
-        ? this.importCommandFromFile(filePath)
+        ? this.importCommandFromFile()
         : this.importCommandFromClipboard();
       if (!quickCommandInfo)
-        return {
-          data: "导入未完成！",
-          success: false,
-        };
+        return quickcommand.showMessageBox("导入未完成！", "warning");
       let parsedData = quickcommandParser(quickCommandInfo);
-      if (!parsedData)
-        return {
-          data: "格式错误",
-          success: false,
-        };
+      if (!parsedData) return quickcommand.showMessageBox("格式错误", "error");
       // 单个命令导入
       let dataToPushed = {};
       if (parsedData.single) {
@@ -409,23 +390,13 @@ export default {
         this.$utools.putDB(dataToPushed[code], this.$utools.DBPRE.QC + code);
       }
       Object.assign(this.allQuickCommands, dataToPushed);
-      return {
-        success: true,
-        data: parsedData,
-      };
-    },
-    // 导入命令且定位
-    importCommandAndLocate(fromFile = true) {
-      let result = this.importCommand(fromFile);
-      if (!result.success)
-        return quickcommand.showMessageBox(result.data, "warning");
       quickcommand.showMessageBox("导入成功！");
-      if (result.data.single)
-        this.locateToCommand(result.data.qc.tags, result.data.qc.features.code);
+      this.locateToCommand(parsedData.qc.tags, parsedData.qc.features?.code);
     },
     // 定位命令
-    locateToCommand(tags, code) {
+    locateToCommand(tags = ["默认"], code) {
       this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
+      if (!code) return;
       // 等待 dom 渲染
       this.$nextTick(() => {
         let el = document.getElementById(code);
@@ -477,12 +448,13 @@ export default {
             .getDocs(this.$utools.DBPRE.QC)
             .map((x) => x._id)
             .forEach((y) => this.$utools.delDB(y));
-          this.importDefaultCommands();
+          Object.assign(this.allQuickCommands, defaultCommands);
           this.clearAllFeatures();
           Object.keys(this.allQuickCommands).forEach((featureCode) => {
             if (!featureCode.includes("default_"))
               delete this.allQuickCommands[featureCode];
           });
+          this.currentTag = "默认"
           quickcommand.showMessageBox(
             "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
           );
@@ -493,13 +465,6 @@ export default {
       for (var feature of utools.getFeatures()) {
         this.$utools.whole.removeFeature(feature.code);
       }
-    },
-    // 导入默认命令
-    importDefaultCommands() {
-      let defaultCommands = window.getDefaultCommands();
-      Object.values(defaultCommands).forEach((commandFilePath) => {
-        this.importCommand(true, commandFilePath);
-      });
     },
     // 搜索
     updateSearch() {

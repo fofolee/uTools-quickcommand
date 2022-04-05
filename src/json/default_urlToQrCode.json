@@ -1,0 +1,40 @@
+{
+    "features": {
+        "code": "default_urlToQrCode",
+        "explain": "网址二维码",
+        "cmds": [
+            {
+                "label": "网址二维码",
+                "type": "window",
+                "match": {
+                    "app": [
+                        "chrome.exe",
+                        "firefox.exe",
+                        "MicrosoftEdge.exe",
+                        "iexplore.exe",
+                        "msedge.exe",
+                        "Google Chrome.app",
+                        "Safari.app",
+                        "Microsoft Edge.app",
+                        "chrome",
+                        "firefox"
+                    ]
+                }
+            }
+        ],
+        "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAAA1klEQVRoge2YPQ6AMAiF1XgvD+DkSZ08gCfTqUtNAxYQad83GvNSyl9hGADomzH/sGzHJRE89/Whaak7SUT/AAzwZqZ+KMVeoja2tXTb90AivxHqBr/SDe8BGOANOwe0Yl5bt30PSN8w1rrhPQADvHldAajOScU2d17gVqfwHoAB3pBxJo15LpRuszPxoxNTN2rVmWsJ7wHzvZDVJJcI7wG3rcTb6lY6B3ugqT2YNe5bCSnt54AVWtVK3QCrp0YJ962ElPA5oN6Jc2onsG5eozAAAAD65gb6SG6iK2hylQAAAABJRU5ErkJggg==",
+        "platform": [
+            "win32",
+            "darwin",
+            "linux"
+        ]
+    },
+    "program": "quickcommand",
+    "cmd": "utools.redirect('二维码', utools.getCurrentBrowserUrl())",
+    "output": "text",
+    "hasSubInput": false,
+    "scptarg": "",
+    "tags": [
+        "默认"
+    ]
+}
