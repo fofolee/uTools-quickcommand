@@ -7,7 +7,8 @@ import programmings from '../js/programs.js';
 // 配置数据存取
 let defaultProfile = {
     commandCardStyle: "normal",
-    primaryColor: "#419488"
+    primaryColor: "#009688",
+    defaultPrimaryColor: "#009688",
 }
 let userProfile = UTOOLS.getDB(
     UTOOLS.DBPRE.CFG + "preferences"

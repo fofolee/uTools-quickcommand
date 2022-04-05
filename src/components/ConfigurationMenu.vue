@@ -247,7 +247,7 @@ export default {
       this.setCssVar("primary", this.$profile.primaryColor);
     },
     resetPrimary() {
-      this.$profile.primaryColor = "#419488";
+      this.$profile.primaryColor = this.$profile.defaultPrimaryColor;
       this.setPrimaryColor();
     },
   },
