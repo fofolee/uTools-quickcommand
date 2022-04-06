@@ -151,6 +151,23 @@ export default {
     addEditorCommand(key, callback) {
       this.rawEditor.addCommand(key, callback);
     },
+    repacleEditorSelection(text) {
+      var selection = this.rawEditor.getSelection();
+      var range = new monaco.Range(
+        selection.startLineNumber,
+        selection.startColumn,
+        selection.endLineNumber,
+        selection.endColumn
+      );
+      var id = { major: 1, minor: 1 };
+      var op = {
+        identifier: id,
+        range: range,
+        text: text,
+        forceMoveMarkers: true,
+      };
+      this.rawEditor.executeEdits("my-source", [op]);
+    },
   },
 };
 </script>

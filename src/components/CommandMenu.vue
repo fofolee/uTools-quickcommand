@@ -144,6 +144,7 @@
             transition-show="jump-down"
             transition-hide="jump-up"
             borderless
+            @update:model-value="(val) => insertSpecialVar(val.label)"
             square
             :options="specialVarsOptions"
             v-model="specialVar"
@@ -157,7 +158,7 @@
             <template v-slot:option="scope">
               <q-item v-bind="scope.itemProps">
                 <q-item-section>
-                  <q-item-label v-html="scope.opt.name" />
+                  <q-item-label v-html="scope.opt.label" />
                   <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -247,7 +248,6 @@ export default {
       outputTypes: outputTypes,
       outputTypesOptions: Object.keys(outputTypes),
       specialVar: "{{}}",
-      specialVarsOptions: Object.values(specialVars),
       allQuickCommandTags: this.$parent.parent.allQuickCommandTags,
     };
   },
@@ -257,7 +257,15 @@ export default {
   mounted() {
     window.CommandMenu = this;
   },
-  computed: {},
+  computed: {
+    specialVarsOptions() {
+      let x= Object.values(specialVars).filter(
+        (x) => !x.label.match(this.cmdType.disabledSpecialVars)
+      );
+      console.log(x);
+      return x
+    },
+  },
   methods: {
     init() {
       let currentQuickCommandCmds = this.getCommandType();
@@ -307,12 +315,16 @@ export default {
       )
         this.cmdMatch = `/${this.cmdMatch}/`;
     },
+    insertSpecialVar(text) {
+      this.$parent.$refs.editor.repacleEditorSelection(text);
+    },
     // 保存各类数据
     SaveMenuData() {
       let updateData = {
         features: this.currentCommand.features,
         output: this.currentCommand.output,
         tags: this.currentCommand.tags,
+        cmd: "",
       };
 
       // 说明为空填充一个空格
@@ -333,6 +345,16 @@ export default {
         this.cmdMatch,
         updateData.features.explain
       );
+
+      updateData.cmd = this.$parent.$refs.editor.getEditorValue();
+
+      let blackLisk = updateData.cmd.match(this.cmdType.disabledSpecialVars);
+      if (blackLisk) {
+        return quickcommand.showMessageBox(
+          `当前模式无法使用${[...new Set(blackLisk)].join("、")}`,
+          "error"
+        );
+      }
       return updateData;
     },
   },
