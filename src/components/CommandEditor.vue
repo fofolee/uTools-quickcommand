@@ -1,10 +1,9 @@
 <template>
   <div class="relative">
     <!-- 命令设置栏 -->
-    <q-scroll-area
-      :thumb-style="{
-        width: '3px',
-      }"
+    <CommandMenu
+      ref="menu"
+      :quickcommandInfo="quickcommandInfo"
       class="absolute-left shadow-10"
       :style="{
         width: sideBarWidth,
@@ -12,154 +11,7 @@
         zIndex: 1,
       }"
       v-if="showSidebar"
-    >
-      <div class="row q-pa-md q-gutter-md">
-        <q-btn
-          dense
-          flat
-          color="grey"
-          icon="arrow_back_ios_new"
-          @click="closeEditor"
-        />
-        <q-img class="commandLogo" width="64px" :src="commandIcon" />
-        <div class="row">
-          <div>
-            <!-- 说明 -->
-            <q-input
-              standout="bg-primary text-white"
-              square
-              v-model="quickcommandInfo.features.explain"
-              type="text"
-              label="说明"
-            >
-              <template v-slot:prepend>
-                <q-icon name="drive_file_rename_outline" />
-              </template>
-            </q-input>
-            <!-- 匹配类型 -->
-            <q-select
-              standout="bg-primary text-white"
-              square
-              options-dense
-              @update:model-value="cmdMatch = null"
-              :options="commandTypesOptions"
-              v-model="cmdType"
-              type="text"
-              label="匹配类型"
-            >
-              <template v-slot:prepend>
-                <q-icon :name="cmdType.icon" />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
-                  <q-item-section avatar>
-                    <q-icon :name="scope.opt.icon" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label v-html="scope.opt.name" />
-                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template></q-select
-            >
-            <!-- 匹配规则 -->
-            <q-select
-              v-if="cmdType.valueType === 'array'"
-              standout="bg-primary text-white"
-              square
-              v-model="cmdMatch"
-              use-input
-              use-chips
-              multiple
-              hide-dropdown-icon
-              input-debounce="0"
-              new-value-mode="add-unique"
-              type="text"
-              placeholder="回车添加"
-              :label="cmdType.matchLabel"
-            >
-              <template v-slot:prepend>
-                <q-icon name="square_foot" />
-              </template>
-            </q-select>
-            <q-input
-              v-else
-              autogrow
-              standout="bg-primary text-white"
-              square
-              v-model="cmdMatch"
-              hide-bottom-space
-              @blur="cmdMatchVerify"
-              :readonly="cmdType.valueType === 'null'"
-              type="text"
-              :label="cmdType.matchLabel"
-            >
-              <template v-slot:prepend>
-                <q-icon name="square_foot" />
-              </template>
-            </q-input>
-            <!-- 标签 -->
-            <q-select
-              standout="bg-primary text-white"
-              square
-              v-model="quickcommandInfo.tags"
-              type="text"
-              label="标签"
-              use-input
-              use-chips
-              multiple
-              new-value-mode="add-unique"
-              input-debounce="0"
-              :options="allQuickCommandTags"
-            />
-            <!-- 特殊变量 -->
-            <q-select
-              standout="bg-primary text-white"
-              square
-              label="特殊变量"
-            />
-            <!-- 输出 -->
-            <q-select
-              standout="bg-primary text-white"
-              square
-              options-dense
-              color="primary"
-              v-model="quickcommandInfo.output"
-              :display-value="outputTypes[quickcommandInfo.output].label"
-              :options="outputTypesOptions"
-              label="输出"
-            >
-              <template v-slot:prepend>
-                <q-icon :name="outputTypes[quickcommandInfo.output].icon" />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section avatar>
-                    <q-icon :name="outputTypes[scope.opt].icon" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label v-html="outputTypes[scope.opt].label" />
-                  </q-item-section>
-                </q-item> </template
-            ></q-select>
-            <!-- 平台 -->
-            <q-select
-              standout="bg-primary text-white"
-              square
-              :options="['win32', 'darwin', 'linux']"
-              use-chips
-              @blur="platformVerify()"
-              v-model="quickcommandInfo.features.platform"
-              multiple
-              options-dense
-              label="平台"
-              ><template v-slot:prepend> <q-icon name="window" /> </template
-            ></q-select>
-          </div>
-        </div>
-      </div>
-      <div></div>
-    </q-scroll-area>
+    ></CommandMenu>
     <!-- 编程语言栏 -->
     <div
       class="absolute-top"
@@ -185,13 +37,13 @@
             >
               <template v-slot:append>
                 <q-avatar size="lg" square>
-                  <img :src="currentProgramLogo" />
+                  <img :src="getLanguageIcon(quickcommandInfo.program)" />
                 </q-avatar>
               </template>
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section avatar>
-                    <img width="32" :src="'/logo/' + scope.opt + '.png'" />
+                    <img width="32" :src="getLanguageIcon(scope.opt)" />
                   </q-item-section>
                   <q-item-section>
                     <q-item-label v-html="scope.opt" />
@@ -252,6 +104,7 @@
             <q-btn
               flat
               v-if="!isRunCodePage"
+              :disable="!canCommandSave"
               color="primary"
               icon="save"
               @click="saveCurrentCommand()"
@@ -299,30 +152,20 @@
 
 <script>
 import MonocaEditor from "components/MonocaEditor";
-import commandTypes from "../js/options/commandTypes.js";
-import outputTypes from "../js/options/outputTypes.js";
-
-let commandTypesOptions = Object.values(commandTypes);
+import CommandMenu from "components/CommandMenu";
 
 export default {
-  components: { MonocaEditor },
+  components: { MonocaEditor, CommandMenu },
   data() {
     return {
       programLanguages: Object.keys(this.$programmings),
-      currentMatchType: "关键字",
-      sideBarWidth: "240px",
+      sideBarWidth: "290px",
       languageBarHeight: "40px",
-      commandTypes: commandTypes,
-      commandTypesOptions: commandTypesOptions,
-      cmdType: commandTypesOptions[0],
-      cmdMatch: "",
-      outputTypes: outputTypes,
-      outputTypesOptions: Object.keys(outputTypes),
-      specilaVar: "{{input}}",
+      canCommandSave: this.action.type === "edit" ? true : false,
       quickcommandInfo: {
         features: {
           explain: "",
-          platform: [],
+          platform: ["win32", "linux", "darwin"],
         },
         program: "quickcommand",
         cmd: "",
@@ -346,8 +189,8 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
+      parent: this.$parent.$parent.$parent.$parent,
       commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
-      configurationPage: this.$parent.$parent.$parent.$parent,
     };
   },
   props: {
@@ -355,16 +198,11 @@ export default {
   },
   mounted() {
     this.init();
+    this.$refs.menu?.init();
   },
   computed: {
-    commandIcon() {
-      return this.quickcommandInfo.features?.icon || this.currentProgramLogo;
-    },
-    currentProgramLogo() {
-      return "/logo/" + this.quickcommandInfo.program + ".png";
-    },
     allQuickCommandTags() {
-      return this.configurationPage.allQuickCommandTags.filter(
+      return this.parentPage.allQuickCommandTags.filter(
         (x) => x !== "默认" && x !== "未分类" && x !== "搜索结果"
       );
     },
@@ -382,14 +220,13 @@ export default {
         this.quickcommandInfo,
         JSON.parse(JSON.stringify(quickCommandInfo))
       );
-      // 获取当前命令的匹配类型及匹配规则
-      let currentQuickCommandCmds = this.getCommandType();
-      // 设置匹配类型下拉框的值（Object）及匹配规则的值
-      this.cmdType = this.commandTypes[currentQuickCommandCmds.type];
-      this.cmdMatch = currentQuickCommandCmds.match;
       // monoca 相关
       this.setLanguage(this.quickcommandInfo.program);
       this.$refs.editor.setEditorValue(quickCommandInfo.cmd);
+      // 默认命令不可编辑
+      if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
+        this.canCommandSave = false;
+      }
       // 只有新建或运行时才保存记录
       if (this.action.type === "edit") return;
       utools.onPluginOut(() => {
@@ -411,6 +248,7 @@ export default {
     },
     programChanged(value) {
       this.setLanguage(value);
+      this.$refs.menu?.setIcon(value);
     },
     // 匹配编程语言
     matchLanguage() {
@@ -425,6 +263,9 @@ export default {
     setLanguage(language) {
       let highlight = this.$programmings[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
+    },
+    getLanguageIcon(program) {
+      return `/logo/${program}.png`;
     },
     // 打开文档
     showHelp() {
@@ -523,7 +364,7 @@ export default {
     // 替换特殊变量
     async replaceTempInputVals(cmd) {
       let tempInputVals = [];
-      let specilaVals = [
+      let needInputVal = [
         "input",
         "subinput",
         "pwd",
@@ -531,7 +372,7 @@ export default {
         "WindowInfo",
         "MatchedFiles",
       ];
-      specilaVals.forEach((x) => {
+      needInputVal.forEach((x) => {
         let m = cmd.match(new RegExp("{{" + x + ".*?}}", "g"));
         m &&
           m.forEach((y) => tempInputVals.includes(y) || tempInputVals.push(y));
@@ -568,47 +409,6 @@ export default {
     },
     // 保存
     saveCurrentCommand() {},
-    // 判断命令类型
-    getCommandType() {
-      let data = {};
-      let cmds = this.quickcommandInfo.features.cmds;
-      if (cmds.length === 1) {
-        let { type, match } = cmds[0];
-        data.type = type ? type : "keyword";
-        data.match =
-          data.type === "keyword" ? cmds[0] : match?.app ? match.app : match;
-      } else {
-        data.type = cmds.filter((x) => !x.length).length
-          ? "professional"
-          : "keyword";
-        data.match =
-          data.type === "keyword" ? cmds : JSON.stringify(cmds, null, 4);
-      }
-      return data;
-    },
-    // 正则不和规则自动加斜杠
-    cmdMatchVerify() {
-      this.cmdType.valueType === "regex" &&
-        !/^\/.*?\/[igm]*$/.test(this.cmdMatch) &&
-        (this.cmdMatch = `/${this.cmdMatch}/`);
-    },
-    // 平台为空自动补充
-    platformVerify() {
-      this.quickcommandInfo.features.platform > 0 ||
-        this.quickcommandInfo.features.platform.push(window.processPlatform);
-    },
   },
 };
 </script>
-
-<style scoped>
-.commandLogo {
-  cursor: pointer;
-  transition: 10s;
-  filter: drop-shadow(2px 1px 1px grey);
-}
-.commandLogo:hover {
-  transition: 10s;
-  transform: rotate(360deg);
-}
-</style>

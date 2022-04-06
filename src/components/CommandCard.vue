@@ -110,7 +110,7 @@
                   <q-badge rounded :color="cmdBadgeColor()"
                     ><q-icon
                       class="q-mr-xs"
-                      :name="commandTypes.keyword.icon"
+                      :name="commandTypes.key.icon"
                     />{{ getShortStrByByte(cmd) }}</q-badge
                   >
                   <q-tooltip>
@@ -217,7 +217,7 @@ export default {
       maxCmdStingLen: 8,
       commandTypes: commandTypes,
       cmdBadgeSheet: {
-        keyword: "primary",
+        key: "primary",
         files: "light-blue",
         window: "indigo",
         regex: "cyan",

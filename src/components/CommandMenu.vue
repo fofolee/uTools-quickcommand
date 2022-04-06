@@ -1,0 +1,352 @@
+<template>
+  <q-scroll-area
+    :thumb-style="{
+      width: '3px',
+    }"
+  >
+    <div class="row q-pa-md q-gutter-md">
+      <q-btn
+        dense
+        flat
+        color="grey"
+        icon="arrow_back_ios_new"
+        @click="$parent.closeEditor"
+      />
+      <q-img
+        class="commandLogo"
+        width="64px"
+        :src="currentCommand.features.icon"
+      />
+      <div class="row">
+        <div>
+          <!-- 说明 -->
+          <q-input
+            stack-label
+            label-color="primary"
+            borderless
+            square
+            v-model="currentCommand.features.explain"
+            type="text"
+            placeholder="请输入说明"
+            label="说明"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" name="drive_file_rename_outline" />
+            </template>
+          </q-input>
+          <!-- 匹配类型 -->
+          <q-select
+            hide-dropdown-icon
+            stack-label
+            label-color="primary"
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            borderless
+            square
+            @update:model-value="
+              (val) =>
+                (cmdMatch =
+                  val.name === 'professional'
+                    ? JSON.stringify(val.jsonSample, null, 4)
+                    : null)
+            "
+            :options="commandTypesOptions"
+            v-model="cmdType"
+            type="text"
+            label="匹配类型"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" :name="cmdType.icon" />
+            </template>
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section avatar>
+                  <q-icon :name="scope.opt.icon" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label v-html="scope.opt.name" />
+                  <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <!-- 匹配规则 -->
+          <q-select
+            hide-dropdown-icon
+            stack-label
+            label-color="primary"
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            v-if="cmdType.valueType === 'array'"
+            borderless
+            square
+            v-model="cmdMatch"
+            max-values="3"
+            type="text"
+            placeholder="键入后回车"
+            use-input
+            use-chips
+            multiple
+            new-value-mode="add-unique"
+            input-debounce="0"
+            :label="cmdType.matchLabel"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" name="square_foot" />
+            </template>
+          </q-select>
+          <q-input
+            v-else
+            autogrow
+            borderless
+            square
+            v-model="cmdMatch"
+            hide-bottom-space
+            @blur="regexVerify"
+            :readonly="!cmdType.valueType"
+            type="text"
+            :label="cmdType.matchLabel"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" name="square_foot" />
+            </template>
+          </q-input>
+          <!-- 标签 -->
+          <q-select
+            hide-dropdown-icon
+            stack-label
+            label-color="primary"
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            borderless
+            square
+            v-model="currentCommand.tags"
+            max-values="3"
+            type="text"
+            label="标签"
+            placeholder="键入后回车"
+            use-input
+            use-chips
+            multiple
+            new-value-mode="add-unique"
+            input-debounce="0"
+            :options="allQuickCommandTags"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" name="label" />
+            </template>
+          </q-select>
+          <!-- 特殊变量 -->
+          <q-select
+            hide-dropdown-icon
+            stack-label
+            label-color="primary"
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            borderless
+            square
+            :options="specialVarsOptions"
+            v-model="specialVar"
+            input-debounce="0"
+            type="text"
+            label="特殊变量"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" name="attach_money" />
+            </template>
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section>
+                  <q-item-label v-html="scope.opt.name" />
+                  <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template></q-select
+          >
+          <!-- 输出 -->
+          <q-select
+            hide-dropdown-icon
+            stack-label
+            label-color="primary"
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            borderless
+            square
+            color="primary"
+            v-model="currentCommand.output"
+            :display-value="outputTypes[currentCommand.output].label"
+            :options="outputTypesOptions"
+            label="输出"
+          >
+            <template v-slot:prepend>
+              <q-icon
+                color="primary"
+                :name="outputTypes[currentCommand.output].icon"
+              />
+            </template>
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section avatar>
+                  <q-icon :name="outputTypes[scope.opt].icon" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label v-html="outputTypes[scope.opt].label" />
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <!-- 平台 -->
+          <q-select
+            hide-dropdown-icon
+            stack-label
+            label-color="primary"
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            borderless
+            square
+            :options="['win32', 'linux', 'darwin']"
+            use-chips
+            @blur="platformVerify()"
+            v-model="currentCommand.features.platform"
+            multiple
+            label="平台"
+          >
+            <template v-slot:prepend>
+              <q-icon color="primary" name="window" />
+            </template>
+          </q-select>
+        </div>
+      </div>
+    </div>
+  </q-scroll-area>
+</template>
+
+<script>
+import commandTypes from "../js/options/commandTypes.js";
+import outputTypes from "../js/options/outputTypes.js";
+import specialVars from "../js/options/specialVars.js";
+let commandTypesOptions = Object.values(commandTypes);
+
+export default {
+  data() {
+    return {
+      currentCommand: {
+        tags: [],
+        output: "text",
+        features: {
+          explain: "",
+          platform: ["win32", "linux", "darwin"],
+          icon: "",
+        },
+      },
+      commandTypes: commandTypes,
+      commandTypesOptions: commandTypesOptions,
+      currentMatchType: "关键字",
+      cmdType: commandTypesOptions[0],
+      cmdMatch: "",
+      outputTypes: outputTypes,
+      outputTypesOptions: Object.keys(outputTypes),
+      specialVar: "{{}}",
+      specialVarsOptions: Object.values(specialVars),
+      allQuickCommandTags: this.$parent.parent.allQuickCommandTags,
+    };
+  },
+  props: {
+    quickcommandInfo: Object,
+  },
+  mounted() {
+    window.CommandMenu = this;
+  },
+  computed: {},
+  methods: {
+    init() {
+      let currentQuickCommandCmds = this.getCommandType();
+      this.cmdType = this.commandTypes[currentQuickCommandCmds.type];
+      this.cmdMatch = currentQuickCommandCmds.match;
+      Object.assign(
+        this.currentCommand,
+        JSON.parse(JSON.stringify(this.quickcommandInfo))
+      );
+      this.setIcon(this.currentCommand.program);
+      this.platformVerify();
+    },
+    // 没有图标，或者使用了语言图标
+    setIcon(language) {
+      this.currentCommand.features.icon?.slice(0, 5) === "data:" ||
+        (this.currentCommand.features.icon =
+          this.$parent.getLanguageIcon(language));
+    },
+    getCommandType() {
+      let data = { type: "key", match: [] };
+      let cmds = this.quickcommandInfo.features?.cmds;
+      if (!cmds) return data;
+      if (cmds.length === 1) {
+        let { type, match } = cmds[0];
+        data.type = type ? type : "key";
+        data.match =
+          data.type === "key" ? cmds : match?.app ? match.app : match;
+      } else {
+        data.type = cmds.filter((x) => !x.length).length
+          ? "professional"
+          : "key";
+        data.match = data.type === "key" ? cmds : JSON.stringify(cmds, null, 4);
+      }
+      return data;
+    },
+    // 平台为空自动补充
+    platformVerify() {
+      this.currentCommand.features.platform?.length > 0 ||
+        this.currentCommand.features.platform.push(window.processPlatform);
+    },
+    // 正则不和规则自动加斜杠
+    regexVerify() {
+      console.log(1);
+      if (
+        this.cmdType.valueType === "regex" &&
+        !/^\/.*?\/[igm]*$/.test(this.cmdMatch)
+      )
+        this.cmdMatch = `/${this.cmdMatch}/`;
+    },
+    // 保存各类数据
+    SaveMenuData() {
+      let updateData = {
+        features: this.currentCommand.features,
+        output: this.currentCommand.output,
+        tags: this.currentCommand.tags,
+      };
+
+      // 说明为空填充一个空格
+      updateData.features.explain || (updateData.features.explain = " ");
+
+      if (!updateData.features.code) {
+        // 生成唯一code
+        let uid = Number(
+          Math.random().toString().substr(3, 3) + Date.now()
+        ).toString(36);
+        updateData.features.code = `${this.cmdType.name}_${uid}`;
+      }
+      let verify = this.cmdType.verify(this.cmdMatch);
+      if (verify !== true) {
+        return quickcommand.showMessageBox(verify, "error");
+      }
+      updateData.features.cmds = this.cmdType.matchToCmds(
+        this.cmdMatch,
+        updateData.features.explain
+      );
+      return updateData;
+    },
+  },
+};
+</script>
+
+<style scoped>
+.commandLogo {
+  cursor: pointer;
+  transition: 10s;
+  filter: drop-shadow(2px 1px 1px grey);
+}
+.commandLogo:hover {
+  transition: 10s;
+  transform: rotate(360deg);
+}
+</style>
