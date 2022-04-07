@@ -1,9 +1,23 @@
 <template>
-  <div>commandPage</div>
+  <div
+    :style="{
+      whiteSpace: 'pre',
+    }"
+  >
+    {{ enterData }}
+  </div>
 </template>
 
 <script>
-console.log(quickcommand.enterData);
-
-export default {};
+export default {
+  data() {
+    return {
+      output: "",
+      enterData: "",
+    };
+  },
+  mounted() {
+    this.enterData = quickcommand.enterData;
+  },
+};
 </script>
