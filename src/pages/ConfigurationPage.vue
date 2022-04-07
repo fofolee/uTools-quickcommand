@@ -238,9 +238,7 @@ export default {
   computed: {
     // 当前标签下的所有快捷命令
     currentTagQuickCommands() {
-      let commands = Object.values(
-        JSON.parse(JSON.stringify(this.allQuickCommands))
-      );
+      let commands = Object.values(_.cloneDeep(this.allQuickCommands));
       switch (this.currentTag) {
         case "未分类":
           return commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0);
@@ -273,17 +271,12 @@ export default {
     },
     // 所有命令对应的标签
     allQuickCommandTags() {
-      return [
-        ...new Set(
-          // 去重并确保默认在第一位
-          Array.prototype.concat
-            .apply(
-              ["默认"],
-              Object.values(this.allQuickCommands).map((x) => x.tags)
-            )
-            .concat(["未分类", "搜索结果"])
-        ),
-      ].filter((x) => x);
+      return _.union(
+        ..._.concat(
+          "默认",
+          Object.values(this.allQuickCommands).map((x) => x.tags)
+        )
+      ).concat(["未分类", "搜索结果"]);
     },
     // 标签栏宽度
     tabBarWidth() {
@@ -352,7 +345,7 @@ export default {
     // 启用命令
     enableCommand(code) {
       this.$utools.whole.setFeature(
-        JSON.parse(JSON.stringify(this.allQuickCommands[code].features))
+        _.cloneDeep(this.allQuickCommands[code].features)
       );
       this.activatedQuickCommandFeatureCodes.push(code);
     },
@@ -449,7 +442,7 @@ export default {
           },
         ],
       };
-      let commandsToExport = JSON.parse(JSON.stringify(this.allQuickCommands));
+      let commandsToExport = _.cloneDeep(this.allQuickCommands);
       // 不导出默认命令
       if (!utools.isDev())
         Object.keys(commandsToExport).forEach((code) => {

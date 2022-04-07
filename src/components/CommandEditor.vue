@@ -105,7 +105,7 @@
               flat
               v-if="!isRunCodePage"
               :disable="!canCommandSave"
-              color="primary"
+              :color="canCommandSave ? 'primary' : 'grey'"
               icon="save"
               @click="saveCurrentCommand()"
               ><q-tooltip>保存 {{ commandString }}+s</q-tooltip></q-btn
@@ -216,10 +216,7 @@ export default {
         this.action.type === "run"
           ? this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory")
           : this.action.data;
-      Object.assign(
-        this.quickcommandInfo,
-        JSON.parse(JSON.stringify(quickCommandInfo))
-      );
+      _.merge(this.quickcommandInfo, quickCommandInfo);
       // monoca 相关
       this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
@@ -233,7 +230,7 @@ export default {
         this.quickcommandInfo.cmd = this.$refs.editor.getEditorValue();
         // 保存本次编辑记录
         this.$utools.putDB(
-          JSON.parse(JSON.stringify(this.quickcommandInfo)),
+          _.cloneDeep(this.quickcommandInfo),
           this.$utools.DBPRE.CFG + "codeHistory"
         );
       });
@@ -409,7 +406,11 @@ export default {
       });
     },
     // 保存
-    saveCurrentCommand() {},
+    saveCurrentCommand() {
+      let updatedData = this.$refs.editor.SaveMenuData();
+      if (!updatedData) return;
+      _.merge(this.quickcommandInfo, updatedData);
+    },
   },
 };
 </script>

@@ -278,9 +278,9 @@ export default {
       let currentQuickCommandCmds = this.getCommandType();
       this.cmdType = this.commandTypes[currentQuickCommandCmds.type];
       this.cmdMatch = currentQuickCommandCmds.match;
-      Object.assign(
+      _.merge(
         this.currentCommand,
-        JSON.parse(JSON.stringify(this.quickcommandInfo))
+        _.pick(this.quickcommandInfo, "tags", "output", "features")
       );
       this.setIcon(this.currentCommand.program);
       this.platformVerify();
@@ -361,6 +361,13 @@ export default {
           `当前模式无法使用${[...new Set(blackLisk)].join("、")}`,
           "error"
         );
+      }
+
+      // 子输入框
+      if (updateData.cmd.includes("{{subinput")) {
+        updateData.hasSubInput = true;
+      } else {
+        updateData.hasSubInput = false;
       }
       return updateData;
     },
