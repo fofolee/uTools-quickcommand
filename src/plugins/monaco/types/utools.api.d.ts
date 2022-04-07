@@ -239,7 +239,7 @@ interface UToolsApi {
   /**
    * 插件从云端拉取到数据时触发
    */
-  onDbPull(callback: (docs: { _id: string, _rev: string }[]) => void): void;
+  // onDbPull(callback: (docs: { _id: string, _rev: string }[]) => void): void;
   /**
    * 隐藏主窗口
    * @param isRestorePreWindow 是否焦点回归到前面的活动窗口，默认 true
@@ -302,59 +302,59 @@ interface UToolsApi {
   /**
    * 获取用户服务端临时令牌
    */
-  fetchUserServerTemporaryToken(): Promise<{ token: string, expiredAt: number }>;
+  // fetchUserServerTemporaryToken(): Promise<{ token: string, expiredAt: number }>;
   /**
    * 打开支付
    * @param callback 支付成功触发
    */
-  openPayment(options: {
-    /**
-     * 商品ID，在 “uTools 开发者工具” 插件中创建
-     */
-    goodsId: string,
-    /**
-     * 第三方服务生成的订单号(可选)
-     */
-    outOrderId?: string,
-    /**
-     * 第三方服务附加数据，在查询API和支付通知中原样返回，可作为自定义参数使用(可选)
-     */
-    attach?: string
-  }, callback?: () => void): void;
+  // openPayment(options: {
+  //   /**
+  //    * 商品ID，在 “uTools 开发者工具” 插件中创建
+  //    */
+  //   goodsId: string,
+  //   /**
+  //    * 第三方服务生成的订单号(可选)
+  //    */
+  //   outOrderId?: string,
+  //   /**
+  //    * 第三方服务附加数据，在查询API和支付通知中原样返回，可作为自定义参数使用(可选)
+  //    */
+  //   attach?: string
+  // }, callback?: () => void): void;
   /**
    * 获取用户支付记录
    */
-  fetchUserPayments(): Promise<{ order_id: string, total_fee: number, body: string, attach: string, goods_id: string, out_order_id: string, paid_at: string }[]>;
+  // fetchUserPayments(): Promise<{ order_id: string, total_fee: number, body: string, attach: string, goods_id: string, out_order_id: string, paid_at: string }[]>;
   /**
    * 设置插件动态功能
    */
-  setFeature(feature: {
-    code: string,
-    explain: string,
-    platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
-    icon?: string,
-    cmds: string | {
-      type: 'img' | 'files' | 'regex' | 'over' | 'window',
-      label: string
-    }[]
-  }): boolean;
+  // setFeature(feature: {
+  //   code: string,
+  //   explain: string,
+  //   platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
+  //   icon?: string,
+  //   cmds: string | {
+  //     type: 'img' | 'files' | 'regex' | 'over' | 'window',
+  //     label: string
+  //   }[]
+  // }): boolean;
   /**
    * 移除插件动态功能
    */
-  removeFeature(code: string): boolean;
+  // removeFeature(code: string): boolean;
   /**
    * 获取插件所有动态功能
    */
-  getFeatures(): {
-    code: string,
-    explain: string,
-    platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
-    icon?: string,
-    cmds: string | {
-      type: 'img' | 'files' | 'regex' | 'over' | 'window',
-      label: string
-    }[]
-  }[];
+  // getFeatures(): {
+  //   code: string,
+  //   explain: string,
+  //   platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
+  //   icon?: string,
+  //   cmds: string | {
+  //     type: 'img' | 'files' | 'regex' | 'over' | 'window',
+  //     label: string
+  //   }[]
+  // }[];
   /**
    * 插件间跳转
    */
@@ -544,104 +544,104 @@ interface UToolsApi {
    */
   isLinux(): boolean;
 
-  db: {
-    /**
-     * 创建/更新文档
-     */
-    put(doc: DbDoc): DbReturn;
-    /**
-     * 获取文档
-     */
-    get(id: string): DbDoc | null;
-    /**
-     * 删除文档
-     */
-    remove(doc: string | DbDoc): DbReturn;
-    /**
-     * 批量操作文档(新增、修改、删除)
-     */
-    bulkDocs(docs: DbDoc[]): DbReturn[];
-    /**
-     * 获取所有文档 可根据文档id前缀查找
-     */
-    allDocs(key?: string): DbDoc[];
-    /**
-     * 存储附件到新文档
-     * @param docId 文档ID
-     * @param attachment 附件 buffer
-     * @param type 附件类型，示例：image/png, text/plain
-     */
-    postAttachment(docId: string, attachment: Uint8Array, type: string): DbReturn;
-    /**
-     * 获取附件
-     * @param docId 文档ID
-     */
-    getAttachment(docId: string): Uint8Array | null;
-    /**
-     * 获取附件类型
-     * @param docId 文档ID
-     */
-    getAttachmentType(docId: string): string | null;
-    /**
-     * 异步
-     */
-    promises: {
-      /**
-       * 创建/更新文档
-       */
-      put(doc: DbDoc): Promise<DbReturn>;
-      /**
-        * 获取文档
-        */
-      get(id: string): Promise<DbDoc | null>;
-      /**
-        * 删除文档
-        */
-      remove(doc: string | DbDoc): Promise<DbReturn>;
-      /**
-        * 批量操作文档(新增、修改、删除)
-        */
-      bulkDocs(docs: DbDoc[]): Promise<DbReturn[]>;
-      /**
-        * 获取所有文档 可根据文档id前缀查找
-        */
-      allDocs(key?: string): Promise<DbDoc[]>;
-      /**
-        * 存储附件到新文档
-        * @param docId 文档ID
-        * @param attachment 附件 buffer
-        * @param type 附件类型，示例：image/png, text/plain
-        */
-      postAttachment(docId: string, attachment: Uint8Array, type: string): Promise<DbReturn>;
-      /**
-        * 获取附件
-        * @param docId 文档ID
-        */
-      getAttachment(docId: string): Promise<Uint8Array | null>;
-      /**
-        * 获取附件类型
-        * @param docId 文档ID
-        */
-      getAttachmentType(docId: string): Promise<string | null>;
-    }
-  };
+  // db: {
+  //   /**
+  //    * 创建/更新文档
+  //    */
+  //   put(doc: DbDoc): DbReturn;
+  //   /**
+  //    * 获取文档
+  //    */
+  //   get(id: string): DbDoc | null;
+  //   /**
+  //    * 删除文档
+  //    */
+  //   remove(doc: string | DbDoc): DbReturn;
+  //   /**
+  //    * 批量操作文档(新增、修改、删除)
+  //    */
+  //   bulkDocs(docs: DbDoc[]): DbReturn[];
+  //   /**
+  //    * 获取所有文档 可根据文档id前缀查找
+  //    */
+  //   allDocs(key?: string): DbDoc[];
+  //   /**
+  //    * 存储附件到新文档
+  //    * @param docId 文档ID
+  //    * @param attachment 附件 buffer
+  //    * @param type 附件类型，示例：image/png, text/plain
+  //    */
+  //   postAttachment(docId: string, attachment: Uint8Array, type: string): DbReturn;
+  //   /**
+  //    * 获取附件
+  //    * @param docId 文档ID
+  //    */
+  //   getAttachment(docId: string): Uint8Array | null;
+  //   /**
+  //    * 获取附件类型
+  //    * @param docId 文档ID
+  //    */
+  //   getAttachmentType(docId: string): string | null;
+  //   /**
+  //    * 异步
+  //    */
+  //   promises: {
+  //     /**
+  //      * 创建/更新文档
+  //      */
+  //     put(doc: DbDoc): Promise<DbReturn>;
+  //     /**
+  //       * 获取文档
+  //       */
+  //     get(id: string): Promise<DbDoc | null>;
+  //     /**
+  //       * 删除文档
+  //       */
+  //     remove(doc: string | DbDoc): Promise<DbReturn>;
+  //     /**
+  //       * 批量操作文档(新增、修改、删除)
+  //       */
+  //     bulkDocs(docs: DbDoc[]): Promise<DbReturn[]>;
+  //     /**
+  //       * 获取所有文档 可根据文档id前缀查找
+  //       */
+  //     allDocs(key?: string): Promise<DbDoc[]>;
+  //     /**
+  //       * 存储附件到新文档
+  //       * @param docId 文档ID
+  //       * @param attachment 附件 buffer
+  //       * @param type 附件类型，示例：image/png, text/plain
+  //       */
+  //     postAttachment(docId: string, attachment: Uint8Array, type: string): Promise<DbReturn>;
+  //     /**
+  //       * 获取附件
+  //       * @param docId 文档ID
+  //       */
+  //     getAttachment(docId: string): Promise<Uint8Array | null>;
+  //     /**
+  //       * 获取附件类型
+  //       * @param docId 文档ID
+  //       */
+  //     getAttachmentType(docId: string): Promise<string | null>;
+  //   }
+  // };
 
-  dbStorage: {
-    /**
-     * 键值对存储，如果键名存在，则更新其对应的值
-     * @param key 键名(同时为文档ID)
-     * @param value 键值
-     */
-    setItem (key: string, value: any): void;
-    /**
-     * 获取键名对应的值
-     */
-    getItem (key: string): any;
-    /**
-     * 删除键值对(删除文档)
-     */
-    removeItem (key: string): void;
-  };
+  // dbStorage: {
+  //   /**
+  //    * 键值对存储，如果键名存在，则更新其对应的值
+  //    * @param key 键名(同时为文档ID)
+  //    * @param value 键值
+  //    */
+  //   setItem (key: string, value: any): void;
+  //   /**
+  //    * 获取键名对应的值
+  //    */
+  //   getItem (key: string): any;
+  //   /**
+  //    * 删除键值对(删除文档)
+  //    */
+  //   removeItem (key: string): void;
+  // };
 
   ubrowser: UBrowser;
 }

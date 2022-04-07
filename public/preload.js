@@ -3,7 +3,9 @@ const os = require('os');
 const child_process = require("child_process")
 const iconv = require('iconv-lite')
 const electron = require('electron')
-const { NodeVM } = require('./lib/vm2')
+const {
+    NodeVM
+} = require('./lib/vm2')
 const path = require("path")
 const util = require("util")
 const PinyinMatch = require('pinyin-match');
@@ -495,6 +497,8 @@ getuToolsLite = () => {
     delete utoolsLite.dbStorage
     delete utoolsLite.removeFeature
     delete utoolsLite.setFeature
+    delete utoolsLite.onDbPull
+    delete utoolsLite.getFeatures
     // 支付相关接口
     delete utoolsLite.fetchUserServerTemporaryToken
     delete utoolsLite.getUserServerTemporaryToken
@@ -502,7 +506,7 @@ getuToolsLite = () => {
     delete utoolsLite.fetchUserPayments
     return utoolsLite
 }
-console.error
+
 let getSandboxFuns = () => {
     var sandbox = {
         utools: getuToolsLite(),
@@ -591,7 +595,7 @@ runCodeInVm = (cmd, cb, enterData = {}) => {
     });
 
     let liteErr = e => {
-        return e.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim()
+        return e?.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim()
     }
 
     // 错误处理
