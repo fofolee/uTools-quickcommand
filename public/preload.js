@@ -92,86 +92,6 @@ quickcommand = {
         })
     },
 
-    // 显示输入框
-    showInputBox: function(placeHolders = [""], title = '') {
-        return new Promise((reslove, reject) => {
-            if (!(placeHolders instanceof Array)) placeHolders = [placeHolders.toString()]
-            utools.setExpendHeight(550)
-            var html = ""
-            var inputBoxNumbers = placeHolders.length
-            for (let i = 0; i < inputBoxNumbers; i++) {
-                html += `<input class="swal2-input" id="inputBox${i}" placeholder="${placeHolders[i]}">`
-            }
-            var result = []
-            var options = {
-                onBeforeOpen: () => {
-                    document.getElementById(`inputBox0`).focus()
-                    $('.swal2-content').keydown(function(e) {
-                        e.which == 13 && swal.clickConfirm()
-                    })
-                    $(".output").is(":parent") ? utools.setExpendHeight(550) : modWindowHeight($('.swal2-popup').outerHeight() + 20)
-                },
-                title: title,
-                html: html,
-                focusConfirm: false,
-                showCancelButton: true,
-                backdrop: utools.isDarkColors() ? '#ffffff26' : '#bbbbbb80',
-                preConfirm: () => {
-                    for (let i = 0; i < inputBoxNumbers; i++) {
-                        result.push(document.getElementById(`inputBox${i}`).value)
-                    }
-                    reslove(result)
-                }
-            }
-            swalOneByOne(options)
-        });
-    },
-
-    // 显示选项按钮
-    showButtonBox: function(buttons, title = '') {
-        return new Promise((reslove, reject) => {
-            if (!(buttons instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof buttons}`))
-            utools.setExpendHeight(550)
-            var html = ``
-            var buttonBoxNumbers = buttons.length
-            for (let i = 0; i < buttonBoxNumbers; i++) {
-                html += `<button class="swal2-confirm swal2-styled" style="width: 80%" onclick="clickButton(${i})">${buttons[i]}</button>`
-            }
-            var options = {
-                onBeforeOpen: () => {
-                    clickButton = i => {
-                        reslove({
-                            id: i,
-                            text: buttons[i]
-                        })
-                        swal.clickConfirm()
-                    }
-                    $(".output").is(":parent") && utools.setExpendHeight(550) || modWindowHeight($('.swal2-popup').outerHeight() + 20)
-                },
-                html: html,
-                title: title,
-                backdrop: utools.isDarkColors() ? '#ffffff26' : '#bbbbbb80',
-                showConfirmButton: false
-            }
-            swalOneByOne(options)
-        });
-    },
-
-    // 显示自动消失的提示框
-    showMessageBox: function(title, icon = "success", time = 3000) {
-        var options = {
-            icon: icon,
-            title: title,
-            toast: true,
-            position: 'top',
-            timer: time,
-            showConfirmButton: false,
-            // onBeforeOpen: () => {
-            //     setTimeout(() => { Swal.clickConfirm() }, time);
-            // }
-        }
-        swal.fire(options)
-    },
 
     // 显示选项列表
     showSelectList: function(selects, opt = {}) {
@@ -204,35 +124,35 @@ quickcommand = {
             $('#selectBox').data('options', data)
             $('#selectBox').data('type', opt.optionType)
             var prefer = {
-                // data: data,
-                width: "100%",
-                dropdownParent: $("#quickselect"),
-                closeOnSelect: false,
-                // 支持无限滚动
-                ajax: {
-                    transport: (params, success, failure) => {
-                        let cont, pageSize = 50
-                        let term = (params.data.term || '').toLowerCase()
-                        let page = (params.data.page || 1)
-                        let items = $('#selectBox').data('options')
-                        let results = items.filter(x => {
-                            if (opt.optionType == 'json') cont = x.title
-                            else if (opt.optionType == 'html') cont = x.text.replace(/<[^<>]+>/g, '')
-                            else cont = x.text
-                            return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
-                        })
-                        let paged = results.slice((page - 1) * pageSize, page * pageSize)
-                        let options = {
-                            results: paged,
-                            pagination: {
-                                more: results.length >= page * pageSize
+                    // data: data,
+                    width: "100%",
+                    dropdownParent: $("#quickselect"),
+                    closeOnSelect: false,
+                    // 支持无限滚动
+                    ajax: {
+                        transport: (params, success, failure) => {
+                            let cont, pageSize = 50
+                            let term = (params.data.term || '').toLowerCase()
+                            let page = (params.data.page || 1)
+                            let items = $('#selectBox').data('options')
+                            let results = items.filter(x => {
+                                if (opt.optionType == 'json') cont = x.title
+                                else if (opt.optionType == 'html') cont = x.text.replace(/<[^<>]+>/g, '')
+                                else cont = x.text
+                                return cont.toLowerCase().includes(term) || PinyinMatch.match(cont, term)
+                            })
+                            let paged = results.slice((page - 1) * pageSize, page * pageSize)
+                            let options = {
+                                results: paged,
+                                pagination: {
+                                    more: results.length >= page * pageSize
+                                }
                             }
+                            success(options)
                         }
-                        success(options)
-                    }
-                },
-            }
-            // 显示html时不转义标签
+                    },
+                }
+                // 显示html时不转义标签
             if (opt.optionType != 'plaintext') prefer.escapeMarkup = markup => markup
             $('#selectBox').select2(prefer)
             $('#selectBox').val(null).trigger('change')
@@ -244,12 +164,12 @@ quickcommand = {
             })
             modWindowHeight($('.select2-results').outerHeight())
             opt.enableSearch && utools.setSubInput(({
-                text
-            }) => {
-                $("#quickselect .select2-search__field").val(text).trigger('input')
-                modWindowHeight($('.select2-results').outerHeight())
-            }, opt.placeholder)
-            // 关闭列表
+                    text
+                }) => {
+                    $("#quickselect .select2-search__field").val(text).trigger('input')
+                    modWindowHeight($('.select2-results').outerHeight())
+                }, opt.placeholder)
+                // 关闭列表
             let closeSelect = () => {
                 $('#selectBox').off('select2:select')
                 utools.removeSubInput()
@@ -425,22 +345,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
-    if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-        // 直接 existsSync wt.exe 无效
-        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        let cd = ''
+        if (utools.isWindows()) {
+            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+                // 直接 existsSync wt.exe 无效
+            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
+                cmdline = cmdline.replace(/"/g, `\\"`)
+                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            } else {
+                cmdline = cmdline.replace(/"/g, `^"`)
+                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+                command = `${cd} start "" cmd /k "${cmdline}"`
+            }
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
-        }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            cmdline = cmdline.replace(/"/g, `\\"`)
+            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile

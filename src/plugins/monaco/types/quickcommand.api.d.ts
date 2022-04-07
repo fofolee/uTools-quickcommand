@@ -111,7 +111,7 @@ interface quickcommandApi {
   * @param placeholder 文本框占位符
   * @param value 默认的文本值
   */
-  showTextAera(placeholder?: string, value?: string): Promise<string>;
+  showTextArea(placeholder?: string, value?: string): Promise<string>;
 
   /**
   * 显示一个自动消失的提示框

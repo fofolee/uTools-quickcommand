@@ -7,10 +7,12 @@ import {
     Dialog,
     Notify
 } from 'quasar'
-import inputBox from "../components/InputBox"
+import inputBox from "../components/quickcommandUI/InputBox"
+import buttonBox from "../components/quickcommandUI/ButtonBox"
+import TextArea from "../components/quickcommandUI/TextArea"
 
 
-let showInputBox = (options = [], title = "") => {
+let showInputBox = (options = ["请输入"], title = "") => {
     return new Promise((reslove, reject) => {
         let props = {
             labels: [],
@@ -31,6 +33,25 @@ let showInputBox = (options = [], title = "") => {
         })
     })
 };
+
+let showButtonBox = (labels = ["确定"], title = "") => {
+    return new Promise((reslove, reject) => {
+        if (!(labels instanceof Array)) return reject(new TypeError("必须为数组"))
+        let props = {
+            labels: labels,
+            title: title
+        }
+        Dialog.create({
+            component: buttonBox,
+            componentProps: props
+        }).onOk(results => {
+            reslove(results)
+        }).onCancel(() => {
+            console.log('取消')
+        })
+    })
+};
+
 
 let showConfirmBox = (message = "", title = "提示") => {
     return new Promise((reslove, reject) => {
@@ -58,9 +79,28 @@ let showMessageBox = (message, icon = 'success', time = 3000) => {
     })
 }
 
+let showTextArea = (placeholder = "", value = "") => {
+    return new Promise((reslove, reject) => {
+        let props = {
+            placeholder: placeholder,
+            value: value
+        }
+        Dialog.create({
+            component: TextArea,
+            componentProps: props
+        }).onOk(results => {
+            reslove(results)
+        }).onCancel(() => {
+            console.log('取消')
+        })
+    })
+}
+
 
 export default {
     showInputBox,
     showMessageBox,
-    showConfirmBox
+    showConfirmBox,
+    showButtonBox,
+    showTextArea
 };
