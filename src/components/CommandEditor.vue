@@ -185,20 +185,13 @@ export default {
       languageBarHeight: 40,
       canCommandSave: this.action.type === "code" ? false : true,
       quickcommandInfo: {
-        features: {
-          explain: "",
-          platform: ["win32", "linux", "darwin"],
-        },
         program: "quickcommand",
         cmd: "",
-        output: "text",
-        hasSubInput: false,
         scptarg: "",
         charset: {
           scriptCode: "",
           outputCode: "",
         },
-        tags: [],
         customOptions: {
           bin: "",
           argv: "",
@@ -364,7 +357,7 @@ export default {
       cmd = await this.replaceTempInputVals(cmd);
       let terminal = false;
       let raw = true;
-      switch (this.output) {
+      switch (this.$refs.menu.currentCommand.output) {
         case "html":
           raw = false;
           break;
@@ -381,7 +374,7 @@ export default {
           this.showRunResult(stdout, raw, true);
         });
       } else {
-        let option = this.$programmings[this.program];
+        let option = this.$programmings[this.quickcommandInfo.program];
         if (this.quickcommandInfo.program === "custom")
           option = this.quickcommandInfo.customOptions;
         option.scptarg = this.quickcommandInfo.scptarg;
