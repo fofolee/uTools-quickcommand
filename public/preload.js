@@ -12,6 +12,7 @@ const PinyinMatch = require('pinyin-match');
 const axios = require('axios');
 
 _ = require("lodash")
+window.pinYinMatch = PinyinMatch
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
