@@ -168,6 +168,9 @@ export default {
       };
       this.rawEditor.executeEdits("my-source", [op]);
     },
+    destoryEditor() {
+      this.rawEditor.dispose();
+    },
   },
 };
 </script>

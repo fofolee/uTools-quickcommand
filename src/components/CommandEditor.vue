@@ -213,22 +213,22 @@ export default {
       window.commandEditor = this;
       this.bindKeys();
       let quickCommandInfo =
-        this.action.type === "edit"
-          ? this.action.data
-          : this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory");
+        this.action.type === "run"
+          ? this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory")
+          : this.action.data;
       Object.assign(
         this.quickcommandInfo,
         JSON.parse(JSON.stringify(quickCommandInfo))
       );
       // monoca 相关
+      this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
-      this.$refs.editor.setEditorValue(quickCommandInfo.cmd);
       // 默认命令不可编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
-      // 只有新建或运行时才保存记录
-      if (this.action.type === "edit") return;
+      // 只有 runCode 时才保存记录
+      if (this.action.type !== "run") return;
       utools.onPluginOut(() => {
         this.quickcommandInfo.cmd = this.$refs.editor.getEditorValue();
         // 保存本次编辑记录
@@ -402,6 +402,7 @@ export default {
       this.runResult += htmlEncode(content, raw);
     },
     closeEditor() {
+      this.$refs.editor?.destoryEditor();
       this.$emit("editorEvent", {
         type: "close",
         data: {},

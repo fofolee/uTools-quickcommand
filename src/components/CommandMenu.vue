@@ -159,6 +159,14 @@
               <q-item v-bind="scope.itemProps">
                 <q-item-section>
                   <q-item-label v-html="scope.opt.label" />
+                  <q-tooltip v-if="!scope.opt.type">
+                    注意需要自行在变量两边加上引号，如"{{ scope.opt.label }}"
+                  </q-tooltip>
+                  <q-tooltip v-else>
+                    需要自行对json进行处理，如json.loads(r"""{{
+                      scope.opt.label
+                    }}""")
+                  </q-tooltip>
                   <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -259,11 +267,10 @@ export default {
   },
   computed: {
     specialVarsOptions() {
-      let x= Object.values(specialVars).filter(
+      let x = Object.values(specialVars).filter(
         (x) => !x.label.match(this.cmdType.disabledSpecialVars)
       );
-      console.log(x);
-      return x
+      return x;
     },
   },
   methods: {

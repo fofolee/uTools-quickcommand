@@ -1,9 +1,4 @@
 const specialVars = {
-    isWin: {
-        name: "isWin",
-        label: "{{isWin}}",
-        desc: "是否Window系统, 返回1或0"
-    },
     LocalId: {
         name: "LocalId",
         label: "{{LocalId}}",
@@ -37,7 +32,8 @@ const specialVars = {
     WindowInfo: {
         name: "WindowInfo",
         label: "{{WindowInfo}}",
-        desc: "当前窗口信息，JSON格式"
+        desc: "当前窗口信息，JSON格式字符串",
+        type: "json"
     },
     SelectFile: {
         name: "SelectFile",
@@ -47,7 +43,8 @@ const specialVars = {
     MatchedFiles: {
         name: "MatchedFiles",
         label: "{{MatchedFiles}}",
-        desc: "匹配的文件，JSON格式"
+        desc: "匹配的文件，JSON格式字符串",
+        type: "json"
     },
     type: {
         name: "type",
@@ -57,7 +54,8 @@ const specialVars = {
     payload: {
         name: "payload",
         label: "{{payload}}",
-        desc: "专业模式的payload,JSON格式"
+        desc: "专业模式的payload,JSON格式字符串",
+        type: "json"
     }
 }
 
