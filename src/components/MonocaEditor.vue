@@ -30,6 +30,14 @@ export default {
     rawEditor() {
       return toRaw(this.editor);
     },
+    isDark() {
+      return this.$q.dark.isActive;
+    },
+  },
+  watch: {
+    isDark() {
+      this.setEditorTheme();
+    },
   },
   methods: {
     initEditor() {
@@ -44,13 +52,13 @@ export default {
           enabled: false,
         },
       };
-      if (this.$q.dark.isActive) monacoEditorPreferences.theme = "vs-dark";
       this.editor = monaco.editor.create(
         document.getElementById("monocaEditor"),
         monacoEditorPreferences
       );
       this.loadTypes();
       this.registerLanguage();
+      this.setEditorTheme();
     },
     loadTypes() {
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -138,6 +146,9 @@ export default {
           },
         });
       });
+    },
+    setEditorTheme() {
+      monaco.editor.setTheme(this.isDark ? "vs-dark" : "vs");
     },
     getEditorValue() {
       return this.rawEditor.getValue();
