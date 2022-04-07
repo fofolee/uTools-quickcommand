@@ -256,12 +256,7 @@ export default {
       outputTypes: outputTypes,
       outputTypesOptions: Object.keys(outputTypes),
       specialVar: "{{}}",
-      allQuickCommandTags: _.without(
-        this.$parent.parent.allQuickCommandTags,
-        "默认",
-        "未分类",
-        "搜索结果"
-      ),
+      allQuickCommandTags: this.$parent.allQuickCommandTags,
     };
   },
   props: {

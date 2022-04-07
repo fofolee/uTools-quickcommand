@@ -6,9 +6,10 @@
       :quickcommandInfo="quickcommandInfo"
       class="absolute-left shadow-10"
       :style="{
-        width: sideBarWidth,
+        width: sideBarWidth + 'px',
         background: $q.dark.isActive ? '#2d2d2d' : '#f2f2f2',
         zIndex: 1,
+        transition: '0.3s',
       }"
       v-if="showSidebar"
     ></CommandMenu>
@@ -16,10 +17,30 @@
     <div
       class="absolute-top"
       :style="{
-        left: showSidebar ? sideBarWidth : 0,
+        left: showSidebar ? sideBarWidth + 'px' : 65,
+        zIndex: 1,
       }"
     >
       <div class="row" v-show="languageBarHeight">
+        <div class="col-auto flex">
+          <q-btn
+            v-if="!isRunCodePage"
+            flat
+            dense
+            color="primary"
+            :style="{
+              background: $q.dark.isActive
+                ? 'rgba(255, 255, 255, 0.07)'
+                : 'rgba(0, 0, 0, 0.05)',
+              borderRadius: '0',
+            }"
+            icon="menu"
+            @click="toggleSideBarWidth"
+            ><q-tooltip
+              >{{ sideBarWidth ? "收起" : "展开" }}侧栏</q-tooltip
+            ></q-btn
+          >
+        </div>
         <div class="col">
           <div>
             <q-select
@@ -118,8 +139,9 @@
       class="absolute-bottom"
       ref="editor"
       :style="{
-        top: languageBarHeight,
-        left: this.action.type === 'run' ? '0' : sideBarWidth,
+        top: languageBarHeight + 'px',
+        left: this.action.type === 'run' ? '0' : sideBarWidth + 'px',
+        transition: '0.3s',
       }"
     />
     <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
@@ -159,8 +181,8 @@ export default {
   data() {
     return {
       programLanguages: Object.keys(this.$programmings),
-      sideBarWidth: "290px",
-      languageBarHeight: "40px",
+      sideBarWidth: 250,
+      languageBarHeight: 40,
       canCommandSave: this.action.type === "code" ? false : true,
       quickcommandInfo: {
         features: {
@@ -202,8 +224,11 @@ export default {
   },
   computed: {
     allQuickCommandTags() {
-      return this.parent.allQuickCommandTags.filter(
-        (x) => x !== "默认" && x !== "未分类" && x !== "搜索结果"
+      return _.without(
+        this.parent.allQuickCommandTags,
+        "默认",
+        "未分类",
+        "搜索结果"
       );
     },
   },
@@ -292,6 +317,16 @@ export default {
               this.quickcommandInfo.charset.outputCode,
             ] = res;
         });
+    },
+    // 展开收起侧栏
+    toggleSideBarWidth() {
+      if (this.sideBarWidth) {
+        this.lastSideBarWidth = this.sideBarWidth;
+        this.sideBarWidth = 0;
+      } else {
+        this.sideBarWidth = this.lastSideBarWidth;
+        this.lastSideBarWidth = 0;
+      }
     },
     // 自定义解释器路径界面
     showCustomOptions() {
