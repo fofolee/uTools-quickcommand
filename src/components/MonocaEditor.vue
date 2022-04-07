@@ -43,7 +43,6 @@ export default {
     initEditor() {
       let monacoEditorPreferences = {
         value: "",
-        language: "javascript",
         automaticLayout: true,
         foldingStrategy: "indentation",
         autoClosingBrackets: true,
