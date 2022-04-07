@@ -422,12 +422,12 @@ export default {
         let el = document.getElementById(code);
         el.scrollIntoViewIfNeeded();
         // 闪一下
-        el.style.filter = "invert(1) drop-shadow(1px 1px 5px #0000008e)";
+        el.style.filter = "drop-shadow(2px 4px 6px black)";
         el.style.transform = "translateY(-5px)";
         setTimeout(() => {
           el.style.filter = "";
           el.style.transform = "";
-        }, 500);
+        }, 800);
       });
     },
     // 全部导出
@@ -513,6 +513,9 @@ export default {
         case "close":
           this.isCommandEditorShow = false;
           return;
+        case "save":
+          this.allQuickCommands[event.data.features.code] = event.data;
+          this.locateToCommand(event.data.tags, event.data.features.code);
         default:
           return;
       }

@@ -256,7 +256,12 @@ export default {
       outputTypes: outputTypes,
       outputTypesOptions: Object.keys(outputTypes),
       specialVar: "{{}}",
-      allQuickCommandTags: this.$parent.parent.allQuickCommandTags,
+      allQuickCommandTags: _.without(
+        this.$parent.parent.allQuickCommandTags,
+        "默认",
+        "未分类",
+        "搜索结果"
+      ),
     };
   },
   props: {
@@ -282,7 +287,7 @@ export default {
         this.currentCommand,
         _.pick(this.quickcommandInfo, "tags", "output", "features")
       );
-      this.setIcon(this.currentCommand.program);
+      this.setIcon(this.quickcommandInfo.program);
       this.platformVerify();
     },
     // 没有图标，或者使用了语言图标

@@ -161,7 +161,7 @@ export default {
       programLanguages: Object.keys(this.$programmings),
       sideBarWidth: "290px",
       languageBarHeight: "40px",
-      canCommandSave: this.action.type === "edit" ? true : false,
+      canCommandSave: this.action.type === "code" ? false : true,
       quickcommandInfo: {
         features: {
           explain: "",
@@ -202,7 +202,7 @@ export default {
   },
   computed: {
     allQuickCommandTags() {
-      return this.parentPage.allQuickCommandTags.filter(
+      return this.parent.allQuickCommandTags.filter(
         (x) => x !== "默认" && x !== "未分类" && x !== "搜索结果"
       );
     },
@@ -407,9 +407,24 @@ export default {
     },
     // 保存
     saveCurrentCommand() {
-      let updatedData = this.$refs.editor.SaveMenuData();
+      let updatedData = this.$refs.menu.SaveMenuData();
       if (!updatedData) return;
-      _.merge(this.quickcommandInfo, updatedData);
+      Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
+      this.$utools.putDB(
+        _.cloneDeep(this.quickcommandInfo),
+        this.$utools.DBPRE.QC + this.quickcommandInfo.features.code
+      );
+      this.$emit("editorEvent", {
+        type: "save",
+        data: _.cloneDeep(this.quickcommandInfo),
+      });
+      this.closeEditor();
+      this.$nextTick(() => {
+        document
+          .getElementById(this.quickcommandInfo.features.code)
+          .querySelector(".q-toggle[aria-checked='false']")
+          ?.click();
+      });
     },
   },
 };

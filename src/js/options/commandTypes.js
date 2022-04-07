@@ -96,6 +96,7 @@ const commandTypes = {
         icon: "construction",
         desc: "通过json格式的配置实现同时匹配关键字、窗口、文件甚至图片，或者指定文件数量、窗口类等",
         valueType: "json",
+        disabledSpecialVars: null,
         matchToCmds: (rules, desc) => JSON.parse(rules),
         verify: rules => {
             try {
