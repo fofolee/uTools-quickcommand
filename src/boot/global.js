@@ -10,21 +10,16 @@ let defaultProfile = {
     primaryColor: "#009688",
     defaultPrimaryColor: "#009688",
     backgroundImg: null,
+    codeHistory: {}
 }
 let userProfile = UTOOLS.getDB(
     UTOOLS.DBPRE.CFG + "preferences"
 );
 Object.assign(defaultProfile, userProfile)
-utools.onPluginOut(() => {
-    UTOOLS.putDB(
-        defaultProfile,
-        UTOOLS.DBPRE.CFG + "preferences"
-    );
-});
 
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files
-export default boot(async ({
+export default boot(async({
     app
 }) => {
     app.config.globalProperties.$utools = UTOOLS

@@ -34,11 +34,6 @@ export default {
       return this.$q.dark.isActive;
     },
   },
-  watch: {
-    isDark() {
-      this.setEditorTheme();
-    },
-  },
   methods: {
     initEditor() {
       let monacoEditorPreferences = {
@@ -58,6 +53,7 @@ export default {
       this.loadTypes();
       this.registerLanguage();
       this.setEditorTheme();
+      this.listenEditroValue();
     },
     loadTypes() {
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -180,6 +176,11 @@ export default {
     },
     destoryEditor() {
       this.rawEditor.dispose();
+    },
+    listenEditroValue() {
+      this.rawEditor.onDidChangeModelContent(() => {
+        this.$parent.quickcommandInfo.cmd = this.getEditorValue();
+      });
     },
   },
 };

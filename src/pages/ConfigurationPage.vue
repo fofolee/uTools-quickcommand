@@ -191,17 +191,25 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
 import quickcommandParser from "../js/common/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
-import CommandEditor from "components/CommandEditor.vue";
 import ConfigurationMenu from "components/ConfigurationMenu.vue";
 import importAll from "../js/common/importAll.js";
+
+const CommandEditor = defineAsyncComponent(() =>
+  import("components/CommandEditor.vue")
+);
 
 // 默认命令
 let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
 
 export default {
-  components: { CommandCard, CommandEditor, ConfigurationMenu },
+  components: {
+    CommandCard,
+    ConfigurationMenu,
+    CommandEditor,
+  },
   data() {
     return {
       currentTag: "默认",

@@ -145,10 +145,7 @@
       }"
     />
     <!-- 运行结果 -->
-    <CommandRunResult
-      :action="runResultAction"
-      ref="result"
-    ></CommandRunResult>
+    <CommandRunResult :action="runResultAction" ref="result"></CommandRunResult>
   </div>
 </template>
 
@@ -214,7 +211,8 @@ export default {
       this.bindKeys();
       let quickCommandInfo =
         this.action.type === "run"
-          ? this.$utools.getDB(this.$utools.DBPRE.CFG + "codeHistory")
+          ? this.$utools.getDB(this.$utools.DBPRE.CFG + "preferences")
+              ?.codeHistory
           : this.action.data;
       _.merge(this.quickcommandInfo, quickCommandInfo);
       // monoca 相关
@@ -224,16 +222,8 @@ export default {
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
-      // 只有 runCode 时才保存记录
-      if (this.action.type !== "run") return;
-      utools.onPluginOut(() => {
-        this.quickcommandInfo.cmd = this.$refs.editor.getEditorValue();
-        // 保存本次编辑记录
-        this.$utools.putDB(
-          _.cloneDeep(this.quickcommandInfo),
-          this.$utools.DBPRE.CFG + "codeHistory"
-        );
-      });
+      if (this.action.type === "run")
+        this.$profile.codeHistory = this.quickcommandInfo;
     },
     // 绑定快捷键
     bindKeys() {
@@ -362,7 +352,6 @@ export default {
     },
     // 运行
     runCurrentCommand() {
-      this.quickcommandInfo.cmd = this.$refs.editor?.getEditorValue();
       this.quickcommandInfo.output = this.$refs.menu?.currentCommand.output;
       this.$refs.result.runCurrentCommand(this.quickcommandInfo);
     },

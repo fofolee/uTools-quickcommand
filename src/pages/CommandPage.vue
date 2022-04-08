@@ -15,6 +15,7 @@ export default {
         type: "fromUtools",
         data: {},
       },
+      featureCode: this.$route.path.slice(1),
     };
   },
   mounted() {
@@ -22,15 +23,9 @@ export default {
     this.runCurrentCommand();
   },
   computed: {
-    featureCode() {
-      return this.$route.params.type + "_" + this.$route.params.uid;
-    },
     currentCommand() {
       return this.$utools.whole.db.get("qc_" + this.featureCode).data;
     },
-  },
-  beforeRouteUpdate(to, from, next) {
-    this.runCurrentCommand();
   },
   methods: {
     runCurrentCommand() {
