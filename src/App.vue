@@ -32,17 +32,23 @@ export default defineComponent({
       }
       // 默认主题色
       this.setCssVar("primary", this.$profile.primaryColor);
+      // 进入插件
       utools.onPluginEnter((enter) => {
         // 暗黑模式
         this.$q.dark.set(utools.isDarkColors());
         // 路由跳转
         quickcommand.enterData = enter;
-        this.$router.push({
-          path: enter.code,
-          query: {
-            timestamp: new Date().getTime(),
-          },
-        });
+        this.$router.push(enter.code);
+      });
+      // 退出插件
+      utools.onPluginOut(() => {
+        // 切到空路由
+        this.$router.push("loading");
+        // 保存偏好
+        this.$utools.putDB(
+          _.cloneDeep(this.$profile),
+          this.$utools.DBPRE.CFG + "preferences"
+        );
       });
     },
   },
