@@ -29,7 +29,10 @@
     </div>
     <div v-else>
       <q-card>
-        {{ action.data }}
+        <pre
+          :class="runResultStatus ? '' : 'text-red'"
+          v-html="runResult"
+        ></pre>
       </q-card>
     </div>
   </div>
@@ -47,6 +50,9 @@ export default {
   },
   props: {
     action: Object,
+  },
+  mounted() {
+    window.runResult = this;
   },
   methods: {
     // 运行命令

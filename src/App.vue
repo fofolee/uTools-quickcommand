@@ -19,7 +19,7 @@ export default defineComponent({
   },
   methods: {
     init() {
-      window.utools = window.getuToolsLite()
+      window.utools = window.getuToolsLite();
       // 版本检测
       const requiredVersion = "2.6.1";
       let version = utools.getAppVersion();
@@ -37,7 +37,12 @@ export default defineComponent({
         this.$q.dark.set(utools.isDarkColors());
         // 路由跳转
         quickcommand.enterData = enter;
-        this.$router.push(enter.code);
+        this.$router.push({
+          path: enter.code,
+          query: {
+            timestamp: new Date().getTime(),
+          },
+        });
       });
     },
   },
