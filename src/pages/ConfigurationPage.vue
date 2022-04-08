@@ -299,6 +299,12 @@ export default {
       this.activatedQuickPanels = activatedFeatures.quickpanels;
       // 所有的快捷命令
       this.allQuickCommands = this.getAllQuickCommands();
+      this.importDefaultCommands();
+    },
+    importDefaultCommands() {
+      for (var code of Object.keys(defaultCommands)) {
+        this.$utools.putDB(defaultCommands[code], this.$utools.DBPRE.QC + code);
+      }
       Object.assign(this.allQuickCommands, defaultCommands);
     },
     // 获取所有已启用的命令的 features 以及面板名称
@@ -468,7 +474,7 @@ export default {
             .getDocs(this.$utools.DBPRE.QC)
             .map((x) => x._id)
             .forEach((y) => this.$utools.delDB(y));
-          Object.assign(this.allQuickCommands, defaultCommands);
+          this.importDefaultCommands();
           this.clearAllFeatures();
           Object.keys(this.allQuickCommands).forEach((featureCode) => {
             if (!featureCode.includes("default_"))

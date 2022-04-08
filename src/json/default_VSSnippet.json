@@ -13,7 +13,7 @@
         ]
     },
     "program": "quickcommand",
-    "cmd": "var snippet = {}\nquickcommand.showTextArea(\"请输入代码片段\").then(code => {\n    snippet.body = code.split(\"\\n\")\n    quickcommand.showInputBox([\"代码片段的描述\", \"触发代码片段的关键词\"])\n        .then(inputs => {\n            snippet.prefix = inputs[1]\n            snippet.description = inputs[0]\n            var result = `\"${inputs[0]}\": ` + JSON.stringify(snippet, null, '\\t')\n            console.log(result)\n            utools.copyText(result)\n            quickcommand.showMessageBox('已复制')\n        })\n})",
+    "cmd": "var snippet = {}\nquickcommand.showTextArea(\"请输入代码片段\").then(code => {\n    snippet.body = code.split(\"\\n\")\n    quickcommand.showInputBox([\"代码片段的描述\", \"触发代码片段的关键词\"])\n        .then(inputs => {\n            snippet.prefix = inputs[1]\n            snippet.description = inputs[0]\n            var result = `\"${inputs[0]}\": ` + JSON.stringify(snippet, null, '\\t')\n            console.log(result+'\\n结果已复制')\n            utools.copyText(result)})\n})",
     "output": "text",
     "hasSubInput": false,
     "scptarg": "",
