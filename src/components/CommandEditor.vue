@@ -144,40 +144,21 @@
         transition: '0.3s',
       }"
     />
-    <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
-      <q-card style="width: 90vh">
-        <q-toolbar>
-          <q-avatar>
-            <q-icon
-              :class="runResultStatus ? 'text-green' : 'text-red'"
-              style="font-size: 30px"
-              :name="runResultStatus ? 'task_alt' : 'error'"
-            ></q-icon>
-          </q-avatar>
-          <q-toolbar-title
-            ><span class="text-weight-bold">运行结果</span></q-toolbar-title
-          >
-        </q-toolbar>
-        <q-card-section class="row items-center">
-          <pre
-            :class="runResultStatus ? '' : 'text-red'"
-            v-html="runResult"
-          ></pre>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="关闭" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <!-- 运行结果 -->
+    <CommandRunResult
+      :action="runResultAction"
+      ref="result"
+    ></CommandRunResult>
   </div>
 </template>
 
 <script>
 import MonocaEditor from "components/MonocaEditor";
 import CommandMenu from "components/CommandMenu";
+import CommandRunResult from "components/CommandRunResult";
 
 export default {
-  components: { MonocaEditor, CommandMenu },
+  components: { MonocaEditor, CommandMenu, CommandRunResult },
   data() {
     return {
       programLanguages: Object.keys(this.$programmings),
@@ -198,14 +179,15 @@ export default {
           ext: "",
         },
       },
-      isResultShow: false,
-      runResult: "",
-      runResultStatus: true,
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
       parent: this.$parent.$parent.$parent.$parent,
       commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
+      runResultAction: {
+        type: "inPlugin",
+        data: {},
+      },
     };
   },
   props: {
@@ -350,82 +332,6 @@ export default {
           this.matchLanguage(this.quickcommandInfo.customOptions.ext);
         });
     },
-    // 运行命令
-    async runCurrentCommand() {
-      let cmd = this.$refs.editor.getEditorValue();
-      cmd = window.special(cmd);
-      cmd = await this.replaceTempInputVals(cmd);
-      let terminal = false;
-      let raw = true;
-      switch (this.$refs.menu?.currentCommand.output) {
-        case "html":
-          raw = false;
-          break;
-        case "terminal":
-          terminal = true;
-          break;
-        case "ignore":
-          utools.hideMainWindow();
-          break;
-      }
-      if (this.quickcommandInfo.program === "quickcommand") {
-        window.runCodeInVm(cmd, (stdout, stderr) => {
-          if (stderr) return this.showRunResult(stderr, raw, false);
-          this.showRunResult(stdout, raw, true);
-        });
-      } else {
-        let option = this.$programmings[this.quickcommandInfo.program];
-        if (this.quickcommandInfo.program === "custom")
-          option = this.quickcommandInfo.customOptions;
-        option.scptarg = this.quickcommandInfo.scptarg;
-        option.charset = this.quickcommandInfo.charset;
-        window.runCodeFile(cmd, option, terminal, (stdout, stderr) => {
-          if (terminal) return;
-          if (stderr) return this.showRunResult(stderr, raw, false);
-          this.showRunResult(stdout, raw, true);
-        });
-      }
-    },
-    // 替换特殊变量
-    async replaceTempInputVals(cmd) {
-      let tempInputVals = [];
-      let needInputVal = [
-        "input",
-        "subinput",
-        "pwd",
-        "SelectFile",
-        "WindowInfo",
-        "MatchedFiles",
-      ];
-      needInputVal.forEach((x) => {
-        let m = cmd.match(new RegExp("{{" + x + ".*?}}", "g"));
-        m &&
-          m.forEach((y) => tempInputVals.includes(y) || tempInputVals.push(y));
-      });
-      if (!tempInputVals.length) return cmd;
-      let inputs = await quickcommand.showInputBox(
-        tempInputVals,
-        "需要临时为以下变量赋值"
-      );
-      tempInputVals.forEach((t, n) => {
-        cmd = cmd.replace(new RegExp(t, "g"), inputs[n]);
-      });
-      return cmd;
-    },
-    // 显示运行结果
-    showRunResult(content, raw, isSuccess) {
-      this.isResultShow = true;
-      this.runResultStatus = isSuccess;
-      let contlength = content.length;
-      if (contlength > this.resultMaxLength)
-        content =
-          content.slice(0, this.resultMaxLength - 100) +
-          `\n\n...\n${
-            contlength - this.resultMaxLength - 100
-          } 字省略\n...\n\n` +
-          content.slice(contlength - 100);
-      this.runResult += htmlEncode(content, raw);
-    },
     closeEditor() {
       this.$refs.editor?.destoryEditor();
       this.$emit("editorEvent", {
@@ -453,6 +359,12 @@ export default {
           .querySelector(".q-toggle[aria-checked='false']")
           ?.click();
       });
+    },
+    // 运行
+    runCurrentCommand() {
+      this.quickcommandInfo.cmd = this.$refs.editor?.getEditorValue();
+      this.quickcommandInfo.output = this.$refs.menu?.currentCommand.output;
+      this.$refs.result.runCurrentCommand(this.quickcommandInfo);
     },
   },
 };

@@ -1,23 +1,22 @@
 <template>
-  <div
-    :style="{
-      whiteSpace: 'pre',
-    }"
-  >
-    {{ enterData }}
+  <div>
+    <CommandRunResult :action="action"></CommandRunResult>
   </div>
 </template>
 
 <script>
+import CommandRunResult from "components/CommandRunResult.vue";
+
 export default {
+  component: { CommandRunResult },
   data() {
     return {
-      output: "",
-      enterData: "",
+      action: {
+        type: "fromUtools",
+        data: quickcommand.enterData,
+      },
     };
   },
-  mounted() {
-    this.enterData = quickcommand.enterData;
-  },
+  mounted() {},
 };
 </script>

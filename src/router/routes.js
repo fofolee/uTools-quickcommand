@@ -17,7 +17,7 @@ const routes = [
     },
     {
         path: '/panel_:tags(\\w+)',
-        component: () => import('pages/QuickPanel.vue')
+        component: () => import('pages/ConfigurationPage.vue')
     },
     {
         path: '/needupdate',
