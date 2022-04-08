@@ -419,7 +419,6 @@ getuToolsLite = () => {
     delete utoolsLite.removeFeature
     delete utoolsLite.setFeature
     delete utoolsLite.onDbPull
-    delete utoolsLite.getFeatures
     // 支付相关接口
     delete utoolsLite.fetchUserServerTemporaryToken
     delete utoolsLite.getUserServerTemporaryToken

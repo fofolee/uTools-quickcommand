@@ -1,3 +1,7 @@
+/**
+ * 所有的特殊变量
+ */
+
 const specialVars = {
     LocalId: {
         name: "LocalId",

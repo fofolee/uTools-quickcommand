@@ -1,3 +1,7 @@
+/**
+ * 所有的匹配类型
+ */
+
 const commandTypes = {
     key: {
         name: "key",

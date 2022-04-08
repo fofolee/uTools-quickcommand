@@ -5,7 +5,7 @@
 <script>
 import * as monaco from "monaco-editor";
 import { toRaw } from "vue";
-import importAll from "../js/importAll.js";
+import importAll from "../js/common/importAll.js";
 
 // 批量导入声明文件
 let apis = importAll(

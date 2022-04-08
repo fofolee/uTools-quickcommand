@@ -191,11 +191,11 @@
 </template>
 
 <script>
-import quickcommandParser from "../js/quickcommandParser.js";
+import quickcommandParser from "../js/common/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor.vue";
 import ConfigurationMenu from "components/ConfigurationMenu.vue";
-import importAll from "../js/importAll.js";
+import importAll from "../js/common/importAll.js";
 
 // 默认命令
 let defaultCommands = importAll(require.context("../json/", false, /\.json$/));

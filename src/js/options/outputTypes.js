@@ -1,3 +1,7 @@
+/**
+ * 所有的输出类型
+ */
+
 const outputTypes = {
     ignore: {
         name: "ignore",

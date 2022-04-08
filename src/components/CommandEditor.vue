@@ -357,7 +357,7 @@ export default {
       cmd = await this.replaceTempInputVals(cmd);
       let terminal = false;
       let raw = true;
-      switch (this.$refs.menu.currentCommand.output) {
+      switch (this.$refs.menu?.currentCommand.output) {
         case "html":
           raw = false;
           break;

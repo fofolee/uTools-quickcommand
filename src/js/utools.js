@@ -1,11 +1,10 @@
 /**
  * 阉割utools，同时返回一个满血版的UTOOLS
  * 防止输出html输出时，通过script标签调用utools执行危险函数
-*/
+ */
 
 // 禁用危险函数
 let whole = window.utools
-if (!utools.isDev()) window.utools = window.getuToolsLite()
 
 // 数据库前缀
 const DBPRE = {
@@ -47,5 +46,5 @@ export default {
     putDB,
     delDB,
     getDocs,
-    DBPRE
+    DBPRE,
 }

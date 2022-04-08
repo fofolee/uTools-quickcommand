@@ -19,6 +19,7 @@ export default defineComponent({
   },
   methods: {
     init() {
+      window.utools = window.getuToolsLite()
       // 版本检测
       const requiredVersion = "2.6.1";
       let version = utools.getAppVersion();
