@@ -37,7 +37,7 @@
             allFeaturesLength
           }}</q-avatar>
           Features
-          <q-tooltip>当前启用的「快捷命令』数</q-tooltip>
+          <q-tooltip>当前启用的「快捷命令」数</q-tooltip>
         </q-chip>
         <q-chip dense square>
           <q-avatar color="primary" text-color="white">
@@ -129,25 +129,6 @@
           </q-list>
         </q-menu>
       </q-item>
-      <!-- 收藏 -->
-      <q-item v-if="isTagStared" clickable v-close-popup>
-        <q-item-section side>
-          <q-icon name="star_border" />
-        </q-item-section>
-        <q-item-section>取消收藏</q-item-section>
-      </q-item>
-      <q-item v-else clickable v-close-popup>
-        <q-item-section side>
-          <q-icon name="star" />
-        </q-item-section>
-        <q-item-section>收藏标签</q-item-section>
-        <q-tooltip
-          >收藏后，会将当前标签名作为全局关键字，可在 uTools 的主输入框进行搜索
-          <br />
-          搜索进入后，默认进入当前标签的面板视图 <br />
-          类似于旧版本的「快捷面板」</q-tooltip
-        >
-      </q-item>
       <!-- 选项 -->
       <q-item clickable>
         <q-item-section side>
@@ -214,20 +195,75 @@
           </q-list>
         </q-menu>
       </q-item>
-      <!-- 帮助 -->
-      <q-item clickable v-close-popup>
+      <!-- 收藏 -->
+      <q-item v-if="isTagStared" clickable v-close-popup>
         <q-item-section side>
-          <q-icon name="help" />
+          <q-icon name="star_border" />
         </q-item-section>
-        <q-item-section>帮助</q-item-section></q-item
+        <q-item-section>取消收藏</q-item-section>
+      </q-item>
+      <q-item v-else clickable v-close-popup>
+        <q-item-section side>
+          <q-icon name="star" />
+        </q-item-section>
+        <q-item-section>收藏标签</q-item-section>
+        <q-tooltip
+          >收藏后，会将当前标签名作为全局关键字，可在 uTools 的主输入框进行搜索
+          <br />
+          搜索进入后，默认进入当前标签的面板视图 <br />
+          类似于旧版本的「快捷面板」</q-tooltip
+        >
+      </q-item>
+      <!-- 关于 -->
+      <q-item clickable @click="showAbout = true">
+        <q-item-section side>
+          <q-icon name="info" />
+        </q-item-section>
+        <q-item-section>关于</q-item-section></q-item
       >
-    </q-list></q-menu
-  >
+    </q-list>
+    <q-dialog v-model="showAbout">
+      <q-card>
+        <q-card-section class="q-gutter-md flex items-center">
+          <q-avatar square size="48px">
+            <img src="/logo.png" />
+          </q-avatar>
+          <span class="text-h5"
+            >{{ pluginInfo.pluginName }} v{{ pluginInfo.version }}</span
+          >
+        </q-card-section>
+        <q-card-section> {{ pluginInfo.description }} </q-card-section>
+        <q-card-section>
+          <div
+            v-for="group in Object.keys(links)"
+            :key="group"
+            class="q-gutter-sm"
+          >
+            <q-btn
+              flat
+              color="primary"
+              v-for="item in links[group]"
+              :key="item"
+              @click="visit(item.url)"
+              :label="item.name"
+              ><q-tooltip>{{ item.desc }} </q-tooltip></q-btn
+            >
+            <br />
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="确定" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-menu>
 </template>
 
 <script>
 import { setCssVar } from "quasar";
 import { ref } from "vue";
+import links from "../js/options/aboutLinks.js";
 
 export default {
   data() {
@@ -240,6 +276,9 @@ export default {
       configurationPage: this.$parent.$parent.$parent,
       setCssVar: setCssVar,
       selectFile: ref(null),
+      showAbout: false,
+      pluginInfo: window.pluginInfo(),
+      links: links,
     };
   },
   mounted() {
@@ -287,6 +326,9 @@ export default {
     changeBackground(reset = false) {
       this.$profile.backgroundImg = reset ? null : this.selectFile.path;
       this.configurationPage.$forceUpdate();
+    },
+    visit(url) {
+      utools.shellOpenExternal(url);
     },
   },
 };
