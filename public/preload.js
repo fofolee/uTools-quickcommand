@@ -619,7 +619,7 @@ clipboardReadText = () => {
         }
         // 获取本机唯一ID
         if (cmd.includes('{{LocalId}}')) {
-            let repl = utools.getLocalId();
+            let repl = utools.getNativeId();
             cmd = cmd.replace(/\{\{LocalId\}\}/mg, repl)
         }
         // 获取浏览器当前链接
