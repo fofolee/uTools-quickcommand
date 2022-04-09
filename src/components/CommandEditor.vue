@@ -3,6 +3,7 @@
     <!-- 命令设置栏 -->
     <CommandMenu
       ref="menu"
+      :canCommandSave="canCommandSave"
       :quickcommandInfo="quickcommandInfo"
       class="absolute-left shadow-10"
       :style="{

@@ -21,6 +21,7 @@
         <div>
           <!-- 说明 -->
           <q-input
+            :disable="!canCommandSave"
             stack-label
             label-color="primary"
             borderless
@@ -36,6 +37,7 @@
           </q-input>
           <!-- 匹配类型 -->
           <q-select
+            :disable="!canCommandSave"
             hide-dropdown-icon
             stack-label
             label-color="primary"
@@ -72,6 +74,7 @@
           </q-select>
           <!-- 匹配规则 -->
           <q-select
+            :disable="!canCommandSave"
             hide-dropdown-icon
             stack-label
             label-color="primary"
@@ -96,6 +99,7 @@
             </template>
           </q-select>
           <q-input
+            :disable="!canCommandSave"
             v-else
             autogrow
             borderless
@@ -113,6 +117,7 @@
           </q-input>
           <!-- 标签 -->
           <q-select
+            :disable="!canCommandSave"
             hide-dropdown-icon
             stack-label
             label-color="primary"
@@ -138,6 +143,7 @@
           </q-select>
           <!-- 特殊变量 -->
           <q-select
+            :disable="!canCommandSave"
             hide-dropdown-icon
             stack-label
             label-color="primary"
@@ -174,6 +180,7 @@
           >
           <!-- 输出 -->
           <q-select
+            :disable="!canCommandSave"
             hide-dropdown-icon
             stack-label
             label-color="primary"
@@ -206,6 +213,7 @@
           </q-select>
           <!-- 平台 -->
           <q-select
+            :disable="!canCommandSave"
             hide-dropdown-icon
             stack-label
             label-color="primary"
@@ -261,6 +269,7 @@ export default {
   },
   props: {
     quickcommandInfo: Object,
+    canCommandSave: Boolean,
   },
   mounted() {
     window.CommandMenu = this;

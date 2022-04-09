@@ -290,8 +290,6 @@ export default {
     handleCardClick() {
       // 视图模式下直接运行命令
       if (this.cardStyle.code === 1) return this.runCommand();
-      if (!this.canCommandEdit)
-        return quickcommand.showMessageBox("默认命令不可编辑", "warning");
       this.editCommand();
     },
     // 编辑命令
