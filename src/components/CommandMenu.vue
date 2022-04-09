@@ -184,7 +184,7 @@
             color="primary"
             v-model="currentCommand.output"
             :display-value="outputTypes[currentCommand.output].label"
-            :options="outputTypesOptions"
+            :options="outputTypesOptionsDy"
             label="输出"
           >
             <template v-slot:prepend>
@@ -271,6 +271,11 @@ export default {
         (x) => !x.label.match(this.cmdType.disabledSpecialVars)
       );
       return x;
+    },
+    outputTypesOptionsDy() {
+      return this.$parent.quickcommandInfo.program === "quickcommand"
+        ? _.without(this.outputTypesOptions, "terminal")
+        : this.outputTypesOptions;
     },
   },
   methods: {
