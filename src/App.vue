@@ -59,4 +59,7 @@ export default defineComponent({
 body.body--dark {
   background: #1d1d1d;
 }
+.q-tooltip {
+  font-size: 11px;
+}
 </style>
