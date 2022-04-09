@@ -345,10 +345,15 @@ export default {
       });
       this.closeEditor();
       this.$nextTick(() => {
-        document
-          .getElementById(this.quickcommandInfo.features.code)
-          .querySelector(".q-toggle[aria-checked='false']")
-          ?.click();
+        // 先点一次，如果是停用状态则被启用
+        // 如果是启用状态则停用
+        let dom = document.getElementById(this.quickcommandInfo.features.code);
+        dom.querySelector(".q-toggle")?.click();
+        // 如果之前一次点击是启用则不点
+        // 如果之前一次点击是停用则再点一次启用，达到刷新目的
+        this.$nextTick(() => {
+          dom.querySelector(".q-toggle[aria-checked='false']")?.click();
+        });
       });
     },
     // 运行
