@@ -22,7 +22,13 @@
             ></pre>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn flat label="关闭" color="primary" v-close-popup />
+            <q-btn
+              flat
+              label="关闭"
+              color="primary"
+              v-close-popup
+              @click="stopRun"
+            />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -52,6 +58,7 @@ export default {
       isResultShow: false,
       runResult: "",
       runResultStatus: true,
+      subInputValue: "",
     };
   },
   props: {
@@ -67,7 +74,12 @@ export default {
   },
   methods: {
     // 运行命令
-    async runCurrentCommand(currentCommand) {
+    runCurrentCommand(currentCommand) {
+      if (currentCommand.cmd.includes("{{subinput"))
+        return this.setSubInput(currentCommand);
+      this.fire(currentCommand);
+    },
+    async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
       // currentCommand.cmd = await this.replaceTempInputVars(currentCommand.cmd);
       let { hideWindow, outPlugin, action } =
@@ -112,6 +124,31 @@ export default {
         }
       });
       return cmd;
+    },
+    // 子输入框
+    setSubInput(currentCommand) {
+      this.fromUtools && utools.setExpendHeight(0);
+      let matched = currentCommand.cmd.match(specialVars.subinput.match);
+      let placeholder = matched[1] || "请输入";
+      utools.setSubInput(({ text }) => {
+        this.subInputValue = text;
+      }, placeholder);
+      let querySubInput = () => {
+        let command = _.cloneDeep(currentCommand);
+        command.cmd = currentCommand.cmd.replace(
+          specialVars.subinput.match,
+          this.subInputValue
+        );
+        this.fire(command);
+      };
+      // 自动粘贴的情况下自动执行
+      setTimeout(() => {
+        if (this.subInputValue) querySubInput();
+      }, 100);
+      this.$profile.tmp.handleEnter = (event) => {
+        if (event.keyCode == 13) querySubInput();
+      };
+      document.addEventListener("keydown", this.$profile.tmp.handleEnter);
     },
     // 替换特殊变量
     async replaceTempInputVars(cmd) {
@@ -169,6 +206,13 @@ export default {
           left: 0,
           behavior: "smooth",
         });
+    },
+    stopRun() {
+      if (this.$profile.tmp.handleEnter) {
+        this.subInputValue = "";
+        document.removeEventListener("keydown", this.$profile.tmp.handleEnter);
+        utools.removeSubInput();
+      }
     },
   },
 };

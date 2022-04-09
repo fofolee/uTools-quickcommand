@@ -44,6 +44,9 @@ export default defineComponent({
       utools.onPluginOut(() => {
         // 切到空路由
         this.$router.push("loading");
+        // 清空临时数据
+        document.removeEventListener("keydown", this.$profile.tmp.handleEnter);
+        this.$profile.tmp = {};
         // 保存偏好
         this.$utools.putDB(
           _.cloneDeep(this.$profile),

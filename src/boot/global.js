@@ -10,7 +10,8 @@ let defaultProfile = {
     primaryColor: "#009688",
     defaultPrimaryColor: "#009688",
     backgroundImg: null,
-    codeHistory: {}
+    codeHistory: {},
+    tmp: {}
 }
 let userProfile = UTOOLS.getDB(
     UTOOLS.DBPRE.CFG + "preferences"
