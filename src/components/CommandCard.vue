@@ -108,10 +108,9 @@
               <span v-for="cmd in commandInfo.features.cmds" :key="cmd">
                 <span v-if="typeof cmd === 'string'">
                   <q-badge rounded :color="cmdBadgeColor()"
-                    ><q-icon
-                      class="q-mr-xs"
-                      :name="commandTypes.key.icon"
-                    />{{ getShortStrByByte(cmd) }}</q-badge
+                    ><q-icon class="q-mr-xs" :name="commandTypes.key.icon" />{{
+                      getShortStrByByte(cmd)
+                    }}</q-badge
                   >
                   <q-tooltip>
                     <div class="text-subtitle2">
@@ -302,9 +301,11 @@ export default {
     },
     // 运行命令
     runCommand() {
-      utools.redirect(
-        this.commandInfo.features.cmds.filter((x) => x.length)[0]
-      );
+      let event = {
+        type: "run",
+        data: this.commandInfo.features.code,
+      };
+      this.$emit("commandChanged", event);
     },
     // 启用/禁用命令
     toggleCommandActivated() {

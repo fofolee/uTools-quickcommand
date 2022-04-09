@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     runCurrentCommand() {
-      this.$refs.result.runCurrentCommand(this.currentCommand);
+      this.$refs.result.runCurrentCommand(_.cloneDeep(this.currentCommand));
     },
   },
 };

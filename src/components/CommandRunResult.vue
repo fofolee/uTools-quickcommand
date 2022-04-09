@@ -44,6 +44,7 @@
 
 <script>
 import outputTypes from "../js/options/outputTypes.js";
+import specialVars from "../js/options/specialVars.js";
 
 export default {
   data() {
@@ -67,8 +68,8 @@ export default {
   methods: {
     // 运行命令
     async runCurrentCommand(currentCommand) {
-      currentCommand.cmd = window.special(currentCommand.cmd);
-      currentCommand.cmd = await this.replaceTempInputVals(currentCommand.cmd);
+      currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
+      // currentCommand.cmd = await this.replaceTempInputVars(currentCommand.cmd);
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
@@ -102,14 +103,24 @@ export default {
         );
       }
     },
+    // 特殊变量赋值
+    assignSpecialVars(cmd) {
+      let spVars = _.filter(specialVars, (sp) => sp.repl);
+      _.forIn(spVars, (val, key) => {
+        if (cmd.includes(val.label.slice(0, 12))) {
+          cmd = cmd.replace(val.match, (x) => val.repl(x));
+        }
+      });
+      return cmd;
+    },
     // 替换特殊变量
-    async replaceTempInputVals(cmd) {
+    async replaceTempInputVars(cmd) {
       let tempInputVals = [];
       let needInputVal = [
         "input",
         "subinput",
         "pwd",
-        "SelectFile",
+        // "SelectFile",
         "WindowInfo",
         "MatchedFiles",
       ];

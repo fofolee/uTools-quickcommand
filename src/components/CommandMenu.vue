@@ -165,13 +165,8 @@
               <q-item v-bind="scope.itemProps">
                 <q-item-section>
                   <q-item-label v-html="scope.opt.label" />
-                  <q-tooltip v-if="!scope.opt.type">
-                    注意需要自行在变量两边加上引号，如"{{ scope.opt.label }}"
-                  </q-tooltip>
-                  <q-tooltip v-else>
-                    需要自行对json进行处理，如json.loads(r"""{{
-                      scope.opt.label
-                    }}""")
+                  <q-tooltip v-if="scope.opt.tooltip">
+                    {{ scope.opt.tooltip }}
                   </q-tooltip>
                   <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
                 </q-item-section>
@@ -337,7 +332,7 @@ export default {
         this.cmdMatch = `/${this.cmdMatch}/`;
     },
     insertSpecialVar(text) {
-      this.$parent.$refs.editor.repacleEditorSelection(text);
+      this.$parent.$refs.editor.repacleEditorSelection(`'${text}'`);
     },
     // 保存各类数据
     SaveMenuData() {

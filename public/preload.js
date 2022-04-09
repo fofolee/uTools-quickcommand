@@ -255,10 +255,6 @@ let getSleepCodeByShell = ms => {
     return cmd
 }
 
-let modWindowHeight = height => {
-    $('#options').is(':hidden') && utools.setExpendHeight(height > 600 ? 600 : height);
-}
-
 // 屏蔽危险函数
 getuToolsLite = () => {
     var utoolsLite = Object.assign({}, utools)
@@ -564,6 +560,16 @@ getCurrentFolderPathFix = () => {
     return pwdFix.replace(/\\/g, '\\\\')
 }
 
+getMatchedFilesFix = payload => {
+    let MatchedFiles = payload
+    let Matched = cmd.match(/\{\{MatchedFiles(\[\d+\]){0,1}(\.\w{1,11}){0,1}\}\}/g)
+    Matched && Matched.forEach(m => {
+        repl = eval(m.slice(2, -2))
+        typeof repl == 'object' ? (repl = JSON.stringify(repl)) : (repl = repl.replace('\\', '\\\\'))
+        cmd = cmd.replace(m, repl.replace('$', '$$$'))
+    })
+}
+
 saveFile = (content, file) => {
     if (file instanceof Object) {
         file = utools.showSaveDialog(file)
@@ -580,18 +586,16 @@ yuQueClient = axios.create({
     }
 });
 
-getSelectFile = hwnd =>
-    new Promise((reslove, reject) => {
-        if (utools.isWindows()) {
-            var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
-            child_process.exec(cmd, {
-                encoding: "buffer"
-            }, (err, stdout, stderr) => {
-                if (err) reject(stderr)
-                else reslove(iconv.decode(stdout, 'GBK').trim().replace(/\\/g, '/'));
-            })
-        } else {
-            var cmd = `osascript -e 'tell application "Finder" to set selectedItems to selection as alias list
+getSelectFile = hwnd => {
+    if (utools.isWindows()) {
+        var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
+        let result = child_process.execSync(cmd, {
+            encoding: "buffer",
+            windowsHide: true
+        })
+        return iconv.decode(result, 'GBK').trim().replace(/\\/g, '/');
+    } else {
+        var cmd = `osascript -e 'tell application "Finder" to set selectedItems to selection as alias list
             if selectedItems is {} then return
             set parentPath to do shell script "dirname " & quoted form of POSIX path of (item 1 of selectedItems)
             set pathData to ""
@@ -600,45 +604,16 @@ getSelectFile = hwnd =>
             end repeat
             '
             `
-            child_process.exec(cmd, (err, stdout, stderr) => {
-                if (err) reject(stderr)
-                else reslove(stdout.trim());
-            });
-        }
-    })
-
-clipboardReadText = () => {
-        return electron.clipboard.readText()
-    },
-
-    special = cmd => {
-        // 判断是否 windows 系统
-        if (cmd.includes('{{isWin}}')) {
-            let repl = utools.isWindows() ? 1 : 0;
-            cmd = cmd.replace(/\{\{isWin\}\}/mg, repl)
-        }
-        // 获取本机唯一ID
-        if (cmd.includes('{{LocalId}}')) {
-            let repl = utools.getNativeId();
-            cmd = cmd.replace(/\{\{LocalId\}\}/mg, repl)
-        }
-        // 获取浏览器当前链接
-        if (cmd.includes('{{BrowserUrl}}')) {
-            let repl = utools.getCurrentBrowserUrl();
-            cmd = cmd.replace(/\{\{BrowserUrl\}\}/mg, repl)
-        }
-        // 获取剪切板的文本
-        if (cmd.includes('{{ClipText}}')) {
-            let repl = clipboardReadText();
-            cmd = cmd.replace(/\{\{ClipText\}\}/mg, repl)
-        }
-        // 获取选中的文本
-        // if (cmd.includes('{{SelectText}}')) {
-        //     let repl = getSelectText();
-        //     cmd = cmd.replace(/\{\{SelectText\}\}/mg, repl)
-        // }
-        return cmd;
+        let result = child_process.execSync(cmd, {
+            encoding: "utf8",
+            windowsHide: true
+        })
+        console.log(result);
+        return result ? result.trim() : ""
     }
+}
+
+clipboardReadText = () => electron.clipboard.readText()
 
 runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,

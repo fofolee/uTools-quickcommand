@@ -187,6 +187,10 @@
         ></CommandEditor>
       </q-card>
     </q-dialog>
+    <CommandRunResult
+      :action="{ type: 'inPlugin' }"
+      ref="result"
+    ></CommandRunResult>
   </div>
 </template>
 
@@ -195,6 +199,7 @@ import { defineAsyncComponent } from "vue";
 import quickcommandParser from "../js/common/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 import ConfigurationMenu from "components/ConfigurationMenu.vue";
+import CommandRunResult from "components/CommandRunResult.vue";
 import importAll from "../js/common/importAll.js";
 
 const CommandEditor = defineAsyncComponent(() =>
@@ -209,6 +214,7 @@ export default {
     CommandCard,
     ConfigurationMenu,
     CommandEditor,
+    CommandRunResult,
   },
   data() {
     return {
@@ -352,9 +358,18 @@ export default {
           return;
         case "edit":
           this.editCommand(event.data);
+          return;
+        case "run":
+          this.runCommand(event.data);
+          return;
         default:
           return;
       }
+    },
+    runCommand(code) {
+      this.$refs.result.runCurrentCommand(
+        _.cloneDeep(this.allQuickCommands[code])
+      );
     },
     // 启用命令
     enableCommand(code) {
