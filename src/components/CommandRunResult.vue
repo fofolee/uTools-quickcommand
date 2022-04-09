@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="action.type === 'inPlugin'">
+    <div v-if="!fromUtools">
       <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
         <q-card style="width: 90vh">
           <q-toolbar>
@@ -28,18 +28,23 @@
       </q-dialog>
     </div>
     <div v-else>
-      <q-card>
-        <pre
-          :class="runResultStatus ? '' : 'text-red'"
-          v-html="runResult"
-        ></pre>
-      </q-card>
+      <div
+        v-show="!!runResult"
+        :class="{
+          'text-red': !runResultStatus,
+          'q-pa-md': 1,
+        }"
+        style="white-space: pre"
+        v-html="runResult"
+      ></div>
     </div>
   </div>
 </template>
 
 
 <script>
+import outputTypes from "../js/options/outputTypes.js";
+
 export default {
   data() {
     return {
@@ -54,28 +59,31 @@ export default {
   mounted() {
     window.runResult = this;
   },
+  computed: {
+    fromUtools() {
+      return this.action.type !== "inPlugin";
+    },
+  },
   methods: {
     // 运行命令
     async runCurrentCommand(currentCommand) {
       currentCommand.cmd = window.special(currentCommand.cmd);
       currentCommand.cmd = await this.replaceTempInputVals(currentCommand.cmd);
-      let terminal = false;
-      let raw = true;
-      switch (currentCommand.output) {
-        case "html":
-          raw = false;
-          break;
-        case "terminal":
-          terminal = true;
-          break;
-        case "ignore":
-          utools.hideMainWindow();
-          break;
-      }
+      let { hideWindow, outPlugin, action } =
+        outputTypes[currentCommand.output];
+      // 需要隐藏的提前隐藏窗口
+      hideWindow && utools.hideMainWindow();
+      // 对于本身就没有输出的命令，无法确认命令是否执行完成，所以干脆提前退出插件
+      // 弊端就是如果勾选了隐藏后台就完全退出的话，会造成命令直接中断
+      this.fromUtools &&
+        outPlugin &&
+        setTimeout(() => {
+          utools.outPlugin();
+        }, 500);
       if (currentCommand.program === "quickcommand") {
         window.runCodeInVm(currentCommand.cmd, (stdout, stderr) => {
-          if (stderr) return this.showRunResult(stderr, raw, false);
-          this.showRunResult(stdout, raw, true);
+          if (stderr) return this.showRunResult(stderr, false, action);
+          this.showRunResult(stdout, true, action);
         });
       } else {
         let option = this.$programmings[currentCommand.program];
@@ -86,11 +94,10 @@ export default {
         window.runCodeFile(
           currentCommand.cmd,
           option,
-          terminal,
+          currentCommand.output === "terminal",
           (stdout, stderr) => {
-            if (terminal) return;
-            if (stderr) return this.showRunResult(stderr, raw, false);
-            this.showRunResult(stdout, raw, true);
+            if (stderr) return this.showRunResult(stderr, false, action);
+            this.showRunResult(stdout, true, action);
           }
         );
       }
@@ -122,7 +129,7 @@ export default {
       return cmd;
     },
     // 显示运行结果
-    showRunResult(content, raw, isSuccess) {
+    showRunResult(content, isSuccess, action) {
       this.isResultShow = true;
       this.runResultStatus = isSuccess;
       let contlength = content.length;
@@ -133,7 +140,24 @@ export default {
             contlength - this.resultMaxLength - 100
           } 字省略\n...\n\n` +
           content.slice(contlength - 100);
-      this.runResult += htmlEncode(content, raw);
+      let pretreatment = action(content);
+      pretreatment && (this.runResult += pretreatment);
+      this.fromUtools &&
+        this.$nextTick(() => {
+          this.outputAutoHeight();
+        });
+    },
+    // 根据输出自动滚动及调整 utools 高度
+    outputAutoHeight(autoScroll = true, autoHeight = true) {
+      let clientHeight = document.body.clientHeight;
+      let pluginHeight = clientHeight < 600 ? clientHeight : 600;
+      autoHeight && utools.setExpendHeight(pluginHeight);
+      autoScroll &&
+        window.scroll({
+          top: clientHeight,
+          left: 0,
+          behavior: "smooth",
+        });
     },
   },
 };

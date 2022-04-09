@@ -352,7 +352,9 @@ export default {
     },
     // 运行
     runCurrentCommand() {
-      this.quickcommandInfo.output = this.$refs.menu?.currentCommand.output;
+      // 如果 action 是 run 则输出一律为 text
+      this.quickcommandInfo.output =
+        this.$refs.menu?.currentCommand.output || "text";
       this.$refs.result.runCurrentCommand(this.quickcommandInfo);
     },
   },
