@@ -345,13 +345,15 @@ let parseItem = item => {
     return item.toString()
 }
 
+let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
+
 // The vm module of Node.js is deprecated in the renderer process and will be removed
 runCodeInVm = (cmd, cb) => {
     const vm = createNodeVM()
     //重定向 console
-    vm.on('console.log', stdout => {
+    vm.on('console.log', (...stdout) => {
         console.log(stdout);
-        cb(parseItem(stdout), null)
+        cb(parseStdout(stdout), null)
     });
 
     vm.on('console.error', stderr => {
