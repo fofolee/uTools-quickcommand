@@ -76,23 +76,21 @@
           </div>
         </div>
         <q-separator vertical />
-        <div class="col-auto">
-          <q-input
-            dense
-            standout="bg-primary text-white"
-            square
-            stack-label
-            hide-bottom-space
-            color="primary"
-            input-style="width: 60px;"
-            v-model="quickcommandInfo.scptarg"
-            label="脚本参数"
-            v-show="quickcommandInfo.program !== 'quickcommand'"
-          />
-        </div>
         <div class="col-auto justify-end flex">
-          <q-btn-group>
+          <q-btn-group unelevated>
+            <q-input
+              dense
+              standout="bg-primary text-white"
+              square
+              stack-label
+              color="primary"
+              input-style="width: 60px;"
+              v-model="quickcommandInfo.scptarg"
+              v-show="quickcommandInfo.program !== 'quickcommand'"
+              label="脚本参数"
+            />
             <q-btn
+              dense
               flat
               color="primary"
               icon="help"
@@ -102,6 +100,7 @@
             >
             <q-btn
               flat
+              dense
               color="primary"
               icon="code"
               @click="showCustomOptions"
@@ -110,27 +109,34 @@
             >
             <q-btn
               flat
+              dense
               color="primary"
               icon="format_size"
               @click="showCodingPage()"
               v-show="quickcommandInfo.program !== 'quickcommand'"
               ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
             >
+            <q-separator vertical inset />
+
             <q-btn
+              dense
               flat
               color="primary"
               icon="play_arrow"
+              label="运行"
               @click="runCurrentCommand()"
-              ><q-tooltip>运行命令 {{ commandString }}+b</q-tooltip></q-btn
+              ><q-tooltip>{{ commandString }}+b</q-tooltip></q-btn
             >
             <q-btn
               flat
+              dense
               v-if="!isRunCodePage"
               :disable="!canCommandSave"
               :color="canCommandSave ? 'primary' : 'grey'"
               icon="save"
+              label="保存"
               @click="saveCurrentCommand()"
-              ><q-tooltip>保存 {{ commandString }}+s</q-tooltip></q-btn
+              ><q-tooltip>{{ commandString }}+s</q-tooltip></q-btn
             >
           </q-btn-group>
         </div>
@@ -264,7 +270,10 @@ export default {
         .showInputBox(
           {
             labels: ["文件编码", "输出编码"],
-            hints: ["基于iconv-lite进行编码，无乱码请留空", "无乱码请留空"],
+            hints: [
+              "GBK/Big5/utf8，无乱码请留空",
+              "GBK/Big5/utf8,无乱码请留空",
+            ],
             values: [
               this.quickcommandInfo.charset?.scriptCode,
               this.quickcommandInfo.charset?.outputCode,
