@@ -170,7 +170,7 @@
                   </q-badge>
                 </span>
                 <span v-else-if="cmd.type === 'img'">
-                  <q-badge rounded :color="cmdBadgeColor(cmd.type)" label="">
+                  <q-badge rounded :color="cmdBadgeColor(cmd.type)">
                     <q-icon class="q-mr-xs" :name="commandTypes.img.icon" />图片
                   </q-badge>
                 </span>

@@ -90,6 +90,13 @@ const specialVars = {
         match: /{{WindowInfo(.*?)}}/mg,
         repl: jsonVar => handlingJsonVar(jsonVar, "WindowInfo")
     },
+    MatchImage: {
+        name: "MatchImage",
+        label: "{{MatchImage}}",
+        desc: "匹配到图片的 DataUrl",
+        match: /{{MatchImage}}/mg,
+        repl: () => quickcommand.enterData.payload
+    },
     SelectFile: {
         name: "SelectFile",
         label: "{{SelectFile}}",

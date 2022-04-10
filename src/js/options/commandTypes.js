@@ -65,7 +65,7 @@ const commandTypes = {
         icon: "rule",
         desc: "匹配主输入框或超级面板选中的文本，可以获取输入框文本或选中文本作为变量",
         valueType: "regex",
-        disabledSpecialVars: /{{SelectFile}}|{{WindowInfo.*?}}|{{pwd}}|{{MatchedFiles.*?}}/g,
+        disabledSpecialVars: /{{SelectFile}}|{{MatchImage}}|{{WindowInfo.*?}}|{{pwd}}|{{MatchedFiles.*?}}/g,
         matchToCmds: (rules, desc) => [{
             label: desc,
             type: "regex",
@@ -81,7 +81,7 @@ const commandTypes = {
         icon: "emergency",
         desc: "匹配主输入框的所有文本，但只有在该文本未设置对应的插件或功能时才生效",
         valueType: null,
-        disabledSpecialVars: /{{SelectFile}}|{{WindowInfo.*?}}|{{pwd}}|{{MatchedFiles.*?}}/g,
+        disabledSpecialVars: /{{SelectFile}}|{{MatchImage}}|{{WindowInfo.*?}}|{{pwd}}|{{MatchedFiles.*?}}/g,
         matchToCmds: (rules, desc) => [{
             label: desc,
             type: "over",
@@ -96,7 +96,7 @@ const commandTypes = {
         icon: "widgets",
         desc: "匹配呼出uTools前或唤出超级面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量",
         valueType: "array",
-        disabledSpecialVars: /{{input}}|{{MatchedFiles.*?}}/g,
+        disabledSpecialVars: /{{input}}|{{MatchImage}}|{{MatchedFiles.*?}}/g,
         matchToCmds: (rules, desc) => [{
             type: "window",
             label: desc,
@@ -127,7 +127,7 @@ const commandTypes = {
         icon: "description",
         desc: "匹配主输入框或超级面板选中的文件，可以获取复制及选中的文件信息作为变量",
         valueType: "regex",
-        disabledSpecialVars: /{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}/g,
+        disabledSpecialVars: /{{input}}|{{MatchImage}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}/g,
         matchToCmds: (rules, desc) => [{
             type: "files",
             label: desc,
