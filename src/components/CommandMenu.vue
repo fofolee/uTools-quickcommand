@@ -14,6 +14,7 @@
       />
       <q-img
         class="commandLogo"
+        @click="showIconPicker"
         width="64px"
         :src="currentCommand.features.icon"
       />
@@ -230,6 +231,10 @@
         </div>
       </div>
     </div>
+    <iconPicker
+      @iconChanged="(dataUrl) => (currentCommand.features.icon = dataUrl)"
+      ref="icon"
+    />
   </q-scroll-area>
 </template>
 
@@ -237,9 +242,11 @@
 import commandTypes from "../js/options/commandTypes.js";
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
+import iconPicker from "components/IconPicker.vue";
 let commandTypesOptions = Object.values(commandTypes);
 
 export default {
+  components: { iconPicker },
   data() {
     return {
       currentCommand: {
@@ -380,6 +387,10 @@ export default {
       }
       return updateData;
     },
+
+    showIconPicker() {
+      this.$refs.icon.showIconPicker = true;
+    },
   },
 };
 </script>
@@ -392,6 +403,6 @@ export default {
 }
 .commandLogo:hover {
   transition: 10s;
-  transform: rotate(360deg);
+  transform: rotate(1080deg);
 }
 </style>
