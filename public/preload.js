@@ -4,7 +4,8 @@ const child_process = require("child_process")
 const iconv = require('iconv-lite')
 const electron = require('electron')
 const {
-    NodeVM
+    NodeVM,
+    VM
 } = require('./lib/vm2')
 const path = require("path")
 const util = require("util")
@@ -187,6 +188,18 @@ if (process.platform == 'win32') quickcommand.runVbs = function(script) {
     })
 }
 
+// python -c
+runPythonCommand = py => {
+    try {
+        return child_process.execFileSync("python", ["-c", py], {
+            windowsHide: true,
+        })
+    } catch (e) {
+        utools.showNotification(e)
+        return ""
+    }
+}
+
 
 // 在终端中执行
 if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline, dir) {
@@ -346,6 +359,10 @@ let parseItem = item => {
 }
 
 let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
+
+VmEval = (cmd, sandbox = {}) => new VM({
+    sandbox: sandbox
+}).run(cmd)
 
 // The vm module of Node.js is deprecated in the renderer process and will be removed
 runCodeInVm = (cmd, cb) => {

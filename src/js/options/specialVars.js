@@ -8,21 +8,21 @@ let escapeItem = item => {
     return item.replace('$', '$$$')
 }
 
-let parseTheFirstLayerOfObjects = obj => {
-    let matched = /{{(\w+)(\[(\d+)\]){0,1}\.(\w+)}}/.exec(obj);
-    return matched ? {
-        obj: matched[1],
-        index: matched[3],
-        prop: matched[4],
-    } : {};
+let handlingJsonVar = (jsonVar, name) => {
+    try {
+        return escapeItem(window.VmEval(jsonVar.slice(2, -2), {
+            [name]: quickcommand.enterData.payload
+        }))
+    } catch {
+        return ""
+    }
 }
 
-let handlingJsonVar = (jsonVar, srcObj) => {
+let handlingJsExpression = js => {
     try {
-        let parsed = parseTheFirstLayerOfObjects(jsonVar);
-        if (!parsed.obj) return escapeItem(srcObj)
-        else if (!parsed.index) return escapeItem(srcObj[parsed.prop])
-        else return escapeItem(srcObj[parsed.index][parsed.prop])
+        return window.VmEval(js.slice(5, -2), {
+            utools: window.getuToolsLite(),
+        })
     } catch {
         return ""
     }
@@ -63,10 +63,9 @@ const specialVars = {
     },
     subinput: {
         name: "subinput",
-        label: "{{subinput}}",
+        label: "{{subinput:请输入}}",
         disabledType: [],
-        tooltip: `可以自定义占位符，如{{subinput:请输入}}`,
-        desc: "子输入框的文本",
+        desc: "子输入框的文本，冒号后为占位符",
         match: /{{subinput(:.+?){0,1}}}/mg,
     },
     input: {
@@ -86,11 +85,10 @@ const specialVars = {
     WindowInfo: {
         name: "WindowInfo",
         label: "{{WindowInfo}}",
-        desc: "当前窗口信息，JSON格式字符串",
-        tooltip: `可以选择性读取其中的某一个属性，如{{WindowInfo.id}}`,
+        desc: "当前窗口信息，JSON格式，可以指定键值，如{{WindowInfo.id}}",
         type: "json",
-        match: /{{WindowInfo(\.\w{1,7}){0,1}}}/mg,
-        repl: jsonVar => handlingJsonVar(jsonVar, quickcommand.enterData.payload)
+        match: /{{WindowInfo(.*?)}}/mg,
+        repl: jsonVar => handlingJsonVar(jsonVar, "WindowInfo")
     },
     SelectFile: {
         name: "SelectFile",
@@ -102,25 +100,43 @@ const specialVars = {
     MatchedFiles: {
         name: "MatchedFiles",
         label: "{{MatchedFiles}}",
-        tooltip: `可以选择性读取其中的某一个属性，如{{MatchedFiles[0].path}}`,
-        desc: "匹配的文件，JSON格式字符串",
+        desc: "匹配的文件，JSON格式，可以指定键值，如{{MatchedFiles[0].path}}",
         type: "json",
-        match: /{{MatchedFiles(\[\d+\]){0,1}(\.\w{1,11}){0,1}}}/mg,
-        repl: jsonVar => handlingJsonVar(jsonVar, quickcommand.enterData.payload)
+        match: /{{MatchedFiles(.*?)}}/mg,
+        repl: jsonVar => handlingJsonVar(jsonVar, "MatchedFiles")
     },
     type: {
         name: "type",
         label: "{{type}}",
-        desc: "专业模式的type",
+        desc: "onPluginEnter的type，匹配的类型",
         match: /{{type}}/mg,
         repl: () => quickcommand.enterData.type
     },
     payload: {
         name: "payload",
         label: "{{payload}}",
-        desc: "专业模式的payload",
-        match: /{{payload}}/mg,
-        repl: () => escapeItem(quickcommand.enterData.payload)
+        desc: "onPluginEnter的payload,当为JSON时可以指定键值，如{{payload.id}}",
+        type: "json",
+        match: /{{payload(.*?)}}/mg,
+        repl: jsonVar => handlingJsonVar(jsonVar, "payload")
+    },
+    js: {
+        name: "js",
+        label: "{{js:}}",
+        desc: "获取js表达式的值，如{{js:utools.isMacOs()}}",
+        tooltip: "注意，必须为表达式而非语句，类似Vue的文本插值。不支持异步/Node",
+        type: "command",
+        match: /{{js:(.*?)}}/mg,
+        repl: js => handlingJsExpression(js)
+    },
+    python: {
+        name: "python",
+        label: "{{py:}}",
+        desc: "模拟python -c，并获取返回值，如{{py:print(1)}}",
+        tooltip: "只支持单行语句",
+        type: "command",
+        match: /{{py:(.*?)}}/mg,
+        repl: py => window.runPythonCommand(py.slice(5, -2))
     }
 }
 

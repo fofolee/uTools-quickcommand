@@ -119,7 +119,7 @@ export default {
     assignSpecialVars(cmd) {
       let spVars = _.filter(specialVars, (sp) => sp.repl);
       _.forIn(spVars, (val, key) => {
-        if (cmd.includes(val.label.slice(0, 12))) {
+        if (cmd.includes(val.label.slice(0, -2))) {
           cmd = cmd.replace(val.match, (x) => val.repl(x));
         }
       });
@@ -180,7 +180,7 @@ export default {
     showRunResult(content, isSuccess, action) {
       this.isResultShow = true;
       this.runResultStatus = isSuccess;
-      let contlength = content.length;
+      let contlength = content?.length || 0;
       if (contlength > this.resultMaxLength)
         content =
           content.slice(0, this.resultMaxLength - 100) +
