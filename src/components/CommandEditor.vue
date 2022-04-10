@@ -146,7 +146,7 @@
       }"
     />
     <!-- 运行结果 -->
-    <CommandRunResult :action="runResultAction" ref="result"></CommandRunResult>
+    <CommandRunResult :action="action" ref="result"></CommandRunResult>
   </div>
 </template>
 
@@ -182,10 +182,6 @@ export default {
       isRunCodePage: this.action.type === "run",
       parent: this.$parent.$parent.$parent.$parent,
       commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
-      runResultAction: {
-        type: "inPlugin",
-        data: {},
-      },
     };
   },
   props: {

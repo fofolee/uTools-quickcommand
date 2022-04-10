@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       action: {
-        type: "fromUtools",
+        type: "input",
         data: {},
       },
       featureCode: this.$route.path.slice(1),

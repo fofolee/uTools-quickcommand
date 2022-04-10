@@ -358,6 +358,16 @@ let parseItem = item => {
     return item.toString()
 }
 
+convertFilePathToUtoolsPayload = files => files.map(file => {
+    let isFile = fs.statSync(file).isFile()
+    return {
+        isFile: isFile,
+        isDirectory: !isFile,
+        name: path.basename(file),
+        path: file
+    }
+})
+
 let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
 
 VmEval = (cmd, sandbox = {}) => new VM({
@@ -503,7 +513,7 @@ getQuickcommandTempFile = ext => {
     return path.join(os.tmpdir(), `quickcommandTempFile.${ext}`)
 }
 
-getBase64Ico = async filepath => {
+getBase64Ico = async (filepath, compressed = true) => {
     let sourceImage, ext = path.extname(filepath).slice(1)
     if (['png', 'jpg', 'jpeg', 'bmp', 'ico', 'gif', 'svg'].includes(ext)) {
         if (ext == 'svg') ext = 'svg+xml'
@@ -513,6 +523,7 @@ getBase64Ico = async filepath => {
         sourceImage = utools.getFileIcon(filepath)
         return sourceImage
     }
+    if (!compressed) return sourceImage
     let compressedImage = await getCompressedIco(sourceImage)
     return compressedImage
 }

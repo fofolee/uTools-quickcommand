@@ -2,6 +2,8 @@
  * 所有的匹配类型
  */
 
+
+
 const jsonSample = [
     "关键词",
     {
@@ -72,7 +74,11 @@ const commandTypes = {
             match: rules,
             minNum: 1,
         }, ],
-        verify: rules => !!rules > 0 || "正则不能为空"
+        verify: rules => !!rules > 0 || "正则不能为空",
+        tempPayload: async() => {
+            let values = await quickcommand.showInputBox(["需要处理的文本"])
+            return values[0]
+        }
     },
     over: {
         name: "over",
@@ -87,7 +93,11 @@ const commandTypes = {
             type: "over",
             minNum: 1,
         }],
-        verify: rules => true
+        verify: rules => true,
+        tempPayload: async() => {
+            let values = await quickcommand.showInputBox(["需要处理的文本"])
+            return values[0]
+        }
     },
     window: {
         name: "window",
@@ -104,21 +114,33 @@ const commandTypes = {
                 "app": rules
             }
         }],
-        verify: rules => !_.isEmpty(rules) || "进程名不能为空"
+        verify: rules => !_.isEmpty(rules) || "进程名不能为空",
     },
     img: {
         name: "img",
         label: "图片",
         matchLabel: "无需配置",
         icon: "panorama",
-        desc: "匹配主输入框或超级面板选中的图片，并返回图片的 base64",
+        desc: "匹配主输入框或超级面板选中的图片，并返回图片的 DataUrl",
         valueType: null,
         disabledSpecialVars: /{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}|{{MatchedFiles.*?}}/g,
         matchToCmds: (rules, desc) => [{
             label: desc,
             type: "img",
         }],
-        verify: rules => true
+        verify: rules => true,
+        tempPayload: () => window.getBase64Ico(utools.showOpenDialog({
+            title: "需要处理的文件",
+            filters: [{
+                name: 'Images',
+                extensions: ['png',
+                    'jpg',
+                    'jpeg',
+                    'bmp',
+                    'gif',
+                ]
+            }]
+        })[0])
     },
     files: {
         name: "files",
@@ -134,7 +156,11 @@ const commandTypes = {
             match: rules,
             "minLength": 1,
         }, ],
-        verify: rules => !!rules > 0 || "正则不能为空"
+        verify: rules => !!rules > 0 || "正则不能为空",
+        tempPayload: () => window.convertFilePathToUtoolsPayload(utools.showOpenDialog({
+            title: "需要处理的文件",
+            properties: ['openFile', 'openDirectory', 'multiSelections']
+        }))
 
     },
     professional: {

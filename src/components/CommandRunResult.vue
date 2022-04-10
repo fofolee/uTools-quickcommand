@@ -16,10 +16,11 @@
             >
           </q-toolbar>
           <q-card-section class="row items-center">
-            <pre
+            <div
+              style="white-space: pre"
               :class="runResultStatus ? '' : 'text-red'"
               v-html="runResult"
-            ></pre>
+            ></div>
           </q-card-section>
           <q-card-actions align="right">
             <q-btn
@@ -51,6 +52,7 @@
 <script>
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
+import commandTypes from "../js/options/commandTypes.js";
 
 export default {
   data() {
@@ -62,6 +64,13 @@ export default {
     };
   },
   props: {
+    /**
+     * run：    「RunCode界面」 无侧栏，运行结果弹窗显示，保存命令历史
+     * edit：   「编辑命令界面』 有侧栏，运行结果弹窗显示
+     * new：    『新建命令界面」 有侧栏，运行结果弹窗显示
+     * config： 「配置界面』    运行结果弹窗显示，需要对payload临时赋值
+     * input：  『主输入框进入」 运行结果直接展示，动态调整窗体高度
+     */
     action: Object,
   },
   mounted() {
@@ -69,19 +78,22 @@ export default {
   },
   computed: {
     fromUtools() {
-      return this.action.type !== "inPlugin";
+      return this.action.type === "input";
+    },
+    needTempPayload() {
+      return this.action.type === "config";
     },
   },
   methods: {
     // 运行命令
-    runCurrentCommand(currentCommand) {
+    async runCurrentCommand(currentCommand) {
+      await this.getTempPayload(currentCommand);
       if (currentCommand.cmd.includes("{{subinput"))
         return this.setSubInput(currentCommand);
       this.fire(currentCommand);
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
-      // currentCommand.cmd = await this.replaceTempInputVars(currentCommand.cmd);
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
@@ -150,31 +162,15 @@ export default {
       };
       document.addEventListener("keydown", this.$profile.tmp.handleEnter);
     },
-    // 替换特殊变量
-    async replaceTempInputVars(cmd) {
-      let tempInputVals = [];
-      let needInputVal = [
-        "input",
-        "subinput",
-        "pwd",
-        // "SelectFile",
-        "WindowInfo",
-        "MatchedFiles",
-      ];
-      needInputVal.forEach((x) => {
-        let m = cmd.match(new RegExp("{{" + x + ".*?}}", "g"));
-        m &&
-          m.forEach((y) => tempInputVals.includes(y) || tempInputVals.push(y));
-      });
-      if (!tempInputVals.length) return cmd;
-      let inputs = await quickcommand.showInputBox(
-        tempInputVals,
-        "需要临时为以下变量赋值"
-      );
-      tempInputVals.forEach((t, n) => {
-        cmd = cmd.replace(new RegExp(t, "g"), inputs[n]);
-      });
-      return cmd;
+    // payload 临时赋值
+    async getTempPayload(currentCommand) {
+      if (!this.needTempPayload) return;
+      let cmd = currentCommand.features.cmds[0];
+      let type = cmd.type;
+      quickcommand.enterData = {
+        type: cmd.type || "text",
+        payload: (await commandTypes[type]?.tempPayload?.()) || cmd,
+      };
     },
     // 显示运行结果
     showRunResult(content, isSuccess, action) {

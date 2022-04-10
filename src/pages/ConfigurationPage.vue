@@ -188,7 +188,7 @@
       </q-card>
     </q-dialog>
     <CommandRunResult
-      :action="{ type: 'inPlugin' }"
+      :action="{ type: 'config' }"
       ref="result"
     ></CommandRunResult>
   </div>
