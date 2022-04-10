@@ -297,10 +297,8 @@ let getSandboxFuns = () => {
     return sandbox
 }
 
-let createNodeVM = (enterData = {}) => {
+let createNodeVM = () => {
     var sandbox = getSandboxFuns()
-    sandbox.quickcommand.enterData = enterData
-    sandbox.quickcommand.payload = enterData.payload
     const vm = new NodeVM({
         require: {
             external: true,
@@ -348,8 +346,8 @@ let parseItem = item => {
 }
 
 // The vm module of Node.js is deprecated in the renderer process and will be removed
-runCodeInVm = (cmd, cb, enterData = {}) => {
-    const vm = createNodeVM(enterData)
+runCodeInVm = (cmd, cb) => {
+    const vm = createNodeVM()
     //重定向 console
     vm.on('console.log', stdout => {
         console.log(stdout);
@@ -457,17 +455,6 @@ dirPythonMod = (mod, cb) => {
     })
 }
 
-// NodeJs 代码提示，所有在沙箱内支持的对象
-getNodeJsCommand = () => {
-    var obj = getSandboxFuns()
-    obj.Buffer = Buffer
-    obj.quickcommand.enterData = {
-        code: '',
-        type: '',
-        payload: ''
-    }
-    return obj
-}
 
 htmlEncode = (value) => {
     return String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
