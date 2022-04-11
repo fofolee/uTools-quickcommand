@@ -90,7 +90,7 @@ const quickcommand = {
     }),
 
     showSelectList: (selects, options = {}) => new Promise((reslove, reject) => {
-        if (!options.placeholder) options.placeholder = "输入进行筛选"
+        if (!options.placeholder) options.placeholder = "输入进行筛选，支持拼音"
         if (!options.optionType) options.optionType = "plaintext"
         let props = {
             items: selects,

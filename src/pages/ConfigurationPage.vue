@@ -262,7 +262,7 @@ export default {
           commands.forEach((cmd) => {
             // 拼音搜索
             let explain = cmd.features.explain;
-            let matchedWordPositions = window.pinYinMatch.match(
+            let matchedWordPositions = window.pinyinMatch(
               explain,
               this.commandSearchKeyword
             );

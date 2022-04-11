@@ -9,12 +9,11 @@ const {
 } = require('./lib/vm2')
 const path = require("path")
 const util = require("util")
-const PinyinMatch = require('pinyin-match');
 const axios = require('axios');
 const pictureCompress = require("./lib/picture-compressor")
 
 _ = require("lodash")
-window.pinYinMatch = PinyinMatch
+pinyinMatch = require('pinyin-match').match;
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 

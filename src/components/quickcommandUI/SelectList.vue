@@ -73,22 +73,11 @@ export default {
   },
   computed: {
     matchedItems() {
-      let matchedItems;
-      if (!this.searchWords) {
-        matchedItems = this.items;
-      } else {
-        matchedItems = this.items.filter((x) => {
-          if (this.isJson) {
-            return (
-              x.title.toLowerCase().includes(this.searchWords.toLowerCase()) ||
-              x.description
-                .toLowerCase()
-                .includes(this.searchWords.toLowerCase())
-            );
-          }
-          return x.toLowerCase().includes(this.searchWords.toLowerCase());
-        });
-      }
+      let matchedItems = this.searchWords
+        ? this.items.filter((x) =>
+            window.pinyinMatch(x.title ? x.title : x, this.searchWords)
+          )
+        : this.items;
       this.setUtoolsHeight(this.itemHeight * matchedItems.length);
       return matchedItems;
     },
@@ -108,6 +97,7 @@ export default {
   props: {
     options: Object,
     items: Array,
+    pinyinMatch: Function,
   },
   emits: ["ok", "hide"],
   methods: {
