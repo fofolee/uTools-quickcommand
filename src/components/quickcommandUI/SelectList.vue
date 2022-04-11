@@ -64,6 +64,8 @@ export default {
       itemHeight: 50,
       lazyItemSize: 50,
       searchWords: "",
+      scrollBarThumbColor: this.$q.dark.isActive ? "#505050" : "#c1c1c0",
+      scrollBarTrackColor: this.$q.dark.isActive ? "#303030" : "#fffffe",
     };
   },
   mounted() {
@@ -176,3 +178,21 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: v-bind(scrollBarThumbColor);
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: v-bind(scrollBarTrackColor);
+}
+</style>
