@@ -59,10 +59,11 @@ export default defineComponent({
 </script>
 
 <style>
-body.body--dark {
-  background: #1d1d1d;
-}
 .q-tooltip {
   font-size: 11px;
+}
+:root {
+    --q-dark: #303133;
+    --q-dark-page: #303133;
 }
 </style>

@@ -8,7 +8,7 @@
       class="absolute-left shadow-10"
       :style="{
         width: sideBarWidth + 'px',
-        background: $q.dark.isActive ? '#2d2d2d' : '#f2f2f2',
+        background: $q.dark.isActive ? 'var(--q-dark)' : '#f2f2f2',
         zIndex: 1,
         transition: '0.3s',
       }"
