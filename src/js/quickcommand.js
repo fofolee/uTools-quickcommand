@@ -112,11 +112,6 @@ const quickcommand = {
             console.log('取消')
         })
     }),
-
-    // 更新选项列表
-    updateSelectList: () => {
-
-    },
 }
 
 export default quickcommand

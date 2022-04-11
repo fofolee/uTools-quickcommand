@@ -75,6 +75,10 @@ export default {
   },
   mounted() {
     window.SelectList = this;
+    quickcommand.updateSelectList = (opt, id) => {
+      if (typeof id === "undefined") this.items.push(opt);
+      else this.items[id] = opt;
+    };
     this.options.enableSearch && this.setSubInput();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
   },
