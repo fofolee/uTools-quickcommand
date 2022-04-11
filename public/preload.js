@@ -94,15 +94,6 @@ window.quickcommand = {
         })
     },
 
-    // 显示选项列表
-    showSelectList: function(selects, opt = {}) {
-        return new Promise((reslove, reject) => {})
-    },
-    // 更新选项列表
-    updateSelectList: function(opt, id) {
-
-    },
-
     // 关闭进程
     kill: function(pid, signal = 'SIGTERM') {
         process.kill(pid, signal)

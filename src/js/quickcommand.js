@@ -89,11 +89,9 @@ const quickcommand = {
         })
     }),
 
-
-    showSelectList: (selects, options = {
-        placeholder: "请选择",
-        optionType: "plaintext"
-    }) => new Promise((reslove, reject) => {
+    showSelectList: (selects, options = {}) => new Promise((reslove, reject) => {
+        if (!options.placeholder) options.placeholder = "输入进行筛选"
+        if (!options.optionType) options.optionType = "plaintext"
         let props = {
             items: selects,
             options: options
@@ -106,7 +104,12 @@ const quickcommand = {
         }).onCancel(() => {
             console.log('取消')
         })
-    })
+    }),
+
+    // 更新选项列表
+    updateSelectList: (opt, id) => {
+
+    },
 }
 
 export default quickcommand
