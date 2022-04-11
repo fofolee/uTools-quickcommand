@@ -20,16 +20,26 @@
             virtual-scroll-slice-size="30"
             standout="bg-primary text-white"
           >
-            <template v-slot:selected>
-              {{ icon8sIcon?.name || "" }}
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  键入关键词搜索
+                </q-item-section>
+              </q-item>
             </template>
-            <template v-slot:prepend> <q-icon name="image" /> </template>
+            <template v-slot:selected>
+              <!-- {{ icon8sIcon?.name || "" }} -->
+            </template>
+            <template v-slot:prepend>
+              <q-avatar size="24px" v-if="dataUrl && icon8sIcon">
+                <q-img :src="dataUrl" />
+              </q-avatar>
+              <q-icon v-else name="image" />
+            </template>
             <template v-slot:option="scope">
               <q-item v-bind="scope.itemProps">
                 <q-item-section avatar>
-                  <q-img
-                    :src="`https://img.icons8.com/color/1x/${scope.opt.commonName}.png`"
-                  />
+                  <q-img :src="getIcon8sIconUrl(scope.opt, 1)" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label v-html="scope.opt.name" />
@@ -46,7 +56,10 @@
             label="选择本地图片"
           >
             <template v-slot:prepend>
-              <q-icon name="folder" />
+              <q-avatar size="24px" v-if="dataUrl && localIconFile">
+                <q-img :src="dataUrl" />
+              </q-avatar>
+              <q-icon v-else name="folder" />
             </template>
           </q-file>
         </q-card-section>
@@ -58,7 +71,11 @@
             type="text"
             label="网络图片地址"
           >
-            <template v-slot:prepend> <q-icon name="cloud" /> </template
+            <template v-slot:prepend>
+              <q-avatar size="24px" v-if="dataUrl && netWorkIconUrl">
+                <q-img :src="dataUrl" />
+              </q-avatar>
+              <q-icon v-else name="cloud" /> </template
           ></q-input>
         </q-card-section>
         <q-card-actions align="right">
@@ -88,10 +105,12 @@ export default {
         amount: "300",
         baseUrl: "https://search.icons8.com/api/iconsets/v5/search",
       },
+      dataUrl: null,
     };
   },
   methods: {
     setIcon(dataUrl) {
+      this.dataUrl = dataUrl;
       this.$emit("iconChanged", dataUrl);
     },
 
@@ -109,12 +128,17 @@ export default {
         });
     },
 
+    getIcon8sIconUrl(icon, size) {
+      return `https://img.icons8.com/color/${size}x/${icon.commonName}.png`;
+    },
+
     getIcon8sIcon() {
-      let imgUrl = `https://img.icons8.com/color/2x/${this.icon8sIcon.commonName}.png`;
+      let imgUrl = this.getIcon8sIconUrl(this.icon8sIcon, 2);
       this.getRemoteIcon(imgUrl);
     },
 
     getLocalIcon() {
+      utools.showMainWindow();
       window.getBase64Ico(this.localIconFile.path).then((dataUrl) => {
         dataUrl && this.setIcon(dataUrl);
       });
