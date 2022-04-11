@@ -31,9 +31,12 @@
             }"
           >
             <q-item-section v-if="isText">{{ item }}</q-item-section>
-            <q-item-section v-else-if="isJson">
-              <q-avatar v-if="item.icon">
-                <q-icon :name="item.icon" />
+            <q-item-section
+              v-else-if="isJson"
+              class="content-start q-gutter-md"
+            >
+              <q-avatar size="40px" v-if="item.icon">
+                <q-img :src="item.icon" />
               </q-avatar>
               <q-item-label>{{ item.title }}</q-item-label>
               <q-item-label caption>{{ item.description }}</q-item-label>
@@ -45,6 +48,7 @@
         </template>
       </q-virtual-scroll>
       <q-btn
+        v-if="options.showCancelButton"
         class="absolute-bottom-right q-ma-xs"
         round
         color="primary"
@@ -59,6 +63,7 @@
 export default {
   data() {
     return {
+      items: this.initItems,
       listMaxHeight: 500,
       currentIndex: 0,
       itemHeight: 50,
@@ -70,7 +75,7 @@ export default {
   },
   mounted() {
     window.SelectList = this;
-    this.setSubInput();
+    this.options.enableSearch && this.setSubInput();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
   },
   computed: {
@@ -98,8 +103,7 @@ export default {
   },
   props: {
     options: Object,
-    items: Array,
-    pinyinMatch: Function,
+    initItems: Array,
   },
   emits: ["ok", "hide"],
   methods: {
@@ -125,7 +129,7 @@ export default {
               text: this.matchedItems[this.currentIndex],
             };
       this.$emit("ok", selected);
-      this.hide();
+      this.options.closeOnSelect && this.hide();
     },
 
     onCancelClick() {

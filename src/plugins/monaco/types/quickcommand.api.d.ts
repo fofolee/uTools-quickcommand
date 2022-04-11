@@ -58,7 +58,7 @@ interface quickcommandApi {
    * var opt = []
    * for (var i = 0; i < 15; i++) {
    *     // 每一个选项为 json 格式
-   *     opt.push({title: `选项${i}`, description: `选项${i}的描述`, icon: `选项${i}的图标`,abcd: `选项${i}的自定义属性`})
+   *     opt.push({title: `选项${i}`, description: `选项${i}的描述`, icon: `http://www.u.tools/favicon.ico`,abcd: `选项${i}的自定义属性`})
    * }
    * quickcommand.showSelectList(opt, {optionType: 'json'}).then(choise => {
    *     console.log(`选择的选项为${choise.title}`)
@@ -76,11 +76,19 @@ interface quickcommandApi {
    * ```
    *
    * @param selects 每一个列表选项
-   * @param options 列表的选项。placeholder: 搜索框占位符,optionType: 选项的格式，默认为plaintext
+   * @param options 列表的选项。placeholder: 搜索框占位符；optionType: 选项的格式，默认为plaintext；
+   * enableSearch：启用搜索，默认 true；showCancelButton：显示关闭按钮，默认 false；closeOnSelect：
+   * 点击后关闭，默认 true
    */
   showSelectList(
     selects: array,
-    options?: { placeholder: string; optionType: "plaintext" | "html" | "json" }
+    options?: {
+      placeholder: string;
+      optionType: "plaintext" | "html" | "json";
+      enableSearch: boolean;
+      showCancelButton: boolean;
+      closeOnSelect: boolean;
+    }
   ): Promise<{ id: number; text: string | object }>;
 
   /**

@@ -20,7 +20,7 @@ const quickcommand = {
             hints: [],
             title: title
         }
-        if (!(options instanceof Object)) return reject(new TypeError("必须为数组或对象"))
+        if (!(options instanceof Object)) return reject(new TypeError(`应为 Object, 而非 ${typeof options}`))
         if (options instanceof Array) props.labels = options
         else Object.assign(props, options)
         Dialog.create({
@@ -34,7 +34,7 @@ const quickcommand = {
     }),
 
     showButtonBox: (labels = ["确定"], title = "") => new Promise((reslove, reject) => {
-        if (!(labels instanceof Array)) return reject(new TypeError("必须为数组"))
+        if (!(labels instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof labels}`))
         let props = {
             labels: labels,
             title: title
@@ -90,11 +90,18 @@ const quickcommand = {
     }),
 
     showSelectList: (selects, options = {}) => new Promise((reslove, reject) => {
-        if (!options.placeholder) options.placeholder = "输入进行筛选，支持拼音"
-        if (!options.optionType) options.optionType = "plaintext"
+        if (!(selects instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof selects}`))
+        let defaultOptions = {
+            placeholder: "输入进行筛选，支持拼音",
+            optionType: "plaintext",
+            enableSearch: true,
+            showCancelButton: false,
+            closeOnSelect: true
+        }
+        Object.assign(defaultOptions, options)
         let props = {
-            items: selects,
-            options: options
+            initItems: selects,
+            options: defaultOptions
         }
         Dialog.create({
             component: SelectList,
@@ -107,7 +114,7 @@ const quickcommand = {
     }),
 
     // 更新选项列表
-    updateSelectList: (opt, id) => {
+    updateSelectList: () => {
 
     },
 }
