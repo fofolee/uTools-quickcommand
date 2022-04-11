@@ -10,7 +10,7 @@
     <q-card>
       <q-virtual-scroll
         ref="scrollBar"
-        :style="{ maxHeight: listMaxHeight + 'px' }"
+        :style="{ maxHeight: listMaxHeight + 'px', height: '100vh' }"
         :virtual-scroll-slice-size="lazyItemSize"
         :virtual-scroll-item-size="itemHeight"
         @virtual-scroll="scrollEvent"
@@ -45,7 +45,7 @@
         </template>
       </q-virtual-scroll>
       <q-btn
-        class="absolute-bottom-right q-ma-md"
+        class="absolute-bottom-right q-ma-xs"
         round
         color="primary"
         icon="close"
@@ -69,25 +69,31 @@ export default {
   mounted() {
     window.SelectList = this;
     this.setSubInput();
-    this.setUtoolsHeight(this.itemHeight * this.itemSize);
+    this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
   },
   computed: {
-    itemSize() {
-      return this.items.length;
-    },
     matchedItems() {
-      if (!this.searchWords) return this.items;
-      let matchedItems = this.items.filter((x) => {
-        if (typeof x === "string") {
+      let matchedItems;
+      if (!this.searchWords) {
+        matchedItems = this.items;
+      } else {
+        matchedItems = this.items.filter((x) => {
+          if (this.isJson) {
+            return (
+              x.title.toLowerCase().includes(this.searchWords.toLowerCase()) ||
+              x.description
+                .toLowerCase()
+                .includes(this.searchWords.toLowerCase())
+            );
+          }
           return x.toLowerCase().includes(this.searchWords.toLowerCase());
-        }
-        return (
-          x.title.toLowerCase().includes(this.searchWords.toLowerCase()) ||
-          x.description.toLowerCase().includes(this.searchWords.toLowerCase())
-        );
-      });
+        });
+      }
       this.setUtoolsHeight(this.itemHeight * matchedItems.length);
       return matchedItems;
+    },
+    matchedItemsSize() {
+      return this.matchedItems.length;
     },
     isJson() {
       return this.options.optionType === "json";
@@ -131,6 +137,7 @@ export default {
     },
 
     onCancelClick() {
+      this.setUtoolsHeight(this.listMaxHeight);
       utools.removeSubInput();
       this.hide();
     },
@@ -143,7 +150,7 @@ export default {
           break;
         case 40:
           this.currentIndex = Math.min(
-            this.itemSize - 1,
+            this.matchedItemsSize - 1,
             this.currentIndex + 1
           );
           break;
@@ -155,9 +162,15 @@ export default {
     },
 
     scrollEvent(e) {
+      //e.index为当前列表第一个可见项的索引
       this.currentIndex =
+        // increase代表向下滚动
         e.direction === "increase"
-          ? Math.max(e.index, this.currentIndex)
+          ? Math.max(
+              //当滚动到底时，e.index会突然变成列表最后一个选项的索引
+              Math.min(this.matchedItems.length - 10, e.index),
+              this.currentIndex
+            )
           : Math.min(e.index + 9, this.currentIndex);
     },
 
