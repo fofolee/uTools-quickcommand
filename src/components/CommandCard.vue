@@ -11,7 +11,7 @@
         <!-- 开关 -->
         <div class="absolute" style="z-index: 1; left: 20px; bottom: 16px">
           <q-toggle
-            v-model="isCommandActivated"
+            :model-value="isCommandActivated"
             checked-icon="flash_on"
             color="orange-6"
             @click="toggleCommandActivated"
@@ -212,7 +212,6 @@ export default {
   data() {
     return {
       allProgrammings: this.$programmings,
-      isCommandActivated: this.activated,
       maxCmdStingLen: 8,
       commandTypes: commandTypes,
       cmdBadgeSheet: {
@@ -267,7 +266,7 @@ export default {
   },
   props: {
     commandInfo: Object,
-    activated: Boolean,
+    isCommandActivated: Boolean,
     cardStyle: Object,
   },
   mounted() {
@@ -311,8 +310,9 @@ export default {
     toggleCommandActivated() {
       let event = {
         data: this.commandInfo.features.code,
+        type:"toggle"
       };
-      event.type = this.isCommandActivated ? "enable" : "disable";
+      event.type = this.isCommandActivated ? "disable" : "enable";
       this.$emit("commandChanged", event);
     },
     // 移除命令

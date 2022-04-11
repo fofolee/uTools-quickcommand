@@ -340,26 +340,16 @@ export default {
       let updatedData = this.$refs.menu.SaveMenuData();
       if (!updatedData) return;
       Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
+      let newQuickcommandInfo = _.cloneDeep(this.quickcommandInfo);
       this.$utools.putDB(
-        _.cloneDeep(this.quickcommandInfo),
+        newQuickcommandInfo,
         this.$utools.DBPRE.QC + this.quickcommandInfo.features.code
       );
       this.$emit("editorEvent", {
         type: "save",
-        data: _.cloneDeep(this.quickcommandInfo),
+        data: newQuickcommandInfo,
       });
       this.closeEditor();
-      this.$nextTick(() => {
-        // 先点一次，如果是停用状态则被启用
-        // 如果是启用状态则停用
-        let dom = document.getElementById(this.quickcommandInfo.features.code);
-        dom.querySelector(".q-toggle")?.click();
-        // 如果之前一次点击是启用则不点
-        // 如果之前一次点击是停用则再点一次启用，达到刷新目的
-        this.$nextTick(() => {
-          dom.querySelector(".q-toggle[aria-checked='false']")?.click();
-        });
-      });
     },
     // 运行
     runCurrentCommand() {

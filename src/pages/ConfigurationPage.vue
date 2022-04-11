@@ -69,7 +69,7 @@
               v-for="commandInfo in currentTagQuickCommands"
               :key="commandInfo.features.code"
               :commandInfo="commandInfo"
-              :activated="
+              :isCommandActivated="
                 activatedQuickCommandFeatureCodes.includes(
                   commandInfo.features.code
                 )
@@ -537,14 +537,24 @@ export default {
       };
       this.isCommandEditorShow = true;
     },
+    saveCommand(command) {
+      let code = command.features.code;
+      this.allQuickCommands[code] = command;
+      //无论禁用还是启用都启用
+      if (!this.activatedQuickCommandFeatureCodes.includes(code))
+        this.activatedQuickCommandFeatureCodes.push(code);
+      // 先删除再添加，强制刷新
+      this.$utools.whole.removeFeature(code);
+      this.$utools.whole.setFeature(command.features);
+      this.locateToCommand(command.tags, code);
+    },
     editorEvent(event) {
       switch (event.type) {
         case "close":
           this.isCommandEditorShow = false;
           return;
         case "save":
-          this.allQuickCommands[event.data.features.code] = event.data;
-          this.locateToCommand(event.data.tags, event.data.features.code);
+          this.saveCommand(event.data);
         default:
           return;
       }
