@@ -15,6 +15,7 @@
     "core-js": "^3.6.5",
     "monaco-editor": "^0.33.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
+    "pinyin-match": "^1.2.2",
     "quasar": "^2.6.0",
     "raw-loader": "^4.0.2",
     "vue": "^3.0.0",

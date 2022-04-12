@@ -8,12 +8,10 @@ const {
     VM
 } = require('./lib/vm2')
 const path = require("path")
-const util = require("util")
 const axios = require('axios');
 const pictureCompress = require("./lib/picture-compressor")
 
-_ = require("lodash")
-pinyinMatch = require('pinyin-match').match;
+window._ = require("lodash")
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
@@ -55,7 +53,7 @@ const shortCodes = [
     }
 ]
 
-ctlKey = utools.isMacOs() ? 'command' : 'control'
+const ctlKey = utools.isMacOs() ? 'command' : 'control'
 
 window.quickcommand = {
     // 模拟复制操作
@@ -180,7 +178,7 @@ if (process.platform == 'win32') quickcommand.runVbs = function(script) {
 }
 
 // python -c
-runPythonCommand = py => {
+window.runPythonCommand = py => {
     try {
         return child_process.execFileSync("python", ["-c", py], {
             windowsHide: true,
@@ -191,7 +189,6 @@ runPythonCommand = py => {
     }
 }
 
-
 // 在终端中执行
 if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline, dir) {
     let command = getCommandToLaunchTerminal(cmdline, dir)
@@ -199,22 +196,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-        let cd = ''
-        if (utools.isWindows()) {
-            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-                // 直接 existsSync wt.exe 无效
-            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-                cmdline = cmdline.replace(/"/g, `\\"`)
-                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
-            } else {
-                cmdline = cmdline.replace(/"/g, `^"`)
-                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-                command = `${cd} start "" cmd /k "${cmdline}"`
-            }
-        } else {
+    let cd = ''
+    if (utools.isWindows()) {
+        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+        // 直接 existsSync wt.exe 无效
+        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
             cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        } else {
+            cmdline = cmdline.replace(/"/g, `^"`)
+            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+            command = `${cd} start "" cmd /k "${cmdline}"`
+        }
+    } else {
+        cmdline = cmdline.replace(/"/g, `\\"`)
+        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -231,11 +228,7 @@ let getCommandToLaunchTerminal = (cmdline, dir) => {
     return command
 }
 
-swalOneByOne = options => {
-    swal.getQueueStep() ? Swal.insertQueueStep(options) : Swal.queue([options])
-}
-
-pluginInfo = () => {
+window.pluginInfo = () => {
     return JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')))
 }
 
@@ -260,7 +253,7 @@ let getSleepCodeByShell = ms => {
 }
 
 // 屏蔽危险函数
-getuToolsLite = () => {
+window.getuToolsLite = () => {
     var utoolsLite = Object.assign({}, utools)
     if (utools.isDev()) return utoolsLite
     // 数据库相关接口
@@ -282,15 +275,6 @@ let getSandboxFuns = () => {
         utools: getuToolsLite(),
         quickcommand: quickcommand,
         electron: electron,
-        fs: fs,
-        path: path,
-        os: os,
-        child_process: child_process,
-        util: util,
-        TextDecoder: TextDecoder,
-        TextEncoder: TextEncoder,
-        URL: URL,
-        URLSearchParams: URLSearchParams,
         axios: axios,
         Audio: Audio,
         fetch: fetch
@@ -349,7 +333,7 @@ let parseItem = item => {
     return item.toString()
 }
 
-convertFilePathToUtoolsPayload = files => files.map(file => {
+window.convertFilePathToUtoolsPayload = files => files.map(file => {
     let isFile = fs.statSync(file).isFile()
     return {
         isFile: isFile,
@@ -361,12 +345,12 @@ convertFilePathToUtoolsPayload = files => files.map(file => {
 
 let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
 
-VmEval = (cmd, sandbox = {}) => new VM({
+window.VmEval = (cmd, sandbox = {}) => new VM({
     sandbox: sandbox
 }).run(cmd)
 
 // The vm module of Node.js is deprecated in the renderer process and will be removed
-runCodeInVm = (cmd, cb) => {
+window.runCodeInVm = (cmd, cb) => {
     const vm = createNodeVM()
     //重定向 console
     vm.on('console.log', (...stdout) => {
@@ -416,95 +400,20 @@ runCodeInVm = (cmd, cb) => {
     }
 }
 
-// shell代码提示，当前环境变量下的所有命令
-getShellCommand = () => {
-    var shellCommands = localStorage['shellCommands']
-    if (shellCommands) return
-    localStorage['shellCommands'] = '[]'
-    if (utools.isWindows()) return
-    process.env.PATH.split(':').forEach(d => {
-        fs.readdir(d, (err, files) => {
-            if (!err) {
-                var commands = files.filter(x => x[0] != "." || x[0] != '[')
-                localStorage['shellCommands'] = JSON.stringify(JSON.parse(localStorage['shellCommands']).concat(commands))
-            }
-        })
-    })
-}
-
-// cmd代码提示，当前环境变量下的所有命令
-getCmdCommand = () => {
-    var cmdCommands = localStorage['cmdCommands']
-    if (cmdCommands) return
-    localStorage['cmdCommands'] = '[]'
-    if (!utools.isWindows()) return
-    process.env.Path.split(';').forEach(d => {
-        fs.readdir(d, (err, files) => {
-            if (!err) {
-                var commands = []
-                files.forEach(x => (x.length > 4 && x.slice(-4) == '.exe') && commands.push(x.slice(0, -4)))
-                localStorage['cmdCommands'] = JSON.stringify(JSON.parse(localStorage['cmdCommands']).concat(commands))
-            }
-        })
-    })
-}
-
-// python 代码提示，已安装的模块以及脚本内导入的模块的属性（方法）
-getPythonMods = () => {
-    var pyModules = localStorage['pyModules']
-    if (pyModules) return
-    localStorage['pyModules'] = '[]'
-    child_process.exec(`python -c "print(__import__('sys').path)"`, (err, stdout, stderr) => {
-        if (err) return
-        stdout = JSON.parse(stdout.replace(/'/g, `"`)).forEach(s => {
-            fs.readdir(s, (err, m) => {
-                if (!err) {
-                    var mods = []
-                    m.forEach(d => (/\.py$|^[^-.]+$/.test(d)) && (d = d.split('.py')[0]) && (!mods.includes(d)) && mods.push(d))
-                    localStorage['pyModules'] = JSON.stringify(JSON.parse(localStorage['pyModules']).concat(mods))
-                }
-            })
-        })
-    })
-}
-
-dirPythonMod = (mod, cb) => {
-    child_process.exec(`python -c "print(dir(__import__('${mod}')))"`, (err, stdout, stderr) => {
-        if (err) return cb([])
-        cb(JSON.parse(stdout.replace(/'/g, `"`)).filter(x => x.slice(0, 2) != '__'))
-    })
-}
-
-
-htmlEncode = (value) => {
+window.htmlEncode = (value) => {
     return String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
 }
 
-hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
-hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
+window.hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
+window.hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
 
-py_beautify = (code, cb) => {
-    var file = getQuickcommandTempFile('py')
-    fs.writeFile(file, code, {
-        encoding: 'utf8'
-    }, err => {
-        var cmd = `python "${GetFilePath('assets/plugins', 'autopep8.py')}" "${file}"`
-        child_process.exec(cmd, {
-            encoding: "buffer"
-        }, (err, stdout, stderr) => {
-            var codec = utools.isWindows() ? 'cp936' : 'utf8'
-            cb(iconv.decode(stdout, codec).trim())
-        })
-    })
-}
+window.processPlatform = process.platform
 
-processPlatform = process.platform
-
-getQuickcommandTempFile = ext => {
+window.getQuickcommandTempFile = ext => {
     return path.join(os.tmpdir(), `quickcommandTempFile.${ext}`)
 }
 
-getBase64Ico = async (filepath, compressed = true) => {
+window.getBase64Ico = async (filepath, compressed = true) => {
     let sourceImage, ext = path.extname(filepath).slice(1)
     if (['png', 'jpg', 'jpeg', 'bmp', 'ico', 'gif', 'svg'].includes(ext)) {
         if (ext == 'svg') ext = 'svg+xml'
@@ -519,7 +428,7 @@ getBase64Ico = async (filepath, compressed = true) => {
     return compressedImage
 }
 
-getCompressedIco = async (img, width = 80) => {
+let getCompressedIco = async (img, width = 80) => {
     let compressedImage = await pictureCompress({
         img: img,
         width: width,
@@ -530,16 +439,7 @@ getCompressedIco = async (img, width = 80) => {
     return compressedImage.img
 }
 
-getDefaultCommands = () => {
-    let baseDir = path.join(__dirname, 'defaults')
-    let defaultCommands = {}
-    fs.readdirSync(baseDir).forEach(f => {
-        defaultCommands[f.slice(0, -5)] = path.join(baseDir, f)
-    })
-    return defaultCommands
-}
-
-getFileInfo = options => {
+window.getFileInfo = options => {
     var file
     if (options.type == 'file') {
         file = options.argvs
@@ -562,13 +462,13 @@ getFileInfo = options => {
     return information
 }
 
-getCurrentFolderPathFix = () => {
+window.getCurrentFolderPathFix = () => {
     let pwd = utools.getCurrentFolderPath()
     let pwdFix = pwd ? pwd : path.join(utools.getPath('home'), 'desktop')
     return pwdFix.replace(/\\/g, '\\\\')
 }
 
-getMatchedFilesFix = payload => {
+window.getMatchedFilesFix = payload => {
     let MatchedFiles = payload
     let Matched = cmd.match(/\{\{MatchedFiles(\[\d+\]){0,1}(\.\w{1,11}){0,1}\}\}/g)
     Matched && Matched.forEach(m => {
@@ -578,23 +478,14 @@ getMatchedFilesFix = payload => {
     })
 }
 
-saveFile = (content, file) => {
+window.saveFile = (content, file) => {
     if (file instanceof Object) {
         file = utools.showSaveDialog(file)
     }
     file && fs.writeFileSync(file, content)
 }
 
-yuQueClient = axios.create({
-    baseURL: 'https://www.yuque.com/api/v2/',
-    headers: {
-        'Content-Type': 'application/json',
-        // 只读权限
-        'X-Auth-Token': 'WNrd0Z4kfCZLFrGLVAaas93DZ7sbG6PirKq7VxBL'
-    }
-});
-
-getSelectFile = hwnd => {
+window.getSelectFile = hwnd => {
     if (utools.isWindows()) {
         var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
         let result = child_process.execSync(cmd, {
@@ -621,9 +512,9 @@ getSelectFile = hwnd => {
     }
 }
 
-clipboardReadText = () => electron.clipboard.readText()
+window.clipboardReadText = () => electron.clipboard.readText()
 
-runCodeFile = (cmd, option, terminal, callback) => {
+window.runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,
         argv = option.argv,
         ext = option.ext,

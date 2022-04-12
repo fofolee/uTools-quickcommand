@@ -201,6 +201,7 @@ import CommandCard from "components/CommandCard";
 import ConfigurationMenu from "components/ConfigurationMenu.vue";
 import CommandRunResult from "components/CommandRunResult.vue";
 import importAll from "../js/common/importAll.js";
+import pinyinMatch from "pinyin-match";
 
 const CommandEditor = defineAsyncComponent(() =>
   import("components/CommandEditor.vue")
@@ -262,7 +263,7 @@ export default {
           commands.forEach((cmd) => {
             // 拼音搜索
             let explain = cmd.features.explain;
-            let matchedWordPositions = window.pinyinMatch(
+            let matchedWordPositions = pinyinMatch.match(
               explain,
               this.commandSearchKeyword
             );

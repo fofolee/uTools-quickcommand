@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import pinyinMatch from "pinyin-match"
+
 export default {
   data() {
     return {
@@ -86,7 +88,7 @@ export default {
     matchedItems() {
       let matchedItems = this.searchWords
         ? this.items.filter((x) =>
-            window.pinyinMatch(x.title ? x.title : x, this.searchWords)
+            pinyinMatch.match(x.title ? x.title : x, this.searchWords)
           )
         : this.items;
       this.setUtoolsHeight(this.itemHeight * matchedItems.length);
