@@ -67,4 +67,14 @@ export default defineComponent({
   --q-dark: #303133;
   --q-dark-page: #303133;
 }
+.commandLogo {
+  cursor: pointer;
+  transition: 0.2s;
+  filter: drop-shadow(2px 1px 1px grey);
+}
+.commandLogo:hover {
+  transition: 0.5s;
+  transform: translateY(-5px);
+  filter: drop-shadow(2px 1px 5px grey);
+}
 </style>

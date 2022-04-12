@@ -164,6 +164,7 @@
               ><q-spinner-bars color="primary" size="1.5em" />
               <ConfigurationMenu
                 :isTagStared="activatedQuickPanels.includes(currentTag)"
+                :currentTag="currentTag"
               ></ConfigurationMenu>
             </q-btn>
           </q-btn-group>
@@ -313,6 +314,10 @@ export default {
       // 所有的快捷命令
       this.allQuickCommands = this.getAllQuickCommands();
       this.importDefaultCommands();
+      if (this.$route.params.tags) {
+        this.currentTag = window.hexDecode(this.$route.params.tags);
+        this.commandCardStyle = "mini";
+      }
     },
     importDefaultCommands() {
       for (var code of Object.keys(defaultCommands)) {
@@ -327,7 +332,7 @@ export default {
       let quickpanels = [];
       features.forEach((x) =>
         x.code.slice(0, 6) == "panel_"
-          ? quickpanels.push(hexDecode(x.code.slice(6)))
+          ? quickpanels.push(window.hexDecode(x.code.slice(6)))
           : currentFts.push(x)
       );
       return {

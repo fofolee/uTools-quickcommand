@@ -145,10 +145,22 @@
       ref="editor"
       :style="{
         top: languageBarHeight + 'px',
-        left: this.action.type === 'run' ? '0' : sideBarWidth + 'px',
+        left: editorLeft,
         transition: '0.3s',
       }"
     />
+    <div
+      class="absolute-bottom flex justify-center content-center"
+      :style="{
+        top: languageBarHeight + 'px',
+        left: editorLeft,
+        userSelect: 'none',
+      }"
+    >
+      ctrl + s 保存 <br />
+      ctrl + b 运行 <br />
+      alt + z 自动换行
+    </div>
     <!-- 运行结果 -->
     <CommandRunResult :action="action" ref="result"></CommandRunResult>
   </div>
@@ -204,6 +216,9 @@ export default {
         "未分类",
         "搜索结果"
       );
+    },
+    editorLeft() {
+      return this.action.type === "run" ? "0" : this.sideBarWidth + "px";
     },
   },
   created() {},

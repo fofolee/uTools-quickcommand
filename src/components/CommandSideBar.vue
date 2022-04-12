@@ -234,6 +234,7 @@
     </div>
     <iconPicker
       @iconChanged="(dataUrl) => (currentCommand.features.icon = dataUrl)"
+      position="left"
       ref="icon"
     />
   </q-scroll-area>
@@ -395,15 +396,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.commandLogo {
-  cursor: pointer;
-  transition: 10s;
-  filter: drop-shadow(2px 1px 1px grey);
-}
-.commandLogo:hover {
-  transition: 10s;
-  transform: rotate(1080deg);
-}
-</style>

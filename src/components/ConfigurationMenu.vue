@@ -144,7 +144,7 @@
         </q-menu>
       </q-item>
       <!-- 收藏 -->
-      <q-item v-if="isTagStared" clickable>
+      <q-item v-if="isTagStared" clickable @click="unMarkTag">
         <q-item-section side>
           <q-icon name="star_border" />
         </q-item-section>
@@ -176,7 +176,7 @@
     </q-dialog>
     <!-- 面板视图弹窗 -->
     <q-dialog v-model="showPanelConf">
-      <PanelSetting :isTagStared="isTagStared" />
+      <PanelSetting :isTagStared="isTagStared" :currentTag="currentTag" />
     </q-dialog>
   </q-menu>
 </template>
@@ -218,6 +218,7 @@ export default {
   },
   props: {
     isTagStared: Boolean,
+    currentTag: String,
   },
   methods: {
     // 导入命令且定位
@@ -256,6 +257,13 @@ export default {
     changeBackground(reset = false) {
       this.$profile.backgroundImg = reset ? null : this.selectFile.path;
       this.configurationPage.$forceUpdate();
+    },
+    unMarkTag() {
+      this.$utools.whole.removeFeature(
+        `panel_${window.hexEncode(this.currentTag)}`
+      );
+      _.pull(this.$root.$refs.view.activatedQuickPanels, this.currentTag);
+      quickcommand.showMessageBox("取消收藏成功");
     },
   },
 };

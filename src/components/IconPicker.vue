@@ -1,6 +1,6 @@
 <template>
   <div>
-    <q-dialog v-model="showIconPicker" class="q-gutter" position="left">
+    <q-dialog v-model="showIconPicker" class="q-gutter" :position="position">
       <q-card>
         <q-card-section class="text-h5 text-center">更改图标</q-card-section>
         <q-card-section>
@@ -107,6 +107,9 @@ export default {
       },
       dataUrl: null,
     };
+  },
+  props: {
+    position: String,
   },
   methods: {
     setIcon(dataUrl) {

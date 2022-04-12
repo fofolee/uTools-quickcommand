@@ -246,15 +246,6 @@ window.pluginInfo = () => {
     return JSON.parse(fs.readFileSync(path.join(__dirname, 'plugin.json')))
 }
 
-
-let GetFilePath = (Path, File) => {
-    if (utools.isDev()) {
-        return path.join(__dirname, Path, File)
-    } else {
-        return path.join(__dirname.replace(/([a-zA-Z0-9\-]+\.asar)/, '$1.unpacked'), Path, File)
-    }
-}
-
 let getSleepCodeByShell = ms => {
     var cmd, tempFilePath
     if (utools.isWindows()) {
