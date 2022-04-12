@@ -157,10 +157,12 @@ export default {
       setTimeout(() => {
         if (this.subInputValue) querySubInput();
       }, 100);
-      this.$profile.tmp.handleEnter = (event) => {
+      let handler = (event) => {
         if (event.keyCode == 13) querySubInput();
       };
-      document.addEventListener("keydown", this.$profile.tmp.handleEnter);
+      let listener = ["keydown", handler, true];
+      document.addEventListener(...listener);
+      window.temporaryStore.listeners.subInputListener = listener;
     },
     // payload 临时赋值
     async getTempPayload(currentCommand) {
@@ -204,10 +206,10 @@ export default {
         });
     },
     stopRun() {
-      if (this.$profile.tmp.handleEnter) {
+      if (window.temporaryStore.listeners.subInputListener) {
         this.subInputValue = "";
-        document.removeEventListener("keydown", this.$profile.tmp.handleEnter);
         utools.removeSubInput();
+        window.temporaryStoreSoldOut();
       }
     },
   },

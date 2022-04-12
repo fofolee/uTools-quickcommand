@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import pinyinMatch from "pinyin-match"
+import pinyinMatch from "pinyin-match";
 
 export default {
   data() {
@@ -77,7 +77,7 @@ export default {
   },
   mounted() {
     window.SelectList = this;
-    quickcommand.updateSelectList = (opt, id) => {
+    window.temporaryStore.updateSelectList = (opt, id) => {
       if (typeof id === "undefined") this.items.push(opt);
       else this.items[id] = opt;
     };
@@ -122,11 +122,11 @@ export default {
     },
 
     onDialogHide() {
+      this.clear();
       this.$emit("hide");
     },
 
     onOKClick() {
-      utools.removeSubInput();
       let selected =
         this.options.optionType === "json"
           ? this.matchedItems[this.currentIndex]
@@ -139,8 +139,6 @@ export default {
     },
 
     onCancelClick() {
-      this.setUtoolsHeight(this.listMaxHeight);
-      utools.removeSubInput();
       this.hide();
     },
 
@@ -184,6 +182,12 @@ export default {
 
     setUtoolsHeight(height) {
       utools.setExpendHeight(Math.min(height, this.listMaxHeight));
+    },
+
+    clear() {
+      utools.removeSubInput();
+      this.setUtoolsHeight(this.listMaxHeight);
+      window.temporaryStoreSoldOut();
     },
   },
 };

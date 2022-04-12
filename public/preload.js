@@ -177,6 +177,20 @@ if (process.platform == 'win32') quickcommand.runVbs = function(script) {
     })
 }
 
+window.temporaryStore = {
+    listeners: {}
+}
+
+window.temporaryStoreSoldOut = () => {
+    _.forIn(temporaryStore.listeners, (listener, key) => {
+        document.removeEventListener(...listener)
+    })
+    window.temporaryStore = {
+        listeners: {}
+    }
+}
+
+
 // python -c
 window.runPythonCommand = py => {
     try {

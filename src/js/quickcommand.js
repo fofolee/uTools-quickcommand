@@ -112,6 +112,11 @@ const quickcommand = {
             console.log('取消')
         })
     }),
+
+    updateSelectList: (opt, id) => {
+        if (!window.temporaryStore.updateSelectList) throw "请先初始化SelectList"
+        window.temporaryStore.updateSelectList(opt, id)
+    }
 }
 
 export default quickcommand

@@ -45,8 +45,7 @@ export default defineComponent({
         // 切到空路由
         this.$router.push("loading");
         // 清空临时数据
-        document.removeEventListener("keydown", this.$profile.tmp.handleEnter);
-        this.$profile.tmp = {};
+        window.temporaryStoreSoldOut();
         // 保存偏好
         this.$utools.putDB(
           _.cloneDeep(this.$profile),
@@ -63,7 +62,7 @@ export default defineComponent({
   font-size: 11px;
 }
 :root {
-    --q-dark: #303133;
-    --q-dark-page: #303133;
+  --q-dark: #303133;
+  --q-dark-page: #303133;
 }
 </style>
