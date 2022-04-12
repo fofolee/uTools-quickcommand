@@ -1,23 +1,15 @@
 {
-    "features": {
-        "code": "default_shellRunner",
-        "explain": "执行 shell 命令",
-        "cmds": [
-            "sh"
-        ],
-        "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAADTklEQVR4nO3cT0iTcRzH8c+zPz42VPIPudKQ0sprikjX6BIRRkRGKgkdhIESeOgQdAg6hCTMcIQEJsooE4sO0SG6VURERYeEDFKRZrGKqZtzj3s6VCJs5eaznu9jz+d1237Ps3153uz5MRgDiIiIiIiIiIjILpRsT3g98f4koPh1wPsvBtqsFCCUhN5ZV7tnLJvzHBt4K178NHTAq0Dpy/a8rAPw4v/V9mxP2MAngHLJZfQFkrqOj7MhzIW/A9DhLS1BVUU5HIqS0brdGQ4wNTuHmdCX1cfToc8AgF2V3ozW7c7wLSgU/pby3Kc1z623bnc52AP01BdVslm3N8MBvKUlKc9tKy3OeN3uDO8BVRXlAIBQ+CuAnxe8akd5xut2l/XN4NXEZOo9hVbtr63J6prye4AwBhDGAMIMb8LNp1tzMcemdTs4Yuh8fgKEMYAwBhDGAMIYQBgDCGMAYQwgjAGEMYAwBhDGAMIYQBgDCGMAYQwgjAGEiQWIBvqwUlMt9faWIRZAa2xANDiE2IXz0Evs+0Mt0VuQ7nQicfwY5sdHEW9vA/LckuOIsMYeUFiAeKcPC6NBJA4dlJ7GVNYI8EtyZyViVy4jOtCP5L690uOYQiyAx9cF5+SHtGtafR0WRgYRu3QRybIykyczl1gA1/MX8LS0I7+nF0okknqAw4HEkcNYvDuK5bPtZo9nGtFbkKJpyLt1BwVNJ6DeHAYSiZRjdM8WLPk6BKYzhyX2ACUyD/VaAAXNrXA/eiw9jqksEWAtXVWlRzCV4d+G5oJeVIjlM22It5wC3Pb6LiAaQHc6oTUdxZKvA3rx1rTHOKdnoPb6TZ7MPGIBtMYGxLvPYaV6d9p1JRZD3nAQ6uAQsJy6Of8vxAJEA3/4WwVdh/vBQ6j+fjjCYXOHEmCJPeA357sJqD29cL15u+6xkZfPcvreRfUHcvp6mbJEAEc4DPX6Dbjv3QeSSelxTCUaQNE0uMfGoQYGoCwuSo4iRiyA68lT5F/1wzE1LTWCJYgF8HR1Gzpf6p6da5b7Jmw3DCCMAYQxgDAGEMYAwhhAGAMIYwBhDCCMAYQxgDAGEMYAwhhAGAMIYwBh/OfcHOM/524yDCCMAYiIiIiIiIiIiEzyA97G0BQKex3zAAAAAElFTkSuQmCC",
-        "platform": [
-            "win32",
-            "darwin",
-            "linux"
-        ]
-    },
     "program": "quickcommand",
-    "cmd": "const iconv = require('iconv-lite')\nvar child = child_process.spawn(`{{subinput}}`, {shell: true, encoding: 'buffer'})\n\nchild.stdout.on('data', data => {\n  var codec = utools.isWindows() ? 'cp936' : 'utf8'\n  console.log(iconv.decode(data, codec))\n})\n\nchild.stderr.on('data', data => {\n  var codec = utools.isWindows() ? 'cp936' : 'utf8'\n  console.error(iconv.decode(data, codec))\n})",
+    "cmd": "const iconv = require('iconv-lite')\nconst child_process = require(\"child_process\")\nvar child = child_process.spawn(`{{subinput}}`, {shell: true, encoding: 'buffer'})\n\nchild.stdout.on('data', data => {\n  var codec = utools.isWindows() ? 'cp936' : 'utf8'\n  console.log(iconv.decode(data, codec))\n})\n\nchild.stderr.on('data', data => {\n  var codec = utools.isWindows() ? 'cp936' : 'utf8'\n  console.error(iconv.decode(data, codec))\n})",
+    "scptarg": "",
+    "features": {
+        "explain": "执行 shell 命令",
+        "platform": ["win32", "darwin", "linux"],
+        "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAADTklEQVR4nO3cT0iTcRzH8c+zPz42VPIPudKQ0sprikjX6BIRRkRGKgkdhIESeOgQdAg6hCTMcIQEJsooE4sO0SG6VURERYeEDFKRZrGKqZtzj3s6VCJs5eaznu9jz+d1237Ps3153uz5MRgDiIiIiIiIiIjILpRsT3g98f4koPh1wPsvBtqsFCCUhN5ZV7tnLJvzHBt4K178NHTAq0Dpy/a8rAPw4v/V9mxP2MAngHLJZfQFkrqOj7MhzIW/A9DhLS1BVUU5HIqS0brdGQ4wNTuHmdCX1cfToc8AgF2V3ozW7c7wLSgU/pby3Kc1z623bnc52AP01BdVslm3N8MBvKUlKc9tKy3OeN3uDO8BVRXlAIBQ+CuAnxe8akd5xut2l/XN4NXEZOo9hVbtr63J6prye4AwBhDGAMIMb8LNp1tzMcemdTs4Yuh8fgKEMYAwBhDGAMIYQBgDCGMAYQwgjAGEMYAwBhDGAMIYQBgDCGMAYQwgjAGEiQWIBvqwUlMt9faWIRZAa2xANDiE2IXz0Evs+0Mt0VuQ7nQicfwY5sdHEW9vA/LckuOIsMYeUFiAeKcPC6NBJA4dlJ7GVNYI8EtyZyViVy4jOtCP5L690uOYQiyAx9cF5+SHtGtafR0WRgYRu3QRybIykyczl1gA1/MX8LS0I7+nF0okknqAw4HEkcNYvDuK5bPtZo9nGtFbkKJpyLt1BwVNJ6DeHAYSiZRjdM8WLPk6BKYzhyX2ACUyD/VaAAXNrXA/eiw9jqksEWAtXVWlRzCV4d+G5oJeVIjlM22It5wC3Pb6LiAaQHc6oTUdxZKvA3rx1rTHOKdnoPb6TZ7MPGIBtMYGxLvPYaV6d9p1JRZD3nAQ6uAQsJy6Of8vxAJEA3/4WwVdh/vBQ6j+fjjCYXOHEmCJPeA357sJqD29cL15u+6xkZfPcvreRfUHcvp6mbJEAEc4DPX6Dbjv3QeSSelxTCUaQNE0uMfGoQYGoCwuSo4iRiyA68lT5F/1wzE1LTWCJYgF8HR1Gzpf6p6da5b7Jmw3DCCMAYQxgDAGEMYAwhhAGAMIYwBhDCCMAYQxgDAGEMYAwhhAGAMIYwBh/OfcHOM/524yDCCMAYiIiIiIiIiIiEzyA97G0BQKex3zAAAAAElFTkSuQmCC",
+        "code": "default_shellRunner",
+        "cmds": ["sh"]
+    },
     "output": "text",
     "hasSubInput": true,
-    "scptarg": "",
-    "tags": [
-        "默认"
-    ]
+    "tags": ["默认"]
 }
