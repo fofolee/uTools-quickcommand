@@ -275,7 +275,7 @@ export default {
     canCommandSave: Boolean,
   },
   mounted() {
-    window.CommandMenu = this;
+    window.CommandSideBar = this;
   },
   computed: {
     specialVarsOptions() {

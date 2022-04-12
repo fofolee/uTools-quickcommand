@@ -1,8 +1,8 @@
 <template>
   <div class="relative">
     <!-- 命令设置栏 -->
-    <CommandMenu
-      ref="menu"
+    <CommandSideBar
+      ref="sidebar"
       :canCommandSave="canCommandSave"
       :quickcommandInfo="quickcommandInfo"
       class="absolute-left shadow-10"
@@ -13,7 +13,7 @@
         transition: '0.3s',
       }"
       v-if="showSidebar"
-    ></CommandMenu>
+    ></CommandSideBar>
     <!-- 编程语言栏 -->
     <div
       class="absolute-top"
@@ -158,11 +158,11 @@
 
 <script>
 import MonocaEditor from "components/MonocaEditor";
-import CommandMenu from "components/CommandMenu";
+import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 
 export default {
-  components: { MonocaEditor, CommandMenu, CommandRunResult },
+  components: { MonocaEditor, CommandSideBar, CommandRunResult },
   data() {
     return {
       programLanguages: Object.keys(this.$programmings),
@@ -195,7 +195,7 @@ export default {
   },
   mounted() {
     this.init();
-    this.$refs.menu?.init();
+    this.$refs.sidebar?.init();
   },
   computed: {
     allQuickCommandTags() {
@@ -238,7 +238,7 @@ export default {
     },
     programChanged(value) {
       this.setLanguage(value);
-      this.$refs.menu?.setIcon(value);
+      this.$refs.sidebar?.setIcon(value);
     },
     // 匹配编程语言
     matchLanguage() {
@@ -337,7 +337,7 @@ export default {
     },
     // 保存
     saveCurrentCommand() {
-      let updatedData = this.$refs.menu.SaveMenuData();
+      let updatedData = this.$refs.sidebar.SaveMenuData();
       if (!updatedData) return;
       Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
       let newQuickcommandInfo = _.cloneDeep(this.quickcommandInfo);
@@ -354,8 +354,8 @@ export default {
     // 运行
     runCurrentCommand() {
       let command = _.cloneDeep(this.quickcommandInfo);
-      command.output = this.$refs.menu?.currentCommand.output || "text";
-      command.cmdType = this.$refs.menu?.cmdType.name;
+      command.output = this.$refs.sidebar?.currentCommand.output || "text";
+      command.cmdType = this.$refs.sidebar?.cmdType.name;
       this.$refs.result.runCurrentCommand(command);
     },
   },
