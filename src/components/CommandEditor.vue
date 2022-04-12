@@ -186,7 +186,6 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
-      configurationPage: this.$root.$refs.configuration,
       commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
     };
   },
@@ -198,9 +197,12 @@ export default {
     this.$refs.sidebar?.init();
   },
   computed: {
+    configurationPage() {
+      return this.$root.$refs.view;
+    },
     allQuickCommandTags() {
       return _.without(
-        this.configurationPage?.allQuickCommandTags,
+        this.configurationPage.allQuickCommandTags,
         "默认",
         "未分类",
         "搜索结果"

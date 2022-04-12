@@ -20,14 +20,14 @@
     <div class="column items-start q-gutter-xs">
       <q-chip dense square>
         <q-avatar color="indigo" text-color="white">{{
-          Object.keys(configurationPage.allQuickCommands).length
+          allQuickCommandsLength
         }}</q-avatar>
         Quickcommands
         <q-tooltip>当前拥有的「快捷命令」数</q-tooltip>
       </q-chip>
       <q-chip dense square>
         <q-avatar color="green-8" text-color="white">{{
-          configurationPage.activatedQuickCommandFeatureCodes.length
+          allFeaturesLength
         }}</q-avatar>
         Features
         <q-tooltip>当前启用的「快捷命令」数</q-tooltip>
@@ -67,8 +67,11 @@ export default {
         number: 1,
         process: 0.4,
       },
-      configurationPage: this.$root.$refs.configuration,
     };
+  },
+  props: {
+    allFeaturesLength: Number,
+    allQuickCommandsLength: Number,
   },
 };
 </script>

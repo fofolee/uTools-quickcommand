@@ -6,7 +6,10 @@
     transition-hide="jump-down"
   >
     <!-- 用户信息 -->
-    <UserInfo />
+    <UserInfo
+      :allQuickCommandsLength="allQuickCommandsLength"
+      :allFeaturesLength="allFeaturesLength"
+    />
     <!-- 菜单 -->
     <q-list>
       <!-- 导入 -->
@@ -173,7 +176,7 @@
     </q-dialog>
     <!-- 面板视图弹窗 -->
     <q-dialog v-model="showPanelConf">
-      <PanelSetting />
+      <PanelSetting :isTagStared="isTagStared" />
     </q-dialog>
   </q-menu>
 </template>
@@ -193,16 +196,22 @@ export default {
   },
   data() {
     return {
-      configurationPage: this.$root.$refs.configuration,
       setCssVar: setCssVar,
       selectFile: ref(null),
       showAbout: false,
       showPanelConf: false,
-      panelConf: {
-        name: "",
-        description: "",
-      },
     };
+  },
+  computed: {
+    configurationPage() {
+      return this.$root.$refs.view;
+    },
+    allQuickCommandsLength() {
+      return Object.keys(this.configurationPage.allQuickCommands).length;
+    },
+    allFeaturesLength() {
+      return this.configurationPage.activatedQuickCommandFeatureCodes.length;
+    },
   },
   mounted() {
     window.configurationMenu = this;

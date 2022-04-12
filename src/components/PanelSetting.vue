@@ -11,3 +11,16 @@
     </q-card-actions>
   </q-card>
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      panelConf: {
+        name: "",
+        description: "",
+      },
+    };
+  },
+};
+</script>

@@ -1,6 +1,6 @@
 <template>
   <router-view v-slot="{ Component }">
-    <component :ref="$route.name" :is="Component" />
+    <component ref="view" :is="Component" />
   </router-view>
 </template>
 

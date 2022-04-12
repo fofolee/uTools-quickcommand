@@ -478,8 +478,8 @@ export default {
         });
       let stringifyCommands = JSON.stringify(commandsToExport);
       if (saveAsFile) {
-        window.saveFile(stringifyCommands, options);
-        quickcommand.showMessageBox("导出成功！");
+        window.saveFile(stringifyCommands, options) &&
+          quickcommand.showMessageBox("导出成功！");
       } else {
         utools.copyText(stringifyCommands);
       }
