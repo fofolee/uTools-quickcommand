@@ -163,8 +163,6 @@
             <q-btn color="primary" flat size="xs"
               ><q-spinner-bars color="primary" size="1.5em" />
               <ConfigurationMenu
-                :allQuickcommandsLength="Object.keys(allQuickCommands).length"
-                :allFeaturesLength="activatedQuickCommandFeatureCodes.length"
                 :isTagStared="activatedQuickPanels.includes(currentTag)"
               ></ConfigurationMenu>
             </q-btn>
