@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="!fromUtools">
-      <q-dialog v-model="isResultShow" @hide="runResult = ''" position="bottom">
+      <q-dialog v-model="isResultShow" position="bottom" @hide="stopRun">
         <q-card style="width: 90vh">
           <q-toolbar>
             <q-avatar>
@@ -23,13 +23,7 @@
             ></div>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn
-              flat
-              label="关闭"
-              color="primary"
-              v-close-popup
-              @click="stopRun"
-            />
+            <q-btn flat label="关闭" color="primary" v-close-popup />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -206,6 +200,7 @@ export default {
         });
     },
     stopRun() {
+      this.runResult = "";
       if (window.temporaryStore.listeners.subInputListener) {
         this.subInputValue = "";
         utools.removeSubInput();
