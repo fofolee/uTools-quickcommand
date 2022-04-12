@@ -125,8 +125,7 @@
               icon="play_arrow"
               label="运行"
               @click="runCurrentCommand()"
-              ><q-tooltip>{{ commandString }}+b</q-tooltip></q-btn
-            >
+            ></q-btn>
             <q-btn
               flat
               dense
@@ -136,8 +135,7 @@
               icon="save"
               label="保存"
               @click="saveCurrentCommand()"
-              ><q-tooltip>{{ commandString }}+s</q-tooltip></q-btn
-            >
+            ></q-btn>
           </q-btn-group>
         </div>
       </div>
@@ -186,7 +184,6 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
-      commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
     };
   },
   props: {
@@ -213,7 +210,6 @@ export default {
   methods: {
     init() {
       window.commandEditor = this;
-      this.bindKeys();
       let quickCommandInfo =
         this.action.type === "run"
           ? this.$utools.getDB(this.$utools.DBPRE.CFG + "preferences")
@@ -229,14 +225,6 @@ export default {
       }
       if (this.action.type === "run")
         this.$profile.codeHistory = this.quickcommandInfo;
-    },
-    // 绑定快捷键
-    bindKeys() {
-      let that = this;
-      // ctrl+b 运行
-      this.$refs.editor.addEditorCommand(2048 | 32, function () {
-        that.runCurrentCommand();
-      });
     },
     programChanged(value) {
       this.setLanguage(value);
@@ -339,7 +327,7 @@ export default {
     },
     // 保存
     saveCurrentCommand() {
-      let updatedData = this.$refs.sidebar.SaveMenuData();
+      let updatedData = this.$refs.sidebar?.SaveMenuData();
       if (!updatedData) return;
       Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
       let newQuickcommandInfo = _.cloneDeep(this.quickcommandInfo);

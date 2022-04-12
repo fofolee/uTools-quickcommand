@@ -21,6 +21,8 @@ export default {
   data() {
     return {
       editor: null,
+      wordWrap: "off",
+      commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
     };
   },
   mounted() {
@@ -54,6 +56,7 @@ export default {
       this.registerLanguage();
       this.setEditorTheme();
       this.listenEditroValue();
+      this.bindKeys();
     },
     loadTypes() {
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -154,9 +157,6 @@ export default {
     setEditorLanguage(language) {
       monaco.editor.setModelLanguage(this.rawEditor.getModel(), language);
     },
-    addEditorCommand(key, callback) {
-      this.rawEditor.addCommand(key, callback);
-    },
     repacleEditorSelection(text) {
       var selection = this.rawEditor.getSelection();
       var range = new monaco.Range(
@@ -181,6 +181,28 @@ export default {
       this.rawEditor.onDidChangeModelContent(() => {
         this.$parent.quickcommandInfo.cmd = this.getEditorValue();
       });
+    },
+    bindKeys() {
+      let that = this;
+      // ctrl + b 运行
+      this.rawEditor.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
+        () => {
+          that.$parent.runCurrentCommand();
+        }
+      );
+      // alt + z 换行
+      this.rawEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
+        that.wordWrap = that.wordWrap === "off" ? "on" : "off";
+        that.rawEditor.updateOptions({ wordWrap: that.wordWrap });
+      });
+      // ctrl + s 保存
+      this.rawEditor.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+        () => {
+          that.$parent.saveCurrentCommand();
+        }
+      );
     },
   },
 };
