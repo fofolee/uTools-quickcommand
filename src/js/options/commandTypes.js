@@ -130,7 +130,7 @@ const commandTypes = {
         }],
         verify: rules => true,
         tempPayload: () => window.getBase64Ico(utools.showOpenDialog({
-            title: "需要处理的文件",
+            title: "需要处理的图片",
             filters: [{
                 name: 'Images',
                 extensions: ['png',

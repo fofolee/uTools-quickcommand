@@ -60,8 +60,8 @@ export default {
   props: {
     /**
      * run：    「RunCode界面」 无侧栏，运行结果弹窗显示，保存命令历史
-     * edit：   「编辑命令界面』 有侧栏，运行结果弹窗显示
-     * new：    『新建命令界面」 有侧栏，运行结果弹窗显示
+     * edit：   「编辑命令界面』 有侧栏，运行结果弹窗显示，需要对payload临时赋值
+     * new：    『新建命令界面」 有侧栏，运行结果弹窗显示，需要对payload临时赋值
      * config： 「配置界面』    运行结果弹窗显示，需要对payload临时赋值
      * input：  『主输入框进入」 运行结果直接展示，动态调整窗体高度
      */
@@ -75,7 +75,7 @@ export default {
       return this.action.type === "input";
     },
     needTempPayload() {
-      return this.action.type === "config";
+      return ["edit", "new", "config"].includes(this.action.type);
     },
   },
   methods: {
@@ -161,11 +161,11 @@ export default {
     // payload 临时赋值
     async getTempPayload(currentCommand) {
       if (!this.needTempPayload) return;
-      let cmd = currentCommand.features.cmds[0];
-      let type = cmd.type;
+      let type =
+        currentCommand.cmdType || currentCommand.features?.cmds[0].type;
       quickcommand.enterData = {
-        type: cmd.type || "text",
-        payload: (await commandTypes[type]?.tempPayload?.()) || cmd,
+        type: type || "text",
+        payload: await commandTypes[type]?.tempPayload?.(),
       };
     },
     // 显示运行结果

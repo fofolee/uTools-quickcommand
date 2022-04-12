@@ -353,10 +353,10 @@ export default {
     },
     // 运行
     runCurrentCommand() {
-      // 如果 action 是 run 则输出一律为 text
-      this.quickcommandInfo.output =
-        this.$refs.menu?.currentCommand.output || "text";
-      this.$refs.result.runCurrentCommand(_.cloneDeep(this.quickcommandInfo));
+      let command = _.cloneDeep(this.quickcommandInfo);
+      command.output = this.$refs.menu?.currentCommand.output || "text";
+      command.cmdType = this.$refs.menu?.cmdType.name;
+      this.$refs.result.runCurrentCommand(command);
     },
   },
 };
