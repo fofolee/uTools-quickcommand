@@ -249,10 +249,5 @@ export default {
   margin-left: 0.5rem;
   padding-left: 0.25rem;
   padding-right: 0.25rem;
-  transition-property: background-color, border-color, color, fill, stroke,
-    opacity, box-shadow, -webkit-box-shadow, transform, -webkit-transform,
-    filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
 }
 </style>
