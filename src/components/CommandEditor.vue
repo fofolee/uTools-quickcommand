@@ -117,7 +117,6 @@
               ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
             >
             <q-separator vertical inset />
-
             <q-btn
               dense
               flat
@@ -140,39 +139,28 @@
         </div>
       </div>
     </div>
-    <MonocaEditor
+    <MonacoEditor
       class="absolute-bottom"
       ref="editor"
+      @typing="(val) => (quickcommandInfo.cmd = val)"
       :style="{
         top: languageBarHeight + 'px',
-        left: editorLeft,
+        left: this.action.type === 'run' ? 0 : this.sideBarWidth + 'px',
         transition: '0.3s',
       }"
     />
-    <div
-      class="absolute-bottom flex justify-center content-center"
-      :style="{
-        top: languageBarHeight + 'px',
-        left: editorLeft,
-        userSelect: 'none',
-      }"
-    >
-      ctrl + s 保存 <br />
-      ctrl + b 运行 <br />
-      alt + z 自动换行
-    </div>
     <!-- 运行结果 -->
     <CommandRunResult :action="action" ref="result"></CommandRunResult>
   </div>
 </template>
 
 <script>
-import MonocaEditor from "components/MonocaEditor";
+import MonacoEditor from "components/MonacoEditor";
 import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 
 export default {
-  components: { MonocaEditor, CommandSideBar, CommandRunResult },
+  components: { MonacoEditor, CommandSideBar, CommandRunResult },
   data() {
     return {
       programLanguages: Object.keys(this.$programmings),
@@ -217,9 +205,6 @@ export default {
         "搜索结果"
       );
     },
-    editorLeft() {
-      return this.action.type === "run" ? "0" : this.sideBarWidth + "px";
-    },
   },
   created() {},
   methods: {
@@ -231,7 +216,7 @@ export default {
               ?.codeHistory
           : this.action.data;
       _.merge(this.quickcommandInfo, quickCommandInfo);
-      // monoca 相关
+      // monaco 相关
       this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
       // 默认命令不可编辑

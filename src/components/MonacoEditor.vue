@@ -1,5 +1,16 @@
 <template>
-  <div id="monocaEditor"></div>
+  <div>
+    <div id="monacoEditor" style="width: 100%; height: 100%"></div>
+    <div class="absolute-center flex" v-show="!value">
+      <div class="placeholder text-center q-gutter-md">
+        <div v-for="shortCut in shortCuts" :key="shortCut">
+          <span>{{ shortCut[0] }}</span
+          ><span class="shortcut-key">{{ shortCut[1] }}</span
+          ><span class="shortcut-key">{{ shortCut[2] }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -17,12 +28,20 @@ let languageCompletions = importAll(
   require.context("../plugins/monaco/completions/", false, /\.js$/)
 );
 
+let cmdCtrlKey = utools.isMacOs() ? "⌘" : "Ctrl";
+let optAltKey = utools.isMacOs() ? "⌥" : "Alt";
+
 export default {
   data() {
     return {
       editor: null,
+      value: null,
       wordWrap: "off",
-      commandString: this.$q.platform.is.mac ? "⌘" : "ctrl",
+      shortCuts: [
+        ["保存", cmdCtrlKey, "S"],
+        ["运行", cmdCtrlKey, "B"],
+        ["换行", optAltKey, "Z"],
+      ],
     };
   },
   mounted() {
@@ -49,13 +68,13 @@ export default {
         },
       };
       this.editor = monaco.editor.create(
-        document.getElementById("monocaEditor"),
+        document.getElementById("monacoEditor"),
         monacoEditorPreferences
       );
       this.loadTypes();
       this.registerLanguage();
       this.setEditorTheme();
-      this.listenEditroValue();
+      this.listenEditorValue();
       this.bindKeys();
     },
     loadTypes() {
@@ -177,9 +196,11 @@ export default {
     destoryEditor() {
       this.rawEditor.dispose();
     },
-    listenEditroValue() {
+    listenEditorValue() {
+      this.rawEditor.focus();
       this.rawEditor.onDidChangeModelContent(() => {
-        this.$parent.quickcommandInfo.cmd = this.getEditorValue();
+        this.value = this.getEditorValue();
+        this.$emit("typing", this.value);
       });
     },
     bindKeys() {
@@ -207,3 +228,24 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.placeholder {
+  font-size: 12px;
+  font-family: sans-serif;
+  color: #a3a3a3;
+  user-select: none;
+}
+.shortcut-key {
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, -webkit-box-shadow, transform, -webkit-transform,
+    filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+</style>
