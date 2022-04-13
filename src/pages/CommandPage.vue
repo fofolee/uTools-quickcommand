@@ -19,7 +19,6 @@ export default {
     };
   },
   mounted() {
-    window.commandPage = this;
     this.runCurrentCommand();
   },
   computed: {

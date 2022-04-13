@@ -76,7 +76,6 @@ export default {
     };
   },
   mounted() {
-    window.SelectList = this;
     window.temporaryStore.updateSelectList = (opt, id) => {
       if (typeof id === "undefined") this.items.push(opt);
       else this.items[id] = opt;

@@ -176,6 +176,13 @@ export default {
     setEditorLanguage(language) {
       monaco.editor.setModelLanguage(this.rawEditor.getModel(), language);
     },
+    getCursorPosition() {
+      return this.rawEditor.getPosition();
+    },
+    setCursorPosition(pos) {
+      if (!pos) return;
+      this.rawEditor.setPosition(pos);
+    },
     repacleEditorSelection(text) {
       var selection = this.rawEditor.getSelection();
       var range = new monaco.Range(

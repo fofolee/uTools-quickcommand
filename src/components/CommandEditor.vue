@@ -209,22 +209,20 @@ export default {
   created() {},
   methods: {
     init() {
-      window.commandEditor = this;
       let quickCommandInfo =
-        this.action.type === "run"
+        this.action.type !== "edit"
           ? this.$utools.getDB(this.$utools.DBPRE.CFG + "preferences")
-              ?.codeHistory
+              ?.codeHistory[this.action.type]
           : this.action.data;
       _.merge(this.quickcommandInfo, quickCommandInfo);
       // monaco 相关
       this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
+      this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition)
       // 默认命令不可编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
-      if (this.action.type === "run")
-        this.$profile.codeHistory = this.quickcommandInfo;
     },
     programChanged(value) {
       this.setLanguage(value);

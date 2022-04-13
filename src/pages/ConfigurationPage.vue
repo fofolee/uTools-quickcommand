@@ -181,6 +181,7 @@
     >
       <q-card>
         <CommandEditor
+          ref="commandEditor"
           :action="commandEditorAction"
           @editorEvent="editorEvent"
         ></CommandEditor>
@@ -303,7 +304,6 @@ export default {
   methods: {
     // 初始化
     initPage() {
-      window.configuration = this;
       // 已启用的 features
       let activatedFeatures = this.getActivatedFeatures();
       // 已启用的命令的 featureCode

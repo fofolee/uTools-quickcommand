@@ -21,6 +21,7 @@ export default defineComponent({
   },
   methods: {
     init() {
+      window.root = this;
       window.utools = window.getuToolsLite();
       // 版本检测
       const requiredVersion = "2.6.1";
@@ -44,16 +45,25 @@ export default defineComponent({
       });
       // 退出插件
       utools.onPluginOut(() => {
+        // 保存偏好
+        this.saveProfile();
         // 切到空路由
         this.$router.push("loading");
         // 清空临时数据
         window.temporaryStoreSoldOut();
-        // 保存偏好
-        this.$utools.putDB(
-          _.cloneDeep(this.$profile),
-          this.$utools.DBPRE.CFG + "preferences"
-        );
       });
+    },
+    saveProfile() {
+      let commandEditor = this.$refs.view.$refs.commandEditor;
+      if (commandEditor && commandEditor.action.type !== "edit") {
+        let command = _.cloneDeep(commandEditor.quickcommandInfo);
+        command.cursorPosition = commandEditor.$refs.editor.getCursorPosition();
+        this.$profile.codeHistory[commandEditor.action.type] = command;
+      }
+      this.$utools.putDB(
+        _.cloneDeep(this.$profile),
+        this.$utools.DBPRE.CFG + "preferences"
+      );
     },
   },
 });

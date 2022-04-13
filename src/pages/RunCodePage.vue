@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CommandEditor :action="action"></CommandEditor>
+    <CommandEditor ref="commandEditor" :action="action"></CommandEditor>
   </div>
 </template>
 

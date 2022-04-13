@@ -213,9 +213,6 @@ export default {
       return this.configurationPage.activatedQuickCommandFeatureCodes.length;
     },
   },
-  mounted() {
-    window.configurationMenu = this;
-  },
   props: {
     isTagStared: Boolean,
     currentTag: String,

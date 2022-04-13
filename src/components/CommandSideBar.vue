@@ -275,9 +275,6 @@ export default {
     quickcommandInfo: Object,
     canCommandSave: Boolean,
   },
-  mounted() {
-    window.CommandSideBar = this;
-  },
   computed: {
     specialVarsOptions() {
       let x = Object.values(specialVars).filter(

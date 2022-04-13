@@ -67,9 +67,6 @@ export default {
      */
     action: Object,
   },
-  mounted() {
-    window.runResult = this;
-  },
   computed: {
     fromUtools() {
       return this.action.type === "input";
