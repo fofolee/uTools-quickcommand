@@ -18,7 +18,7 @@
           :name="tag"
           :content-class="
             tag === '搜索结果' || activatedQuickPanels.includes(tag)
-              ? 'text-indigo-10 text-weight-bolder'
+              ? 'text-blue-7 text-weight-bolder'
               : ''
           "
           v-show="!(tag === '搜索结果' && commandSearchKeyword?.length < 2)"

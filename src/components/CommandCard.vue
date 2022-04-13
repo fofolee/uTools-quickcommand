@@ -310,7 +310,7 @@ export default {
     toggleCommandActivated() {
       let event = {
         data: this.commandInfo.features.code,
-        type:"toggle"
+        type: "toggle",
       };
       event.type = this.isCommandActivated ? "disable" : "enable";
       this.$emit("commandChanged", event);
@@ -327,16 +327,21 @@ export default {
         });
       });
     },
+    getAuthedCmd() {
+      let command = _.cloneDeep(this.commandInfo);
+      if (!command.authorName) command.authorName = utools.getUser().nickname;
+      return command;
+    },
     // 导出到剪贴板
     exportCommandRaw() {
-      utools.copyText(JSON.stringify(this.commandInfo, null, 4)) &&
+      utools.copyText(JSON.stringify(this.getAuthedCmd(), null, 4)) &&
         quickcommand.showMessageBox("已复制到剪贴板");
     },
     // 导出到文件
     exportCommandFile() {
-      window.saveFile(JSON.stringify(this.commandInfo), {
+      window.saveFile(JSON.stringify(this.getAuthedCmd()), {
         title: "选择保存位置",
-        defaultPath: `${this.commandInfo.features.explain}.json`,
+        defaultPath: `${this.getAuthedCmd().features.explain}.json`,
         filters: [{ name: "json", extensions: ["json"] }],
       });
     },
