@@ -411,6 +411,8 @@ export default {
     },
     // 编辑命令
     editCommand(command) {
+      // 即可传入 code，也可直接传入 command
+      if (typeof command === "string") command = this.allQuickCommands[command];
       this.commandEditorAction = {
         type: "edit",
         data: _.cloneDeep(command),

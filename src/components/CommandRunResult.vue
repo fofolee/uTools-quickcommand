@@ -99,7 +99,7 @@ export default {
       if (currentCommand.program === "quickcommand") {
         window.runCodeInVm(currentCommand.cmd, (stdout, stderr) => {
           if (stderr) return this.showRunResult(stderr, false, action);
-          this.showRunResult(stdout, true, action);
+          !outPlugin && this.showRunResult(stdout, true, action);
         });
       } else {
         let option = this.$programmings[currentCommand.program];
@@ -113,7 +113,7 @@ export default {
           currentCommand.output === "terminal",
           (stdout, stderr) => {
             if (stderr) return this.showRunResult(stderr, false, action);
-            this.showRunResult(stdout, true, action);
+            !outPlugin && this.showRunResult(stdout, true, action);
           }
         );
       }

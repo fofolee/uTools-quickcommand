@@ -294,7 +294,7 @@ export default {
     editCommand() {
       let event = {
         type: "edit",
-        data: this.commandInfo,
+        data: this.commandInfo.features.code,
       };
       this.$emit("commandChanged", event);
     },
