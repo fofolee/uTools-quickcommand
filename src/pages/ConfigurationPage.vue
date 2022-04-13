@@ -13,13 +13,13 @@
       <q-tabs v-model="currentTag" vertical outside-arrows class="text-primary">
         <!-- 所有标签 -->
         <q-tab
-          :alert="activatedQuickPanels.includes(tag)"
-          alert-icon="star"
           v-for="tag in allQuickCommandTags"
           :key="tag"
           :name="tag"
           :content-class="
-            tag === '搜索结果' ? 'text-blue-9 text-weight-bold' : ''
+            tag === '搜索结果' || activatedQuickPanels.includes(tag)
+              ? 'text-indigo-10 text-weight-bolder'
+              : ''
           "
           v-show="!(tag === '搜索结果' && commandSearchKeyword?.length < 2)"
         >
