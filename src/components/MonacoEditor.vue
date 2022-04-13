@@ -37,6 +37,7 @@ export default {
       editor: null,
       value: null,
       wordWrap: "off",
+      shortCutKeyBg: this.$q.dark.isActive ? "#262626" : "#f3f4f6",
       shortCuts: [
         ["保存", cmdCtrlKey, "S"],
         ["运行", cmdCtrlKey, "B"],
@@ -244,7 +245,7 @@ export default {
   user-select: none;
 }
 .shortcut-key {
-  background-color: #f3f4f6;
+  background-color: v-bind(shortCutKeyBg);
   border-radius: 0.25rem;
   margin-left: 0.5rem;
   padding-left: 0.25rem;
