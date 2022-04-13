@@ -176,7 +176,7 @@
       v-model="isCommandEditorShow"
       persistent
       :maximized="maximizedToggle"
-      transition-show="slide-up"
+      :transition-show="newCommandDirect ? '' : 'slide-up'"
       transition-hide="slide-down"
     >
       <q-card>
@@ -297,6 +297,9 @@ export default {
     tabBarWidth() {
       return this.commandCardStyle === "mini" ? "0" : "80px";
     },
+    newCommandDirect() {
+      return this.$route.name === "newcommand";
+    },
   },
   mounted() {
     this.initPage();
@@ -304,6 +307,12 @@ export default {
   methods: {
     // 初始化
     initPage() {
+      // 如果从 newcommand 进入则直接新建命令
+      if (this.newCommandDirect) {
+        if (quickcommand.enterData.type === "text") this.addNewCommand();
+        else this.editCommand(JSON.parse(quickcommand.enterData.payload));
+        this.$router.push("/configuration");
+      }
       // 已启用的 features
       let activatedFeatures = this.getActivatedFeatures();
       // 已启用的命令的 featureCode
@@ -401,10 +410,10 @@ export default {
       );
     },
     // 编辑命令
-    editCommand(code) {
+    editCommand(command) {
       this.commandEditorAction = {
         type: "edit",
-        data: this.allQuickCommands[code],
+        data: _.cloneDeep(command),
       };
       this.isCommandEditorShow = true;
     },
