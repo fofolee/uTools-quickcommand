@@ -218,7 +218,7 @@
             transition-hide="jump-up"
             borderless
             square
-            :options="['win32', 'linux', 'darwin']"
+            :options="Object.keys(platformTypes)"
             use-chips
             @blur="platformVerify()"
             v-model="currentCommand.features.platform"
@@ -227,6 +227,28 @@
           >
             <template v-slot:prepend>
               <q-icon color="primary" name="window" />
+            </template>
+            <template v-slot:selected-item="scope">
+              <q-chip
+                removable
+                dense
+                @remove="scope.removeAtIndex(scope.index)"
+                :tabindex="scope.tabindex"
+              >
+                {{ platformTypes[scope.opt].label }}
+              </q-chip>
+            </template>
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section avatar>
+                  <span
+                    :class="`iconfont icon-${platformTypes[scope.opt].icon}`"
+                  ></span>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label v-html="platformTypes[scope.opt].label" />
+                </q-item-section>
+              </q-item>
             </template>
           </q-select>
         </div>
@@ -244,6 +266,7 @@
 import commandTypes from "../js/options/commandTypes.js";
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
+import platformTypes from "../js/options/platformTypes.js";
 import iconPicker from "components/IconPicker.vue";
 let commandTypesOptions = Object.values(commandTypes);
 
@@ -261,6 +284,7 @@ export default {
         },
       },
       commandTypes: commandTypes,
+      platformTypes: platformTypes,
       commandTypesOptions: commandTypesOptions,
       currentMatchType: "关键字",
       cmdType: commandTypesOptions[0],
@@ -293,9 +317,9 @@ export default {
       let currentQuickCommandCmds = this.getCommandType();
       this.cmdType = this.commandTypes[currentQuickCommandCmds.type];
       this.cmdMatch = currentQuickCommandCmds.match;
-      _.merge(
+      Object.assign(
         this.currentCommand,
-        _.pick(this.quickcommandInfo, "tags", "output", "features")
+        _.cloneDeep(_.pick(this.quickcommandInfo, "tags", "output", "features"))
       );
       this.setIcon(this.quickcommandInfo.program);
       this.platformVerify();
@@ -326,7 +350,7 @@ export default {
     // 平台为空自动补充
     platformVerify() {
       this.currentCommand.features.platform?.length > 0 ||
-        this.currentCommand.features.platform.push(window.processPlatform);
+        (this.currentCommand.features.platform = [window.processPlatform]);
     },
     // 正则不和规则自动加斜杠
     regexVerify() {

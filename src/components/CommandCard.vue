@@ -77,9 +77,9 @@
       <q-card
         @click="handleCardClick"
         v-ripple
+        :class="{ [`text-${disabledColor}`]: !isCommandActivated }"
         :style="{
-          color: isCommandActivated ? 'unset' : 'grey',
-          background: $q.dark.isActive ? '#ffffff08' : '#00000008',
+          background: cardBgColor,
         }"
       >
         <q-card-section>
@@ -183,20 +183,17 @@
             class="row justify-end items-center q-gutter-xs"
             v-show="cardStyleVars.showLanguages"
           >
-            <span :style="'color:' + allProgrammings[commandInfo.program].color"
-              >●</span
-            >
+            <span :class="`text-${programColor}`">●</span>
             <span class="text-subtitle2">{{ commandInfo.program }}</span>
             <!-- mini 和 small 模式下不显示适配系统 -->
             <!-- 适配系统 -->
-            <div class="flex" v-show="cardStyleVars.showPlatforms">
-              |&nbsp;
-              <img
-                width="16"
+            <div class="q-gutter-xs" v-show="cardStyleVars.showPlatforms">
+              <span
                 v-for="platform in commandInfo.features.platform"
                 :key="platform"
-                :src="'/img/' + platform + '.svg'"
-              />
+                :class="`iconfont icon-${platformTypes[platform].icon} text-${programColor}`"
+                style="font-size: 12px"
+              ></span>
             </div>
           </div>
         </q-card-section>
@@ -207,6 +204,7 @@
 
 <script>
 import commandTypes from "../js/options/commandTypes.js";
+import platformTypes from "../js/options/platformTypes.js";
 
 export default {
   data() {
@@ -214,6 +212,7 @@ export default {
       allProgrammings: this.$programmings,
       maxCmdStingLen: 8,
       commandTypes: commandTypes,
+      platformTypes: platformTypes,
     };
   },
   computed: {
@@ -250,10 +249,21 @@ export default {
     // 匹配类型的颜色
     matchTypeColor() {
       return (cmdType = "key") => {
-        if (!this.isCommandActivated)
-          return this.$q.dark.isActive ? "grey-9" : "grey-5";
-        return this.commandTypes[cmdType].color;
+        return this.isCommandActivated
+          ? this.commandTypes[cmdType].color
+          : this.disabledColor;
       };
+    },
+    programColor() {
+      return this.isCommandActivated
+        ? this.allProgrammings[this.commandInfo.program].color
+        : this.disabledColor;
+    },
+    disabledColor() {
+      return this.$q.dark.isActive ? "grey-9" : "grey-5";
+    },
+    cardBgColor() {
+      return this.$q.dark.isActive ? "#ffffff08" : "#00000008";
     },
   },
   props: {

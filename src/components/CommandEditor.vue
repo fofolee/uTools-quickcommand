@@ -214,11 +214,11 @@ export default {
           ? this.$utools.getDB(this.$utools.DBPRE.CFG + "preferences")
               ?.codeHistory[this.action.type]
           : this.action.data;
-      _.merge(this.quickcommandInfo, quickCommandInfo);
+      Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
       // monaco 相关
       this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
-      this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition)
+      this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition);
       // 默认命令不可编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
