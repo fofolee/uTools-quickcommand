@@ -160,6 +160,7 @@
 ```sh
 npm i -g @quasar/cli
 cd uTools-quickcommand
+npm i && cd plugin && npm i && cd ..
 # Mac && Linux
 ./build.sh
 # Windows
