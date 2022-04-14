@@ -40,8 +40,12 @@ const routes = [{
         name: 'loading',
         component: () =>
             import ('pages/LoadingPage.vue')
+    }, {
+        path: '/share',
+        name: 'share',
+        component: () =>
+            import ('pages/ShareCenterPage.vue')
     }
-
 ]
 
 export default routes

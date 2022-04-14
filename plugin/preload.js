@@ -12,6 +12,10 @@ const axios = require('axios');
 const pictureCompress = require("./lib/picture-compressor")
 
 window._ = require("lodash")
+window.fetchGitee = async path => {
+    let res = await axios('https://gitee.com/api/v5/repos/fofolee/qcshares' + path)
+    return res.data
+}
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
@@ -212,22 +216,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
-    if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-        // 直接 existsSync wt.exe 无效
-        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        let cd = ''
+        if (utools.isWindows()) {
+            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+                // 直接 existsSync wt.exe 无效
+            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
+                cmdline = cmdline.replace(/"/g, `\\"`)
+                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            } else {
+                cmdline = cmdline.replace(/"/g, `^"`)
+                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+                command = `${cd} start "" cmd /k "${cmdline}"`
+            }
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
-        }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            cmdline = cmdline.replace(/"/g, `\\"`)
+            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -413,6 +417,8 @@ window.htmlEncode = (value) => {
 
 window.hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
 window.hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
+window.base64Decode = text => Buffer.from(text, 'base64').toString('utf8')
+
 
 window.processPlatform = process.platform
 

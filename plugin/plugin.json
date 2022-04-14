@@ -9,32 +9,49 @@
         "main": "http://127.0.0.1:8080/"
     },
     "author": "云之轩",
-    "unpack":"autopep8.py",
+    "unpack": "autopep8.py",
     "logo": "logo.png",
     "preload": "preload.js",
     "pluginSetting": {
         "single": false
     },
-    "features": [
-        {
+    "features": [{
             "code": "configuration",
-            "explain": "新建、编辑或获取快捷命令",
-            "cmds": [ "快捷命令", "QuickCommand"]
+            "explain": "创建或编辑快捷命令",
+            "cmds": [
+                "快捷命令",
+                "QuickCommand"
+            ]
         },
         {
             "code": "code",
             "explain": "运行代码",
-            "cmds": [ "运行代码", "RunCode"]
+            "cmds": [
+                "运行代码",
+                "RunCode"
+            ]
         },
         {
             "code": "newcommand",
             "explain": "快速新建快捷命令",
-            "cmds": [ "新建快捷命令", "NewCommand", {
-                "type": "regex",
-                "label": "新建快捷命令",
-                "match": "/^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$/i",
-                "maxNum": 1
-            }]
+            "cmds": [
+                "新建快捷命令",
+                "NewCommand",
+                {
+                    "type": "regex",
+                    "label": "新建快捷命令",
+                    "match": "/^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$/i",
+                    "maxNum": 1
+                }
+            ]
+        },
+        {
+            "code": "share",
+            "explain": "查看分享中心的快捷命令",
+            "cmds": [
+                "分享中心",
+                "ShareCenter"
+            ]
         }
     ]
 }
