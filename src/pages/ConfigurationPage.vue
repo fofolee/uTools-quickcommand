@@ -8,6 +8,7 @@
       :style="{
         width: tabBarWidth,
         zIndex: 1,
+        overflow: 'hidden',
       }"
     >
       <q-tabs v-model="currentTag" vertical outside-arrows class="text-primary">
