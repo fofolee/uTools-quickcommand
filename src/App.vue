@@ -13,7 +13,8 @@ export default defineComponent({
   data() {
     return {
       setCssVar: setCssVar,
-    };
+
+};
   },
   computed: {},
   created: function () {
@@ -86,5 +87,20 @@ export default defineComponent({
   transition: 0.5s;
   transform: translateY(-5px);
   filter: drop-shadow(2px 1px 5px grey);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: rgba(194, 194, 194, 0.4);
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
 </style>
