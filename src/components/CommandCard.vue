@@ -107,7 +107,7 @@
             >
               <span v-for="cmd in commandInfo.features.cmds" :key="cmd">
                 <span v-if="typeof cmd === 'string'">
-                  <q-badge rounded :color="cmdBadgeColor()"
+                  <q-badge rounded :color="matchTypeColor()"
                     ><q-icon class="q-mr-xs" :name="commandTypes.key.icon" />{{
                       getShortStrByByte(cmd)
                     }}</q-badge
@@ -119,7 +119,7 @@
                   </q-tooltip>
                 </span>
                 <span v-else-if="cmd.type === 'window' && cmd.match">
-                  <q-badge rounded :color="cmdBadgeColor(cmd.type)"
+                  <q-badge rounded :color="matchTypeColor(cmd.type)"
                     ><q-icon
                       class="q-mr-xs"
                       :name="commandTypes.window.icon"
@@ -136,7 +136,7 @@
                   </q-tooltip>
                 </span>
                 <span v-else-if="cmd.type === 'files'">
-                  <q-badge rounded :color="cmdBadgeColor(cmd.type)"
+                  <q-badge rounded :color="matchTypeColor(cmd.type)"
                     ><q-icon class="q-mr-xs" :name="commandTypes.files.icon" />
                     {{
                       (cmd.match && getShortStrByByte(cmd.match)) || "所有文件"
@@ -149,7 +149,7 @@
                   </q-tooltip>
                 </span>
                 <span v-else-if="cmd.type === 'regex'">
-                  <q-badge rounded :color="cmdBadgeColor(cmd.type)"
+                  <q-badge rounded :color="matchTypeColor(cmd.type)"
                     ><q-icon
                       class="q-mr-xs"
                       :name="commandTypes.regex.icon"
@@ -162,7 +162,7 @@
                   </q-tooltip>
                 </span>
                 <span v-else-if="cmd.type === 'over'">
-                  <q-badge rounded :color="cmdBadgeColor(cmd.type)"
+                  <q-badge rounded :color="matchTypeColor(cmd.type)"
                     ><q-icon
                       class="q-mr-xs"
                       :name="commandTypes.over.icon"
@@ -170,7 +170,7 @@
                   </q-badge>
                 </span>
                 <span v-else-if="cmd.type === 'img'">
-                  <q-badge rounded :color="cmdBadgeColor(cmd.type)">
+                  <q-badge rounded :color="matchTypeColor(cmd.type)">
                     <q-icon class="q-mr-xs" :name="commandTypes.img.icon" />图片
                   </q-badge>
                 </span>
@@ -214,14 +214,6 @@ export default {
       allProgrammings: this.$programmings,
       maxCmdStingLen: 8,
       commandTypes: commandTypes,
-      cmdBadgeSheet: {
-        key: "primary",
-        files: "light-blue",
-        window: "indigo",
-        regex: "cyan",
-        over: "light-green",
-        img: "deep-orange",
-      },
     };
   },
   computed: {
@@ -256,11 +248,11 @@ export default {
       return this.commandInfo.tags?.includes("默认") ? false : true;
     },
     // 匹配类型的颜色
-    cmdBadgeColor() {
-      return (cmdType = "keyword") => {
+    matchTypeColor() {
+      return (cmdType = "key") => {
         if (!this.isCommandActivated)
           return this.$q.dark.isActive ? "grey-9" : "grey-5";
-        return this.cmdBadgeSheet[cmdType];
+        return this.commandTypes[cmdType].color;
       };
     },
   },

@@ -53,6 +53,7 @@ const commandTypes = {
         name: "key",
         label: "关键词",
         icon: "font_download",
+        color: "primary",
         matchLabel: "关键词",
         desc: "在主输入框输入对应关键字进入插件，最通用的一种模式，关键字可以设置多个",
         valueType: "array",
@@ -63,8 +64,9 @@ const commandTypes = {
     regex: {
         name: "regex",
         label: "正则/划词",
-        matchLabel: "正则",
         icon: "rule",
+        color: "cyan",
+        matchLabel: "正则",
         desc: "匹配主输入框或超级面板选中的文本，可以获取输入框文本或选中文本作为变量",
         valueType: "regex",
         disabledSpecialVars: /{{SelectFile}}|{{MatchImage}}|{{WindowInfo.*?}}|{{pwd}}|{{MatchedFiles.*?}}/g,
@@ -75,7 +77,7 @@ const commandTypes = {
             minNum: 1,
         }, ],
         verify: rules => !!rules > 0 || "正则不能为空",
-        tempPayload: async() => {
+        tempPayload: async () => {
             let values = await quickcommand.showInputBox(["需要处理的文本"])
             return values[0]
         }
@@ -85,6 +87,7 @@ const commandTypes = {
         label: "所有文本",
         matchLabel: "无需设置",
         icon: "emergency",
+        color: "light-green",
         desc: "匹配主输入框的所有文本，但只有在该文本未设置对应的插件或功能时才生效",
         valueType: null,
         disabledSpecialVars: /{{SelectFile}}|{{MatchImage}}|{{WindowInfo.*?}}|{{pwd}}|{{MatchedFiles.*?}}/g,
@@ -94,7 +97,7 @@ const commandTypes = {
             minNum: 1,
         }],
         verify: rules => true,
-        tempPayload: async() => {
+        tempPayload: async () => {
             let values = await quickcommand.showInputBox(["需要处理的文本"])
             return values[0]
         }
@@ -104,6 +107,7 @@ const commandTypes = {
         label: "窗口/进程",
         matchLabel: "进程名",
         icon: "widgets",
+        color: "indigo",
         desc: "匹配呼出uTools前或唤出超级面板时的活动窗口，可以获取窗口的信息或文件夹路径作为变量",
         valueType: "array",
         disabledSpecialVars: /{{input}}|{{MatchImage}}|{{MatchedFiles.*?}}/g,
@@ -121,6 +125,7 @@ const commandTypes = {
         label: "图片",
         matchLabel: "无需配置",
         icon: "panorama",
+        color: "deep-orange",
         desc: "匹配主输入框或超级面板选中的图片，并返回图片的 DataUrl",
         valueType: null,
         disabledSpecialVars: /{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}|{{MatchedFiles.*?}}/g,
@@ -147,6 +152,7 @@ const commandTypes = {
         label: "复制/选中文件",
         matchLabel: "正则",
         icon: "description",
+        color: "light-blue",
         desc: "匹配主输入框或超级面板选中的文件，可以获取复制及选中的文件信息作为变量",
         valueType: "regex",
         disabledSpecialVars: /{{input}}|{{MatchImage}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}/g,
