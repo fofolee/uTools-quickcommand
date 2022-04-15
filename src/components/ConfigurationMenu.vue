@@ -17,7 +17,7 @@
         <q-item-section side>
           <q-icon name="keyboard_arrow_left" />
         </q-item-section>
-        <q-item-section>导入</q-item-section>
+        <q-item-section>导入导出</q-item-section>
         <q-menu anchor="top end" self="top start">
           <q-list>
             <q-item clickable v-close-popup @click="importCommand">
@@ -31,6 +31,13 @@
                 <q-icon name="content_paste" />
               </q-item-section>
               <q-item-section>从剪贴板导入</q-item-section>
+            </q-item>
+            <!-- 导出 -->
+            <q-item clickable v-close-popup @click="exportAllCommands">
+              <q-item-section side>
+                <q-icon name="file_upload" />
+              </q-item-section>
+              <q-item-section>导出所有命令</q-item-section>
             </q-item>
           </q-list>
         </q-menu>
@@ -55,13 +62,6 @@
               </q-item-section>
               <q-item-section>禁用本页所有命令</q-item-section>
             </q-item>
-            <!-- 导出 -->
-            <q-item clickable v-close-popup @click="exportAllCommands">
-              <q-item-section side>
-                <q-icon name="file_upload" />
-              </q-item-section>
-              <q-item-section>导出所有命令</q-item-section>
-            </q-item>
             <!-- 清空 -->
             <q-item
               style="color: red"
@@ -82,7 +82,7 @@
         <q-item-section side>
           <q-icon name="keyboard_arrow_left" />
         </q-item-section>
-        <q-item-section>偏好设置</q-item-section>
+        <q-item-section>个性化设置</q-item-section>
         <q-menu anchor="top end" self="top start">
           <q-list>
             <q-item clickable>
@@ -142,6 +142,12 @@
             </q-item>
           </q-list>
         </q-menu>
+      </q-item>
+      <q-item clickable to="/share">
+        <q-item-section side>
+          <q-icon name="groups" />
+        </q-item-section>
+        <q-item-section>分享中心</q-item-section>
       </q-item>
       <!-- 收藏 -->
       <q-item v-if="isTagStared" clickable @click="unMarkTag">

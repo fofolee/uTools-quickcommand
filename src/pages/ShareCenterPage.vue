@@ -90,6 +90,16 @@
     >
       <q-pagination v-model="currentPage" :max="maxPages" input />
     </div>
+    <div class="absolute" :style="{ right: '25px', bottom: '12px' }">
+      <q-btn
+        color="primary"
+        flat
+        to="/configuration"
+        label="主配置界面"
+        icon="tune"
+      >
+      </q-btn>
+    </div>
   </div>
 </template>
 
