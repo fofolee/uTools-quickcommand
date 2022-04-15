@@ -1,6 +1,6 @@
 <template>
   <q-menu
-    max-height="450px"
+    max-height="480px"
     max-width="290px"
     transition-show="jump-up"
     transition-hide="jump-down"
@@ -77,6 +77,108 @@
           </q-list>
         </q-menu>
       </q-item>
+      <!-- 实用功能 -->
+      <q-item clickable>
+        <q-item-section side>
+          <q-icon name="keyboard_arrow_left" />
+        </q-item-section>
+        <q-item-section>实用功能</q-item-section>
+        <q-menu anchor="top end" self="top start">
+          <q-list>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="folder_special" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="快速收藏文件至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                autofocus
+                v-model="quickFeatures.favFile.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('favFile')"
+                    v-model="quickFeatures.favFile.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，选中文件可以通过超级面板快速将文件收藏到「{{
+                    quickFeatures.favFile.tag
+                  }}」标签
+                </q-tooltip>
+              </q-input>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="bookmarks" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="快速收藏网址至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                autofocus
+                v-model="quickFeatures.favUrl.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('favUrl')"
+                    v-model="quickFeatures.favUrl.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{
+                    quickFeatures.favUrl.tag
+                  }}」标签
+                </q-tooltip>
+              </q-input>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="drive_file_rename_outline" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="新建插件别名至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                autofocus
+                v-model="quickFeatures.pluNickName.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('pluNickName')"
+                    v-model="quickFeatures.pluNickName.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，在主输入框输入「插件别名」可以快速设置插件别名<br />
+                  并将所有设置的别名保存至「{{
+                    quickFeatures.pluNickName.tag
+                  }}」标签
+                </q-tooltip>
+              </q-input>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </q-item>
       <!-- 选项 -->
       <q-item clickable>
         <q-item-section side>
@@ -97,7 +199,7 @@
                     no-header
                     no-footer
                     @change="setPrimaryColor"
-                    v-model="$profile.primaryColor"
+                    v-model="primaryColor"
                   />
                   <q-btn
                     color="primary"
@@ -193,6 +295,7 @@ import { ref } from "vue";
 import AboutThis from "components/AboutThis";
 import PanelSetting from "components/PanelSetting";
 import UserInfo from "components/UserInfo";
+import features from "../js/options/quickFeatures.js";
 
 export default {
   components: {
@@ -206,6 +309,8 @@ export default {
       selectFile: ref(null),
       showAbout: false,
       showPanelConf: false,
+      quickFeatures: this.$profile.quickFeatures,
+      features: features,
     };
   },
   computed: {
@@ -250,23 +355,32 @@ export default {
         .querySelectorAll(".q-toggle[aria-checked='true']")
         .forEach((x) => x.click());
     },
+    // 设置主题色
     setPrimaryColor() {
       this.setCssVar("primary", this.$profile.primaryColor);
     },
+    // 重置主题色
     resetPrimary() {
       this.$profile.primaryColor = this.$profile.defaultPrimaryColor;
       this.setPrimaryColor();
     },
+    // 修改面板视图背景
     changeBackground(reset = false) {
       this.$profile.backgroundImg = reset ? null : this.selectFile.path;
       this.configurationPage.$forceUpdate();
     },
+    // 取消收藏
     unMarkTag() {
       this.$utools.whole.removeFeature(
         `panel_${window.hexEncode(this.currentTag)}`
       );
       _.pull(this.$root.$refs.view.activatedQuickPanels, this.currentTag);
       quickcommand.showMessageBox("取消收藏成功");
+    },
+    // 实用功能
+    toggleFeature(type) {
+      this.$utools.whole.removeFeature(this.features[type].code) ||
+        this.$utools.whole.setFeature(_.cloneDeep(this.features[type]));
     },
   },
 };

@@ -11,6 +11,20 @@ let defaultProfile = {
     defaultPrimaryColor: "#009688",
     backgroundImg: null,
     codeHistory: {},
+    quickFeatures: {
+        favFile: {
+            enable: false,
+            tag: "文件"
+        },
+        favUrl: {
+            enable: false,
+            tag: "网址"
+        },
+        pluNickName: {
+            enable: false,
+            tag: "别名"
+        },
+    }
 }
 let userProfile = UTOOLS.getDB(
     UTOOLS.DBPRE.CFG + "preferences"
@@ -19,7 +33,7 @@ Object.assign(defaultProfile, userProfile)
 
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files
-export default boot(async({
+export default boot(async ({
     app
 }) => {
     app.config.globalProperties.$utools = UTOOLS
