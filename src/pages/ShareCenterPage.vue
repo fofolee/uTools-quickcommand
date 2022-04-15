@@ -4,11 +4,8 @@
       <div
         style="width: 50%"
         class="q-pa-sm wrapper"
-        v-for="command in commands.slice(
-          (currentPage - 1) * perPage,
-          currentPage * perPage
-        )"
-        :key="command"
+        v-for="count in currentPageCounts"
+        :key="count"
       >
         <q-card
           class="my-card"
@@ -30,25 +27,31 @@
           <q-item v-else>
             <q-item-section avatar>
               <q-avatar square size="48px">
-                <q-img :src="command?.avatar" />
+                <q-img :src="commands[count - 1]?.features?.icon" />
               </q-avatar>
             </q-item-section>
             <q-item-section>
               <q-item-label class="text-h6" lines="1">{{
-                command?.title
+                commands[count - 1]?.features?.explain
               }}</q-item-label>
-              <q-item-label caption
-                ><q-icon name="account_circle"></q-icon>{{ command?.user }}
+              <q-item-label caption lines="1"
+                ><q-icon name="account_circle"></q-icon
+                >{{ commands[count - 1]?.authorName }}
                 <q-icon name="watch_later"></q-icon
-                >{{ command?.updateTime }}</q-item-label
+                >{{ commands[count - 1]?.updateTime }}</q-item-label
               >
               <q-item-label caption
                 ><q-icon name="fiber_manual_record"></q-icon
-                >{{ command?.program }}</q-item-label
+                >{{ commands[count - 1]?.program }}</q-item-label
               >
               <q-item-label caption>
                 <span
-                  v-for="tag in [command?.type, ...command?.tags]"
+                  v-for="tag in [
+                    commandTypes[
+                      commands[count - 1]?.features.cmds[0].type || 'key'
+                    ].label,
+                    ...commands[count - 1]?.tags,
+                  ]"
                   :key="tag"
                   class="tag"
                 >
@@ -58,13 +61,24 @@
             </q-item-section>
             <q-item-label side>
               <q-btn
-                @click="importCommand(command.slug)"
+                @click="importCommand(commands[count - 1])"
                 flat
                 dense
-                color="primary"
+                :color="
+                  !commands[count - 1]?.features.platform.includes(platform)
+                    ? 'grey'
+                    : 'primary'
+                "
                 icon="download"
                 label="导入"
-              ></q-btn>
+                ><q-tooltip
+                  v-if="
+                    !commands[count - 1]?.features.platform.includes(platform)
+                  "
+                >
+                  该命令不支持当前操作系统！但你仍可以导入它
+                </q-tooltip></q-btn
+              >
             </q-item-label>
           </q-item>
         </q-card>
@@ -80,63 +94,73 @@
 </template>
 
 <script>
+import commandTypes from "../js/options/commandTypes.js";
+
 export default {
   data() {
     return {
       currentPage: 1,
       commands: [],
+      allCommands: [],
       perPage: 8,
-      loading: true,
       releaseRepo: "fofolee/qcreleases",
       shareRepo: "fofolee/qcshares",
+      commandTypes: commandTypes,
+      platform: window.processPlatform,
     };
   },
   computed: {
     maxPages() {
-      return Math.ceil(this.commands.length / this.perPage) || 1;
+      return Math.ceil(this.allCommands.length / this.perPage) || 1;
+    },
+    loading() {
+      return this.commands.length === this.currentPageCounts ? false : true;
+    },
+    currentPageCounts() {
+      return this.currentPage === this.maxPages
+        ? this.allCommands.length % this.perPage
+        : this.perPage;
     },
   },
   mounted() {
-    this.loading = true;
     window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
       console.log(res.data);
-      this.commands = res.data.data
-        .map((item) => {
-          let info = JSON.parse(item.custom_description);
-          return {
-            title: item.title,
-            user: item.last_editor.name,
-            updateTime: item.content_updated_at.slice(0, 10),
-            avatar: item.last_editor.avatar_url,
-            tags: info.tags.split(" ").filter((x) => x), // 历史原因，这里tag的格式不规范
-            program: info.program,
-            platform: info.platform,
-            type: info.type,
-            slug: item.slug,
-          };
-        })
-        .filter((item) => item.platform.includes(window.processPlatform));
-      this.loading = false;
+      this.allCommands = res.data.data;
+      this.fetchCommandDetails(1);
     });
   },
-
+  watch: {
+    currentPage(val) {
+      this.fetchCommandDetails(val);
+    },
+  },
   methods: {
-    importCommand(slug) {
-      window
-        .yuQueClient(`repos/${this.releaseRepo}/docs/${slug}?raw=1`)
-        .then((res) => {
-          let command = JSON.parse(
-            res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
-          );
-          if (!command)
-            return quickcommand.showMessageBox("导入出错！", "error");
-          command.tags.push("新添加");
-          let code = command?.features?.code;
-          if (!code)
-            return quickcommand.showMessageBox("该命令格式有误！", "error");
-          this.$utools.putDB(command, this.$utools.DBPRE.QC + code);
-          quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
+    fetchCommandDetails(page) {
+      this.commands = [];
+      this.allCommands
+        .slice((page - 1) * this.perPage, page * this.perPage)
+        .forEach((item) => {
+          window
+            .yuQueClient(`repos/${this.releaseRepo}/docs/${item.slug}?raw=1`)
+            .then((res) => {
+              let command = JSON.parse(
+                res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
+              );
+              if (!command) return;
+              command.authorName = item.last_editor.name;
+              command.updateTime = item.content_updated_at.slice(0, 10);
+              this.commands.push(command);
+            });
         });
+    },
+    importCommand(command) {
+      let code = command?.features?.code;
+      if (!code)
+        return quickcommand.showMessageBox("该命令格式有误！", "error");
+      let pushData = _.cloneDeep(command);
+      if (!pushData?.tags.includes("来自分享")) pushData.tags.push("来自分享");
+      this.$utools.putDB(_.cloneDeep(pushData), this.$utools.DBPRE.QC + code);
+      quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
     },
   },
 };

@@ -287,12 +287,18 @@ export default {
     },
     // 所有命令对应的标签
     allQuickCommandTags() {
-      return _.union(
+      let allTags = _.union(
         ..._.concat(
           "默认",
           Object.values(this.allQuickCommands).map((x) => x.tags)
         )
-      ).concat(["未分类", "搜索结果"]);
+      ).concat(["未分类"]);
+      if (allTags.includes("来自分享")) {
+        _.pull(allTags, "来自分享");
+        allTags.push("来自分享");
+      }
+      allTags.push("搜索结果");
+      return allTags;
     },
     // 标签栏宽度
     tabBarWidth() {
