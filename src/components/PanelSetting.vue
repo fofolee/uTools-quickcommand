@@ -59,7 +59,7 @@ export default {
     return {
       features: {
         explain: `进入${this.currentTag}的面板视图`,
-        icon: "logo/quickcommand.png",
+        icon: "img/logo/quickcommand.png",
         cmds: [this.currentTag],
         platform: ["win32", "darwin", "linux"],
         code: `panel_${window.hexEncode(this.currentTag)}`,

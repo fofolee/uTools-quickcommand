@@ -244,7 +244,7 @@ export default {
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
     getLanguageIcon(program) {
-      return `logo/${program}.png`;
+      return `img/logo/${program}.png`;
     },
     // 打开文档
     showHelp() {
