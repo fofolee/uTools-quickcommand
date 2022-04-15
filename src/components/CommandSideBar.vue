@@ -324,11 +324,8 @@ export default {
       this.setIcon(this.quickcommandInfo.program);
       this.platformVerify();
     },
-    // 没有图标，或者使用了语言图标
     setIcon(language) {
-      this.currentCommand.features.icon?.slice(0, 5) === "data:" ||
-        (this.currentCommand.features.icon =
-          this.$parent.getLanguageIcon(language));
+      this.currentCommand.features.icon = this.$programmings[language].icon;
     },
     getCommandType() {
       let data = { type: "key", match: [] };

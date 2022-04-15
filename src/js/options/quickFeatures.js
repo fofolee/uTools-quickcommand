@@ -7,7 +7,7 @@ const quickFeatures = {
             type: "files",
             match: "/.*+/i",
         }, ],
-        icon: "img/feature/file.png",
+        icon: require("../../assets/feature/file.png"),
         platform: ["win32", "darwin", "linux"],
 
     },
@@ -32,7 +32,7 @@ const quickFeatures = {
                 ],
             },
         }, ],
-        icon: "img/feature/url.png",
+        icon: require("../../assets/feature/url.png"),
         platform: ["win32", "darwin", "linux"],
 
     },
@@ -40,7 +40,7 @@ const quickFeatures = {
         code: "feature_pluNickName",
         explain: "为插件设置别名",
         cmds: ["插件别名"],
-        icon: "img/feature/plugin.png",
+        icon: require("../../assets/feature/plugin.png"),
         platform: ["win32", "darwin", "linux"],
     }
 }

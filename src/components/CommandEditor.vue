@@ -59,13 +59,13 @@
             >
               <template v-slot:append>
                 <q-avatar size="lg" square>
-                  <img :src="getLanguageIcon(quickcommandInfo.program)" />
+                  <img :src="$programmings[quickcommandInfo.program].icon" />
                 </q-avatar>
               </template>
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section avatar>
-                    <img width="32" :src="getLanguageIcon(scope.opt)" />
+                    <img width="32" :src="$programmings[scope.opt].icon" />
                   </q-item-section>
                   <q-item-section>
                     <q-item-label v-html="scope.opt" />
@@ -242,9 +242,6 @@ export default {
     setLanguage(language) {
       let highlight = this.$programmings[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
-    },
-    getLanguageIcon(program) {
-      return `img/logo/${program}.png`;
     },
     // 打开文档
     showHelp() {

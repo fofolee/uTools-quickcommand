@@ -2,7 +2,7 @@
   <q-card>
     <q-card-section class="q-gutter-md flex items-center">
       <q-avatar square size="48px">
-        <img src="logo/quickcommand.png" />
+        <img :src="require('../assets/logo/quickcommand.png')" />
       </q-avatar>
       <span class="text-h5"
         >{{ pluginInfo.pluginName }} v{{ pluginInfo.version }}</span
