@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "axios": "^0.24.0",
+    "axios-delay": "^1.0.0-rc6",
     "iconv-lite": "^0.6.3",
     "lodash": "^4.17.21"
   }
