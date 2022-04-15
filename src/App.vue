@@ -75,7 +75,7 @@ export default defineComponent({
   font-size: 11px;
 }
 :root {
-  --q-dark: #303133;
+  --q-dark: #464646;
   --q-dark-page: #303133;
 }
 .commandLogo {

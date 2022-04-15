@@ -3,6 +3,9 @@
     :thumb-style="{
       width: '3px',
     }"
+    :horizontal-thumb-style="{
+      height: '5px',
+    }"
   >
     <div class="row q-pa-md q-gutter-md">
       <q-btn
