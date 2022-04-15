@@ -260,7 +260,7 @@ export default {
         : this.disabledColor;
     },
     disabledColor() {
-      return this.$q.dark.isActive ? "grey-9" : "grey-5";
+      return this.$q.dark.isActive ? "grey-6" : "grey-5";
     },
     cardBgColor() {
       return this.$q.dark.isActive ? "#ffffff08" : "#00000008";
