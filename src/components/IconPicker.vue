@@ -90,6 +90,7 @@
 
 <script>
 import { ref } from "vue";
+import pictureCompress from "picture-compressor";
 
 export default {
   data() {
@@ -142,7 +143,7 @@ export default {
 
     getLocalIcon() {
       utools.showMainWindow();
-      window.getBase64Ico(this.localIconFile.path).then((dataUrl) => {
+      this.compressingPic(window.getBase64Ico(imgPath)).then((dataUrl) => {
         dataUrl && this.setIcon(dataUrl);
       });
     },
@@ -163,13 +164,23 @@ export default {
       quickcommand
         .downloadFile(imgUrl, imgPath)
         .then(() => {
-          window.getBase64Ico(imgPath).then((src) => {
+          this.compressingPic(window.getBase64Ico(imgPath)).then((src) => {
             callback(src);
           });
         })
         .catch((e) => {
           quickcommand.showMessageBox("图片地址有误！", "error");
         });
+    },
+    async compressingPic(img, width = 80) {
+      let compressedImage = await pictureCompress({
+        img: img,
+        width: width,
+        height: width,
+        type: "png",
+        quality: 1,
+      });
+      return compressedImage.img;
     },
   },
 };

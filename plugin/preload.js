@@ -9,7 +9,6 @@ const {
 } = require('./lib/vm2')
 const path = require("path")
 const axios = require('axios');
-const pictureCompress = require("./lib/picture-compressor")
 
 window._ = require("lodash")
 window.yuQueClient = axios.create({
@@ -220,22 +219,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
-    if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-        // 直接 existsSync wt.exe 无效
-        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        let cd = ''
+        if (utools.isWindows()) {
+            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+                // 直接 existsSync wt.exe 无效
+            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
+                cmdline = cmdline.replace(/"/g, `\\"`)
+                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            } else {
+                cmdline = cmdline.replace(/"/g, `^"`)
+                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+                command = `${cd} start "" cmd /k "${cmdline}"`
+            }
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
-        }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            cmdline = cmdline.replace(/"/g, `\\"`)
+            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -427,11 +426,44 @@ window.base64Decode = text => Buffer.from(text, 'base64').toString('utf8')
 window.processPlatform = process.platform
 window.joinPath = path.join
 
+window.getUtoolsPlugins = () => {
+    let root = utools.isMacOs() ?
+        path.join(os.homedir(), 'Library/Application Support/uTools/plugins/') :
+        (utools.isWindows() ?
+            path.join(os.homedir(), 'AppData/Roaming/uTools/plugins') :
+            path.join(os.homedir(), '.config/uTools/plugins'))
+    let plugins = {};
+    let files = fs.readdirSync(root);
+    let deleted = path.join(root, "deleted");
+    let deletedList = fs.existsSync(deleted) ?
+        fs.readFileSync(path.join(root, "deleted"), "utf8").split("|") : [];
+    files.forEach((file) => {
+        if (/[a-zA-Z0-9\-]+\.asar$/.test(file) && !deletedList.includes(file)) {
+            let pluginInfo = JSON.parse(
+                fs.readFileSync(path.join(root, file, "plugin.json"))
+            );
+            pluginInfo.logoPath = path.join(root, file, pluginInfo.logo);
+            let keyWordFeatures = [];
+            pluginInfo.features.forEach((f) => {
+                f.cmds.some((c) => {
+                    c.length && (keyWordFeatures.push(c));
+                    return true;
+                });
+            });
+            if (!_.isEmpty(keyWordFeatures)) {
+                pluginInfo["keyWordFeatures"] = keyWordFeatures
+                plugins[pluginInfo.pluginName] = pluginInfo
+            }
+        }
+    });
+    return plugins;
+}
+
 window.getQuickcommandTempFile = ext => {
     return path.join(os.tmpdir(), `quickcommandTempFile.${ext}`)
 }
 
-window.getBase64Ico = async (filepath, compressed = true) => {
+window.getBase64Ico = filepath => {
     let sourceImage, ext = path.extname(filepath).slice(1)
     if (['png', 'jpg', 'jpeg', 'bmp', 'ico', 'gif', 'svg'].includes(ext)) {
         if (ext == 'svg') ext = 'svg+xml'
@@ -441,20 +473,7 @@ window.getBase64Ico = async (filepath, compressed = true) => {
         sourceImage = utools.getFileIcon(filepath)
         return sourceImage
     }
-    if (!compressed) return sourceImage
-    let compressedImage = await getCompressedIco(sourceImage)
-    return compressedImage
-}
-
-let getCompressedIco = async (img, width = 80) => {
-    let compressedImage = await pictureCompress({
-        img: img,
-        width: width,
-        height: width,
-        type: 'png',
-        quality: 1
-    })
-    return compressedImage.img
+    return sourceImage
 }
 
 window.getFileInfo = options => {
