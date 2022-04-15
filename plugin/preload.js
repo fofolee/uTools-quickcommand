@@ -425,6 +425,7 @@ window.base64Decode = text => Buffer.from(text, 'base64').toString('utf8')
 
 
 window.processPlatform = process.platform
+window.joinPath = path.join
 
 window.getQuickcommandTempFile = ext => {
     return path.join(os.tmpdir(), `quickcommandTempFile.${ext}`)
