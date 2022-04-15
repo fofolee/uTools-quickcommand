@@ -90,6 +90,20 @@
     >
       <q-pagination v-model="currentPage" :max="maxPages" input />
     </div>
+    <div class="absolute" :style="{ left: '25px', bottom: '12px' }">
+      <q-input
+        v-model="commandSearchKeyword"
+        debounce="200"
+        standout="bg-primary text-white"
+        dense
+        @update:model-value="updateSearch"
+        placeholder="搜索，支持拼音首字母"
+      >
+        <template v-slot:prepend>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+    </div>
     <div class="absolute" :style="{ right: '25px', bottom: '12px' }">
       <q-btn
         color="primary"
@@ -105,6 +119,7 @@
 
 <script>
 import commandTypes from "../js/options/commandTypes.js";
+import pinyinMatch from "pinyin-match";
 
 export default {
   data() {
@@ -112,7 +127,9 @@ export default {
       currentPage: 1,
       commands: [],
       allCommands: [],
+      matchedCommands: [],
       perPage: 8,
+      commandSearchKeyword: "",
       releaseRepo: "fofolee/qcreleases",
       shareRepo: "fofolee/qcshares",
       commandTypes: commandTypes,
@@ -121,14 +138,14 @@ export default {
   },
   computed: {
     maxPages() {
-      return Math.ceil(this.allCommands.length / this.perPage) || 1;
+      return Math.ceil(this.matchedCommands.length / this.perPage) || 1;
     },
     loading() {
       return this.commands.length === this.currentPageCounts ? false : true;
     },
     currentPageCounts() {
       return this.currentPage === this.maxPages
-        ? this.allCommands.length % this.perPage
+        ? this.matchedCommands.length % this.perPage
         : this.perPage;
     },
   },
@@ -136,6 +153,7 @@ export default {
     window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
       console.log(res.data);
       this.allCommands = res.data.data;
+      this.matchedCommands = _.cloneDeep(this.allCommands);
       this.fetchCommandDetails(1);
     });
   },
@@ -147,7 +165,7 @@ export default {
   methods: {
     fetchCommandDetails(page) {
       this.commands = [];
-      this.allCommands
+      this.matchedCommands
         .slice((page - 1) * this.perPage, page * this.perPage)
         .forEach((item) => {
           window
@@ -171,6 +189,14 @@ export default {
       if (!pushData?.tags.includes("来自分享")) pushData.tags.push("来自分享");
       this.$utools.putDB(_.cloneDeep(pushData), this.$utools.DBPRE.QC + code);
       quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
+    },
+    updateSearch() {
+      if (!this.commandSearchKeyword) this.matchedCommands = this.allCommands;
+      else
+        this.matchedCommands = this.allCommands.filter((x) =>
+          pinyinMatch.match(x.title, this.commandSearchKeyword)
+        );
+      this.fetchCommandDetails(1);
     },
   },
 };
