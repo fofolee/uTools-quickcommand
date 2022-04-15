@@ -8,6 +8,8 @@
       <div class="text-center text-h2 q-ma-none">插件别名设置</div>
       <q-select
         outlined
+        transition-show="jump-down"
+        transition-hide="jump-up"
         v-model="plugin"
         :options="plugins"
         type="text"
@@ -33,6 +35,8 @@
       </q-select>
       <q-select
         outlined
+        transition-show="jump-down"
+        transition-hide="jump-up"
         v-model="feature"
         :options="features"
         type="text"
