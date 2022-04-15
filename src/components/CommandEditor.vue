@@ -214,7 +214,8 @@ export default {
           ? this.$utools.getDB(this.$utools.DBPRE.CFG + "preferences")
               ?.codeHistory[this.action.type]
           : this.action.data;
-      Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
+      quickCommandInfo?.program &&
+        Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
       // monaco 相关
       this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
