@@ -13,7 +13,7 @@ interface quickcommandApi {
    * @param title 窗口标题，默认为空
    */
   showButtonBox(
-    buttons: array,
+    buttons: string[],
     title?: string
   ): Promise<{ id: number; text: string }>;
 
@@ -36,9 +36,9 @@ interface quickcommandApi {
    * @param title 窗口标题，默认为空
    */
   showInputBox(
-    options: array | { labels: array; values: array; hints: array },
+    options: string[] | { labels: string[]; values: string[]; hints: string[] },
     title?: string
-  ): Promise<array>;
+  ): Promise<string[]>;
 
   /**
    * 显示一个支持搜索的且可以动态更新的选项列表，选项类型为文本或html时，返回选择的索引和文本，为对象时，返回选择的对象
@@ -81,7 +81,7 @@ interface quickcommandApi {
    * 点击后关闭，默认 true
    */
   showSelectList(
-    selects: array,
+    selects: string[] | object[],
     options?: {
       placeholder: string;
       optionType: "plaintext" | "html" | "json";
@@ -207,7 +207,7 @@ interface quickcommandApi {
    * 不赋值时，则会弹出对话框要求选择下载到的路径；
    * 赋值为 Object时，表示弹出对话框的 options，格式和 utools.showSaveDialog 中的 options一致
    */
-  downloadFile(url, file?: string | object): Promise<Buffer>;
+  downloadFile(url: string, file?: string | object): Promise<Buffer>;
 
   /**
    * 上传文件，可以直接上传指定文件，或者弹出对话框选择要上传的文件，可以自定义表单数据
