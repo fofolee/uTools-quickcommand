@@ -180,7 +180,7 @@
       :transition-show="newCommandDirect ? '' : 'slide-up'"
       transition-hide="slide-down"
     >
-      <q-card>
+      <q-card style="overfolw: hidden">
         <CommandEditor
           ref="commandEditor"
           :action="commandEditorAction"
