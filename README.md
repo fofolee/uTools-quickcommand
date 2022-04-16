@@ -1,12 +1,11 @@
-
-
 # 快捷命令 V3.0.0
 
-[![GitHub stars](https://img.shields.io/github/stars/fofolee/uTools-quickcommand?style=flat-square)](https://github.com/fofolee/uTools-quickcommand/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fofolee/uTools-quickcommand?style=flat-square)](https://github.com/fofolee/uTools-quickcommand/network/members) [![GitHub license](https://img.shields.io/github/license/fofolee/uTools-quickcommand?style=flat-square)](https://github.com/fofolee/uTools-quickcommand/blob/master/LICENSE) [![version]( https://img.shields.io/badge/dynamic/json?color=f58142&label=version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Ffofolee%2FuTools-quickcommand%2Fmaster%2Fsrc%2Fplugin.json&style=flat-square)](https://github.com/fofolee/uTools-quickcommand/blob/master/src/helps/CHANGELOG.md) [![猿料](https://img.shields.io/badge/%E7%8C%BF%E6%96%99-%2Fd%2F424-red?style=flat-square)](https://yuanliao.info/d/424) [![评论](https://img.shields.io/badge/dynamic/json?color=%2350e3c2&label=%E8%AF%84%E8%AE%BA&query=%24.data.attributes.commentCount&url=https%3A%2F%2Fyuanliao.info%2Fapi%2Fdiscussions%2F424&style=flat-square)](https://yuanliao.info/d/424)
+[![GitHub stars](https://img.shields.io/github/stars/fofolee/uTools-quickcommand?style=flat-square)](https://github.com/fofolee/uTools-quickcommand/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fofolee/uTools-quickcommand?style=flat-square)](https://github.com/fofolee/uTools-quickcommand/network/members) [![GitHub license](https://img.shields.io/github/license/fofolee/uTools-quickcommand?style=flat-square)](https://github.com/fofolee/uTools-quickcommand/blob/master/LICENSE) [![version](https://img.shields.io/badge/dynamic/json?color=f58142&label=version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Ffofolee%2FuTools-quickcommand%2Fmaster%2Fsrc%2Fplugin.json&style=flat-square)](https://github.com/fofolee/uTools-quickcommand/blob/master/src/helps/CHANGELOG.md) [![猿料](https://img.shields.io/badge/%E7%8C%BF%E6%96%99-%2Fd%2F424-red?style=flat-square)](https://yuanliao.info/d/424) [![评论](https://img.shields.io/badge/dynamic/json?color=%2350e3c2&label=%E8%AF%84%E8%AE%BA&query=%24.data.attributes.commentCount&url=https%3A%2F%2Fyuanliao.info%2Fapi%2Fdiscussions%2F424&style=flat-square)](https://yuanliao.info/d/424)
 
 ## 简介
 
 - 核心功能
+
   - 快速执行命令：如打开文件夹、软件、网址等
 
   - 快速运行脚本：如批处理、shell、python 等
@@ -14,6 +13,7 @@
   - 无需编写插件：实现需要使用 utools 的 api 或者带 UI 界面的功能
 
 - 其他特色
+
   - 内置了执行 shell 命令、文本处理、文本替换、网址二维码等实用命令
 
   - 支持在插件内下载别人分享的命令
@@ -21,7 +21,6 @@
   - 简单的代码编辑及运行功能
 
 [目前实现的功能列表 >>](https://yuanliao.info/d/2962)
-
 
 ## 功能
 
@@ -66,10 +65,10 @@
 
 ### 4.快捷面板
 
- - 将某一个标签下的命令以面板形式展现
- - 可实现网址导航面板、软件启动面板之类的功能
+- 将某一个标签下的命令以面板形式展现
+- 可实现网址导航面板、软件启动面板之类的功能
 
- ![](https://ae01.alicdn.com/kf/Ub8111ccc203b4eefb91baae44a7f9cadW.jpg)
+![](https://ae01.alicdn.com/kf/Ub8111ccc203b4eefb91baae44a7f9cadW.jpg)
 
 #### 进阶
 
@@ -95,7 +94,7 @@
 - quickcommand
 
   - 可以快速执行打开网址、软件、文件夹、模拟按键等高频动作的命令
-  - 可使用nodejs、electron、uTools、quickcommand 的 api 来编写具有 UI 交互的脚本，详情查看插件内的文档
+  - 可使用 nodejs、electron、uTools、quickcommand 的 api 来编写具有 UI 交互的脚本，详情查看插件内的文档
 
 - python、cmd、shell 、php 等环境
 
@@ -112,8 +111,8 @@
 
 全模式可用
 
-- `{{isWin}}` 是否Window系统， 返回1或0
-- `{{LocalId}}`本机唯一ID
+- `{{isWin}}` 是否 Window 系统， 返回 1 或 0
+- `{{LocalId}}`本机唯一 ID
 - `{{BrowserUrl}}` 浏览器的当前链接
 - `{{ClipText}}` 获取剪贴板的文本
 - `{{SelectText}}` 获取选中的文本 (已弃用)
@@ -142,7 +141,7 @@
 
 - 隐藏并忽略输出
 - 显示纯文本输出 (不解析 html 内容)
-- 显示html格式的输出 (可以进一步编写简单的 GUI 界面，参考内置动作`特殊符号大全`)
+- 显示 html 格式的输出 (可以进一步编写简单的 GUI 界面，参考内置动作`特殊符号大全`)
 - 复制到剪贴板
 - 发送到活动窗口（可实现发送常用短语之类的功能）
 - 发送到系统通知
@@ -157,18 +156,19 @@
 ![UaNvPx.png](https://s1.ax1x.com/2020/07/14/UaNvPx.png)
 
 ## 编译安装
+
 ```sh
 npm i -g @quasar/cli
 cd uTools-quickcommand
 npm i && cd plugin && npm i && cd ..
-# Mac && Linux
-./build.sh
-# Windows
-build.bat
+# 调试
+quasar dev
+# 编译
+quasar build
 ```
-然后在开发者工具里面，选择`uTools-quickcommand/dist/spa/plugin.json`后打包
 
 ## 插件发布页
+
 https://yuanliao.info/d/424
 
 ## 关键字
