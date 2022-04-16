@@ -13,8 +13,7 @@ export default defineComponent({
   data() {
     return {
       setCssVar: setCssVar,
-
-};
+    };
   },
   computed: {},
   created: function () {
@@ -42,6 +41,7 @@ export default defineComponent({
         this.$q.dark.set(utools.isDarkColors());
         // 路由跳转
         quickcommand.enterData = enter;
+        quickcommand.payload = enter.payload;
         this.$router.push(enter.code);
       });
       // 退出插件
