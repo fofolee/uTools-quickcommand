@@ -176,17 +176,15 @@
     <q-dialog
       v-model="isCommandEditorShow"
       persistent
-      :maximized="maximizedToggle"
+      maximized
       :transition-show="newCommandDirect ? '' : 'slide-up'"
       transition-hide="slide-down"
     >
-      <q-card style="overfolw: hidden">
-        <CommandEditor
-          ref="commandEditor"
-          :action="commandEditorAction"
-          @editorEvent="editorEvent"
-        ></CommandEditor>
-      </q-card>
+      <CommandEditor
+        ref="commandEditor"
+        :action="commandEditorAction"
+        @editorEvent="editorEvent"
+      ></CommandEditor>
     </q-dialog>
     <CommandRunResult
       :action="{ type: 'config' }"
@@ -227,7 +225,6 @@ export default {
       allQuickCommands: [],
       commandSearchKeyword: "",
       isCommandEditorShow: false,
-      maximizedToggle: true,
       commandEditorAction: {},
       footerBarHeight: "40px",
       commandCardStyle: this.$profile.commandCardStyle,

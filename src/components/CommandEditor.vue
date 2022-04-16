@@ -1,5 +1,8 @@
 <template>
-  <div class="relative">
+  <div
+    class="absolute-full"
+    :style="{ background: $q.dark.isActive ? 'var(--q-dark-page)' : '#ffffff' }"
+  >
     <!-- 命令设置栏 -->
     <CommandSideBar
       ref="sidebar"
@@ -8,7 +11,6 @@
       class="absolute-left shadow-10"
       :style="{
         width: sideBarWidth + 'px',
-        background: $q.dark.isActive ? 'var(--q-dark-page)' : '#f2f2f2',
         zIndex: 1,
         transition: '0.3s',
       }"

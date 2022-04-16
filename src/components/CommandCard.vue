@@ -85,11 +85,9 @@
         <q-card-section>
           <!-- logo -->
           <div class="row" :class="cardStyleVars.logoPosition">
-            <q-img
-              width="48px"
-              height="48px"
-              :src="commandInfo.features.icon"
-            />
+            <q-avatar square size="48px">
+              <q-img :src="commandInfo.features.icon" />
+            </q-avatar>
           </div>
           <!-- 名称 -->
           <!-- mini 和 small 模式下命令标题字体变小 -->
