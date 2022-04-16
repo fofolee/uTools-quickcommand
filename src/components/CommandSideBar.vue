@@ -18,7 +18,7 @@
       />
       <q-img
         class="commandLogo"
-        @click="showIconPicker"
+        @click="showIconPicker = true"
         width="64px"
         :src="currentCommand.features.icon"
       />
@@ -257,11 +257,12 @@
         </div>
       </div>
     </div>
-    <iconPicker
-      @iconChanged="(dataUrl) => (currentCommand.features.icon = dataUrl)"
-      position="left"
-      ref="icon"
-    />
+    <q-dialog v-model="showIconPicker" position="left">
+      <iconPicker
+        @iconChanged="(dataUrl) => (currentCommand.features.icon = dataUrl)"
+        ref="icon"
+      />
+    </q-dialog>
   </q-scroll-area>
 </template>
 
@@ -296,6 +297,7 @@ export default {
       outputTypesOptions: Object.keys(outputTypes),
       specialVar: "{{}}",
       allQuickCommandTags: this.$parent.allQuickCommandTags,
+      showIconPicker: false,
     };
   },
   props: {
@@ -410,10 +412,6 @@ export default {
         updateData.hasSubInput = false;
       }
       return updateData;
-    },
-
-    showIconPicker() {
-      this.$refs.icon.showIconPicker = true;
     },
   },
 };

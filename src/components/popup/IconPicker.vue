@@ -1,90 +1,82 @@
 <template>
-  <div>
-    <q-dialog v-model="showIconPicker" class="q-gutter" :position="position">
-      <q-card>
-        <q-card-section class="text-h5 text-center">更改图标</q-card-section>
-        <q-card-section>
-          <q-select
-            ref="icon8"
-            v-model="icon8sIcon"
-            :options="options"
-            label="搜索ICON8S"
-            options-dense
-            use-input
-            :loading="loading"
-            input-debounce="1000"
-            @input-value="searchIcon8s"
-            @update:model-value="getIcon8sIcon"
-            transition-show="jump-down"
-            transition-hide="jump-up"
-            virtual-scroll-slice-size="30"
-            standout="bg-primary text-white"
-          >
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  键入关键词搜索
-                </q-item-section>
-              </q-item>
-            </template>
-            <template v-slot:selected>
-              <!-- {{ icon8sIcon?.name || "" }} -->
-            </template>
-            <template v-slot:prepend>
-              <q-avatar size="24px" v-if="dataUrl && icon8sIcon">
-                <q-img :src="dataUrl" />
-              </q-avatar>
-              <q-icon v-else name="image" />
-            </template>
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section avatar>
-                  <q-img :src="getIcon8sIconUrl(scope.opt, 1)" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label v-html="scope.opt.name" />
-                </q-item-section>
-              </q-item> </template
-          ></q-select>
-        </q-card-section>
-        <q-card-section>
-          <q-file
-            standout="bg-primary text-white"
-            :display-value="localIconFile || ''"
-            @click="getLocalIcon"
-            label="选择本地资源"
-          >
-            <template v-slot:prepend>
-              <q-avatar size="24px" v-if="dataUrl && localIconFile">
-                <q-img :src="dataUrl" />
-              </q-avatar>
-              <q-icon v-else name="folder" />
-            </template>
-          </q-file>
-        </q-card-section>
-        <q-card-section>
-          <q-input
-            standout="bg-primary text-white"
-            v-model="netWorkIconUrl"
-            @blur="getRemoteIcon"
-            type="text"
-            label="网络图片地址"
-          >
-            <template v-slot:prepend>
-              <q-avatar size="24px" v-if="dataUrl && netWorkIconUrl">
-                <q-img :src="dataUrl" />
-              </q-avatar>
-              <q-icon v-else name="cloud" /> </template
-          ></q-input>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat color="primary" @click="showIconPicker = false"
-            >确定</q-btn
-          >
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-  </div>
+  <q-card>
+    <q-card-section class="text-h5 text-center">更改图标</q-card-section>
+    <q-card-section>
+      <q-select
+        ref="icon8"
+        v-model="icon8sIcon"
+        :options="options"
+        label="搜索ICON8S"
+        options-dense
+        use-input
+        :loading="loading"
+        input-debounce="1000"
+        @input-value="searchIcon8s"
+        @update:model-value="getIcon8sIcon"
+        transition-show="jump-down"
+        transition-hide="jump-up"
+        virtual-scroll-slice-size="30"
+        standout="bg-primary text-white"
+      >
+        <template v-slot:no-option>
+          <q-item>
+            <q-item-section class="text-grey"> 键入关键词搜索 </q-item-section>
+          </q-item>
+        </template>
+        <template v-slot:selected>
+          <!-- {{ icon8sIcon?.name || "" }} -->
+        </template>
+        <template v-slot:prepend>
+          <q-avatar size="24px" v-if="dataUrl && icon8sIcon">
+            <q-img :src="dataUrl" />
+          </q-avatar>
+          <q-icon v-else name="image" />
+        </template>
+        <template v-slot:option="scope">
+          <q-item v-bind="scope.itemProps">
+            <q-item-section avatar>
+              <q-img :src="getIcon8sIconUrl(scope.opt, 1)" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label v-html="scope.opt.name" />
+            </q-item-section>
+          </q-item> </template
+      ></q-select>
+    </q-card-section>
+    <q-card-section>
+      <q-file
+        standout="bg-primary text-white"
+        :display-value="localIconFile || ''"
+        @click="getLocalIcon"
+        label="选择本地资源"
+      >
+        <template v-slot:prepend>
+          <q-avatar size="24px" v-if="dataUrl && localIconFile">
+            <q-img :src="dataUrl" />
+          </q-avatar>
+          <q-icon v-else name="folder" />
+        </template>
+      </q-file>
+    </q-card-section>
+    <q-card-section>
+      <q-input
+        standout="bg-primary text-white"
+        v-model="netWorkIconUrl"
+        @blur="getRemoteIcon"
+        type="text"
+        label="网络图片地址"
+      >
+        <template v-slot:prepend>
+          <q-avatar size="24px" v-if="dataUrl && netWorkIconUrl">
+            <q-img :src="dataUrl" />
+          </q-avatar>
+          <q-icon v-else name="cloud" /> </template
+      ></q-input>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn flat color="primary" v-close-popup>确定</q-btn>
+    </q-card-actions>
+  </q-card>
 </template>
 
 <script>
@@ -94,7 +86,6 @@ import pictureCompress from "picture-compressor";
 export default {
   data() {
     return {
-      showIconPicker: false,
       localIconFile: ref(null),
       icon8sIcon: ref(null),
       netWorkIconUrl: "",

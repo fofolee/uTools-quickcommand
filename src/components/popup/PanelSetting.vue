@@ -4,9 +4,7 @@
       <div class="row q-gutter-md">
         <div class="col-auto justify-center content-center flex q-pa-md">
           <q-avatar square class="commandLogo">
-            <q-img
-              :src="features.icon"
-              @click="$refs.icon.showIconPicker = true"
+            <q-img :src="features.icon" @click="showIconPicker = true"
           /></q-avatar>
         </div>
         <div class="col">
@@ -42,11 +40,12 @@
       <q-btn flat label="取消" color="grey" v-close-popup />
       <q-btn flat label="确定" color="primary" v-close-popup @click="markTag" />
     </q-card-actions>
-    <IconPicker
-      ref="icon"
-      @iconChanged="(dataUrl) => (features.icon = dataUrl)"
-      position="right"
-    />
+    <q-dialog v-model="showIconPicker" position="right">
+      <iconPicker
+        @iconChanged="(dataUrl) => (features.icon = dataUrl)"
+        ref="icon"
+      />
+    </q-dialog>
   </q-card>
 </template>
 
@@ -64,6 +63,7 @@ export default {
         platform: ["win32", "darwin", "linux"],
         code: `panel_${window.hexEncode(this.currentTag)}`,
       },
+      showIconPicker: false,
     };
   },
   props: {
