@@ -418,6 +418,10 @@ window.htmlEncode = (value) => {
     return String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
 }
 
+window.removeHtmlTags = value => {
+    return quickcommand.htmlParse(value).querySelector('body').innerText
+}
+
 window.hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
 window.hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
 window.base64Decode = text => Buffer.from(text, 'base64').toString('utf8')

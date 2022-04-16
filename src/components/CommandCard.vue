@@ -85,7 +85,11 @@
         <q-card-section>
           <!-- logo -->
           <div class="row" :class="cardStyleVars.logoPosition">
-            <q-img width="48px" height="48px" :src="commandInfo.features.icon" />
+            <q-img
+              width="48px"
+              height="48px"
+              :src="commandInfo.features.icon"
+            />
           </div>
           <!-- 名称 -->
           <!-- mini 和 small 模式下命令标题字体变小 -->
@@ -329,21 +333,25 @@ export default {
         });
       });
     },
-    getAuthedCmd() {
+    getRawCommand() {
       let command = _.cloneDeep(this.commandInfo);
-      if (!command.authorName) command.authorName = utools.getUser().nickname;
+      command.features.explain = window.removeHtmlTags(
+        command.features.explain
+      );
       return command;
     },
     // 导出到剪贴板
     exportCommandRaw() {
-      utools.copyText(JSON.stringify(this.getAuthedCmd(), null, 4)) &&
+      utools.copyText(JSON.stringify(this.getRawCommand(), null, 4)) &&
         quickcommand.showMessageBox("已复制到剪贴板");
     },
     // 导出到文件
     exportCommandFile() {
-      window.saveFile(JSON.stringify(this.getAuthedCmd()), {
+      window.saveFile(JSON.stringify(this.getRawCommand()), {
         title: "选择保存位置",
-        defaultPath: `${this.getAuthedCmd().features.explain}.json`,
+        defaultPath: `${window.removeHtmlTags(
+          this.commandInfo.features.explain
+        )}.json`,
         filters: [{ name: "json", extensions: ["json"] }],
       });
     },
