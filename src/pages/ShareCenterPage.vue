@@ -96,11 +96,11 @@
         debounce="200"
         standout="bg-primary text-white"
         dense
-        @update:model-value="updateSearch"
-        placeholder="搜索，支持拼音首字母"
+        @keydown="(e) => e.keyCode === 13 && updateSearch()"
+        placeholder="搜索"
       >
-        <template v-slot:prepend>
-          <q-icon name="search" />
+        <template v-slot:append>
+          <q-btn dense flat icon="search" @click="updateSearch" />
         </template>
       </q-input>
     </div>
@@ -119,7 +119,6 @@
 
 <script>
 import commandTypes from "../js/options/commandTypes.js";
-import pinyinMatch from "pinyin-match";
 
 export default {
   data() {
@@ -194,7 +193,9 @@ export default {
       if (!this.commandSearchKeyword) this.matchedCommands = this.allCommands;
       else
         this.matchedCommands = this.allCommands.filter((x) =>
-          pinyinMatch.match(x.title, this.commandSearchKeyword)
+          x.title
+            .toLowerCase()
+            .includes(this.commandSearchKeyword.toLowerCase())
         );
       this.fetchCommandDetails(1);
     },
