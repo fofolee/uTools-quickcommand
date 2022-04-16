@@ -270,7 +270,7 @@ import commandTypes from "../js/options/commandTypes.js";
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import platformTypes from "../js/options/platformTypes.js";
-import iconPicker from "components/IconPicker.vue";
+import iconPicker from "components/popup/IconPicker.vue";
 let commandTypesOptions = Object.values(commandTypes);
 
 export default {

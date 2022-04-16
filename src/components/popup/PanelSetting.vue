@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import IconPicker from "components/IconPicker";
+import IconPicker from "components/popup/IconPicker";
 
 export default {
   components: { IconPicker },
