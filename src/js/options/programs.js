@@ -10,7 +10,7 @@ const programs = {
         argv: "",
         ext: "",
         color: "primary",
-        icon: require("../../assets/logo/quickcommand.png"),
+        icon: "logo/quickcommand.png",
     },
     shell: {
         name: "shell",
@@ -18,7 +18,7 @@ const programs = {
         argv: "",
         ext: "sh",
         color: "green-6",
-        icon: require("../../assets/logo/shell.png"),
+        icon: "logo/shell.png",
     },
     applescript: {
         name: "applescript",
@@ -26,7 +26,7 @@ const programs = {
         argv: "",
         ext: "scpt",
         color: "cyan-10",
-        icon: require("../../assets/logo/applescript.png"),
+        icon: "logo/applescript.png",
     },
     cmd: {
         name: "cmd",
@@ -35,7 +35,7 @@ const programs = {
         argv: "",
         ext: "bat",
         color: "orange-10",
-        icon: require("../../assets/logo/cmd.png"),
+        icon: "logo/cmd.png",
     },
     powershell: {
         name: "powershell",
@@ -43,7 +43,7 @@ const programs = {
         argv: "-NoProfile -File",
         ext: "ps1",
         color: "amber-14",
-        icon: require("../../assets/logo/powershell.png"),
+        icon: "logo/powershell.png",
     },
     python: {
         name: "python",
@@ -51,7 +51,7 @@ const programs = {
         argv: "-u",
         ext: "py",
         color: "light-blue-10",
-        icon: require("../../assets/logo/python.png"),
+        icon: "logo/python.png",
     },
     javascript: {
         name: "javascript",
@@ -59,7 +59,7 @@ const programs = {
         argv: "",
         ext: "js",
         color: "teal",
-        icon: require("../../assets/logo/javascript.png"),
+        icon: "logo/javascript.png",
     },
     ruby: {
         name: "ruby",
@@ -67,7 +67,7 @@ const programs = {
         argv: "",
         ext: "rb",
         color: "red-10",
-        icon: require("../../assets/logo/ruby.png"),
+        icon: "logo/ruby.png",
     },
     php: {
         name: "php",
@@ -75,7 +75,7 @@ const programs = {
         argv: "",
         ext: "php",
         color: "deep-purple",
-        icon: require("../../assets/logo/php.png"),
+        icon: "logo/php.png",
     },
     c: {
         name: "c",
@@ -83,7 +83,7 @@ const programs = {
         argv: "-o",
         ext: "c",
         color: "blue-7",
-        icon: require("../../assets/logo/c.png"),
+        icon: "logo/c.png",
     },
     csharp: {
         name: "csharp",
@@ -91,7 +91,7 @@ const programs = {
         argv: "/Nologo",
         ext: "cs",
         color: "light-blue-13",
-        icon: require("../../assets/logo/csharp.png"),
+        icon: "logo/csharp.png",
     },
     lua: {
         name: "lua",
@@ -99,7 +99,7 @@ const programs = {
         argv: "",
         ext: "lua",
         color: "light-green-8",
-        icon: require("../../assets/logo/lua.png"),
+        icon: "logo/lua.png",
     },
     perl: {
         name: "perl",
@@ -107,7 +107,7 @@ const programs = {
         argv: "",
         ext: "pl",
         color: "purple",
-        icon: require("../../assets/logo/perl.png")
+        icon: "logo/perl.png"
     },
     custom: {
         name: "custom",
@@ -115,7 +115,7 @@ const programs = {
         argv: "",
         ext: "",
         color: "indigo-6",
-        icon: require("../../assets/logo/custom.png"),
+        icon: "logo/custom.png",
     },
 };
 export default programs
