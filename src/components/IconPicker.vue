@@ -50,10 +50,9 @@
         <q-card-section>
           <q-file
             standout="bg-primary text-white"
-            v-model="localIconFile"
-            @update:model-value="getLocalIcon"
-            accept="image/*"
-            label="选择本地图片"
+            :display-value="localIconFile || ''"
+            @click="getLocalIcon"
+            label="选择本地资源"
           >
             <template v-slot:prepend>
               <q-avatar size="24px" v-if="dataUrl && localIconFile">
@@ -141,11 +140,38 @@ export default {
       this.getRemoteIcon(imgUrl);
     },
 
-    getLocalIcon() {
-      utools.showMainWindow();
-      this.compressingPic(window.getBase64Ico(imgPath)).then((dataUrl) => {
-        dataUrl && this.setIcon(dataUrl);
-      });
+    getLocalIcon(e) {
+      // q-file 无法获取 .app 的路径，改用 utools.showOpenDialog
+      e.preventDefault();
+      this.localIconFile = utools.showOpenDialog({
+        title: "请选择图片文件或者可执行文件",
+        filters: [
+          {
+            name: "localFile",
+            extensions: [
+              "png",
+              "jpg",
+              "jpeg",
+              "bmp",
+              "ico",
+              "gif",
+              "svg",
+              "app",
+              "exe",
+            ],
+          },
+        ],
+      })[0];
+      if (
+        this.localIconFile.slice(-4) === ".app" ||
+        this.localIconFile.slice(-4) === ".exe"
+      )
+        return this.setIcon(utools.getFileIcon(this.localIconFile));
+      this.compressingPic(window.getBase64Ico(this.localIconFile)).then(
+        (dataUrl) => {
+          dataUrl && this.setIcon(dataUrl);
+        }
+      );
     },
 
     getRemoteIcon(url = this.netWorkIconUrl) {
