@@ -91,14 +91,18 @@ export default {
       hideWindow && utools.hideMainWindow();
       // 对于本身就没有输出的命令，无法确认命令是否执行完成，所以干脆提前退出插件
       // 弊端就是如果勾选了隐藏后台就完全退出的话，会造成命令直接中断
-      this.fromUtools &&
-        outPlugin &&
+      let quitBeforeShowResult = this.fromUtools && outPlugin;
+      quitBeforeShowResult &&
         setTimeout(() => {
           utools.outPlugin();
         }, 500);
       if (currentCommand.program === "quickcommand") {
         window.runCodeInVm(currentCommand.cmd, (stdout, stderr) => {
-          if (stderr) return this.showRunResult(stderr, false, action);
+          if (stderr) {
+            return quitBeforeShowResult
+              ? alert(stderr)
+              : this.showRunResult(stderr, false, action);
+          }
           !outPlugin && this.showRunResult(stdout, true, action);
         });
       } else {
@@ -112,7 +116,11 @@ export default {
           option,
           currentCommand.output === "terminal",
           (stdout, stderr) => {
-            if (stderr) return this.showRunResult(stderr, false, action);
+            if (stderr) {
+              return quitBeforeShowResult
+                ? alert(stderr)
+                : this.showRunResult(stderr, false, action);
+            }
             !outPlugin && this.showRunResult(stdout, true, action);
           }
         );
