@@ -464,6 +464,7 @@ window.getuToolsLite = () => {
     delete utoolsLite.getUserServerTemporaryToken
     delete utoolsLite.openPayment
     delete utoolsLite.fetchUserPayments
+    Object.freeze(utoolsLite)
     return utoolsLite
 }
 
