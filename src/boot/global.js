@@ -10,7 +10,7 @@ import Cron from "croner"
 let userProfile = UTOOLS.getDB(
     UTOOLS.DBPRE.CFG + "preferences"
 );
-Object.assign(defaultProfile, userProfile)
+_.merge(defaultProfile, _.cloneDeep(userProfile))
 
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files

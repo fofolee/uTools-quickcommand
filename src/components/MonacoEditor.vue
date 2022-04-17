@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="monacoEditor" style="width: 100%; height: 100%"></div>
-    <div class="absolute-center flex" v-show="!value">
+    <div class="absolute-center flex" v-show="!value && placeholder">
       <div class="placeholder text-center q-gutter-md">
         <div v-for="shortCut in shortCuts" :key="shortCut">
           <span>{{ shortCut[0] }}</span
@@ -55,6 +55,9 @@ export default {
     isDark() {
       return this.$q.dark.isActive;
     },
+  },
+  props: {
+    placeholder: Boolean,
   },
   methods: {
     initEditor() {

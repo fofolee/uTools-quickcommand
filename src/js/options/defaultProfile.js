@@ -17,5 +17,15 @@ export default {
             enable: false,
             tag: "别名"
         },
+        crontab: {
+            enable: false,
+            tag: "任务"
+        },
+        apiServer: {
+            enable: false,
+            port: 33442,
+            cmd: "",
+            serverStatus: false
+        }
     }
 }

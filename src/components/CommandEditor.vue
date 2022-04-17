@@ -143,6 +143,7 @@
     </div>
     <MonacoEditor
       class="absolute-bottom"
+      :placeholder="true"
       ref="editor"
       @typing="(val) => (quickcommandInfo.cmd = val)"
       :style="{

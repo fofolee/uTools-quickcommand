@@ -9,6 +9,8 @@ const {
 } = require('./lib/vm2')
 const path = require("path")
 const axios = require('axios');
+const http = require('http');
+const url = require('url')
 
 window._ = require("lodash")
 window.yuQueClient = axios.create({
@@ -266,154 +268,6 @@ let getSleepCodeByShell = ms => {
     return cmd
 }
 
-// 屏蔽危险函数
-window.getuToolsLite = () => {
-    var utoolsLite = Object.assign({}, utools)
-    if (utools.isDev()) return utoolsLite
-    // 数据库相关接口
-    delete utoolsLite.db
-    delete utoolsLite.dbStorage
-    delete utoolsLite.removeFeature
-    delete utoolsLite.setFeature
-    delete utoolsLite.onDbPull
-    // 支付相关接口
-    delete utoolsLite.fetchUserServerTemporaryToken
-    delete utoolsLite.getUserServerTemporaryToken
-    delete utoolsLite.openPayment
-    delete utoolsLite.fetchUserPayments
-    return utoolsLite
-}
-
-let getSandboxFuns = () => {
-    var sandbox = {
-        utools: getuToolsLite(),
-        quickcommand: quickcommand,
-        electron: electron,
-        axios: axios,
-        Audio: Audio,
-        fetch: fetch
-    }
-    shortCodes.forEach(f => {
-        sandbox[f.name] = f
-    })
-    return sandbox
-}
-
-let createNodeVM = () => {
-    var sandbox = getSandboxFuns()
-    const vm = new NodeVM({
-        require: {
-            external: true,
-            builtin: ["*"],
-        },
-        console: 'redirect',
-        env: process.env,
-        sandbox: sandbox,
-    });
-    return vm
-}
-
-let stringifyAll = item => {
-    var cache = [];
-    var string = JSON.stringify(item, (key, value) => {
-        if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) return
-            cache.push(value);
-        }
-        return value;
-    }, '\t')
-    if (string != "{}") return string
-    else return item.toString()
-}
-
-let parseItem = item => {
-    if (typeof item == "object") {
-        if (Buffer.isBuffer(item)) {
-            var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
-            if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
-            return bufferString + ']'
-        } else if (item instanceof ArrayBuffer) {
-            return `ArrayBuffer(${item.byteLength})`
-        } else if (item instanceof Blob) {
-            return `Blob {size: ${item.size}, type: "${item.type}"}`
-        } else {
-            try {
-                return stringifyAll(item)
-            } catch (error) {}
-        }
-    } else if (typeof item == "undefined") {
-        return "undefined"
-    }
-    return item.toString()
-}
-
-window.convertFilePathToUtoolsPayload = files => files.map(file => {
-    let isFile = fs.statSync(file).isFile()
-    return {
-        isFile: isFile,
-        isDirectory: !isFile,
-        name: path.basename(file),
-        path: file
-    }
-})
-
-let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
-
-window.VmEval = (cmd, sandbox = {}) => new VM({
-    sandbox: sandbox
-}).run(cmd)
-
-// The vm module of Node.js is deprecated in the renderer process and will be removed
-window.runCodeInVm = (cmd, cb) => {
-    const vm = createNodeVM()
-    //重定向 console
-    vm.on('console.log', (...stdout) => {
-        console.log(stdout);
-        cb(parseStdout(stdout), null)
-    });
-
-    vm.on('console.error', stderr => {
-        cb(null, stderr.toString())
-    });
-
-    let liteErr = e => {
-        if (!e) return
-        return e.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim()
-    }
-
-    // 错误处理
-    try {
-        vm.run(cmd, path.join(__dirname, 'preload.js'));
-    } catch (e) {
-        console.log('Error: ', e)
-        cb(null, liteErr(e))
-    }
-
-    let cbUnhandledError = e => {
-        removeAllListener()
-        console.log('UnhandledError: ', e)
-        cb(null, liteErr(e.error))
-    }
-
-    let cbUnhandledRejection = e => {
-        removeAllListener()
-        console.log('UnhandledRejection: ', e)
-        cb(null, liteErr(e.reason))
-    }
-
-    let removeAllListener = () => {
-        window.removeEventListener('error', cbUnhandledError)
-        window.removeEventListener('unhandledrejection', cbUnhandledRejection)
-        delete window.isWatchingError
-    }
-
-    if (!window.isWatchingError) {
-        window.addEventListener('error', cbUnhandledError)
-        window.addEventListener('unhandledrejection', cbUnhandledRejection)
-        window.isWatchingError = true
-    }
-}
-
 window.htmlEncode = (value) => {
     return String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
 }
@@ -509,16 +363,6 @@ window.getCurrentFolderPathFix = () => {
     return pwdFix.replace(/\\/g, '\\\\')
 }
 
-window.getMatchedFilesFix = payload => {
-    let MatchedFiles = payload
-    let Matched = cmd.match(/\{\{MatchedFiles(\[\d+\]){0,1}(\.\w{1,11}){0,1}\}\}/g)
-    Matched && Matched.forEach(m => {
-        repl = eval(m.slice(2, -2))
-        typeof repl == 'object' ? (repl = JSON.stringify(repl)) : (repl = repl.replace('\\', '\\\\'))
-        cmd = cmd.replace(m, repl.replace('$', '$$$'))
-    })
-}
-
 window.saveFile = (content, file) => {
     if (file instanceof Object) file = utools.showSaveDialog(file)
     if (!file) return false
@@ -558,6 +402,156 @@ window.getSelectFile = hwnd => {
 }
 
 window.clipboardReadText = () => electron.clipboard.readText()
+
+window.convertFilePathToUtoolsPayload = files => files.map(file => {
+    let isFile = fs.statSync(file).isFile()
+    return {
+        isFile: isFile,
+        isDirectory: !isFile,
+        name: path.basename(file),
+        path: file
+    }
+})
+
+let stringifyAll = item => {
+    var cache = [];
+    var string = JSON.stringify(item, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) return
+            cache.push(value);
+        }
+        return value;
+    }, '\t')
+    if (string != "{}") return string
+    else return item.toString()
+}
+
+let parseItem = item => {
+    if (typeof item == "object") {
+        if (Buffer.isBuffer(item)) {
+            var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
+            if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
+            return bufferString + ']'
+        } else if (item instanceof ArrayBuffer) {
+            return `ArrayBuffer(${item.byteLength})`
+        } else if (item instanceof Blob) {
+            return `Blob {size: ${item.size}, type: "${item.type}"}`
+        } else {
+            try {
+                return stringifyAll(item)
+            } catch (error) {}
+        }
+    } else if (typeof item == "undefined") {
+        return "undefined"
+    }
+    return item.toString()
+}
+
+let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
+
+// 屏蔽危险函数
+window.getuToolsLite = () => {
+    var utoolsLite = Object.assign({}, utools)
+    if (utools.isDev()) return utoolsLite
+    // 数据库相关接口
+    delete utoolsLite.db
+    delete utoolsLite.dbStorage
+    delete utoolsLite.removeFeature
+    delete utoolsLite.setFeature
+    delete utoolsLite.onDbPull
+    // 支付相关接口
+    delete utoolsLite.fetchUserServerTemporaryToken
+    delete utoolsLite.getUserServerTemporaryToken
+    delete utoolsLite.openPayment
+    delete utoolsLite.fetchUserPayments
+    return utoolsLite
+}
+
+let getSandboxFuns = () => {
+    var sandbox = {
+        utools: getuToolsLite(),
+        quickcommand: quickcommand,
+        electron: electron,
+        axios: axios,
+        Audio: Audio,
+        fetch: fetch
+    }
+    shortCodes.forEach(f => {
+        sandbox[f.name] = f
+    })
+    return sandbox
+}
+
+let createNodeVM = (userVars) => {
+    var sandbox = getSandboxFuns()
+    Object.assign(userVars, sandbox)
+    const vm = new NodeVM({
+        require: {
+            external: true,
+            builtin: ["*"],
+        },
+        console: 'redirect',
+        env: process.env,
+        sandbox: userVars,
+    });
+    return vm
+}
+
+window.VmEval = (cmd, sandbox = {}) => new VM({
+    sandbox: sandbox
+}).run(cmd)
+
+let isWatchingError = false
+// The vm module of Node.js is deprecated in the renderer process and will be removed
+window.runCodeInVm = (cmd, callback, userVars = {}) => {
+    const vm = createNodeVM(userVars)
+    //重定向 console
+    vm.on('console.log', (...stdout) => {
+        console.log(stdout);
+        callback(parseStdout(stdout), null)
+    });
+
+    vm.on('console.error', stderr => {
+        callback(null, stderr.toString())
+    });
+
+    let liteErr = e => {
+        if (!e) return
+        return e.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim()
+    }
+
+    // 错误处理
+    try {
+        vm.run(cmd, path.join(__dirname, 'preload.js'));
+    } catch (e) {
+        console.log('Error: ', e)
+        callback(null, liteErr(e))
+    }
+
+    let cbUnhandledError = e => {
+        removeAllListener()
+        console.log('UnhandledError: ', e)
+        callback(null, liteErr(e.error))
+    }
+
+    let cbUnhandledRejection = e => {
+        removeAllListener()
+        console.log('UnhandledRejection: ', e)
+        callback(null, liteErr(e.reason))
+    }
+
+    let removeAllListener = () => {
+        window.removeEventListener('error', cbUnhandledError)
+        window.removeEventListener('unhandledrejection', cbUnhandledRejection)
+        isWatchingError = false
+    }
+
+    if (!isWatchingError) {
+        window.addEventListener('error', cbUnhandledError)
+        window.addEventListener('unhandledrejection', cbUnhandledRejection)
+        isWatchingError = true
+    }
+}
 
 window.runCodeFile = (cmd, option, terminal, callback) => {
     var bin = option.bin,
@@ -609,4 +603,61 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     //     let stderr = err_chunks.join("");
     //     callback(stdout, stderr)
     // })
+}
+
+let httpServer
+window.quickcommandHttpServer = () => {
+    let run = (cmd = '', port = 33442) => {
+        let httpResponse = (res, code, result) => {
+            // 因为无法判断 vm2 是否执行完毕，故只收受一次 console.log，接收后就关闭连接
+            if (res.finished) return
+            res.writeHead(code, {
+                'Content-Type': 'text/html'
+            });
+            if (result) res.write(result);
+            res.end();
+        }
+        let runUserCode = (res, cmd, userVars) => {
+            // 不需要返回输出的提前关闭连接
+            if (!cmd.includes('console.log')) httpResponse(res, 200)
+            window.runCodeInVm(cmd, (stdout, stderr) => {
+                // 错误返回 500
+                if (stderr) return httpResponse(res, 500, stderr)
+                return httpResponse(res, 200, stdout)
+            }, userVars)
+        }
+        httpServer = http.createServer()
+        httpServer.on('request', (req, res) => {
+            if (req.method === 'GET') {
+                let parsedParams = _.cloneDeep(url.parse(req.url, true).query)
+                runUserCode(res, cmd, parsedParams)
+            } else if (req.method === 'POST') {
+                let data = []
+                req.on('data', (chunk) => {
+                    data.push(chunk)
+                })
+                req.on('end', () => {
+                    let parsedParams
+                    let params = data.join("").toString()
+                    // 先尝试作为 json 解析
+                    try {
+                        parsedParams = JSON.parse(params)
+                    } catch (error) {
+                        parsedParams = _.cloneDeep(url.parse('?' + params, true).query)
+                    }
+                    runUserCode(res, cmd, parsedParams)
+                })
+            } else {
+                httpResponse(res, 405)
+            }
+        })
+        httpServer.listen(port, 'localhost');
+    }
+    let stop = () => {
+        httpServer.close()
+    }
+    return {
+        run,
+        stop
+    }
 }

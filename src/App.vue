@@ -33,6 +33,16 @@ export default defineComponent({
         });
         return;
       }
+      // 如果配置了后台服务则开启监听
+      if (this.$profile.quickFeatures.apiServer.serverStatus) {
+        window
+          .quickcommandHttpServer()
+          .run(
+            this.$profile.quickFeatures.apiServer.cmd,
+            this.$profile.quickFeatures.apiServer.port
+          );
+        console.log("Server Start...");
+      }
       // 默认主题色
       this.setCssVar("primary", this.$profile.primaryColor);
       // 进入插件

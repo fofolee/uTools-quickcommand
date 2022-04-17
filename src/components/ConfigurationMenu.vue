@@ -12,6 +12,176 @@
     />
     <!-- 菜单 -->
     <q-list>
+      <!-- 实用功能 -->
+      <q-item clickable>
+        <q-item-section side>
+          <q-icon name="keyboard_arrow_left" />
+        </q-item-section>
+        <q-item-section>实用功能</q-item-section>
+        <q-menu anchor="top end" self="top start">
+          <q-list>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="folder_special" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="快速收藏文件至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                autofocus
+                v-model="quickFeatures.favFile.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('favFile')"
+                    v-model="quickFeatures.favFile.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，选中文件可以通过超级面板快速将文件收藏到「{{
+                    quickFeatures.favFile.tag
+                  }}」标签
+                </q-tooltip>
+              </q-input>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="bookmarks" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="快速收藏网址至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                v-model="quickFeatures.favUrl.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('favUrl')"
+                    v-model="quickFeatures.favUrl.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{
+                    quickFeatures.favUrl.tag
+                  }}」标签
+                </q-tooltip>
+              </q-input>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="drive_file_rename_outline" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="新建插件别名至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                autofocus
+                v-model="quickFeatures.pluNickName.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('pluNickName')"
+                    v-model="quickFeatures.pluNickName.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，在主输入框输入「插件别名」可以快速设置插件别名<br />
+                  并将所有设置的别名保存至「{{
+                    quickFeatures.pluNickName.tag
+                  }}」标签
+                </q-tooltip>
+              </q-input>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="timer" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="新建计划任务至"
+                suffix="标签"
+                outlined
+                input-class="text-center"
+                style="width: 280px"
+                v-model="quickFeatures.crontab.tag"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('crontab')"
+                    v-model="quickFeatures.crontab.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，在主输入框输入「计划任务」可以配置计划任务，定制执行指定或新建的快捷命令<br />
+                  如果是直接新建，则新建的任务会保存在「{{
+                    quickFeatures.crontab.tag
+                  }}」标签<br />
+                  注意此功能并没有使用系统自带的计划任务，需要配置插件跟随
+                  utools 启动和保留后台<br />
+                  本功能比系统自带的更为强大，因为你可以在计划任务中任意使用
+                  utools 或 quickcommand 的 api
+                </q-tooltip>
+              </q-input>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="api" />
+              </q-item-section>
+              <q-input
+                dense
+                prefix="开启快捷命令服务"
+                suffix="端口"
+                outlined
+                v-model="quickFeatures.apiServer.port"
+                input-class="text-center"
+                style="width: 280px"
+                type="text"
+              >
+                <template v-slot:append>
+                  <q-toggle
+                    @click="toggleFeature('apiServer')"
+                    v-model="quickFeatures.apiServer.enable"
+                    checked-icon="check"
+                    color="primary"
+                  />
+                </template>
+                <q-tooltip
+                  >启用后，在主输入框输入「快捷命令服务」可以进入配置一个后台服务<br />
+                  通过本地监听{{
+                    quickFeatures.apiServer.port
+                  }}端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
+                  <br />
+                  本功能的意义在于，将 utools
+                  的接口暴露出来，可以通过命令行等外部途径 <br />
+                  直接启用 ubrowser 或者直接redirect 到相应的插件<br />
+                  需要配置插件跟随 utools 启动和保留后台
+                </q-tooltip>
+              </q-input>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </q-item>
       <!-- 导入 -->
       <q-item clickable>
         <q-item-section side>
@@ -73,108 +243,6 @@
                 <q-icon name="delete" />
               </q-item-section>
               <q-item-section>删除所有命令</q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
-      </q-item>
-      <!-- 实用功能 -->
-      <q-item clickable>
-        <q-item-section side>
-          <q-icon name="keyboard_arrow_left" />
-        </q-item-section>
-        <q-item-section>实用功能</q-item-section>
-        <q-menu anchor="top end" self="top start">
-          <q-list>
-            <q-item>
-              <q-item-section side>
-                <q-icon name="folder_special" />
-              </q-item-section>
-              <q-input
-                dense
-                prefix="快速收藏文件至"
-                suffix="标签"
-                outlined
-                input-class="text-center"
-                style="width: 280px"
-                autofocus
-                v-model="quickFeatures.favFile.tag"
-                type="text"
-              >
-                <template v-slot:append>
-                  <q-toggle
-                    @click="toggleFeature('favFile')"
-                    v-model="quickFeatures.favFile.enable"
-                    checked-icon="check"
-                    color="primary"
-                  />
-                </template>
-                <q-tooltip
-                  >启用后，选中文件可以通过超级面板快速将文件收藏到「{{
-                    quickFeatures.favFile.tag
-                  }}」标签
-                </q-tooltip>
-              </q-input>
-            </q-item>
-            <q-item>
-              <q-item-section side>
-                <q-icon name="bookmarks" />
-              </q-item-section>
-              <q-input
-                dense
-                prefix="快速收藏网址至"
-                suffix="标签"
-                outlined
-                input-class="text-center"
-                style="width: 280px"
-                autofocus
-                v-model="quickFeatures.favUrl.tag"
-                type="text"
-              >
-                <template v-slot:append>
-                  <q-toggle
-                    @click="toggleFeature('favUrl')"
-                    v-model="quickFeatures.favUrl.enable"
-                    checked-icon="check"
-                    color="primary"
-                  />
-                </template>
-                <q-tooltip
-                  >启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{
-                    quickFeatures.favUrl.tag
-                  }}」标签
-                </q-tooltip>
-              </q-input>
-            </q-item>
-            <q-item>
-              <q-item-section side>
-                <q-icon name="drive_file_rename_outline" />
-              </q-item-section>
-              <q-input
-                dense
-                prefix="新建插件别名至"
-                suffix="标签"
-                outlined
-                input-class="text-center"
-                style="width: 280px"
-                autofocus
-                v-model="quickFeatures.pluNickName.tag"
-                type="text"
-              >
-                <template v-slot:append>
-                  <q-toggle
-                    @click="toggleFeature('pluNickName')"
-                    v-model="quickFeatures.pluNickName.enable"
-                    checked-icon="check"
-                    color="primary"
-                  />
-                </template>
-                <q-tooltip
-                  >启用后，在主输入框输入「插件别名」可以快速设置插件别名<br />
-                  并将所有设置的别名保存至「{{
-                    quickFeatures.pluNickName.tag
-                  }}」标签
-                </q-tooltip>
-              </q-input>
             </q-item>
           </q-list>
         </q-menu>
