@@ -24,11 +24,11 @@ export default {
   methods: {
     importCommand(command) {
       command = _.cloneDeep(command);
-      this.$utools.putDB(
+      this.$root.utools.putDB(
         command,
-        this.$utools.DBPRE.QC + command.features.code
+        this.$root.utools.DBPRE.QC + command.features.code
       );
-      this.$utools.whole.setFeature(command.features);
+      this.$root.utools.whole.setFeature(command.features);
     },
     getUid() {
       return Number(

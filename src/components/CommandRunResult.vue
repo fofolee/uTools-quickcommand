@@ -106,9 +106,10 @@ export default {
           !outPlugin && this.showRunResult(stdout, true, action);
         });
       } else {
-        let option = this.$programmings[currentCommand.program];
-        if (currentCommand.program === "custom")
-          option = currentCommand.customOptions;
+        let option =
+          currentCommand.program === "custom"
+            ? currentCommand.customOptions
+            : this.$root.programs[currentCommand.program];
         option.scptarg = currentCommand.scptarg;
         option.charset = currentCommand.charset;
         window.runCodeFile(

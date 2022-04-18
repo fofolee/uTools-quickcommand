@@ -36,8 +36,8 @@
             dense
             flat
             round
-            color="blue-9"
-            icon="insights"
+            :color="!!cronExp ? 'amber' : 'blue-9'"
+            :icon="!!cronExp ? 'timer' : 'insights'"
           >
             <q-tooltip anchor="top middle" self="center middle">
               设置
@@ -79,9 +79,9 @@
                   <q-item-section side>
                     <q-icon name="timer" />
                   </q-item-section>
-                  <q-item-section>添加定时任务</q-item-section>
+                  <q-item-section>定时任务</q-item-section>
                   <q-tooltip
-                    >定时执行当前命令，仅匹配类型为关键字时可用</q-tooltip
+                    >在后台定时执行当前命令，仅匹配类型为关键字时可用，且一律忽略输出</q-tooltip
                   >
                 </q-item>
               </q-list>
@@ -231,8 +231,7 @@
     </div>
     <q-dialog v-model="showCrontab">
       <CrontabSetting
-        :cronStatus="$profile.crontabs[featureCode]?.status"
-        :cronExp="$profile.crontabs[featureCode]?.cronExp"
+        :cronExp="cronExp"
         @addCrontab="addCrontab"
         @delCrontab="delCrontab"
       />
@@ -249,7 +248,7 @@ export default {
   components: { CrontabSetting },
   data() {
     return {
-      allProgrammings: this.$programmings,
+      allProgrammings: this.$root.programs,
       maxCmdStingLen: 8,
       commandTypes: commandTypes,
       platformTypes: platformTypes,
@@ -314,6 +313,9 @@ export default {
     featureCode() {
       return this.commandInfo.features.code;
     },
+    cronExp() {
+      return this.$root.profile.crontabs[this.featureCode];
+    },
   },
   props: {
     commandInfo: Object,
@@ -358,19 +360,12 @@ export default {
       this.$emit("commandChanged", event);
     },
     addCrontab(cronExp) {
-      this.$profile.crontabs[this.featureCode] = {
-        cronStatus: true,
-        cronExp: cronExp,
-      };
-      this.cronJob = this.$Cron(cronExp, () => {
-        this.runCommand();
-      });
+      this.$root.profile.crontabs[this.featureCode] = cronExp;
+      this.$root.runCronTask(this.featureCode, cronExp);
     },
     delCrontab() {
-      this.$profile.crontabs[this.featureCode] = {
-        cronStatus: false,
-      };
-      this.cronJob.stop();
+      delete this.$root.profile.crontabs[this.featureCode];
+      this.$root.cronJobs[this.featureCode].stop();
     },
     // 启用/禁用命令
     toggleCommandActivated() {

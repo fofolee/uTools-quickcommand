@@ -6,8 +6,8 @@
       ref="editor"
       @typing="
         (val) => {
-          if ($profile.quickFeatures.apiServer.cmd !== val) {
-            $profile.quickFeatures.apiServer.cmd = val;
+          if ($root.profile.quickFeatures.apiServer.cmd !== val) {
+            $root.profile.quickFeatures.apiServer.cmd = val;
           }
           restartServer();
         }
@@ -33,7 +33,7 @@
         <q-badge color="primary" dense square>POST</q-badge
         ><q-badge color="primary" dense square>GET</q-badge>
         <span>
-          http://127.0.0.1:{{ $profile.quickFeatures.apiServer.port }}
+          http://127.0.0.1:{{ $root.profile.quickFeatures.apiServer.port }}
         </span>
         <span>的参数，均会作为本脚本里的变量 </span>
       </div>
@@ -44,7 +44,9 @@
           flat
           color="negative"
           icon="stop"
-          v-if="serverStatus && !restartTimer"
+          v-if="
+            $root.profile.quickFeatures.apiServer.serverStatus && !restartTimer
+          "
           @click="stopServer"
           label="停止服务"
         />
@@ -52,7 +54,9 @@
           flat
           color="warning"
           icon="restart_alt"
-          v-else-if="serverStatus && !!restartTimer"
+          v-else-if="
+            $root.profile.quickFeatures.apiServer.serverStatus && !!restartTimer
+          "
           @click="restartServer"
           label="正在重载"
         />
@@ -78,12 +82,13 @@ export default {
   data() {
     return {
       bottomHeight: 40,
-      serverStatus: this.$profile.quickFeatures.apiServer.serverStatus,
       restartTimer: null,
     };
   },
   mounted() {
-    this.$refs.editor.setEditorValue(this.$profile.quickFeatures.apiServer.cmd);
+    this.$refs.editor.setEditorValue(
+      this.$root.profile.quickFeatures.apiServer.cmd
+    );
     this.$refs.editor.setEditorLanguage("javascript");
     this.restartTimer = null;
   },
@@ -96,33 +101,31 @@ export default {
         )
         .then((ok) => {
           if (!ok) return;
-          this.$profile.quickFeatures.apiServer.serverStatus =
-            this.serverStatus = true;
+          this.$root.profile.quickFeatures.apiServer.serverStatus = true;
           window
             .quickcommandHttpServer()
             .run(
-              this.$profile.quickFeatures.apiServer.cmd,
-              this.$profile.quickFeatures.apiServer.port
+              this.$root.profile.quickFeatures.apiServer.cmd,
+              this.$root.profile.quickFeatures.apiServer.port
             );
           quickcommand.showMessageBox("启动服务成功！");
         });
     },
     stopServer() {
       window.quickcommandHttpServer().stop();
-      this.$profile.quickFeatures.apiServer.serverStatus =
-        this.serverStatus = false;
+      this.$root.profile.quickFeatures.apiServer.serverStatus = false;
       quickcommand.showMessageBox("关闭服务成功！");
     },
     restartServer() {
-      if (!this.serverStatus) return;
+      if (!this.$root.profile.quickFeatures.apiServer.serverStatus) return;
       clearTimeout(this.restartTimer);
       this.restartTimer = setTimeout(() => {
         window.quickcommandHttpServer().stop();
         window
           .quickcommandHttpServer()
           .run(
-            this.$profile.quickFeatures.apiServer.cmd,
-            this.$profile.quickFeatures.apiServer.port
+            this.$root.profile.quickFeatures.apiServer.cmd,
+            this.$root.profile.quickFeatures.apiServer.port
           );
         this.restartTimer = null;
       }, 1000);

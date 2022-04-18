@@ -32,20 +32,20 @@
                 input-class="text-center"
                 style="width: 280px"
                 autofocus
-                v-model="quickFeatures.favFile.tag"
+                v-model="$root.profile.quickFeatures.favFile.tag"
                 type="text"
               >
                 <template v-slot:append>
                   <q-toggle
                     @click="toggleFeature('favFile')"
-                    v-model="quickFeatures.favFile.enable"
+                    v-model="$root.profile.quickFeatures.favFile.enable"
                     checked-icon="check"
                     color="primary"
                   />
                 </template>
                 <q-tooltip
                   >启用后，选中文件可以通过超级面板快速将文件收藏到「{{
-                    quickFeatures.favFile.tag
+                    $root.profile.quickFeatures.favFile.tag
                   }}」标签
                 </q-tooltip>
               </q-input>
@@ -61,20 +61,20 @@
                 outlined
                 input-class="text-center"
                 style="width: 280px"
-                v-model="quickFeatures.favUrl.tag"
+                v-model="$root.profile.quickFeatures.favUrl.tag"
                 type="text"
               >
                 <template v-slot:append>
                   <q-toggle
                     @click="toggleFeature('favUrl')"
-                    v-model="quickFeatures.favUrl.enable"
+                    v-model="$root.profile.quickFeatures.favUrl.enable"
                     checked-icon="check"
                     color="primary"
                   />
                 </template>
                 <q-tooltip
                   >启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{
-                    quickFeatures.favUrl.tag
+                    $root.profile.quickFeatures.favUrl.tag
                   }}」标签
                 </q-tooltip>
               </q-input>
@@ -91,13 +91,13 @@
                 input-class="text-center"
                 style="width: 280px"
                 autofocus
-                v-model="quickFeatures.pluNickName.tag"
+                v-model="$root.profile.quickFeatures.pluNickName.tag"
                 type="text"
               >
                 <template v-slot:append>
                   <q-toggle
                     @click="toggleFeature('pluNickName')"
-                    v-model="quickFeatures.pluNickName.enable"
+                    v-model="$root.profile.quickFeatures.pluNickName.enable"
                     checked-icon="check"
                     color="primary"
                   />
@@ -105,7 +105,7 @@
                 <q-tooltip
                   >启用后，在主输入框输入「插件别名」可以快速设置插件别名<br />
                   并将所有设置的别名保存至「{{
-                    quickFeatures.pluNickName.tag
+                    $root.profile.quickFeatures.pluNickName.tag
                   }}」标签
                 </q-tooltip>
               </q-input>
@@ -119,7 +119,7 @@
                 prefix="开启快捷命令服务"
                 suffix="端口"
                 outlined
-                v-model="quickFeatures.apiServer.port"
+                v-model="$root.profile.quickFeatures.apiServer.port"
                 input-class="text-center"
                 style="width: 280px"
                 type="text"
@@ -127,7 +127,7 @@
                 <template v-slot:append>
                   <q-toggle
                     @click="toggleFeature('apiServer')"
-                    v-model="quickFeatures.apiServer.enable"
+                    v-model="$root.profile.quickFeatures.apiServer.enable"
                     checked-icon="check"
                     color="primary"
                   />
@@ -135,7 +135,7 @@
                 <q-tooltip
                   >启用后，在主输入框输入「快捷命令服务」可以进入配置一个后台服务<br />
                   通过本地监听{{
-                    quickFeatures.apiServer.port
+                    $root.profile.quickFeatures.apiServer.port
                   }}端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
                   <br />
                   本功能的意义在于，将 utools
@@ -233,7 +233,7 @@
                     no-header
                     no-footer
                     @change="setPrimaryColor"
-                    v-model="primaryColor"
+                    v-model="$root.profile.primaryColor"
                   />
                   <q-btn
                     color="primary"
@@ -343,7 +343,6 @@ export default {
       selectFile: ref(null),
       showAbout: false,
       showPanelConf: false,
-      quickFeatures: this.$profile.quickFeatures,
       features: features,
     };
   },
@@ -391,21 +390,21 @@ export default {
     },
     // 设置主题色
     setPrimaryColor() {
-      this.setCssVar("primary", this.$profile.primaryColor);
+      this.setCssVar("primary", this.$root.profile.primaryColor);
     },
     // 重置主题色
     resetPrimary() {
-      this.$profile.primaryColor = this.$profile.defaultPrimaryColor;
+      this.$root.profile.primaryColor = this.$root.profile.defaultPrimaryColor;
       this.setPrimaryColor();
     },
     // 修改面板视图背景
     changeBackground(reset = false) {
-      this.$profile.backgroundImg = reset ? null : this.selectFile.path;
+      this.$root.profile.backgroundImg = reset ? null : this.selectFile.path;
       this.configurationPage.$forceUpdate();
     },
     // 取消收藏
     unMarkTag() {
-      this.$utools.whole.removeFeature(
+      this.$root.utools.whole.removeFeature(
         `panel_${window.hexEncode(this.currentTag)}`
       );
       _.pull(this.$root.$refs.view.activatedQuickPanels, this.currentTag);
@@ -413,8 +412,8 @@ export default {
     },
     // 实用功能
     toggleFeature(type) {
-      this.$utools.whole.removeFeature(this.features[type].code) ||
-        this.$utools.whole.setFeature(_.cloneDeep(this.features[type]));
+      this.$root.utools.whole.removeFeature(this.features[type].code) ||
+        this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]));
     },
   },
 };

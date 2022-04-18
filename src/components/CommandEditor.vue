@@ -61,13 +61,13 @@
             >
               <template v-slot:append>
                 <q-avatar size="lg" square>
-                  <img :src="$programmings[quickcommandInfo.program].icon" />
+                  <img :src="$root.programs[quickcommandInfo.program].icon" />
                 </q-avatar>
               </template>
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section avatar>
-                    <img width="32" :src="$programmings[scope.opt].icon" />
+                    <img width="32" :src="$root.programs[scope.opt].icon" />
                   </q-item-section>
                   <q-item-section>
                     <q-item-label v-html="scope.opt" />
@@ -166,7 +166,7 @@ export default {
   components: { MonacoEditor, CommandSideBar, CommandRunResult },
   data() {
     return {
-      programLanguages: Object.keys(this.$programmings),
+      programLanguages: Object.keys(this.$root.programs),
       sideBarWidth: 250,
       languageBarHeight: 40,
       canCommandSave: this.action.type === "code" ? false : true,
@@ -214,7 +214,7 @@ export default {
     init() {
       let quickCommandInfo =
         this.action.type !== "edit"
-          ? this.$utools.getDB(this.$utools.DBPRE.CFG + "preferences")
+          ? this.$root.utools.getDB(this.$root.utools.DBPRE.CFG + "preferences")
               ?.codeHistory[this.action.type]
           : this.action.data;
       quickCommandInfo?.program &&
@@ -234,7 +234,7 @@ export default {
     },
     // 匹配编程语言
     matchLanguage() {
-      let language = Object.values(this.$programmings).filter(
+      let language = Object.values(this.$root.programs).filter(
         (program) => program.ext === this.quickcommandInfo.customOptions.ext
       );
       if (language.length) {
@@ -243,7 +243,7 @@ export default {
     },
     // 设置编程语言
     setLanguage(language) {
-      let highlight = this.$programmings[language].highlight;
+      let highlight = this.$root.programs[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
     // 打开文档
@@ -330,9 +330,9 @@ export default {
       if (!updatedData) return;
       Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
       let newQuickcommandInfo = _.cloneDeep(this.quickcommandInfo);
-      this.$utools.putDB(
+      this.$root.utools.putDB(
         newQuickcommandInfo,
-        this.$utools.DBPRE.QC + this.quickcommandInfo.features.code
+        this.$root.utools.DBPRE.QC + this.quickcommandInfo.features.code
       );
       this.$emit("editorEvent", {
         type: "save",

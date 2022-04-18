@@ -21,7 +21,7 @@ export default {
         program: "quickcommand",
         cmd: `open(\"${file.path.replace(/\\/g, "\\\\")}\")`,
         output: "ignore",
-        tags: [this.$profile.quickFeatures.favFile.tag],
+        tags: [this.$root.profile.quickFeatures.favFile.tag],
       };
       this.importCommand(command);
     });

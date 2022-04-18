@@ -71,7 +71,7 @@ export default {
   },
   methods: {
     markTag() {
-      this.$utools.whole.setFeature(_.cloneDeep(this.features));
+      this.$root.utools.whole.setFeature(_.cloneDeep(this.features));
       this.$root.$refs.view.activatedQuickPanels.push(this.currentTag);
       quickcommand.showMessageBox(
         `主输入框输入『${this.features.cmds.join("、")}』即可直接进入『${

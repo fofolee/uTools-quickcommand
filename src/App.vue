@@ -7,12 +7,20 @@
 <script>
 import { defineComponent } from "vue";
 import { setCssVar } from "quasar";
+import UTOOLS from "./js/utools.js";
+import programmings from "./js/options/programs.js";
+import defaultProfile from "./js/options/defaultProfile.js";
+import Cron from "croner";
 
 export default defineComponent({
   name: "App",
   data() {
     return {
       setCssVar: setCssVar,
+      programs: programmings,
+      profile: defaultProfile,
+      utools: UTOOLS,
+      cronJobs: {},
     };
   },
   computed: {},
@@ -23,7 +31,16 @@ export default defineComponent({
     init() {
       window.root = this;
       window.utools = window.getuToolsLite();
-      // 版本检测
+      if (!this.checkVer()) return;
+      this.startUp();
+      utools.onPluginEnter((enter) => {
+        this.enterPlugin(enter);
+      });
+      utools.onPluginOut(() => {
+        this.outPlugin();
+      });
+    },
+    checkVer() {
       const requiredVersion = "2.6.1";
       let version = utools.getAppVersion();
       if (version < requiredVersion) {
@@ -31,66 +48,92 @@ export default defineComponent({
           name: "needupdate",
           params: { version: version, requiredVersion: requiredVersion },
         });
-        return;
+        return false;
       }
-      this.startUp();
-      // 进入插件
-      utools.onPluginEnter((enter) => {
-        // 暗黑模式
-        this.$q.dark.set(utools.isDarkColors());
-        // 路由跳转
-        quickcommand.enterData = enter;
-        quickcommand.payload = enter.payload;
-        this.$router.push(enter.code);
+      return true;
+    },
+    startUp() {
+      // 读取用户配置
+      let userProfile = this.utools.getDB(
+        this.utools.DBPRE.CFG + "preferences"
+      );
+      _.merge(defaultProfile, _.cloneDeep(userProfile));
+      // 计划任务
+      _.forIn(this.profile.crontabs, (cronExp, featureCode) => {
+        this.runCronTask(featureCode, cronExp);
       });
-      // 退出插件
-      utools.onPluginOut(() => {
-        // 保存偏好
-        this.saveProfile();
-        // 切到空路由
-        this.$router.push("/");
-        // 清空临时数据
-        window.temporaryStoreSoldOut();
-      });
+      // 快捷命令服务
+      if (this.profile.quickFeatures.apiServer.serverStatus) {
+        window
+          .quickcommandHttpServer()
+          .run(
+            this.profile.quickFeatures.apiServer.cmd,
+            this.profile.quickFeatures.apiServer.port
+          );
+        console.log("Server Start...");
+      }
+      // 默认主题色
+      this.setCssVar("primary", this.profile.primaryColor);
+    },
+    enterPlugin(enter) {
+      this.$q.dark.set(utools.isDarkColors());
+      quickcommand.enterData = enter;
+      quickcommand.payload = enter.payload;
+      this.$router.push(enter.code);
+    },
+    outPlugin() {
+      this.saveProfile();
+      this.$router.push("/");
+      window.temporaryStoreSoldOut();
     },
     saveProfile() {
       let commandEditor = this.$refs.view.$refs.commandEditor;
       if (commandEditor && commandEditor.action.type !== "edit") {
         let command = _.cloneDeep(commandEditor.quickcommandInfo);
         command.cursorPosition = commandEditor.$refs.editor.getCursorPosition();
-        this.$profile.codeHistory[commandEditor.action.type] = command;
+        this.profile.codeHistory[commandEditor.action.type] = command;
       }
-      this.$utools.putDB(
-        _.cloneDeep(this.$profile),
-        this.$utools.DBPRE.CFG + "preferences"
+      this.utools.putDB(
+        _.cloneDeep(this.profile),
+        this.utools.DBPRE.CFG + "preferences"
       );
     },
-    // 随插件启动执行
-    startUp() {
-      // 如果配置了后台服务则开启监听
-      if (this.$profile.quickFeatures.apiServer.serverStatus) {
-        window
-          .quickcommandHttpServer()
-          .run(
-            this.$profile.quickFeatures.apiServer.cmd,
-            this.$profile.quickFeatures.apiServer.port
-          );
-        console.log("Server Start...");
+    runCronTask(featureCode, cronExp) {
+      this.cronJobs[featureCode] = Cron(cronExp, () => {
+        this.runCommandSilently(featureCode);
+      });
+    },
+    runCommandSilently(featureCode) {
+      let command = this.utools.getDB(this.utools.DBPRE.QC + featureCode);
+      if (command.program === "quickcommand") {
+        window.runCodeInSandbox(command.cmd, () => {});
+      } else {
+        let option =
+          command.program === "custom"
+            ? command.customOptions
+            : this.programs[command.program];
+        option.scptarg = command.scptarg;
+        option.charset = command.charset;
+        window.runCodeFile(command.cmd, option, false, () => {});
       }
-      // 默认主题色
-      this.setCssVar("primary", this.$profile.primaryColor);
     },
   },
 });
 </script>
 
 <style>
-.q-tooltip {
-  font-size: 11px;
-}
 :root {
   --q-dark: #464646;
   --q-dark-page: #303133;
+}
+.q-tooltip {
+  font-size: 11px;
+}
+.q-chip {
+  background: #e3e3e39a;
+}
+.q-chip--dark {
+  background: #676666;
 }
 .commandLogo {
   cursor: pointer;

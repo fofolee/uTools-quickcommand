@@ -331,7 +331,8 @@ export default {
     },
     setIcon(language) {
       this.currentCommand.features.icon?.slice(0, 10) === "data:image" ||
-        (this.currentCommand.features.icon = this.$programmings[language].icon);
+        (this.currentCommand.features.icon =
+          this.$root.programs[language].icon);
     },
     getCommandType() {
       let data = { type: "key", match: [] };

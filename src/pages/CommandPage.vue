@@ -23,7 +23,7 @@ export default {
   },
   computed: {
     currentCommand() {
-      return this.$utools.whole.db.get("qc_" + this.featureCode).data;
+      return this.$root.utools.whole.db.get("qc_" + this.featureCode).data;
     },
   },
   methods: {

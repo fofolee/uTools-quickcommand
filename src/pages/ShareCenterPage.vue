@@ -186,7 +186,10 @@ export default {
         return quickcommand.showMessageBox("该命令格式有误！", "error");
       let pushData = _.cloneDeep(command);
       if (!pushData?.tags.includes("来自分享")) pushData.tags.push("来自分享");
-      this.$utools.putDB(_.cloneDeep(pushData), this.$utools.DBPRE.QC + code);
+      this.$root.utools.putDB(
+        _.cloneDeep(pushData),
+        this.$root.utools.DBPRE.QC + code
+      );
       quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
     },
     updateSearch() {

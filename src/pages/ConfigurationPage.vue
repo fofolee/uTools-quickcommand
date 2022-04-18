@@ -40,8 +40,8 @@
         bottom: footerBarHeight,
         left: tabBarWidth,
         background:
-          commandCardStyle === 'mini' && $profile.backgroundImg
-            ? 'url(file:///' + $profile.backgroundImg + ')'
+          commandCardStyle === 'mini' && $root.profile.backgroundImg
+            ? 'url(file:///' + $root.profile.backgroundImg + ')'
             : 'none',
         backgroundSize: 'cover',
       }"
@@ -118,7 +118,7 @@
             <!-- 切换视图 -->
             <q-btn-toggle
               v-model="commandCardStyle"
-              @click="$profile.commandCardStyle = commandCardStyle"
+              @click="$root.profile.commandCardStyle = commandCardStyle"
               toggle-color="primary"
               flat
               :options="[
@@ -227,7 +227,7 @@ export default {
       isCommandEditorShow: false,
       commandEditorAction: {},
       footerBarHeight: "40px",
-      commandCardStyle: this.$profile.commandCardStyle,
+      commandCardStyle: this.$root.profile.commandCardStyle,
       commandCardStyleSheet: {
         mini: {
           width: "20%",
@@ -334,7 +334,10 @@ export default {
     },
     importDefaultCommands() {
       for (var code of Object.keys(defaultCommands)) {
-        this.$utools.putDB(defaultCommands[code], this.$utools.DBPRE.QC + code);
+        this.$root.utools.putDB(
+          defaultCommands[code],
+          this.$root.utools.DBPRE.QC + code
+        );
       }
       Object.assign(this.allQuickCommands, defaultCommands);
     },
@@ -356,8 +359,8 @@ export default {
     // 获取所有的快捷命令（导出的格式）
     getAllQuickCommands() {
       let allQcs = {};
-      this.$utools
-        .getDocs(this.$utools.DBPRE.QC)
+      this.$root.utools
+        .getDocs(this.$root.utools.DBPRE.QC)
         .forEach((x) => (allQcs[x.data.features.code] = x.data));
       return allQcs;
     },
@@ -390,14 +393,14 @@ export default {
     },
     // 启用命令
     enableCommand(code) {
-      this.$utools.whole.setFeature(
+      this.$root.utools.whole.setFeature(
         _.cloneDeep(this.allQuickCommands[code].features)
       );
       this.activatedQuickCommandFeatureCodes.push(code);
     },
     // 禁用命令
     disableCommand(code) {
-      this.$utools.whole.removeFeature(code);
+      this.$root.utools.whole.removeFeature(code);
       this.activatedQuickCommandFeatureCodes =
         this.activatedQuickCommandFeatureCodes.filter((x) => x !== code);
     },
@@ -405,7 +408,7 @@ export default {
     removeCommand(code) {
       utools.copyText(JSON.stringify(this.allQuickCommands[code], null, 4));
       delete this.allQuickCommands[code];
-      this.$utools.delDB(this.$utools.DBPRE.QC + code);
+      this.$root.utools.delDB(this.$root.utools.DBPRE.QC + code);
       this.disableCommand(code);
       if (!this.allQuickCommandTags.includes(this.currentTag))
         this.currentTag = "默认";
@@ -455,7 +458,10 @@ export default {
         dataToPushed = parsedData.qc;
       }
       for (var code of Object.keys(dataToPushed)) {
-        this.$utools.putDB(dataToPushed[code], this.$utools.DBPRE.QC + code);
+        this.$root.utools.putDB(
+          dataToPushed[code],
+          this.$root.utools.DBPRE.QC + code
+        );
       }
       Object.assign(this.allQuickCommands, dataToPushed);
       quickcommand.showMessageBox("导入成功！");
@@ -512,10 +518,10 @@ export default {
           if (!isConfirmed)
             return quickcommand.showMessageBox("取消操作", "info");
           this.exportAllCommands(false);
-          this.$utools
-            .getDocs(this.$utools.DBPRE.QC)
+          this.$root.utools
+            .getDocs(this.$root.utools.DBPRE.QC)
             .map((x) => x._id)
-            .forEach((y) => this.$utools.delDB(y));
+            .forEach((y) => this.$root.utools.delDB(y));
           this.importDefaultCommands();
           this.clearAllFeatures();
           Object.keys(this.allQuickCommands).forEach((featureCode) => {
@@ -531,7 +537,7 @@ export default {
     // 删除所有 features
     clearAllFeatures() {
       for (var feature of utools.getFeatures()) {
-        this.$utools.whole.removeFeature(feature.code);
+        this.$root.utools.whole.removeFeature(feature.code);
       }
     },
     // 搜索
@@ -563,8 +569,8 @@ export default {
       if (!this.activatedQuickCommandFeatureCodes.includes(code))
         this.activatedQuickCommandFeatureCodes.push(code);
       // 先删除再添加，强制刷新
-      this.$utools.whole.removeFeature(code);
-      this.$utools.whole.setFeature(command.features);
+      this.$root.utools.whole.removeFeature(code);
+      this.$root.utools.whole.setFeature(command.features);
       this.locateToCommand(command.tags, code);
     },
     editorEvent(event) {

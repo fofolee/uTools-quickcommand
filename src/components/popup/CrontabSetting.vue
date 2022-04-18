@@ -54,7 +54,7 @@
         flat
         color="negative"
         icon="alarm_off"
-        v-if="cronStatus"
+        v-if="!!cronExp"
         @click="delCrontab"
         label="禁用"
       />
@@ -71,22 +71,24 @@
 </template>
 
 <script>
+import Cron from "croner";
+
 export default {
   data() {
     return {
-      cronDetail: {
+      default: {
         min: { label: "分钟", value: "" },
         hour: { label: "小时", value: "" },
         day: { label: "天", value: "*" },
         month: { label: "月", value: "*" },
         week: { label: "星期", value: "*" },
       },
+      cronDetail: {},
       intervalId: null,
       nextLeftTime: null,
     };
   },
   props: {
-    cronStatus: Boolean,
     cronExp: String,
   },
   computed: {
@@ -97,7 +99,7 @@ export default {
     },
     cronJob() {
       try {
-        return this.$Cron(this.cronConverted);
+        return Cron(this.cronConverted);
       } catch (error) {
         return null;
       }
@@ -127,6 +129,7 @@ export default {
       window.showHelpPage("#Q0e7s");
     },
     initValue() {
+      this.cronDetail = _.cloneDeep(this.default);
       if (!this.cronExp) return;
       let splited = this.cronExp.split(" ");
       Object.keys(this.cronDetail).forEach((key, index) => {
@@ -146,6 +149,7 @@ export default {
     },
     delCrontab() {
       this.$emit("delCrontab");
+      this.cronDetail = _.cloneDeep(this.default);
       quickcommand.showMessageBox("禁用成功");
     },
   },
