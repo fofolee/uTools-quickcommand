@@ -43,13 +43,6 @@ const quickFeatures = {
         icon: require("../../assets/feature/plugin.png"),
         platform: ["win32", "darwin", "linux"],
     },
-    crontab: {
-        code: "feature_crontab",
-        explain: "为快捷命令添加计划任务",
-        cmds: ["计划任务", "crontab"],
-        icon: require("../../assets/feature/crontab.png"),
-        platform: ["win32", "darwin", "linux"],
-    },
     apiServer: {
         code: "feature_apiServer",
         explain: "配置快捷命令后台服务",

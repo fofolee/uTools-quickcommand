@@ -4,7 +4,6 @@
 
 <script>
 import PluginNickName from "components/quickFeatures/PluginNickName";
-import CrontabCmd from "components/quickFeatures/CrontabCmd";
 import ApiServer from "components/quickFeatures/ApiServer";
 import FavFile from "components/quickFeatures/FavFile";
 import FavUrl from "components/quickFeatures/FavUrl";
@@ -13,7 +12,6 @@ import { markRaw } from "vue";
 export default {
   components: {
     pluNickName: markRaw(PluginNickName),
-    crontab: markRaw(CrontabCmd),
     apiServer: markRaw(ApiServer),
     favFile: markRaw(FavFile),
     favUrl: markRaw(FavUrl),

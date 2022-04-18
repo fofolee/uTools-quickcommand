@@ -37,10 +37,10 @@
             flat
             round
             color="blue-9"
-            icon="share"
+            icon="insights"
           >
             <q-tooltip anchor="top middle" self="center middle">
-              导出
+              设置
             </q-tooltip>
             <q-menu transition-show="jump-down" transition-hide="jump-up">
               <q-list style="min-width: 100px">
@@ -55,6 +55,34 @@
                     <q-icon name="content_paste_go" />
                   </q-item-section>
                   <q-item-section>复制到剪贴板</q-item-section>
+                </q-item>
+                <q-item clickable disable>
+                  <q-item-section side>
+                    <q-icon name="share" />
+                  </q-item-section>
+                  <q-item-section>分享</q-item-section>
+                  <q-tooltip>暂未开放</q-tooltip>
+                </q-item>
+                <q-item clickable disable>
+                  <q-item-section side>
+                    <q-icon name="supervisor_account" />
+                  </q-item-section>
+                  <q-item-section>分享设置</q-item-section>
+                  <q-tooltip>暂未开放</q-tooltip>
+                </q-item>
+                <q-item
+                  clickable
+                  v-close-popup
+                  @click="showCrontab = true"
+                  :disable="!canCommandAddCron"
+                >
+                  <q-item-section side>
+                    <q-icon name="timer" />
+                  </q-item-section>
+                  <q-item-section>添加定时任务</q-item-section>
+                  <q-tooltip
+                    >定时执行当前命令，仅匹配类型为关键字时可用</q-tooltip
+                  >
                 </q-item>
               </q-list>
             </q-menu>
@@ -201,20 +229,32 @@
         </q-card-section>
       </q-card>
     </div>
+    <q-dialog v-model="showCrontab">
+      <CrontabSetting
+        :cronStatus="$profile.crontabs[featureCode]?.status"
+        :cronExp="$profile.crontabs[featureCode]?.cronExp"
+        @addCrontab="addCrontab"
+        @delCrontab="delCrontab"
+      />
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import commandTypes from "../js/options/commandTypes.js";
 import platformTypes from "../js/options/platformTypes.js";
+import CrontabSetting from "components/popup/CrontabSetting";
 
 export default {
+  components: { CrontabSetting },
   data() {
     return {
       allProgrammings: this.$programmings,
       maxCmdStingLen: 8,
       commandTypes: commandTypes,
       platformTypes: platformTypes,
+      showCrontab: false,
+      cronJob: null,
     };
   },
   computed: {
@@ -243,6 +283,10 @@ export default {
       if (cmd.type && cmd.type === "window") return false;
       return true;
     },
+    // 命令未启用也可以添加计划任务
+    canCommandAddCron() {
+      return !!this.commandInfo.features.cmds[0].length;
+    },
     // 默认命令不可删除
     canCommandEdit() {
       if (utools.isDev()) return true;
@@ -266,6 +310,9 @@ export default {
     },
     cardBgColor() {
       return this.$q.dark.isActive ? "#ffffff08" : "#00000008";
+    },
+    featureCode() {
+      return this.commandInfo.features.code;
     },
   },
   props: {
@@ -298,7 +345,7 @@ export default {
     editCommand() {
       let event = {
         type: "edit",
-        data: this.commandInfo.features.code,
+        data: this.featureCode,
       };
       this.$emit("commandChanged", event);
     },
@@ -306,14 +353,29 @@ export default {
     runCommand() {
       let event = {
         type: "run",
-        data: this.commandInfo.features.code,
+        data: this.featureCode,
       };
       this.$emit("commandChanged", event);
+    },
+    addCrontab(cronExp) {
+      this.$profile.crontabs[this.featureCode] = {
+        cronStatus: true,
+        cronExp: cronExp,
+      };
+      this.cronJob = this.$Cron(cronExp, () => {
+        this.runCommand();
+      });
+    },
+    delCrontab() {
+      this.$profile.crontabs[this.featureCode] = {
+        cronStatus: false,
+      };
+      this.cronJob.stop();
     },
     // 启用/禁用命令
     toggleCommandActivated() {
       let event = {
-        data: this.commandInfo.features.code,
+        data: this.featureCode,
         type: "toggle",
       };
       event.type = this.isCommandActivated ? "disable" : "enable";
@@ -324,7 +386,7 @@ export default {
       quickcommand.showConfirmBox("删除这个快捷命令").then((x) => {
         if (!x) return;
         this.isCommandAlive = false;
-        let code = this.commandInfo.features.code;
+        let code = this.featureCode;
         this.$emit("commandChanged", {
           type: "remove",
           data: code,

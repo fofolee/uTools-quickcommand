@@ -498,6 +498,15 @@ let createNodeVM = (userVars) => {
     return vm
 }
 
+window.showHelpPage = path => {
+    utools.ubrowser
+        .goto("https://www.yuque.com/fofolee-awga0/cpbg1m/bg31vl" + path)
+        .run({
+            width: 1380,
+            height: 750
+        });
+}
+
 window.VmEval = (cmd, sandbox = {}) => new VM({
     sandbox: sandbox
 }).run(cmd)

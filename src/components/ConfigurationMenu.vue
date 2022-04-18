@@ -112,40 +112,6 @@
             </q-item>
             <q-item>
               <q-item-section side>
-                <q-icon name="timer" />
-              </q-item-section>
-              <q-input
-                dense
-                prefix="新建计划任务至"
-                suffix="标签"
-                outlined
-                input-class="text-center"
-                style="width: 280px"
-                v-model="quickFeatures.crontab.tag"
-                type="text"
-              >
-                <template v-slot:append>
-                  <q-toggle
-                    @click="toggleFeature('crontab')"
-                    v-model="quickFeatures.crontab.enable"
-                    checked-icon="check"
-                    color="primary"
-                  />
-                </template>
-                <q-tooltip
-                  >启用后，在主输入框输入「计划任务」可以配置计划任务，定制执行指定或新建的快捷命令<br />
-                  如果是直接新建，则新建的任务会保存在「{{
-                    quickFeatures.crontab.tag
-                  }}」标签<br />
-                  注意此功能并没有使用系统自带的计划任务，需要配置插件跟随
-                  utools 启动和保留后台<br />
-                  本功能比系统自带的更为强大，因为你可以在计划任务中任意使用
-                  utools 或 quickcommand 的 api
-                </q-tooltip>
-              </q-input>
-            </q-item>
-            <q-item>
-              <q-item-section side>
                 <q-icon name="api" />
               </q-item-section>
               <q-input

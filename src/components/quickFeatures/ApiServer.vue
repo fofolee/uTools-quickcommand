@@ -128,12 +128,7 @@ export default {
       }, 1000);
     },
     showHelp() {
-      utools.ubrowser
-        .goto("https://www.yuque.com/fofolee-awga0/cpbg1m/bg31vl#GNjEg")
-        .run({
-          width: 1380,
-          height: 750,
-        });
+      window.showHelpPage("#GNjEg");
     },
   },
 };

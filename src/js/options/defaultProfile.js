@@ -4,6 +4,7 @@ export default {
     defaultPrimaryColor: "#009688",
     backgroundImg: null,
     codeHistory: {},
+    crontabs: {},
     quickFeatures: {
         favFile: {
             enable: false,
@@ -16,10 +17,6 @@ export default {
         pluNickName: {
             enable: false,
             tag: "别名"
-        },
-        crontab: {
-            enable: false,
-            tag: "任务"
         },
         apiServer: {
             enable: false,
