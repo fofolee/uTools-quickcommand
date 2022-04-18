@@ -30,7 +30,9 @@
               height: itemHeight + 'px',
             }"
           >
-            <q-item-section v-if="isText">{{ item }}</q-item-section>
+            <q-item-section v-if="isText">
+              <q-item-label lines="1">{{ item }}</q-item-label>
+            </q-item-section>
             <q-item-section
               v-else-if="isJson"
               class="content-start q-gutter-md"
@@ -38,8 +40,10 @@
               <q-avatar size="40px" v-if="item.icon">
                 <q-img :src="item.icon" />
               </q-avatar>
-              <q-item-label>{{ item.title }}</q-item-label>
-              <q-item-label caption>{{ item.description }}</q-item-label>
+              <q-item-label lines="1">{{ item.title }}</q-item-label>
+              <q-item-label lines="1" caption>{{
+                item.description
+              }}</q-item-label>
             </q-item-section>
             <q-item-section v-else-if="isHtml">
               <div v-html="item"></div>
