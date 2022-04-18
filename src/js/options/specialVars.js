@@ -10,21 +10,21 @@ let escapeItem = item => {
 
 let handlingJsonVar = (jsonVar, name) => {
     try {
-        return escapeItem(window.VmEval(jsonVar.slice(2, -2), {
+        return escapeItem(window.evalCodeInSandbox(jsonVar.slice(2, -2), {
             [name]: quickcommand.enterData.payload
         }))
-    } catch {
-        return ""
+    } catch (e) {
+        return utools.showNotification(e)
     }
 }
 
 let handlingJsExpression = js => {
     try {
-        return window.VmEval(js.slice(5, -2), {
+        return window.evalCodeInSandbox(js.slice(5, -2), {
             utools: window.getuToolsLite(),
         })
-    } catch {
-        return ""
+    } catch (e) {
+        return utools.showNotification(e)
     }
 }
 
@@ -131,7 +131,7 @@ const specialVars = {
         name: "js",
         label: "{{js:}}",
         desc: "获取js表达式的值，如{{js:utools.isMacOs()}}",
-        tooltip: "注意，必须为表达式而非语句，类似Vue的文本插值。不支持异步/Node",
+        tooltip: "注意，必须为表达式而非语句，类似Vue的文本插值",
         type: "command",
         match: /{{js:(.*?)}}/mg,
         repl: js => handlingJsExpression(js)

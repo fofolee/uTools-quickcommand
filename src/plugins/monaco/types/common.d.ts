@@ -88,16 +88,3 @@ declare var console: {
   log(message?: any): void,
   error(message?: any): void
 }
-
-// process
-declare var process: {
-  argv: any[];
-  title: string;
-  version: string;
-  versions: object;
-  arch: string;
-  platform: string;
-  env: object;
-  pid: number;
-  features: object
-}

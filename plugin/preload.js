@@ -3,15 +3,11 @@ const os = require('os');
 const child_process = require("child_process")
 const iconv = require('iconv-lite')
 const electron = require('electron')
-const {
-    NodeVM,
-    VM
-} = require('./lib/vm2')
 const path = require("path")
 const axios = require('axios');
 const http = require('http');
 const url = require('url')
-
+const nodeFns = require("./lib/nodeFns")
 window._ = require("lodash")
 window.yuQueClient = axios.create({
     baseURL: 'https://www.yuque.com/api/v2/',
@@ -25,8 +21,6 @@ window.yuQueClient = axios.create({
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
-
-// window.startTime = new Date().getTime()
 
 const shortCodes = [
 
@@ -199,7 +193,6 @@ window.temporaryStoreSoldOut = () => {
     }
 }
 
-
 // python -c
 window.runPythonCommand = py => {
     try {
@@ -279,7 +272,6 @@ window.removeHtmlTags = value => {
 window.hexEncode = text => Buffer.from(text, 'utf8').toString('hex')
 window.hexDecode = text => Buffer.from(text, 'hex').toString('utf8')
 window.base64Decode = text => Buffer.from(text, 'base64').toString('utf8')
-
 
 window.processPlatform = process.platform
 window.joinPath = path.join
@@ -401,6 +393,15 @@ window.getSelectFile = hwnd => {
     }
 }
 
+window.showHelpPage = path => {
+  utools.ubrowser
+      .goto("https://www.yuque.com/fofolee-awga0/cpbg1m/bg31vl" + path)
+      .run({
+          width: 1380,
+          height: 750
+      });
+}
+
 window.clipboardReadText = () => electron.clipboard.readText()
 
 window.convertFilePathToUtoolsPayload = files => files.map(file => {
@@ -480,64 +481,58 @@ let getSandboxFuns = () => {
     shortCodes.forEach(f => {
         sandbox[f.name] = f
     })
+    Object.assign(sandbox, nodeFns)
     return sandbox
 }
 
-let createNodeVM = (userVars) => {
-    var sandbox = getSandboxFuns()
-    Object.assign(userVars, sandbox)
-    const vm = new NodeVM({
-        require: {
-            external: true,
-            builtin: ["*"],
-        },
-        console: 'redirect',
-        env: process.env,
-        sandbox: userVars,
+// 简化报错信息
+let liteErr = e => {
+    if (!e) return
+    return e.error ? e.error.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim() : e.message
+}
+
+// vm 模块将无法在渲染进程中使用，改用简单的沙箱来执行代码
+let createSandbox = (code, sandbox, async = false) => {
+    if (!async) code = `return (${code})`
+    const sandFn = new Function('sandbox', `with(sandbox){${code}}`);
+    const proxy = new Proxy(sandbox, {
+        has(target, key) {
+            return true;
+        }
     });
-    return vm
+    return sandFn(proxy);
 }
 
-window.showHelpPage = path => {
-    utools.ubrowser
-        .goto("https://www.yuque.com/fofolee-awga0/cpbg1m/bg31vl" + path)
-        .run({
-            width: 1380,
-            height: 750
-        });
+window.evalCodeInSandbox = (code, userVars = {}) => {
+    let sandbox = getSandboxFuns()
+    let sandboxWithUV = Object.assign(userVars, sandbox)
+    try {
+        return createSandbox(code, sandboxWithUV);
+    } catch (error) {
+        throw liteErr(error)
+    }
 }
-
-window.VmEval = (cmd, sandbox = {}) => new VM({
-    sandbox: sandbox
-}).run(cmd)
 
 let isWatchingError = false
-// The vm module of Node.js is deprecated in the renderer process and will be removed
-window.runCodeInVm = (cmd, callback, userVars = {}) => {
-    const vm = createNodeVM(userVars)
-    //重定向 console
-    vm.on('console.log', (...stdout) => {
-        console.log(stdout);
-        callback(parseStdout(stdout), null)
-    });
-
-    vm.on('console.error', stderr => {
-        callback(null, stderr.toString())
-    });
-
-    let liteErr = e => {
-        if (!e) return
-        return e.error ? e.error.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim() : e.message
+window.runCodeInSandbox = (code, callback, userVars = {}) => {
+    let sandbox = getSandboxFuns()
+    sandbox.console = {
+        log: (...stdout) => {
+            console.log(stdout);
+            callback(parseStdout(stdout), null)
+        },
+        error: (...stderr) => {
+            callback(null, parseStdout(stderr))
+        }
     }
-
-    // 错误处理
+    let sandboxWithUV = Object.assign(userVars, sandbox)
     try {
-        vm.run(cmd, path.join(__dirname, 'preload.js'));
+        createSandbox(code, sandboxWithUV, true)
     } catch (e) {
         console.log('Error: ', e)
         callback(null, liteErr(e))
     }
-
+    // 自动捕捉错误
     let cbUnhandledError = e => {
         removeAllListener()
         console.log('UnhandledError: ', e)
@@ -619,7 +614,7 @@ let httpServer
 window.quickcommandHttpServer = () => {
     let run = (cmd = '', port = 33442) => {
         let httpResponse = (res, code, result) => {
-            // 因为无法判断 vm2 是否执行完毕，故只收受一次 console.log，接收后就关闭连接
+            // 只收受一次 console.log，接收后就关闭连接
             if (res.finished) return
             res.writeHead(code, {
                 'Content-Type': 'text/html'
@@ -630,7 +625,7 @@ window.quickcommandHttpServer = () => {
         let runUserCode = (res, cmd, userVars) => {
             // 不需要返回输出的提前关闭连接
             if (!cmd.includes('console.log')) httpResponse(res, 200)
-            window.runCodeInVm(cmd, (stdout, stderr) => {
+            window.runCodeInSandbox(cmd, (stdout, stderr) => {
                 // 错误返回 500
                 if (stderr) return httpResponse(res, 500, stderr)
                 return httpResponse(res, 200, stdout)

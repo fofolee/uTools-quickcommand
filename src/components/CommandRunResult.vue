@@ -97,7 +97,7 @@ export default {
           utools.outPlugin();
         }, 500);
       if (currentCommand.program === "quickcommand") {
-        window.runCodeInVm(currentCommand.cmd, (stdout, stderr) => {
+        window.runCodeInSandbox(currentCommand.cmd, (stdout, stderr) => {
           if (stderr) {
             return quitBeforeShowResult
               ? alert(stderr)
