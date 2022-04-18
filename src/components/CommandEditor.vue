@@ -1,7 +1,10 @@
 <template>
   <div
     class="absolute-full"
-    :style="{ background: $q.dark.isActive ? 'var(--q-dark-page)' : '#ffffff' }"
+    :style="{
+      background: $q.dark.isActive ? 'var(--q-dark-page)' : '#ffffff',
+      overflow: 'hidden',
+    }"
   >
     <!-- 命令设置栏 -->
     <CommandSideBar

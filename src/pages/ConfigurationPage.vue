@@ -179,6 +179,7 @@
       maximized
       :transition-show="newCommandDirect ? '' : 'slide-up'"
       transition-hide="slide-down"
+      style="overflow: hidden"
     >
       <CommandEditor
         ref="commandEditor"
