@@ -48,7 +48,7 @@ export default defineComponent({
         // 保存偏好
         this.saveProfile();
         // 切到空路由
-        this.$router.push("loading");
+        this.$router.push("/");
         // 清空临时数据
         window.temporaryStoreSoldOut();
       });

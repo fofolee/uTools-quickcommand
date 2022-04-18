@@ -36,7 +36,7 @@ const routes = [{
             import('pages/updateWarningPage.vue')
     },
     {
-        path: '/loading',
+        path: '/',
         name: 'loading',
         component: () =>
             import('pages/LoadingPage.vue')
