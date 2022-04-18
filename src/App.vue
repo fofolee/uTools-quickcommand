@@ -33,18 +33,7 @@ export default defineComponent({
         });
         return;
       }
-      // 如果配置了后台服务则开启监听
-      if (this.$profile.quickFeatures.apiServer.serverStatus) {
-        window
-          .quickcommandHttpServer()
-          .run(
-            this.$profile.quickFeatures.apiServer.cmd,
-            this.$profile.quickFeatures.apiServer.port
-          );
-        console.log("Server Start...");
-      }
-      // 默认主题色
-      this.setCssVar("primary", this.$profile.primaryColor);
+      this.startUp();
       // 进入插件
       utools.onPluginEnter((enter) => {
         // 暗黑模式
@@ -75,6 +64,21 @@ export default defineComponent({
         _.cloneDeep(this.$profile),
         this.$utools.DBPRE.CFG + "preferences"
       );
+    },
+    // 随插件启动执行
+    startUp() {
+      // 如果配置了后台服务则开启监听
+      if (this.$profile.quickFeatures.apiServer.serverStatus) {
+        window
+          .quickcommandHttpServer()
+          .run(
+            this.$profile.quickFeatures.apiServer.cmd,
+            this.$profile.quickFeatures.apiServer.port
+          );
+        console.log("Server Start...");
+      }
+      // 默认主题色
+      this.setCssVar("primary", this.$profile.primaryColor);
     },
   },
 });

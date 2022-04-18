@@ -221,22 +221,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-        let cd = ''
-        if (utools.isWindows()) {
-            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-                // 直接 existsSync wt.exe 无效
-            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-                cmdline = cmdline.replace(/"/g, `\\"`)
-                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
-            } else {
-                cmdline = cmdline.replace(/"/g, `^"`)
-                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-                command = `${cd} start "" cmd /k "${cmdline}"`
-            }
-        } else {
+    let cd = ''
+    if (utools.isWindows()) {
+        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+        // 直接 existsSync wt.exe 无效
+        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
             cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        } else {
+            cmdline = cmdline.replace(/"/g, `^"`)
+            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+            command = `${cd} start "" cmd /k "${cmdline}"`
+        }
+    } else {
+        cmdline = cmdline.replace(/"/g, `\\"`)
+        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -527,7 +527,7 @@ window.runCodeInVm = (cmd, callback, userVars = {}) => {
 
     let liteErr = e => {
         if (!e) return
-        return e.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim()
+        return e.error ? e.error.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim() : e.message
     }
 
     // 错误处理
@@ -541,7 +541,7 @@ window.runCodeInVm = (cmd, callback, userVars = {}) => {
     let cbUnhandledError = e => {
         removeAllListener()
         console.log('UnhandledError: ', e)
-        callback(null, liteErr(e.error))
+        callback(null, liteErr(e))
     }
 
     let cbUnhandledRejection = e => {
@@ -662,6 +662,9 @@ window.quickcommandHttpServer = () => {
             }
         })
         httpServer.listen(port, 'localhost');
+        httpServer.on('error', err => {
+            console.log(err)
+        })
     }
     let stop = () => {
         httpServer.close()
