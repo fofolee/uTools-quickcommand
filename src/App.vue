@@ -33,10 +33,10 @@ export default defineComponent({
       window.utools = window.getuToolsLite();
       if (!this.checkVer()) return;
       this.startUp();
-      utools.onPluginEnter((enter) => {
+      this.utools.whole.onPluginEnter((enter) => {
         this.enterPlugin(enter);
       });
-      utools.onPluginOut(() => {
+      this.utools.whole.onPluginOut(() => {
         this.outPlugin();
       });
     },
