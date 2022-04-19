@@ -49,6 +49,8 @@
 </template>
 
 <script>
+import levelDetail from "../../js/options/levelDetail.js";
+
 export default {
   data() {
     return {
@@ -60,33 +62,7 @@ export default {
         avatar: "",
         nickname: "",
       },
-      levelDetail: [
-        {
-          lv: 1,
-          minExp: 0,
-          upExp: 100,
-        },
-        {
-          lv: 2,
-          minExp: 100,
-          upExp: 200,
-        },
-        {
-          lv: 3,
-          minExp: 300,
-          upExp: 300,
-        },
-        {
-          lv: 4,
-          minExp: 600,
-          upExp: 600,
-        },
-        {
-          lv: 5,
-          minExp: 1200,
-          upExp: 999999,
-        },
-      ],
+      levelDetail: levelDetail,
     };
   },
   computed: {
@@ -114,12 +90,14 @@ export default {
         .filter((x) => this.userInfo.exp > x.minExp)
         .pop().lv;
       let currentLevelDetail = this.levelDetail[this.userInfo.level - 1];
-      this.userInfo.process = parseFloat(
-        (
-          (this.userInfo.exp - currentLevelDetail.minExp) /
-          currentLevelDetail.upExp
-        ).toFixed(2)
-      );
+      this.userInfo.process = currentLevelDetail.upExp
+        ? parseFloat(
+            (
+              (this.userInfo.exp - currentLevelDetail.minExp) /
+              currentLevelDetail.upExp
+            ).toFixed(2)
+          )
+        : 1;
     },
   },
 };
