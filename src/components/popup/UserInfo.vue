@@ -3,13 +3,7 @@
     <div class="column items-center">
       <q-avatar size="48px">
         <img :src="userInfo.avatar" />
-        <q-badge
-          v-if="userInfo.type === 'member'"
-          floating
-          color="deep-orange"
-          label="v"
-          rounded
-        />
+        <q-badge v-if="isVIP" floating color="deep-orange" label="v" rounded />
       </q-avatar>
       <div
         class="text-subtitle1 q-mt-md q-mb-xs"
@@ -34,14 +28,9 @@
       </q-chip>
       <q-chip dense square>
         <q-avatar color="primary" text-color="white">
-          {{ userLevel.number }}</q-avatar
+          {{ userInfo.level }}</q-avatar
         >Level
-        <q-tooltip
-          >使用本插件次数越多，等级越高，uTools VIP 有额外加成哟
-          <br />不要问我为什么 VIP 有加成，因为我白嫖了一个永久 VIP <br />
-          所以怎么也加点「会员特权」吧<br />
-          至于这个等级有啥用，我也不知道╮(╯▽╰)╭
-        </q-tooltip>
+        <q-tooltip>等级越高意味着你对本插件的依赖程度越高</q-tooltip>
       </q-chip>
       <q-linear-progress
         color="cyan-6"
@@ -49,9 +38,10 @@
         rounded
         style="width: 130px"
         size="10px"
-        :value="userLevel.process"
+        :value="userInfo.process"
         ><q-tooltip
-          >距离下一级还剩{{ (1 - userLevel.process) * 100 }}%</q-tooltip
+          >当前经验 {{ userInfo.exp }} <br />距离下一级还剩
+          {{ (1 - userInfo.process) * 100 }}%</q-tooltip
         ></q-linear-progress
       >
     </div>
@@ -62,16 +52,75 @@
 export default {
   data() {
     return {
-      userInfo: utools.getUser(),
-      userLevel: {
-        number: 1,
-        process: 0.4,
+      userInfo: {
+        exp: 0,
+        level: 1,
+        process: 0,
+        type: "",
+        avatar: "",
+        nickname: "",
       },
+      levelDetail: [
+        {
+          lv: 1,
+          minExp: 0,
+          upExp: 100,
+        },
+        {
+          lv: 2,
+          minExp: 100,
+          upExp: 200,
+        },
+        {
+          lv: 3,
+          minExp: 300,
+          upExp: 300,
+        },
+        {
+          lv: 4,
+          minExp: 600,
+          upExp: 600,
+        },
+        {
+          lv: 5,
+          minExp: 1200,
+          upExp: 999999,
+        },
+      ],
     };
+  },
+  computed: {
+    isVIP() {
+      return this.userInfo.type === "member";
+    },
   },
   props: {
     allFeaturesLength: Number,
     allQuickCommandsLength: Number,
+  },
+  mounted() {
+    this.getUserInfo();
+  },
+  methods: {
+    getUserInfo() {
+      Object.assign(this.userInfo, utools.getUser());
+      let statisticsData = this.$root.utools.getDB(
+        this.$root.utools.DBPRE.CFG + "statisticsData"
+      );
+      this.userInfo.exp = Object.values(statisticsData)
+        .map((x) => x.length)
+        .reduce((x, y) => x + y);
+      this.userInfo.level = this.levelDetail
+        .filter((x) => this.userInfo.exp > x.minExp)
+        .pop().lv;
+      let currentLevelDetail = this.levelDetail[this.userInfo.level - 1];
+      this.userInfo.process = parseFloat(
+        (
+          (this.userInfo.exp - currentLevelDetail.minExp) /
+          currentLevelDetail.upExp
+        ).toFixed(1)
+      );
+    },
   },
 };
 </script>

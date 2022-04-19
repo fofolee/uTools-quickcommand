@@ -221,13 +221,13 @@
         <q-item-section>个性化设置</q-item-section>
         <q-menu anchor="top end" self="top start">
           <q-list>
-            <q-item clickable>
+            <q-item clickable :disable="!isVIP">
               <q-item-section side>
                 <q-icon name="color_lens" />
               </q-item-section>
               <q-item-section>主颜色</q-item-section>
-              <q-tooltip>你可以更改界面的主题色，Level 3 以上限定</q-tooltip>
-              <q-menu nchor="top left" self="bottom end">
+              <q-tooltip>你可以更改界面的主题色，会员限定</q-tooltip>
+              <q-menu v-if="isVIP" nchor="top left" self="bottom end">
                 <q-card>
                   <q-color
                     no-header
@@ -244,15 +244,15 @@
                 </q-card>
               </q-menu>
             </q-item>
-            <q-item clickable>
+            <q-item clickable :disable="!isVIP">
               <q-item-section side>
                 <q-icon name="image" />
               </q-item-section>
               <q-item-section>面板视图背景图片</q-item-section>
               <q-tooltip
-                >为面板视图设置一张背景图片，Level 2 以上限定<br />请不要选择尺寸太大的图片，将影响插件载入速度</q-tooltip
+                >为面板视图设置一张背景图片，会员限定<br />请不要选择尺寸太大的图片，将影响插件载入速度</q-tooltip
               >
-              <q-menu nchor="top left" self="bottom end">
+              <q-menu v-if="isVIP" nchor="top left" self="bottom end">
                 <q-card>
                   <q-file
                     dense
@@ -355,6 +355,9 @@ export default {
     },
     allFeaturesLength() {
       return this.configurationPage.activatedQuickCommandFeatureCodes.length;
+    },
+    isVIP() {
+      return utools.getUser().type === "member";
     },
   },
   props: {
