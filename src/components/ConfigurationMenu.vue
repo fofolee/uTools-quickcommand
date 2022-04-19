@@ -1,7 +1,7 @@
 <template>
   <q-menu
     max-height="480px"
-    max-width="290px"
+    max-width="300px"
     transition-show="jump-up"
     transition-hide="jump-down"
   >
