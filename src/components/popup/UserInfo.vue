@@ -41,7 +41,7 @@
         :value="userInfo.process"
         ><q-tooltip
           >当前经验 {{ userInfo.exp }} <br />距离下一级还剩
-          {{ (1 - userInfo.process) * 100 }}%</q-tooltip
+          {{ 100 - userInfo.process * 100 }}%</q-tooltip
         ></q-linear-progress
       >
     </div>
@@ -118,7 +118,7 @@ export default {
         (
           (this.userInfo.exp - currentLevelDetail.minExp) /
           currentLevelDetail.upExp
-        ).toFixed(1)
+        ).toFixed(2)
       );
     },
   },
