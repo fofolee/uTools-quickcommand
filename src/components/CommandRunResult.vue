@@ -17,12 +17,11 @@
           </q-toolbar>
           <q-card-section class="row items-center">
             <pre
-              :class="runResultStatus ? '' : 'text-red'"
-              v-html="runResult"
-              :style="{
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word',
+              :class="{
+                'text-red': !runResultStatus,
+                result: 1,
               }"
+              v-html="runResult"
             ></pre>
           </q-card-section>
           <q-card-actions align="right">
@@ -37,10 +36,7 @@
         :class="{
           'text-red': !runResultStatus,
           'q-pa-md': 1,
-        }"
-        :style="{
-          whiteSpace: 'pre-wrap',
-          wordWrap: 'break-word',
+          result: 1,
         }"
         v-html="runResult"
       ></pre>
@@ -222,3 +218,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.result {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  margin: 0;
+}
+</style>
