@@ -162,6 +162,11 @@ window.quickcommand = {
         let local = path.join(root, require('crypto').createHash('md5').update(url).digest('hex'))
         if (forceUpdate || !fs.existsSync(local)) await this.downloadFile(remote, local)
         return require(local)
+    },
+
+    // 唤醒 uTools
+    wakeUtools: function() {
+        child_process.exec(process.execPath, () => {})
     }
 }
 

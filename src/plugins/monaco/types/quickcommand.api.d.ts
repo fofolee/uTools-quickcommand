@@ -301,6 +301,15 @@ interface quickcommandApi {
    * 模拟粘贴操作
    */
   simulatePaste();
+
+  /**
+   * 唤醒 uTools
+   *
+   * 当插件自身已经退出时，utools.showMainWindow() 将不再起作用
+   *
+   * 此时可以用此接口呼出 uTools 窗口
+   */
+  wakeUtools();
 }
 
 declare var quickcommand: quickcommandApi;
