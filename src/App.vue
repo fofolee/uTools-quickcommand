@@ -86,21 +86,11 @@ export default defineComponent({
       this.$router.push(enter.code);
     },
     outPlugin() {
-      this.saveProfile();
-      this.$router.push("/");
-      window.temporaryStoreSoldOut();
-    },
-    saveProfile() {
-      let commandEditor = this.$refs.view.$refs.commandEditor;
-      if (commandEditor && commandEditor.action.type !== "edit") {
-        let command = _.cloneDeep(commandEditor.quickcommandInfo);
-        command.cursorPosition = commandEditor.$refs.editor.getCursorPosition();
-        this.profile.codeHistory[commandEditor.action.type] = command;
-      }
       this.utools.putDB(
         _.cloneDeep(this.profile),
         this.utools.DBPRE.CFG + "preferences"
       );
+      this.$router.push("/");
     },
     runCronTask(featureCode, cronExp) {
       this.cronJobs[featureCode] = Cron(cronExp, () => {

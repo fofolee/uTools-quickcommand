@@ -199,6 +199,15 @@ export default {
     this.init();
     this.$refs.sidebar?.init();
   },
+  beforeUnmount() {
+    if (this.action.type !== "run") return;
+    let command = _.cloneDeep(this.quickcommandInfo);
+    command.cursorPosition = this.$refs.editor.getCursorPosition();
+    this.$root.utools.putDB(
+      command,
+      this.$root.utools.DBPRE.CFG + "codeHistory"
+    );
+  },
   computed: {
     configurationPage() {
       return this.$root.$refs.view;
@@ -212,13 +221,11 @@ export default {
       );
     },
   },
-  created() {},
   methods: {
     init() {
       let quickCommandInfo =
-        this.action.type !== "edit"
-          ? this.$root.utools.getDB(this.$root.utools.DBPRE.CFG + "preferences")
-              ?.codeHistory[this.action.type]
+        this.action.type === "run"
+          ? this.$root.utools.getDB(this.$root.utools.DBPRE.CFG + "codeHistory")
           : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
