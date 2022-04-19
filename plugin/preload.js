@@ -166,7 +166,10 @@ window.quickcommand = {
 
     // 唤醒 uTools
     wakeUtools: function() {
-        child_process.exec(process.execPath, () => {})
+        let uToolsPath = utools.isMacOs() ?
+            process.execPath.replace(/\/Frameworks\/.*/, "/MacOS/uTools") :
+            process.execPath
+        child_process.exec(uToolsPath, () => {})
     }
 }
 
