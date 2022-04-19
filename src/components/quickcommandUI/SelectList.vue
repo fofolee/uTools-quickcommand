@@ -78,12 +78,15 @@ export default {
     };
   },
   mounted() {
-    window.temporaryStore.updateSelectList = (opt, id) => {
+    quickcommand.updateSelectList = (opt, id) => {
       if (typeof id === "undefined") this.items.push(opt);
       else this.items[id] = opt;
     };
     this.options.enableSearch && this.setSubInput();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
+  },
+  unmounted() {
+    this.clear();
   },
   computed: {
     matchedItems() {
@@ -188,7 +191,7 @@ export default {
     clear() {
       utools.removeSubInput();
       this.setUtoolsHeight(this.listMaxHeight);
-      window.temporaryStoreSoldOut();
+      quickcommand.updateSelectList = () => {};
     },
   },
 };

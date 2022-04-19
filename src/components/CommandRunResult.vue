@@ -57,6 +57,7 @@ export default {
       runResult: "",
       runResultStatus: true,
       subInputValue: "",
+      listener: null,
     };
   },
   props: {
@@ -159,12 +160,10 @@ export default {
       setTimeout(() => {
         if (this.subInputValue) querySubInput();
       }, 100);
-      let handler = (event) => {
+      this.listener = (event) => {
         if (event.keyCode == 13) querySubInput();
       };
-      let listener = ["keydown", handler, true];
-      document.addEventListener(...listener);
-      window.temporaryStore.listeners.subInputListener = listener;
+      document.addEventListener("keydown", this.listener, true);
     },
     // payload 临时赋值
     async getTempPayload(currentCommand) {
@@ -209,12 +208,15 @@ export default {
     },
     stopRun() {
       this.runResult = "";
-      if (window.temporaryStore.listeners.subInputListener) {
+      if (!!this.listener) {
         this.subInputValue = "";
         utools.removeSubInput();
-        window.temporaryStoreSoldOut();
+        document.removeEventListener("keydown", this.listener, true);
       }
     },
+  },
+  unmounted() {
+    this.stopRun();
   },
 };
 </script>
