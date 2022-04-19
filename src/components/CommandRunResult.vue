@@ -49,6 +49,7 @@
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import commandTypes from "../js/options/commandTypes.js";
+import { event } from "quasar";
 
 export default {
   data() {
@@ -58,6 +59,8 @@ export default {
       runResultStatus: true,
       subInputValue: "",
       listener: null,
+      history: [],
+      historyIdx: 1,
     };
   },
   props: {
@@ -143,8 +146,8 @@ export default {
     // 子输入框
     setSubInput(currentCommand) {
       this.fromUtools && utools.setExpendHeight(0);
-      let matched = currentCommand.cmd.match(specialVars.subinput.match);
-      let placeholder = matched[1] || "请输入";
+      let matched = specialVars.subinput.match.exec(currentCommand.cmd);
+      let placeholder = matched[1] || "回车键执行命令，方向键上下切换历史";
       utools.setSubInput(({ text }) => {
         this.subInputValue = text;
       }, placeholder);
@@ -154,6 +157,8 @@ export default {
           specialVars.subinput.match,
           this.subInputValue
         );
+        this.history.push(this.subInputValue);
+        utools.setSubInputValue("");
         this.fire(command);
       };
       // 自动粘贴的情况下自动执行
@@ -161,7 +166,30 @@ export default {
         if (this.subInputValue) querySubInput();
       }, 100);
       this.listener = (event) => {
-        if (event.keyCode == 13) querySubInput();
+        event.preventDefault();
+        switch (event.keyCode) {
+          case 13:
+            querySubInput();
+            break;
+          case 38:
+            if (!this.history.length) break;
+            this.historyIdx = Math.min(
+              this.history.length + 1,
+              this.historyIdx + 1
+            );
+            utools.setSubInputValue(
+              this.history[this.history.length - this.historyIdx + 1]
+            );
+            break;
+          case 40:
+            if (this.historyIdx === 1) break;
+            this.historyIdx = Math.max(1, this.historyIdx - 1);
+            utools.setSubInputValue(
+              this.history[this.history.length - this.historyIdx]
+            );
+          default:
+            break;
+        }
       };
       document.addEventListener("keydown", this.listener, true);
     },
