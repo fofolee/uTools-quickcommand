@@ -16,11 +16,14 @@
             >
           </q-toolbar>
           <q-card-section class="row items-center">
-            <div
-              style="white-space: pre"
+            <pre
               :class="runResultStatus ? '' : 'text-red'"
               v-html="runResult"
-            ></div>
+              :style="{
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+              }"
+            ></pre>
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="关闭" color="primary" v-close-popup />
@@ -29,15 +32,18 @@
       </q-dialog>
     </div>
     <div v-else>
-      <div
+      <pre
         v-show="!!runResult"
         :class="{
           'text-red': !runResultStatus,
           'q-pa-md': 1,
         }"
-        style="white-space: pre"
+        :style="{
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
+        }"
         v-html="runResult"
-      ></div>
+      ></pre>
     </div>
   </div>
 </template>
