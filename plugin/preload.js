@@ -219,22 +219,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
-    if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-        // 直接 existsSync wt.exe 无效
-        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        let cd = ''
+        if (utools.isWindows()) {
+            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+                // 直接 existsSync wt.exe 无效
+            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
+                cmdline = cmdline.replace(/"/g, `\\"`)
+                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            } else {
+                cmdline = cmdline.replace(/"/g, `^"`)
+                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+                command = `${cd} start "" cmd /k "${cmdline}"`
+            }
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
-        }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            cmdline = cmdline.replace(/"/g, `\\"`)
+            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -498,6 +498,8 @@ let liteErr = e => {
     if (!e) return
     return e.error ? e.error.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim() : e.message
 }
+
+utools.isDev() && (window.godMode = code => eval(code))
 
 // vm 模块将无法在渲染进程中使用，改用简单的沙箱来执行代码
 let createSandbox = (code, sandbox, async = false) => {

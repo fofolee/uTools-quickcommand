@@ -29,7 +29,7 @@ export default defineComponent({
   },
   methods: {
     init() {
-      window.root = this;
+      utools.isDev() && (window.root = this);
       window.utools = window.getuToolsLite();
       if (!this.checkVer()) return;
       this.startUp();
