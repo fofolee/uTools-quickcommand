@@ -53,6 +53,8 @@ export default defineComponent({
       return true;
     },
     startUp() {
+      // 处理旧版本数据
+      this.v2DataHandler();
       // 读取用户配置
       let userProfile = this.utools.getDB(
         this.utools.DBPRE.CFG + "preferences"
@@ -76,6 +78,8 @@ export default defineComponent({
       this.setCssVar("primary", this.profile.primaryColor);
     },
     enterPlugin(enter) {
+      // 使用情况统计
+      this.usageStatistics(enter.code, this.parseDate(new Date()));
       this.$q.dark.set(utools.isDarkColors());
       quickcommand.enterData = enter;
       quickcommand.payload = enter.payload;
@@ -116,6 +120,66 @@ export default defineComponent({
         option.charset = command.charset;
         window.runCodeFile(command.cmd, option, false, () => {});
       }
+    },
+    usageStatistics(featureCode, runTime) {
+      let statisticsData = this.utools.getDB(
+        this.utools.DBPRE.CFG + "statisticsData"
+      );
+      let thisYear = runTime.year;
+      if (!statisticsData[thisYear]) statisticsData[thisYear] = [];
+      statisticsData[thisYear].push({
+        code: featureCode,
+        time: {
+          month: runTime.month,
+          day: runTime.day,
+          hour: runTime.hour,
+          minute: runTime.minute,
+        },
+      });
+      this.utools.putDB(
+        statisticsData,
+        this.utools.DBPRE.CFG + "statisticsData"
+      );
+    },
+    parseDate: (dateString) => {
+      return {
+        year: dateString.getFullYear(),
+        month: dateString.getMonth() + 1,
+        day: dateString.getDate(),
+        hour: dateString.getHours(),
+        minute: dateString.getMinutes(),
+        second: dateString.getSeconds(),
+      };
+    },
+    v2DataHandler() {
+      let v2DataHandled = this.utools.whole.dbStorage.getItem(
+        this.utools.DBPRE.STATUS + "v2DataHandled"
+      );
+      if (v2DataHandled) return;
+      // 处理统计数据
+      let statisticsData = this.utools.getDB(
+        this.utools.DBPRE.CFG + "statisticsData"
+      );
+      _.forIn(statisticsData, (data, year) => {
+        statisticsData[year] = data.map((x) => {
+          let code =
+            x.command.code === "options" ? "configuration" : x.command.code;
+          return {
+            code: code,
+            time: x.time,
+          };
+        });
+      });
+      this.utools.putDB(
+        statisticsData,
+        this.utools.DBPRE.CFG + "statisticsData"
+      );
+      // 处理历史代码
+      // ...
+      this.utools.whole.dbStorage.setItem(
+        this.utools.DBPRE.STATUS + "v2DataHandled",
+        true
+      );
     },
   },
 });

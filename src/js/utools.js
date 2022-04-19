@@ -10,7 +10,8 @@ let whole = window.utools
 const DBPRE = {
     QC: 'qc_',
     CFG: 'cfg_',
-    PAN: 'pan_'
+    PAN: 'pan_',
+    STATUS: 'st_'
 }
 
 // 数据库函数封装
