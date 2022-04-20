@@ -235,8 +235,6 @@
               >
                 <q-card>
                   <q-color
-                    no-header
-                    no-footer
                     @change="setPrimaryColor"
                     v-model="$root.profile.primaryColor"
                   />
