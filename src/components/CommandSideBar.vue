@@ -14,7 +14,7 @@
         color="grey"
         style="margin-right: 29px"
         icon="arrow_back_ios_new"
-        @click="$parent.closeEditor"
+        v-close-popup
       />
       <q-img
         class="commandLogo"

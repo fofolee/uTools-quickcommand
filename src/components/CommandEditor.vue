@@ -327,13 +327,6 @@ export default {
           this.matchLanguage(this.quickcommandInfo.customOptions.ext);
         });
     },
-    closeEditor() {
-      this.$refs.editor?.destoryEditor();
-      this.$emit("editorEvent", {
-        type: "close",
-        data: {},
-      });
-    },
     // 保存
     saveCurrentCommand() {
       let updatedData = this.$refs.sidebar?.SaveMenuData();
@@ -348,7 +341,6 @@ export default {
         type: "save",
         data: newQuickcommandInfo,
       });
-      this.closeEditor();
     },
     // 运行
     runCurrentCommand() {

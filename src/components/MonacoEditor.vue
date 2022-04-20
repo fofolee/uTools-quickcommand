@@ -204,9 +204,6 @@ export default {
       };
       this.rawEditor.executeEdits("my-source", [op]);
     },
-    destoryEditor() {
-      this.rawEditor.dispose();
-    },
     listenEditorValue() {
       this.rawEditor.focus();
       this.rawEditor.onDidChangeModelContent(() => {
@@ -236,6 +233,9 @@ export default {
         }
       );
     },
+  },
+  beforeUnmount() {
+    this.rawEditor.dispose();
   },
 };
 </script>

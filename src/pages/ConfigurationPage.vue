@@ -576,11 +576,9 @@ export default {
     },
     editorEvent(event) {
       switch (event.type) {
-        case "close":
-          this.isCommandEditorShow = false;
-          return;
         case "save":
           this.saveCommand(event.data);
+          this.isCommandEditorShow = false;
         default:
           return;
       }
