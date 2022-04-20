@@ -83,44 +83,97 @@
         <q-separator vertical />
         <div class="col-auto justify-end flex">
           <q-btn-group unelevated>
-            <q-input
-              dense
-              standout="bg-primary text-white"
-              square
-              stack-label
-              color="primary"
-              input-style="width: 60px;"
-              v-model="quickcommandInfo.scptarg"
-              v-show="quickcommandInfo.program !== 'quickcommand'"
-              label="脚本参数"
-            />
-            <q-btn
+            <q-btn-dropdown
               dense
               flat
+              ref="settings"
               color="primary"
-              icon="help"
-              @click="showHelp"
-              v-show="quickcommandInfo.program === 'quickcommand'"
-              ><q-tooltip>查看文档</q-tooltip></q-btn
+              :icon="
+                quickcommandInfo.program === 'quickcommand'
+                  ? 'insights'
+                  : 'settings'
+              "
             >
-            <q-btn
-              flat
-              dense
-              color="primary"
-              icon="code"
-              @click="showCustomOptions"
-              v-show="quickcommandInfo.program !== 'quickcommand'"
-              ><q-tooltip>自定义解释器路径</q-tooltip></q-btn
-            >
-            <q-btn
-              flat
-              dense
-              color="primary"
-              icon="format_size"
-              @click="showCodingPage()"
-              v-show="quickcommandInfo.program !== 'quickcommand'"
-              ><q-tooltip>脚本及输出编码设置</q-tooltip></q-btn
-            >
+              <q-list style="min-width: 300px" class="text-primary">
+                <!-- quickcommand系列按键 -->
+                <q-item
+                  clickable
+                  v-for="(item, index) in ['keyboard', 'ads_click', 'help']"
+                  :key="index"
+                  @click="[listenKey, showActions, showHelp][index]"
+                  v-show="quickcommandInfo.program === 'quickcommand'"
+                >
+                  <q-item-section avatar>
+                    <q-icon :name="item" />
+                  </q-item-section>
+                  <q-item-section>{{
+                    ["模拟按键", "快捷动作", "查看文档"][index]
+                  }}</q-item-section>
+                </q-item>
+                <!-- 自定义解释器 -->
+                <q-item
+                  v-for="(item, index) in Object.keys(
+                    quickcommandInfo.customOptions
+                  )"
+                  :key="index"
+                  v-show="quickcommandInfo.program === 'custom'"
+                >
+                  <q-input
+                    dense
+                    outlined
+                    class="full-width"
+                    @blur="matchLanguage"
+                    :label="
+                      [
+                        '解释器路径，如：/home/python',
+                        '运行参数，如：-u',
+                        '脚本的后缀，不含点，如：py',
+                      ][index]
+                    "
+                    v-model="quickcommandInfo.customOptions[item]"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="code" />
+                    </template>
+                  </q-input>
+                </q-item>
+                <!-- 脚本参数 -->
+                <q-item v-show="quickcommandInfo.program !== 'quickcommand'">
+                  <q-input
+                    dense
+                    outlined
+                    label="脚本参数"
+                    class="full-width"
+                    v-model="quickcommandInfo.scptarg"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="input" />
+                    </template>
+                  </q-input>
+                </q-item>
+                <!-- 编码设置 -->
+                <q-item
+                  v-for="(item, index) in Object.keys(quickcommandInfo.charset)"
+                  :key="index"
+                  v-show="quickcommandInfo.program !== 'quickcommand'"
+                >
+                  <q-select
+                    dense
+                    outlined
+                    clearable
+                    class="full-width"
+                    :label="['脚本编码', '输出编码'][index]"
+                    v-model="quickcommandInfo.charset[item]"
+                    :options="['GBK', 'utf8', 'Big5']"
+                    type="text"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon :name="['format_size', 'output'][index]" />
+                    </template>
+                  </q-select>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
             <q-separator vertical inset />
             <q-btn
               dense
@@ -142,6 +195,9 @@
             ></q-btn>
           </q-btn-group>
         </div>
+        <q-dialog v-model="isActionsShow"
+          ><QuickAction @addAction="addAction" />
+        </q-dialog>
       </div>
     </div>
     <MonacoEditor
@@ -164,15 +220,17 @@
 import MonacoEditor from "components/MonacoEditor";
 import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
+import QuickAction from "components/popup/QuickAction";
 
 export default {
-  components: { MonacoEditor, CommandSideBar, CommandRunResult },
+  components: { MonacoEditor, CommandSideBar, CommandRunResult, QuickAction },
   data() {
     return {
       programLanguages: Object.keys(this.$root.programs),
       sideBarWidth: 250,
       languageBarHeight: 40,
       canCommandSave: this.action.type === "code" ? false : true,
+      isActionsShow: false,
       quickcommandInfo: {
         program: "quickcommand",
         cmd: "",
@@ -240,10 +298,12 @@ export default {
     },
     programChanged(value) {
       this.setLanguage(value);
+      if (value === "custom") this.$refs.settings.show();
       this.$refs.sidebar?.setIcon(value);
     },
     // 匹配编程语言
     matchLanguage() {
+      if (!this.quickcommandInfo.customOptions.ext) return;
       let language = Object.values(this.$root.programs).filter(
         (program) => program.ext === this.quickcommandInfo.customOptions.ext
       );
@@ -256,37 +316,19 @@ export default {
       let highlight = this.$root.programs[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
+    listenKey() {},
+    showActions() {
+      this.isActionsShow = true;
+    },
+    addAction(payload) {
+      this.$refs.editor.repacleEditorSelection(payload);
+    },
     // 打开文档
     showHelp() {
       utools.createBrowserWindow("./helps/quickcommand.html", {
         width: 1280,
         height: 920,
       });
-    },
-    // 编码设置页面
-    showCodingPage() {
-      quickcommand
-        .showInputBox(
-          {
-            labels: ["文件编码", "输出编码"],
-            hints: [
-              "GBK/Big5/utf8，无乱码请留空",
-              "GBK/Big5/utf8,无乱码请留空",
-            ],
-            values: [
-              this.quickcommandInfo.charset?.scriptCode,
-              this.quickcommandInfo.charset?.outputCode,
-            ],
-          },
-          "编码设置"
-        )
-        .then((res) => {
-          if (res)
-            [
-              this.quickcommandInfo.charset.scriptCode,
-              this.quickcommandInfo.charset.outputCode,
-            ] = res;
-        });
     },
     // 展开收起侧栏
     toggleSideBarWidth() {
@@ -297,35 +339,6 @@ export default {
         this.sideBarWidth = this.lastSideBarWidth;
         this.lastSideBarWidth = 0;
       }
-    },
-    // 自定义解释器路径界面
-    showCustomOptions() {
-      quickcommand
-        .showInputBox(
-          {
-            labels: ["解释器路径", "解释器参数", "脚本后缀"],
-            hints: [
-              "绝对路径，如：/home/.bin/python",
-              "运行参数，如：-u",
-              "脚本的后缀，不含点，如：py",
-            ],
-            values: [
-              this.quickcommandInfo.customOptions?.bin,
-              this.quickcommandInfo.customOptions?.argv,
-              this.quickcommandInfo.customOptions?.ext,
-            ],
-          },
-          "自定义解释器路径"
-        )
-        .then((res) => {
-          if (res)
-            [
-              this.quickcommandInfo.customOptions.bin,
-              this.quickcommandInfo.customOptions.argv,
-              this.quickcommandInfo.customOptions.ext,
-            ] = res;
-          this.matchLanguage(this.quickcommandInfo.customOptions.ext);
-        });
     },
     // 保存
     saveCurrentCommand() {
