@@ -98,20 +98,13 @@
               <q-list>
                 <!-- quickcommand系列按键 -->
                 <q-item
-                  :class="{
-                    'text-negative': !!recording && index === 0,
-                  }"
                   clickable
-                  v-for="(item, index) in [
-                    !!recording ? 'stop' : 'play_arrow',
-                    'ads_click',
-                    'help',
-                  ]"
+                  v-for="(item, index) in ['keyboard', 'ads_click', 'help']"
                   :key="index"
                   @click="
                     [
-                      !!recording ? stopRecord : recordKeys,
-                      showActions,
+                      () => (showRecorder = true),
+                      () => (showActions = true),
                       showHelp,
                     ][index]
                   "
@@ -121,11 +114,7 @@
                     <q-icon :name="item" />
                   </q-item-section>
                   <q-item-section>{{
-                    [
-                      !!recording ? "停止录制" : "录制按键",
-                      "快捷动作",
-                      "查看文档",
-                    ][index]
+                    ["录制按键", "快捷动作", "查看文档"][index]
                   }}</q-item-section>
                 </q-item>
                 <!-- 自定义解释器 -->
@@ -219,8 +208,11 @@
             ></q-btn>
           </q-btn-group>
         </div>
-        <q-dialog v-model="isActionsShow"
-          ><QuickAction @addAction="addAction" />
+        <q-dialog v-model="showActions"
+          ><QuickAction @addAction="insertText" />
+        </q-dialog>
+        <q-dialog v-model="showRecorder" position="bottom"
+          ><KeyRecorder @sendKeys="insertText" />
         </q-dialog>
       </div>
     </div>
@@ -245,17 +237,24 @@ import MonacoEditor from "components/MonacoEditor";
 import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 import QuickAction from "components/popup/QuickAction";
-const Mousetrap = require("mousetrap-record")(require("mousetrap"));
+import KeyRecorder from "components/popup/KeyRecorder";
 
 export default {
-  components: { MonacoEditor, CommandSideBar, CommandRunResult, QuickAction },
+  components: {
+    MonacoEditor,
+    CommandSideBar,
+    CommandRunResult,
+    QuickAction,
+    KeyRecorder,
+  },
   data() {
     return {
       programLanguages: Object.keys(this.$root.programs),
       sideBarWidth: 250,
       languageBarHeight: 40,
       canCommandSave: this.action.type === "code" ? false : true,
-      isActionsShow: false,
+      showActions: false,
+      showRecorder: false,
       quickcommandInfo: {
         program: "quickcommand",
         cmd: "",
@@ -273,7 +272,6 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
-      recording: null,
     };
   },
   props: {
@@ -343,43 +341,8 @@ export default {
       let highlight = this.$root.programs[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
-    recordKeys() {
-      let keys = [];
-      this.recording = (event) => {
-        event.preventDefault();
-        keys.push(
-          event.code.includes("Key") ? event.code.slice(-1) : event.key
-        );
-        setTimeout(() => {
-          this.$refs.editor.repacleEditorSelection(
-            this.generatedKeyTapCode(this.keyAnalysis(keys.slice(0, 2)))
-          );
-          keys = [];
-        }, 200);
-      };
-      document.addEventListener("keyup", this.recording);
-    },
-    stopRecord() {
-      document.removeEventListener("keyup", this.recording);
-      this.recording = null;
-    },
-    keyAnalysis(keys) {
-      if (keys.length === 1) return keys;
-      keys = keys.sort((x, y) => x.length - y.length);
-      if (keys[1].length === 1) keys.pop();
-      return keys;
-    },
-    generatedKeyTapCode(keys) {
-      return `keyTap("${keys
-        .join(", ")
-        .replace("Meta", "command")
-        .toLowerCase()}")\n`;
-    },
-    showActions() {
-      this.isActionsShow = true;
-    },
-    addAction(payload) {
-      this.$refs.editor.repacleEditorSelection(payload);
+    insertText(text) {
+      this.$refs.editor.repacleEditorSelection(text);
     },
     // 打开文档
     showHelp() {

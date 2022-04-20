@@ -81,7 +81,7 @@ const quickActions = [
   {
     value: "quickcommand.sleep",
     label: "添加延时",
-    desc: "延迟的毫秒数，不要勾选“加引号”",
+    desc: "延迟的毫秒数",
   },
 ];
 
