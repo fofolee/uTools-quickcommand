@@ -84,6 +84,7 @@
         <div class="col-auto justify-end flex">
           <q-btn-group unelevated>
             <q-btn-dropdown
+              style="padding: 0 10px"
               dense
               flat
               ref="settings"
@@ -94,7 +95,7 @@
                   : 'settings'
               "
             >
-              <q-list style="min-width: 300px" class="text-primary">
+              <q-list>
                 <!-- quickcommand系列按键 -->
                 <q-item
                   :class="{
@@ -130,15 +131,17 @@
                   v-show="quickcommandInfo.program === 'custom'"
                 >
                   <q-input
+                    stack-label
+                    autofocus
                     dense
                     outlined
                     class="full-width"
                     @blur="matchLanguage"
                     :label="
                       [
-                        '解释器路径，如：/home/python',
+                        '解释器路径，如：/opt/python',
                         '运行参数，如：-u',
-                        '脚本的后缀，不含点，如：py',
+                        '脚本后缀，不含点，如：py',
                       ][index]
                     "
                     v-model="quickcommandInfo.customOptions[item]"
@@ -152,6 +155,7 @@
                 <q-item v-show="quickcommandInfo.program !== 'quickcommand'">
                   <q-input
                     dense
+                    stack-label
                     outlined
                     label="脚本参数"
                     class="full-width"
@@ -171,6 +175,7 @@
                   <q-select
                     dense
                     outlined
+                    stack-label
                     clearable
                     class="full-width"
                     :label="['脚本编码', '输出编码'][index]"
@@ -187,6 +192,7 @@
             </q-btn-dropdown>
             <q-separator vertical inset />
             <q-btn
+              style="padding: 0 10px"
               dense
               flat
               color="primary"
@@ -196,6 +202,7 @@
             ></q-btn>
             <q-btn
               flat
+              style="padding: 0 10px"
               dense
               v-if="!isRunCodePage"
               :disable="!canCommandSave"
