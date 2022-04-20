@@ -16,6 +16,8 @@
     "croner": "^4.3.9",
     "monaco-editor": "^0.33.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
+    "mousetrap": "^1.6.5",
+    "mousetrap-record": "^1.0.1",
     "picture-compressor": "^1.1.0",
     "pinyin-match": "^1.2.2",
     "quasar": "^2.6.6",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app-webpack": "^3.5.1",
+    "@types/mousetrap": "^1.6.9",
     "copy-webpack-plugin": "^10.2.4",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",

@@ -97,8 +97,15 @@
               <q-list style="min-width: 300px" class="text-primary">
                 <!-- quickcommand系列按键 -->
                 <q-item
+                  :class="{
+                    'text-negative': isRecording && index === 0,
+                  }"
                   clickable
-                  v-for="(item, index) in ['keyboard', 'ads_click', 'help']"
+                  v-for="(item, index) in [
+                    isRecording ? 'play_arrow' : 'keyboard',
+                    'ads_click',
+                    'help',
+                  ]"
                   :key="index"
                   @click="[listenKey, showActions, showHelp][index]"
                   v-show="quickcommandInfo.program === 'quickcommand'"
@@ -107,7 +114,11 @@
                     <q-icon :name="item" />
                   </q-item-section>
                   <q-item-section>{{
-                    ["模拟按键", "快捷动作", "查看文档"][index]
+                    [
+                      isRecording ? "正在录制" : "模拟按键",
+                      "快捷动作",
+                      "查看文档",
+                    ][index]
                   }}</q-item-section>
                 </q-item>
                 <!-- 自定义解释器 -->
@@ -221,6 +232,7 @@ import MonacoEditor from "components/MonacoEditor";
 import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 import QuickAction from "components/popup/QuickAction";
+const Mousetrap = require("mousetrap-record")(require("mousetrap"));
 
 export default {
   components: { MonacoEditor, CommandSideBar, CommandRunResult, QuickAction },
@@ -248,6 +260,7 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
+      isRecording: false,
     };
   },
   props: {
@@ -316,7 +329,22 @@ export default {
       let highlight = this.$root.programs[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
-    listenKey() {},
+    listenKey() {
+      this.isRecording = true;
+      Mousetrap.record((sequence) => {
+        sequence.forEach((s) => {
+          let keys = s;
+          if (s.includes("+") && s.length > 1)
+            keys = s
+              .split("+")
+              .reverse()
+              .map((x) => x.trim().replace("meta", "command"))
+              .join(`", "`);
+          this.$refs.editor.repacleEditorSelection(`keyTap("${keys}")\n`);
+        });
+        this.isRecording = false;
+      });
+    },
     showActions() {
       this.isActionsShow = true;
     },
