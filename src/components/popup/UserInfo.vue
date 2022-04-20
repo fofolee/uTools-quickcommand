@@ -18,7 +18,8 @@
           'q-mt-md': isPluginVIP,
           'q-md-xs': isPluginVIP,
         }"
-        style="width: 64px; text-align: center"
+        style="width: 64px; text-align: center; cursor: pointer"
+        @click="showPayPage = true"
         v-html="userInfo.nickname"
       ></div>
       <q-btn
@@ -72,7 +73,8 @@
     >
       <q-card>
         <q-card-section class="text-h5 text-deep-orange"
-          ><q-icon color="deep-orange" name="flash_on"></q-icon> 开通插件会员
+          ><q-icon color="deep-orange" name="flash_on"></q-icon>
+          {{ isPluginVIP ? "您已是插件会员" : "开通插件会员" }}
         </q-card-section>
         <q-separator inset />
         <q-card-section class="q-gutter-sm">
@@ -95,6 +97,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn
+            v-if="!isPluginVIP"
             label="思考3秒！"
             color="positive"
             icon="hourglass_bottom"
@@ -102,6 +105,7 @@
             @click="thinkOver"
           />
           <q-btn
+            v-if="!isPluginVIP"
             label="赏了！"
             color="red"
             icon="local_fire_department"
