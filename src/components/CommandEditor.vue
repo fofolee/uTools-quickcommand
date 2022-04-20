@@ -99,16 +99,22 @@
                 <!-- quickcommand系列按键 -->
                 <q-item
                   :class="{
-                    'text-negative': isRecording && index === 0,
+                    'text-negative': !!recording && index === 0,
                   }"
                   clickable
                   v-for="(item, index) in [
-                    isRecording ? 'play_arrow' : 'keyboard',
+                    !!recording ? 'stop' : 'play_arrow',
                     'ads_click',
                     'help',
                   ]"
                   :key="index"
-                  @click="[listenKey, showActions, showHelp][index]"
+                  @click="
+                    [
+                      !!recording ? stopRecord : recordKeys,
+                      showActions,
+                      showHelp,
+                    ][index]
+                  "
                   v-show="quickcommandInfo.program === 'quickcommand'"
                 >
                   <q-item-section avatar>
@@ -116,7 +122,7 @@
                   </q-item-section>
                   <q-item-section>{{
                     [
-                      isRecording ? "正在录制" : "模拟按键",
+                      !!recording ? "停止录制" : "录制按键",
                       "快捷动作",
                       "查看文档",
                     ][index]
@@ -267,7 +273,7 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
-      isRecording: false,
+      recording: null,
     };
   },
   props: {
@@ -278,6 +284,7 @@ export default {
     this.$refs.sidebar?.init();
   },
   beforeUnmount() {
+    !!this.recording && document.removeEventListener("keyup", this.recording);
     if (this.action.type !== "run") return;
     let command = _.cloneDeep(this.quickcommandInfo);
     command.cursorPosition = this.$refs.editor.getCursorPosition();
@@ -336,21 +343,37 @@ export default {
       let highlight = this.$root.programs[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
-    listenKey() {
-      this.isRecording = true;
-      Mousetrap.record((sequence) => {
-        sequence.forEach((s) => {
-          let keys = s;
-          if (s.includes("+") && s.length > 1)
-            keys = s
-              .split("+")
-              .reverse()
-              .map((x) => x.trim().replace("meta", "command"))
-              .join(`", "`);
-          this.$refs.editor.repacleEditorSelection(`keyTap("${keys}")\n`);
-        });
-        this.isRecording = false;
-      });
+    recordKeys() {
+      let keys = [];
+      this.recording = (event) => {
+        event.preventDefault();
+        keys.push(
+          event.code.includes("Key") ? event.code.slice(-1) : event.key
+        );
+        setTimeout(() => {
+          this.$refs.editor.repacleEditorSelection(
+            this.generatedKeyTapCode(this.keyAnalysis(keys.slice(0, 2)))
+          );
+          keys = [];
+        }, 200);
+      };
+      document.addEventListener("keyup", this.recording);
+    },
+    stopRecord() {
+      document.removeEventListener("keyup", this.recording);
+      this.recording = null;
+    },
+    keyAnalysis(keys) {
+      if (keys.length === 1) return keys;
+      keys = keys.sort((x, y) => x.length - y.length);
+      if (keys[1].length === 1) keys.pop();
+      return keys;
+    },
+    generatedKeyTapCode(keys) {
+      return `keyTap("${keys
+        .join(", ")
+        .replace("Meta", "command")
+        .toLowerCase()}")\n`;
     },
     showActions() {
       this.isActionsShow = true;
