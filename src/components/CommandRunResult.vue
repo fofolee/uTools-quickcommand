@@ -60,7 +60,7 @@ export default {
       subInputValue: "",
       listener: null,
       history: [],
-      historyIdx: 1,
+      historyIdx: null,
     };
   },
   props: {
@@ -147,7 +147,7 @@ export default {
     setSubInput(currentCommand) {
       this.fromUtools && utools.setExpendHeight(0);
       let matched = specialVars.subinput.match.exec(currentCommand.cmd);
-      let placeholder = matched[1] || "回车键执行命令，方向键上下切换历史";
+      let placeholder = matched[1] || "↩ 执行命令，↑↓ 切换历史";
       utools.setSubInput(({ text }) => {
         this.subInputValue = text;
       }, placeholder);
@@ -158,6 +158,7 @@ export default {
           this.subInputValue
         );
         this.history.push(this.subInputValue);
+        this.historyIdx = this.history.length;
         utools.setSubInputValue("");
         this.fire(command);
       };
@@ -173,20 +174,16 @@ export default {
             break;
           case 38:
             if (!this.history.length) break;
-            this.historyIdx = Math.min(
-              this.history.length + 1,
-              this.historyIdx + 1
-            );
-            utools.setSubInputValue(
-              this.history[this.history.length - this.historyIdx + 1]
-            );
+            this.historyIdx = Math.max(0, this.historyIdx - 1);
+            utools.setSubInputValue(this.history[this.historyIdx] || "");
             break;
           case 40:
-            if (this.historyIdx === 1) break;
-            this.historyIdx = Math.max(1, this.historyIdx - 1);
-            utools.setSubInputValue(
-              this.history[this.history.length - this.historyIdx]
+            if (this.historyIdx === this.history.length) break;
+            this.historyIdx = Math.min(
+              this.history.length - 1,
+              this.historyIdx + 1
             );
+            utools.setSubInputValue(this.history[this.historyIdx] || "");
           default:
             break;
         }
