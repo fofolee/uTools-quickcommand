@@ -475,12 +475,12 @@ let getSandboxFuns = () => {
         axios: axios,
         Audio: Audio,
         fetch: fetch,
-        // 兼容老版本
+        _: _,
+        // 兼容老版本 
         fs: fs,
         path: path,
         os: os,
         child_process: child_process,
-        util: util,
     }
     shortCodes.forEach(f => {
         sandbox[f.name] = f
