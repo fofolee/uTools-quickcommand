@@ -6,7 +6,7 @@
       <div style="font-size: 20vh">需要升级</div>
 
       <div class="text-h4" style="opacity: 0.4">
-        uTools 当前版本 {{ version }}<br />然而这个插件是基于
+        uTools 当前版本 {{ version || "过低" }}<br />然而这个插件是基于
         {{ requiredversion }} 版本开发的，低于该版本可能会出现不可预料的问题
       </div>
 

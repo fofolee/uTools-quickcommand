@@ -42,8 +42,9 @@ export default defineComponent({
     },
     checkVer() {
       const requiredVersion = "2.6.1";
-      let version = utools.getAppVersion();
-      if (version < requiredVersion) {
+      // 有可能版本低到没有这个接口
+      let version = utools.getAppVersion?.();
+      if (!version || version < requiredVersion) {
         this.$router.push({
           name: "needupdate",
           params: { version: version, requiredVersion: requiredVersion },
