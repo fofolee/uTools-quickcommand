@@ -22,7 +22,7 @@ const outputTypes = {
         name: "text",
         label: "纯文本输出",
         icon: "text_snippet",
-        action: result => window.htmlEncode(result)
+        action: result => result
     },
     html: {
         name: "html",

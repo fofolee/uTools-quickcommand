@@ -211,22 +211,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
-    if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-        // 直接 existsSync wt.exe 无效
-        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        let cd = ''
+        if (utools.isWindows()) {
+            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+                // 直接 existsSync wt.exe 无效
+            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
+                cmdline = cmdline.replace(/"/g, `\\"`)
+                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            } else {
+                cmdline = cmdline.replace(/"/g, `^"`)
+                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+                command = `${cd} start "" cmd /k "${cmdline}"`
+            }
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
-        }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            cmdline = cmdline.replace(/"/g, `\\"`)
+            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -451,7 +451,7 @@ let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
 
 // 屏蔽危险函数
 window.getuToolsLite = () => {
-    var utoolsLite = Object.assign({}, utools)
+    var utoolsLite = Object.assign({}, _.cloneDeep(utools))
     // if (utools.isDev()) return utoolsLite
     // 数据库相关接口
     delete utoolsLite.db
@@ -473,12 +473,12 @@ window.getuToolsLite = () => {
 
 let getSandboxFuns = () => {
     var sandbox = {
+        fetch: fetch.bind(window),
         utools: getuToolsLite(),
         quickcommand,
         electron,
         axios,
         Audio,
-        fetch,
         _,
         // 兼容老版本 
         fs,
@@ -503,8 +503,7 @@ utools.isDev() && (window.godMode = code => eval(code))
 
 // vm 模块将无法在渲染进程中使用，改用 ses 来执行代码
 window.evalCodeInSandbox = (code, userVars = {}) => {
-    let sandbox = getSandboxFuns()
-    let sandboxWithUV = Object.assign(userVars, sandbox)
+    let sandboxWithUV = Object.assign(userVars, getSandboxFuns())
     try {
         return new Compartment(sandboxWithUV).evaluate(code);
     } catch (error) {

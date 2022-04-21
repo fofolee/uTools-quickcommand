@@ -16,12 +16,19 @@
             >
           </q-toolbar>
           <q-card-section class="row items-center">
+            <iframe
+              ref="iframe"
+              :srcdoc="runResult"
+              frameborder="0"
+              v-if="htmlOutput"
+            ></iframe>
             <pre
+              v-else
               :class="{
                 'text-red': !runResultStatus,
                 result: 1,
               }"
-              v-html="runResult"
+              v-text="runResult"
             ></pre>
           </q-card-section>
           <q-card-actions align="right">
@@ -31,14 +38,21 @@
       </q-dialog>
     </div>
     <div v-else>
+      <iframe
+        ref="iframe"
+        :srcdoc="runResult"
+        frameborder="0"
+        v-if="htmlOutput"
+      ></iframe>
       <pre
+        v-else
         v-show="!!runResult"
         :class="{
           'text-red': !runResultStatus,
           'q-pa-md': 1,
           result: 1,
         }"
-        v-html="runResult"
+        v-text="runResult"
       ></pre>
     </div>
   </div>
@@ -49,7 +63,6 @@
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import commandTypes from "../js/options/commandTypes.js";
-import { event } from "quasar";
 
 export default {
   data() {
@@ -61,6 +74,7 @@ export default {
       listener: null,
       history: [],
       historyIdx: null,
+      htmlOutput: false,
     };
   },
   props: {
@@ -80,6 +94,9 @@ export default {
     needTempPayload() {
       return ["edit", "new", "config"].includes(this.action.type);
     },
+    iframeCtw() {
+      return this.$refs?.iframe?.contentWindow;
+    },
   },
   methods: {
     // 运行命令
@@ -91,6 +108,7 @@ export default {
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
+      this.htmlOutput = currentCommand.output === "html";
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
@@ -203,6 +221,7 @@ export default {
     // 显示运行结果
     showRunResult(content, isSuccess, action) {
       this.isResultShow = true;
+      this.setIframe();
       this.runResultStatus = isSuccess;
       let contlength = content?.length || 0;
       if (contlength > this.resultMaxLength)
@@ -239,6 +258,17 @@ export default {
         document.removeEventListener("keydown", this.listener, true);
       }
     },
+    setIframe() {
+      this.$nextTick(() => {
+        if (!this.iframeCtw) return;
+        let ctx = {
+          quickcommand,
+          utools,
+          parent: undefined,
+        };
+        Object.assign(this.iframeCtw, _.cloneDeep(ctx));
+      });
+    },
   },
   unmounted() {
     this.stopRun();
@@ -252,5 +282,9 @@ export default {
   word-wrap: break-word;
   max-width: 100%;
   margin: 0;
+}
+iframe {
+  width: 100%;
+  height: 550px;
 }
 </style>
