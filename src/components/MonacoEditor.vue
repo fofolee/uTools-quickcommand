@@ -217,7 +217,7 @@ export default {
       this.rawEditor.addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
         () => {
-          that.$parent.runCurrentCommand();
+          that.$emit("keyStroke", "run");
         }
       );
       // alt + z 换行
@@ -229,7 +229,7 @@ export default {
       this.rawEditor.addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
         () => {
-          that.$parent.saveCurrentCommand();
+          that.$emit("keyStroke", "save");
         }
       );
     },

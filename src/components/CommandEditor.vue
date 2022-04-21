@@ -221,6 +221,7 @@
       :placeholder="true"
       ref="editor"
       @typing="(val) => (quickcommandInfo.cmd = val)"
+      @keyStroke="monacoKeyStroke"
       :style="{
         top: languageBarHeight + 'px',
         left: this.action.type === 'run' ? 0 : this.sideBarWidth + 'px',
@@ -272,6 +273,7 @@ export default {
       resultMaxLength: 10000,
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
+      listener: null,
     };
   },
   props: {
@@ -279,17 +281,9 @@ export default {
   },
   mounted() {
     this.init();
-    this.$refs.sidebar?.init();
   },
   beforeUnmount() {
-    !!this.recording && document.removeEventListener("keyup", this.recording);
-    if (this.action.type !== "run") return;
-    let command = _.cloneDeep(this.quickcommandInfo);
-    command.cursorPosition = this.$refs.editor.getCursorPosition();
-    this.$root.utools.putDB(
-      command,
-      this.$root.utools.DBPRE.CFG + "codeHistory"
-    );
+    this.saveCodeHistory();
   },
   computed: {
     configurationPage() {
@@ -320,6 +314,7 @@ export default {
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
+      this.$refs.sidebar?.init();
     },
     programChanged(value) {
       this.setLanguage(value);
@@ -382,6 +377,27 @@ export default {
       command.output = this.$refs.sidebar?.currentCommand.output || "text";
       command.cmdType = this.$refs.sidebar?.cmdType.name;
       this.$refs.result.runCurrentCommand(command);
+    },
+    saveCodeHistory() {
+      if (this.action.type !== "run") return;
+      let command = _.cloneDeep(this.quickcommandInfo);
+      command.cursorPosition = this.$refs.editor.getCursorPosition();
+      this.$root.utools.putDB(
+        command,
+        this.$root.utools.DBPRE.CFG + "codeHistory"
+      );
+    },
+    monacoKeyStroke(event) {
+      switch (event) {
+        case "run":
+          this.runCurrentCommand();
+          break;
+        case "save":
+          this.saveCurrentCommand();
+          break;
+        default:
+          break;
+      }
     },
   },
 };
