@@ -14,18 +14,18 @@
             <q-toolbar-title
               ><span class="text-weight-bold">运行结果</span></q-toolbar-title
             >
+            <q-btn flat round icon="close" color="negative" v-close-popup />
           </q-toolbar>
-          <q-card-section class="row items-center">
-            <iframe
-              ref="iframe"
-              :srcdoc="runResult"
-              :height="frameHeight"
-              @load="frameLoad"
-              frameborder="0"
-              v-if="htmlOutput"
-            ></iframe>
+          <iframe
+            ref="iframe"
+            :srcdoc="frameStyle + runResult"
+            :height="frameHeight"
+            @load="frameLoad"
+            frameborder="0"
+            v-if="htmlOutput"
+          ></iframe>
+          <q-card-section v-else class="row items-center">
             <pre
-              v-else
               :class="{
                 'text-red': !runResultStatus,
                 result: 1,
@@ -33,16 +33,13 @@
               v-text="runResult"
             ></pre>
           </q-card-section>
-          <q-card-actions align="right">
-            <q-btn flat label="关闭" color="primary" v-close-popup />
-          </q-card-actions>
         </q-card>
       </q-dialog>
     </div>
     <div v-else>
       <iframe
         ref="iframe"
-        :srcdoc="runResult"
+        :srcdoc="frameStyle + runResult"
         :height="frameHeight"
         frameborder="0"
         @load="frameLoad"
@@ -68,6 +65,28 @@ import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import commandTypes from "../js/options/commandTypes.js";
 
+const frameStyle = `<style>::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: rgba(194, 194, 194, 0.4);
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+}
+body {
+  margin: 0;
+  color: ${utools.isDarkColors() ? "white" : "unset"}
+}
+</style>
+`;
+
 export default {
   data() {
     return {
@@ -80,6 +99,7 @@ export default {
       historyIdx: null,
       htmlOutput: false,
       frameHeight: 0,
+      frameStyle: frameStyle,
     };
   },
   props: {
@@ -280,8 +300,6 @@ export default {
     // 加载时更改样式
     frameLoad() {
       let cfw = this.$refs?.iframe?.contentWindow;
-      if (this.$q.dark.isActive) cfw.document.body.style.color = "white";
-      cfw.document.body.style.margin = "0";
       this.frameHeight = Math.min(
         cfw.document.body.scrollHeight,
         this.maxHeight
@@ -304,5 +322,6 @@ export default {
 }
 iframe {
   width: 100%;
+  display: block;
 }
 </style>
