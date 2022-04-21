@@ -257,7 +257,9 @@ let getSleepCodeByShell = ms => {
 }
 
 window.htmlEncode = (value) => {
-    return String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
+    let dom = quickcommand.htmlParse().querySelector('body')
+    dom.innerText = value
+    return dom.innerHTML
 }
 
 window.removeHtmlTags = value => {
