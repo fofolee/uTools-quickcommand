@@ -277,9 +277,11 @@ export default {
     canCommandRun() {
       // 未启用
       if (!this.isCommandActivated) return false;
-      let cmd = this.commandInfo.features.cmds[0];
+      let { platform, cmds } = this.commandInfo.features;
+      if (!_.isEmpty(platform) && !platform.includes(window.processPlatform))
+        return false;
       // 窗口模式
-      if (cmd.type && cmd.type === "window") return false;
+      if (cmds[0].type && cmds[0].type === "window") return false;
       return true;
     },
     // 命令未启用也可以添加计划任务
