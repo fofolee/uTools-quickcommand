@@ -19,6 +19,8 @@
             <iframe
               ref="iframe"
               :srcdoc="runResult"
+              :height="frameHeight"
+              @load="frameLoad"
               frameborder="0"
               v-if="htmlOutput"
             ></iframe>
@@ -41,7 +43,9 @@
       <iframe
         ref="iframe"
         :srcdoc="runResult"
+        :height="frameHeight"
         frameborder="0"
+        @load="frameLoad"
         v-if="htmlOutput"
       ></iframe>
       <pre
@@ -75,6 +79,7 @@ export default {
       history: [],
       historyIdx: null,
       htmlOutput: false,
+      frameHeight: 0,
     };
   },
   props: {
@@ -94,8 +99,8 @@ export default {
     needTempPayload() {
       return ["edit", "new", "config"].includes(this.action.type);
     },
-    iframeCtw() {
-      return this.$refs?.iframe?.contentWindow;
+    maxHeight() {
+      return this.fromUtools ? 600 : 300;
     },
   },
   methods: {
@@ -221,7 +226,7 @@ export default {
     // 显示运行结果
     showRunResult(content, isSuccess, action) {
       this.isResultShow = true;
-      this.setIframe();
+      this.frameInit();
       this.runResultStatus = isSuccess;
       let contlength = content?.length || 0;
       if (contlength > this.resultMaxLength)
@@ -233,22 +238,23 @@ export default {
           content.slice(contlength - 100);
       let pretreatment = action(content);
       pretreatment && (this.runResult += pretreatment);
-      this.fromUtools &&
-        this.$nextTick(() => {
-          this.outputAutoHeight();
-        });
+      this.outputAutoHeight();
     },
     // 根据输出自动滚动及调整 utools 高度
     outputAutoHeight(autoScroll = true, autoHeight = true) {
-      let clientHeight = document.body.clientHeight;
-      let pluginHeight = clientHeight < 600 ? clientHeight : 600;
-      autoHeight && utools.setExpendHeight(pluginHeight);
-      autoScroll &&
-        window.scroll({
-          top: clientHeight,
-          left: 0,
-          behavior: "smooth",
-        });
+      if (!this.fromUtools) return;
+      this.$nextTick(() => {
+        let clientHeight = document.body.clientHeight;
+        let pluginHeight =
+          clientHeight < this.maxHeight ? clientHeight : this.maxHeight;
+        autoHeight && utools.setExpendHeight(pluginHeight);
+        autoScroll &&
+          window.scroll({
+            top: clientHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+      });
     },
     stopRun() {
       this.runResult = "";
@@ -258,16 +264,29 @@ export default {
         document.removeEventListener("keydown", this.listener, true);
       }
     },
-    setIframe() {
+    // 初始化时覆盖变量
+    frameInit() {
       this.$nextTick(() => {
-        if (!this.iframeCtw) return;
+        let cfw = this.$refs?.iframe?.contentWindow;
+        if (!cfw) return;
         let ctx = {
           quickcommand,
           utools,
           parent: undefined,
         };
-        Object.assign(this.iframeCtw, _.cloneDeep(ctx));
+        Object.assign(cfw, _.cloneDeep(ctx));
       });
+    },
+    // 加载时更改样式
+    frameLoad() {
+      let cfw = this.$refs?.iframe?.contentWindow;
+      if (this.$q.dark.isActive) cfw.document.body.style.color = "white";
+      cfw.document.body.style.margin = "0";
+      this.frameHeight = Math.min(
+        cfw.document.body.scrollHeight,
+        this.maxHeight
+      );
+      this.outputAutoHeight();
     },
   },
   unmounted() {
@@ -285,6 +304,5 @@ export default {
 }
 iframe {
   width: 100%;
-  height: 550px;
 }
 </style>
