@@ -8,6 +8,8 @@ const axios = require('axios');
 const http = require('http');
 const url = require('url')
 const nodeFns = require("./lib/nodeFns")
+require('ses')
+
 window._ = require("lodash")
 window.yuQueClient = axios.create({
     baseURL: 'https://www.yuque.com/api/v2/',
@@ -472,17 +474,17 @@ window.getuToolsLite = () => {
 let getSandboxFuns = () => {
     var sandbox = {
         utools: getuToolsLite(),
-        quickcommand: quickcommand,
-        electron: electron,
-        axios: axios,
-        Audio: Audio,
-        fetch: fetch,
-        _: _,
+        quickcommand,
+        electron,
+        axios,
+        Audio,
+        fetch,
+        _,
         // 兼容老版本 
-        fs: fs,
-        path: path,
-        os: os,
-        child_process: child_process,
+        fs,
+        path,
+        os,
+        child_process,
     }
     shortCodes.forEach(f => {
         sandbox[f.name] = f
@@ -499,23 +501,12 @@ let liteErr = e => {
 
 utools.isDev() && (window.godMode = code => eval(code))
 
-// vm 模块将无法在渲染进程中使用，改用简单的沙箱来执行代码
-let createSandbox = (code, sandbox, async = false) => {
-    if (!async) code = `return (${code})`
-    const sandFn = new Function('sandbox', `with(sandbox){${code}}`);
-    const proxy = new Proxy(sandbox, {
-        has(target, key) {
-            return true;
-        }
-    });
-    return sandFn(proxy);
-}
-
+// vm 模块将无法在渲染进程中使用，改用 ses 来执行代码
 window.evalCodeInSandbox = (code, userVars = {}) => {
     let sandbox = getSandboxFuns()
     let sandboxWithUV = Object.assign(userVars, sandbox)
     try {
-        return createSandbox(code, sandboxWithUV);
+        return new Compartment(sandboxWithUV).evaluate(code);
     } catch (error) {
         throw liteErr(error)
     }
@@ -535,7 +526,7 @@ window.runCodeInSandbox = (code, callback, userVars = {}) => {
     }
     let sandboxWithUV = Object.assign(userVars, sandbox)
     try {
-        createSandbox(code, sandboxWithUV, true)
+        new Compartment(sandboxWithUV).evaluate(code)
     } catch (e) {
         console.log('Error: ', e)
         callback(null, liteErr(e))
