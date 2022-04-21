@@ -80,7 +80,7 @@
         <q-card-section class="q-gutter-sm">
           <div>「uTools 会员」或「插件会员」均可享受本插件的会员功能</div>
           <div class="text-weight-bolder">
-            本插件会员仅需 {{ memberPrice }} 元，买断制，uTools 会员享 85 折优惠
+            本插件会员仅需 {{ memberPrice }} 元，一次性付费，uTools 会员享 9 折优惠
           </div>
           <div>
             会员功能将在保障用户完整的插件功能体验的前提下，提供以下个性化功能：
