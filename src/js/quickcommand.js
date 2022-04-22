@@ -21,8 +21,8 @@ const quickcommand = {
             hints: [],
             title: title
         }
-        if (!(options instanceof Object)) return reject(new TypeError(`应为 Object, 而非 ${typeof options}`))
-        if (options instanceof Array) props.labels = options
+        if (!_.isObject(options)) return reject(new TypeError(`应为 Object, 而非 ${typeof options}`))
+        if (_.isArray(options)) props.labels = options
         else Object.assign(props, options)
         Dialog.create({
             component: inputBox,
@@ -35,7 +35,7 @@ const quickcommand = {
     }),
 
     showButtonBox: (labels = ["确定"], title = "") => new Promise((reslove, reject) => {
-        if (!(labels instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof labels}`))
+        if (!_.isArray(labels)) return reject(new TypeError(`应为 Array, 而非 ${typeof labels}`))
         let props = {
             labels: labels,
             title: title
@@ -91,7 +91,7 @@ const quickcommand = {
     }),
 
     showSelectList: (selects, options = {}) => new Promise((reslove, reject) => {
-        if (!(selects instanceof Array)) return reject(new TypeError(`应为 Array, 而非 ${typeof selects}`))
+        if (!_.isArray(selects)) return reject(new TypeError(`应为 Array, 而非 ${typeof selects}`))
         let defaultOptions = {
             placeholder: "输入进行筛选，支持拼音",
             optionType: "plaintext",

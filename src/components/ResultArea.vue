@@ -65,25 +65,15 @@ export default {
     },
   },
   methods: {
-    frameInit() {
-      if (!this.showFrame) return;
-      let ctx = {
-        quickcommand,
-        utools,
-        parent: undefined,
-      };
-      Object.assign(this.cfw, _.cloneDeep(ctx));
-    },
     frameLoad() {
+      this.cfw.quickcommand = _.cloneDeep(quickcommand);
+      this.cfw.utools = _.cloneDeep(utools);
       this.frameHeight = Math.min(
         this.cfw.document.documentElement.getBoundingClientRect().height,
         this.maxHeight
       );
       this.$emit("frameLoad");
     },
-  },
-  mounted() {
-    this.frameInit();
   },
 };
 </script>

@@ -1,4 +1,11 @@
 {
+    "program": "shell",
+    "cmd": "echo \"<script>function actionWithSelectedFile(file) { quickcommand.showButtonBox(['打开文件', '在文件管理器中定位', '复制文件路径']).then(x => { switch (x.id) { case 0: utools.shellOpenItem(file); break; case 1: utools.shellShowItemInFolder(file); break; case 2: utools.copyText(file); break; default: break; } }) }</script> <style> body li { list-style: none; padding: 5px 20px; margin: 10px 0; transition: .2s; height: 60px; font-size: 15px; border-radius: 6px; background: #9e9e9e26; line-height: 60px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} body li:hover { background: #009688; color: white; transition: .5s; } </style>\"  \n\necho \"find / -name \\\"{{subinput}}\\\" 2>/dev/null\"\nfind / -name \"{{subinput}}\" -exec echo -n \"<li onclick=actionWithSelectedFile(this.innerText)>\"{}\"</li>\" \\; 2>/dev/null",
+    "scptarg": "",
+    "charset": {
+        "scriptCode": "",
+        "outputCode": ""
+    },
     "features": {
         "code": "default_findGui",
         "explain": "通过 find 查找文件",
@@ -12,11 +19,8 @@
             "linux"
         ]
     },
-    "program": "shell",
-    "cmd": "echo \"<script>function actionWithSelectedFile(file) { quickcommand.showButtonBox(['打开文件', '在文件管理器中定位', '复制文件路径']).then(x => { switch (x.id) { case 0: utools.shellOpenItem(file); break; case 1: utools.shellShowItemInFolder(file); break; case 2: utools.copyText(file); break; default: break; } }) }</script> <style> #out li { list-style: none; padding: 5px 20px; margin: 10px 0; transition: .2s; height: 60px; font-size: 15px; border-radius: 6px; background: #9e9e9e26; line-height: 60px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} #out li:hover { background: #009688; color: white; transition: .5s; } </style>\"  \n\necho \"find / -name \\\"{{subinput}}\\\" 2>/dev/null\"\nfind / -name \"{{subinput}}\" -exec echo -n \"<li onclick=actionWithSelectedFile(this.innerText)>\"{}\"</li>\" \\; 2>/dev/null",
     "output": "html",
     "hasSubInput": true,
-    "scptarg": "",
     "tags": [
         "默认"
     ]
