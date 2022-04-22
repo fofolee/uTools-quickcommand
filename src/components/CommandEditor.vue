@@ -283,9 +283,6 @@ export default {
   mounted() {
     this.init();
   },
-  beforeUnmount() {
-    this.saveCodeHistory();
-  },
   computed: {
     configurationPage() {
       return this.$root.$refs.view;

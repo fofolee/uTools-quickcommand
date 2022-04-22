@@ -91,6 +91,7 @@ export default defineComponent({
         _.cloneDeep(this.profile),
         this.utools.DBPRE.CFG + "preferences"
       );
+      this.$refs.view.$refs?.commandEditor?.saveCodeHistory()
       this.$router.push("/");
     },
     runCronTask(featureCode, cronExp) {
