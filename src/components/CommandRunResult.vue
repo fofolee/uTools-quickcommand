@@ -16,45 +16,26 @@
             >
             <q-btn flat round icon="close" color="negative" v-close-popup />
           </q-toolbar>
-          <iframe
-            ref="iframe"
-            :srcdoc="frameStyle + runResult"
-            :height="frameHeight"
-            @load="frameLoad"
-            frameborder="0"
-            v-if="htmlOutput"
-          ></iframe>
-          <q-card-section v-else class="row items-center">
-            <pre
-              :class="{
-                'text-red': !runResultStatus,
-                result: 1,
-              }"
-              v-text="runResult"
-            ></pre>
-          </q-card-section>
+          <ResultArea
+            v-if="isResultShow"
+            @frameLoad="outputAutoHeight(fromUtools)"
+            :enableHtml="enableHtml"
+            :runResultStatus="runResultStatus"
+            :runResult="runResult"
+            :maxHeight="maxHeight"
+          />
         </q-card>
       </q-dialog>
     </div>
     <div v-else>
-      <iframe
-        ref="iframe"
-        :srcdoc="frameStyle + runResult"
-        :height="frameHeight"
-        frameborder="0"
-        @load="frameLoad"
-        v-if="htmlOutput"
-      ></iframe>
-      <pre
-        v-else
-        v-show="!!runResult"
-        :class="{
-          'text-red': !runResultStatus,
-          'q-pa-md': 1,
-          result: 1,
-        }"
-        v-text="runResult"
-      ></pre>
+      <ResultArea
+        v-if="isResultShow"
+        @frameLoad="outputAutoHeight(fromUtools)"
+        :enableHtml="enableHtml"
+        :runResultStatus="runResultStatus"
+        :runResult="runResult"
+        :maxHeight="maxHeight"
+      />
     </div>
   </div>
 </template>
@@ -64,30 +45,10 @@
 import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import commandTypes from "../js/options/commandTypes.js";
-
-const frameStyle = `<style>::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  background: rgba(194, 194, 194, 0.4);
-}
-
-::-webkit-scrollbar-track {
-  border-radius: 10px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-}
-body {
-  margin: 0;
-  color: ${utools.isDarkColors() ? "white" : "unset"}
-}
-</style>
-`;
+import ResultArea from "components/ResultArea.vue";
 
 export default {
+  components: { ResultArea },
   data() {
     return {
       isResultShow: false,
@@ -97,9 +58,7 @@ export default {
       listener: null,
       history: [],
       historyIdx: null,
-      htmlOutput: false,
-      frameHeight: 0,
-      frameStyle: frameStyle,
+      enableHtml: false,
     };
   },
   props: {
@@ -133,7 +92,7 @@ export default {
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
-      this.htmlOutput = currentCommand.output === "html";
+      this.enableHtml = currentCommand.output === "html";
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
@@ -246,7 +205,6 @@ export default {
     // 显示运行结果
     showRunResult(content, isSuccess, action) {
       this.isResultShow = true;
-      this.frameInit();
       this.runResultStatus = isSuccess;
       let contlength = content?.length || 0;
       if (contlength > this.resultMaxLength)
@@ -258,11 +216,10 @@ export default {
           content.slice(contlength - 100);
       let pretreatment = action(content);
       pretreatment && (this.runResult += pretreatment);
-      this.outputAutoHeight();
+      this.outputAutoHeight(this.fromUtools);
     },
     // 根据输出自动滚动及调整 utools 高度
-    outputAutoHeight(autoScroll = true, autoHeight = true) {
-      if (!this.fromUtools) return;
+    outputAutoHeight(autoHeight = true, autoScroll = true) {
       this.$nextTick(() => {
         let clientHeight = document.body.clientHeight;
         let pluginHeight =
@@ -284,44 +241,9 @@ export default {
         document.removeEventListener("keydown", this.listener, true);
       }
     },
-    // 初始化时覆盖变量
-    frameInit() {
-      this.$nextTick(() => {
-        let cfw = this.$refs?.iframe?.contentWindow;
-        if (!cfw) return;
-        let ctx = {
-          quickcommand,
-          utools,
-          parent: undefined,
-        };
-        Object.assign(cfw, _.cloneDeep(ctx));
-      });
-    },
-    // 加载时更改样式
-    frameLoad() {
-      let cfw = this.$refs?.iframe?.contentWindow;
-      this.frameHeight = Math.min(
-        cfw.document.body.scrollHeight,
-        this.maxHeight
-      );
-      this.outputAutoHeight();
-    },
   },
   unmounted() {
     this.stopRun();
   },
 };
 </script>
-
-<style scoped>
-.result {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-width: 100%;
-  margin: 0;
-}
-iframe {
-  width: 100%;
-  display: block;
-}
-</style>
