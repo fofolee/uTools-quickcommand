@@ -373,9 +373,8 @@ export default {
     runCurrentCommand() {
       let command = _.cloneDeep(this.quickcommandInfo);
       command.output =
-        this.$refs.sidebar?.currentCommand.output || command.program === "html"
-          ? "html"
-          : "text";
+        this.$refs.sidebar?.currentCommand.output ||
+        (command.program === "html" ? "html" : "text");
       command.cmdType = this.$refs.sidebar?.cmdType.name;
       this.$refs.result.runCurrentCommand(command);
     },

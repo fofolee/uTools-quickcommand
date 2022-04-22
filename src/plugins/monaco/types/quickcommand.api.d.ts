@@ -157,7 +157,20 @@ interface quickcommandApi {
    * @param message 提示的内容
    * @param title 提示的标题
    */
-  showConfirmBox(message?: string, title?: string): Promise<boolean>;
+    showConfirmBox(message?: string, title?: string): Promise<boolean>;
+    
+  /**
+   * 显示等待用户操作的按钮，用户点击后执行相关操作
+   *
+   * ```js
+   * quickcommand.showWaitButton(() => {
+   *     stopRunning()
+   * }, "停止运行")
+   * ```
+   * @param callback 点击后的回调
+   * @param label 按钮的标题
+   */
+  showWaitButton(callback, label?: string): void;
 
   /**
    * 同步等待，会阻塞进程

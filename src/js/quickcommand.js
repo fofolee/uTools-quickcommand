@@ -11,6 +11,7 @@ import inputBox from "../components/quickcommandUI/InputBox"
 import buttonBox from "../components/quickcommandUI/ButtonBox"
 import TextArea from "../components/quickcommandUI/TextArea"
 import SelectList from "../components/quickcommandUI/SelectList"
+import WaitButton from "../components/quickcommandUI/waitButton"
 
 const quickcommand = {
     showInputBox: (options = ["请输入"], title = "") => new Promise((reslove, reject) => {
@@ -112,6 +113,19 @@ const quickcommand = {
             console.log('取消')
         })
     }),
+
+    showWaitButton: (callback, label = "确定") => {
+        Dialog.create({
+            component: WaitButton,
+            componentProps: {
+                label
+            }
+        }).onOk(() => {
+            callback()
+        }).onCancel(() => {
+            console.log('取消')
+        })
+    }
 }
 
 export default quickcommand
