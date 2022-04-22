@@ -59,6 +59,7 @@ export default {
       history: [],
       historyIdx: null,
       enableHtml: false,
+      child: null,
     };
   },
   props: {
@@ -122,7 +123,7 @@ export default {
             : this.$root.programs[currentCommand.program];
         option.scptarg = currentCommand.scptarg || "";
         option.charset = currentCommand.charset || {};
-        window.runCodeFile(
+        this.child = window.runCodeFile(
           currentCommand.cmd,
           option,
           currentCommand.output === "terminal",
@@ -237,6 +238,9 @@ export default {
     },
     stopRun() {
       this.runResult = "";
+      if (!!this.child) {
+        quickcommand.kill(this.child.pid);
+      }
       if (!!this.listener) {
         this.subInputValue = "";
         utools.removeSubInput();

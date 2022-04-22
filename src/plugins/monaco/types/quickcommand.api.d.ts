@@ -256,11 +256,15 @@ interface quickcommandApi {
   loadRemoteScript(url: string): Promise<object>;
 
   /**
-   * 将 signal 发送给 pid 标识的进程 , 默认为关闭进程，同process.kill
+   * 将 signal 发送给 pid 标识的进程 , 默认为关闭进程
+   * 
+   * 不同于process.kill，会将该进程启用的所有子进程也杀死
+   * 
    * @param pid 进程 ID
    * @param signal 进程信号，默认为SIGTERM
+   * @param callback 失败时的回调
    */
-  kill(pid: number, signal?: number | string): void;
+   kill(pid: number, signal?: string | number, callback?: (error?: Error) => void): void;
 
   /**
    * windows 下运行 VBS 脚本并返回运行结果
