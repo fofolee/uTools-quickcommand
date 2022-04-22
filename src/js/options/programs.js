@@ -12,6 +12,14 @@ const programs = {
         color: "primary",
         icon: "logo/quickcommand.png",
     },
+    html: {
+        name: "html",
+        bin: "",
+        argv: "",
+        ext: "",
+        color: "deep-orange",
+        icon: "logo/html.png",
+    },
     shell: {
         name: "shell",
         bin: "bash",

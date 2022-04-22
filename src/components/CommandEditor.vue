@@ -84,6 +84,7 @@
         <div class="col-auto justify-end flex">
           <q-btn-group unelevated>
             <q-btn-dropdown
+              v-show="quickcommandInfo.program !== 'html'"
               style="padding: 0 10px"
               dense
               flat
@@ -374,7 +375,10 @@ export default {
     // 运行
     runCurrentCommand() {
       let command = _.cloneDeep(this.quickcommandInfo);
-      command.output = this.$refs.sidebar?.currentCommand.output || "text";
+      command.output =
+        this.$refs.sidebar?.currentCommand.output || command.program === "html"
+          ? "html"
+          : "text";
       command.cmdType = this.$refs.sidebar?.cmdType.name;
       this.$refs.result.runCurrentCommand(command);
     },

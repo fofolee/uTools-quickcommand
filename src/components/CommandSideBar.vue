@@ -312,9 +312,21 @@ export default {
       return x;
     },
     outputTypesOptionsDy() {
-      return this.$parent.quickcommandInfo.program === "quickcommand"
-        ? _.without(this.outputTypesOptions, "terminal")
-        : this.outputTypesOptions;
+      switch (this.$parent.quickcommandInfo.program) {
+        case "quickcommand":
+          return _.without(this.outputTypesOptions, "terminal");
+        case "html":
+          return ["html"];
+        default:
+          return this.outputTypesOptions;
+      }
+    },
+  },
+  watch: {
+    outputTypesOptionsDy(val) {
+      if (!val.includes(this.currentCommand.output)) {
+        this.currentCommand.output = val[0];
+      }
     },
   },
   methods: {

@@ -113,6 +113,8 @@ export default {
           }
           !outPlugin && this.showRunResult(stdout, true, action);
         });
+      } else if (currentCommand.program === "html") {
+        this.showRunResult(currentCommand.cmd, true, action);
       } else {
         let option =
           currentCommand.program === "custom"
