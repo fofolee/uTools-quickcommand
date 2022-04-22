@@ -170,12 +170,27 @@ interface quickcommandApi {
    * @param callback 点击后的回调
    * @param label 按钮的标题
    */
-  showWaitButton(callback, label?: string): void;
+  showWaitButton(callback: () => void, label?: string): void;
 
   /**
    * 关掉现有等待操作按钮
    */
   closeWaitBtn(): void;
+
+  /**
+   * 监听用户按键，并执行回调函数
+   *
+   * ```js
+   * quickcommand.listenKeydown(e=>{
+   *  if(e.key === 'c' && e.ctrlKey){
+   *    console.log("取消")
+   *  }
+   * })
+   * ```
+   *
+   * @param callback 按键回调函数
+   */
+  listenKeydown(callback: (event) => void): void;
 
   /**
    * 同步等待，会阻塞进程

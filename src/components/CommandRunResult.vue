@@ -55,7 +55,8 @@ export default {
       runResult: "",
       runResultStatus: true,
       subInputValue: "",
-      listener: null,
+      subInputListener: null,
+      quickcommandListener: null,
       history: [],
       historyIdx: null,
       enableHtml: false,
@@ -171,7 +172,7 @@ export default {
       setTimeout(() => {
         if (this.subInputValue) querySubInput();
       }, 100);
-      this.listener = (event) => {
+      this.subInputListener = (event) => {
         event.preventDefault();
         switch (event.keyCode) {
           case 13:
@@ -193,7 +194,7 @@ export default {
             break;
         }
       };
-      document.addEventListener("keydown", this.listener, true);
+      document.addEventListener("keydown", this.subInputListener, true);
     },
     // payload 临时赋值
     async getTempPayload(currentCommand) {
@@ -243,15 +244,24 @@ export default {
       }
       quickcommand.closeWaitBtn?.();
       quickcommand.closeWaitBtn = () => {};
-      if (!!this.listener) {
+      if (!!this.subInputListener) {
         this.subInputValue = "";
         utools.removeSubInput();
-        document.removeEventListener("keydown", this.listener, true);
+        document.removeEventListener("keydown", this.subInputListener, true);
+      }
+      if (!!this.quickcommandListener) {
+        document.removeEventListener("keydown", this.quickcommandListener);
       }
     },
   },
   unmounted() {
     this.stopRun();
+  },
+  mounted() {
+    quickcommand.listenKeydown = (callback) => {
+      this.quickcommandListener = callback;
+      document.addEventListener("keydown", callback);
+    };
   },
 };
 </script>
