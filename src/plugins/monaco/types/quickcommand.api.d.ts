@@ -157,8 +157,8 @@ interface quickcommandApi {
    * @param message 提示的内容
    * @param title 提示的标题
    */
-    showConfirmBox(message?: string, title?: string): Promise<boolean>;
-    
+  showConfirmBox(message?: string, title?: string): Promise<boolean>;
+
   /**
    * 显示等待用户操作的按钮，用户点击后执行相关操作
    *
@@ -171,6 +171,11 @@ interface quickcommandApi {
    * @param label 按钮的标题
    */
   showWaitButton(callback, label?: string): void;
+
+  /**
+   * 关掉现有等待操作按钮
+   */
+  closeWaitBtn(): void;
 
   /**
    * 同步等待，会阻塞进程
@@ -270,14 +275,18 @@ interface quickcommandApi {
 
   /**
    * 将 signal 发送给 pid 标识的进程 , 默认为关闭进程
-   * 
+   *
    * 不同于process.kill，会将该进程启用的所有子进程也杀死
-   * 
+   *
    * @param pid 进程 ID
    * @param signal 进程信号，默认为SIGTERM
    * @param callback 失败时的回调
    */
-   kill(pid: number, signal?: string | number, callback?: (error?: Error) => void): void;
+  kill(
+    pid: number,
+    signal?: string | number,
+    callback?: (error?: Error) => void
+  ): void;
 
   /**
    * windows 下运行 VBS 脚本并返回运行结果

@@ -241,6 +241,8 @@ export default {
       if (!!this.child) {
         quickcommand.kill(this.child.pid);
       }
+      quickcommand.closeWaitBtn?.();
+      quickcommand.closeWaitBtn = () => {};
       if (!!this.listener) {
         this.subInputValue = "";
         utools.removeSubInput();

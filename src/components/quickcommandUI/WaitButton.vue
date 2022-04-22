@@ -4,6 +4,7 @@
     seamless
     position="right"
     @hide="onDialogHide"
+    style="z-index: 9999"
   >
     <q-card>
       <q-btn color="primary" :label="label" @click="onOKClick" v-close-popup />
@@ -16,8 +17,10 @@ export default {
   props: {
     label: String,
   },
-  mounted(){
-      console.log(this);
+  mounted() {
+    quickcommand.closeWaitBtn = () => {
+      this.$refs?.dialog?.hide();
+    };
   },
   emits: ["ok", "hide"],
   methods: {
