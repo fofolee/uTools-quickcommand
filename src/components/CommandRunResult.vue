@@ -166,6 +166,7 @@ export default {
         this.history.push(this.subInputValue);
         this.historyIdx = this.history.length;
         utools.setSubInputValue("");
+        this.clear();
         this.fire(command);
       };
       // 自动粘贴的情况下自动执行
@@ -239,19 +240,22 @@ export default {
     },
     stopRun() {
       this.runResult = "";
-      if (!!this.child) {
-        quickcommand.kill(this.child.pid);
-      }
-      quickcommand.closeWaitBtn?.();
-      quickcommand.closeWaitBtn = () => {};
       if (!!this.subInputListener) {
         this.subInputValue = "";
         utools.removeSubInput();
         document.removeEventListener("keydown", this.subInputListener, true);
       }
+      this.clear();
+    },
+    clear() {
       if (!!this.quickcommandListener) {
         document.removeEventListener("keydown", this.quickcommandListener);
       }
+      if (!!this.child) {
+        quickcommand.kill(this.child.pid);
+      }
+      quickcommand.closeWaitBtn?.();
+      quickcommand.closeWaitBtn = () => {};
     },
   },
   unmounted() {
