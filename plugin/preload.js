@@ -476,7 +476,7 @@ let getSandboxFuns = () => {
     var sandbox = {
         fetch: fetch.bind(window),
         utools: getuToolsLite(),
-        quickcommand,
+        quickcommand: _.cloneDeep(quickcommand),
         electron,
         axios,
         Audio,
