@@ -103,6 +103,7 @@
             filled
             dense
             clearable
+            :autofocus="$root.profile.autofocusSearch"
             clear-icon="close"
             @update:model-value="updateSearch"
             placeholder="搜索，支持拼音首字母"

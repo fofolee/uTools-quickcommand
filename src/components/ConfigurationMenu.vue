@@ -283,6 +283,18 @@
                 </q-card>
               </q-menu>
             </q-item>
+            <q-item clickable :disable="!$refs.user.isVIP">
+              <q-item-section side>
+                <q-icon name="search" />
+              </q-item-section>
+              <q-item-section class="flex">自定聚焦搜索 </q-item-section>
+              <q-tooltip>进入插件时自动聚焦搜索</q-tooltip>
+              <q-item-section side
+                ><q-toggle
+                  v-model="$root.profile.autofocusSearch"
+                  color="primary"
+              /></q-item-section>
+            </q-item>
           </q-list>
         </q-menu>
       </q-item>

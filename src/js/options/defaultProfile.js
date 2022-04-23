@@ -3,6 +3,7 @@ export default {
     primaryColor: "#009688",
     defaultPrimaryColor: "#009688",
     backgroundImg: null,
+    autofocusSearch: false,
     crontabs: {},
     quickFeatures: {
         favFile: {
