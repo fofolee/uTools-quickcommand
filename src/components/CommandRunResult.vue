@@ -18,11 +18,13 @@
           </q-toolbar>
           <ResultArea
             v-if="isResultShow"
-            @frameLoad="outputAutoHeight(fromUtools)"
+            @frameLoad="frameLoad"
+            :frameInitHeight="frameInitHeight"
             :enableHtml="enableHtml"
             :runResultStatus="runResultStatus"
             :runResult="runResult"
             :maxHeight="maxHeight"
+            :key="timeStamp"
           />
         </q-card>
       </q-dialog>
@@ -30,11 +32,13 @@
     <div v-else>
       <ResultArea
         v-if="isResultShow"
-        @frameLoad="outputAutoHeight(fromUtools)"
+        @frameLoad="frameLoad"
+        :frameInitHeight="frameInitHeight"
         :enableHtml="enableHtml"
         :runResultStatus="runResultStatus"
         :runResult="runResult"
         :maxHeight="maxHeight"
+        :key="timeStamp"
       />
     </div>
   </div>
@@ -60,7 +64,9 @@ export default {
       history: [],
       historyIdx: null,
       enableHtml: false,
-      child: null,
+      frameInitHeight: 0,
+      childProcess: null,
+      timeStamp: null,
     };
   },
   props: {
@@ -124,7 +130,7 @@ export default {
             : this.$root.programs[currentCommand.program];
         option.scptarg = currentCommand.scptarg || "";
         option.charset = currentCommand.charset || {};
-        this.child = window.runCodeFile(
+        this.childProcess = window.runCodeFile(
           currentCommand.cmd,
           option,
           currentCommand.output === "terminal",
@@ -210,6 +216,7 @@ export default {
     // 显示运行结果
     showRunResult(content, isSuccess, action) {
       this.isResultShow = true;
+      this.timeStamp = new Date().getTime();
       this.runResultStatus = isSuccess;
       let contlength = content?.length || 0;
       if (contlength > this.resultMaxLength)
@@ -251,11 +258,15 @@ export default {
       if (!!this.quickcommandListener) {
         document.removeEventListener("keydown", this.quickcommandListener);
       }
-      if (!!this.child) {
-        quickcommand.kill(this.child.pid);
+      if (!!this.childProcess) {
+        quickcommand.kill(this.childProcess.pid);
       }
       quickcommand.closeWaitBtn?.();
       quickcommand.closeWaitBtn = () => {};
+    },
+    frameLoad(initHeight) {
+      this.outputAutoHeight(this.fromUtools);
+      this.frameInitHeight = initHeight;
     },
   },
   unmounted() {

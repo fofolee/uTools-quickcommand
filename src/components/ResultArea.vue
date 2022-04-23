@@ -40,7 +40,6 @@ const frameStyle = `<style>::-webkit-scrollbar {
 }
 body {
   margin: 0;
-  padding: 10px 20px;
   color: ${utools.isDarkColors() ? "white" : "unset"}
 }
 </style>
@@ -48,13 +47,14 @@ body {
 
 export default {
   data() {
-    return { frameStyle: frameStyle, frameHeight: 0 };
+    return { frameStyle: frameStyle, frameHeight: this.frameInitHeight };
   },
   props: {
     enableHtml: Boolean,
     runResultStatus: Boolean,
     runResult: String,
     maxHeight: Number,
+    frameInitHeight: Number,
   },
   computed: {
     cfw() {
@@ -64,15 +64,25 @@ export default {
       return this.enableHtml && this.runResultStatus;
     },
   },
+  mounted() {
+    this.frameInit();
+  },
   methods: {
-    frameLoad() {
-      this.cfw.quickcommand = _.cloneDeep(quickcommand);
-      this.cfw.utools = _.cloneDeep(utools);
-      this.frameHeight = Math.min(
-        this.cfw.document.documentElement.getBoundingClientRect().height,
-        this.maxHeight
-      );
-      this.$emit("frameLoad");
+    frameInit() {
+      if (!this.cfw) return;
+      let ctx = {
+        quickcommand: _.cloneDeep(quickcommand),
+        utools: _.cloneDeep(utools),
+        parent: undefined,
+      };
+      Object.assign(this.cfw, ctx);
+      this.cfw.onload = () => {
+        this.frameHeight = Math.min(
+          this.cfw.document.documentElement.getBoundingClientRect().height,
+          this.maxHeight
+        );
+        this.$emit("frameLoad", this.frameHeight);
+      };
     },
   },
 };
