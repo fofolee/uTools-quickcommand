@@ -8,10 +8,10 @@ let escapeItem = item => {
     return item.replace('$', '$$$')
 }
 
-let handlingJsonVar = (jsonVar, name) => {
+let handlingJsonVar = (jsonVar, name, payload) => {
     try {
         return escapeItem(window.evalCodeInSandbox(jsonVar.slice(2, -2), {
-            [name]: quickcommand.enterData.payload
+            [name]: payload
         }))
     } catch (e) {
         return utools.showNotification(e)
@@ -73,7 +73,7 @@ const specialVars = {
         label: "{{input}}",
         desc: "主输入框的文本",
         match: /{{input}}/mg,
-        repl: () => quickcommand.enterData.payload
+        repl: (text, enterData) => enterData.payload
     },
     pwd: {
         name: "pwd",
@@ -88,21 +88,21 @@ const specialVars = {
         desc: "当前窗口信息，JSON格式，可以指定键值，如{{WindowInfo.id}}",
         type: "json",
         match: /{{WindowInfo(.*?)}}/mg,
-        repl: jsonVar => handlingJsonVar(jsonVar, "WindowInfo")
+        repl: (jsonVar, enterData) => handlingJsonVar(jsonVar, "WindowInfo", enterData.payload)
     },
     MatchImage: {
         name: "MatchImage",
         label: "{{MatchImage}}",
         desc: "匹配到图片的 DataUrl",
         match: /{{MatchImage}}/mg,
-        repl: () => quickcommand.enterData.payload
+        repl: (text, enterData) => enterData.payload
     },
     SelectFile: {
         name: "SelectFile",
         label: "{{SelectFile}}",
         desc: "文件管理器选中的文件，不支持Linux",
         match: /{{SelectFile}}/mg,
-        repl: () => window.getSelectFile(quickcommand.enterData.payload.id)
+        repl: (text, enterData) => window.getSelectFile(enterData.payload.id)
     },
     MatchedFiles: {
         name: "MatchedFiles",
@@ -110,14 +110,14 @@ const specialVars = {
         desc: "匹配的文件，JSON格式，可以指定键值，如{{MatchedFiles[0].path}}",
         type: "json",
         match: /{{MatchedFiles(.*?)}}/mg,
-        repl: jsonVar => handlingJsonVar(jsonVar, "MatchedFiles")
+        repl: (jsonVar, enterData) => handlingJsonVar(jsonVar, "MatchedFiles", enterData.payload)
     },
     type: {
         name: "type",
         label: "{{type}}",
         desc: "onPluginEnter的type，匹配的类型",
         match: /{{type}}/mg,
-        repl: () => quickcommand.enterData.type
+        repl: (text, enterData) => enterData.type
     },
     payload: {
         name: "payload",
@@ -125,7 +125,7 @@ const specialVars = {
         desc: "onPluginEnter的payload,当为JSON时可以指定键值，如{{payload.id}}",
         type: "json",
         match: /{{payload(.*?)}}/mg,
-        repl: jsonVar => handlingJsonVar(jsonVar, "payload")
+        repl: (jsonVar, enterData) => handlingJsonVar(jsonVar, "payload", enterData.payload)
     },
     js: {
         name: "js",

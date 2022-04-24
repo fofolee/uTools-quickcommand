@@ -113,14 +113,21 @@ export default {
           utools.outPlugin();
         }, 500);
       if (currentCommand.program === "quickcommand") {
-        window.runCodeInSandbox(currentCommand.cmd, (stdout, stderr) => {
-          if (stderr) {
-            return quitBeforeShowResult
-              ? alert(stderr)
-              : this.showRunResult(stderr, false, action);
-          }
-          !outPlugin && this.showRunResult(stdout, true, action);
-        });
+        let qc = _.cloneDeep(quickcommand);
+        qc.enterData = this.$root.enterData;
+        qc.type = this.$root.enterData.type;
+        window.runCodeInSandbox(
+          currentCommand.cmd,
+          (stdout, stderr) => {
+            if (stderr) {
+              return quitBeforeShowResult
+                ? alert(stderr)
+                : this.showRunResult(stderr, false, action);
+            }
+            !outPlugin && this.showRunResult(stdout, true, action);
+          },
+          { quickcommand: qc }
+        );
       } else if (currentCommand.program === "html") {
         this.showRunResult(currentCommand.cmd, true, action);
       } else {
@@ -150,7 +157,9 @@ export default {
       let spVars = _.filter(specialVars, (sp) => sp.repl);
       _.forIn(spVars, (val, key) => {
         if (cmd.includes(val.label.slice(0, -2))) {
-          cmd = cmd.replace(val.match, (x) => val.repl(x));
+          cmd = cmd.replace(val.match, (x) =>
+            val.repl(x, this.$root.enterData)
+          );
         }
       });
       return cmd;
@@ -208,7 +217,7 @@ export default {
       if (!this.needTempPayload) return;
       let type =
         currentCommand.cmdType || currentCommand.features?.cmds[0].type;
-      quickcommand.enterData = {
+      this.$root.enterData = {
         type: type || "text",
         payload: await commandTypes[type]?.tempPayload?.(),
       };
@@ -255,14 +264,11 @@ export default {
       this.clear();
     },
     clear() {
-      if (!!this.quickcommandListener) {
-        document.removeEventListener("keydown", this.quickcommandListener);
-      }
       if (!!this.childProcess) {
         quickcommand.kill(this.childProcess.pid);
       }
-      quickcommand.closeWaitBtn?.();
-      quickcommand.closeWaitBtn = () => {};
+      quickcommand.removeListener();
+      quickcommand.closeWaitButton();
     },
     frameLoad(initHeight) {
       this.outputAutoHeight(this.fromUtools);
@@ -271,12 +277,6 @@ export default {
   },
   unmounted() {
     this.stopRun();
-  },
-  mounted() {
-    quickcommand.listenKeydown = (callback) => {
-      this.quickcommandListener = callback;
-      document.addEventListener("keydown", callback);
-    };
   },
 };
 </script>

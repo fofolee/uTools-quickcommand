@@ -174,8 +174,10 @@ interface quickcommandApi {
 
   /**
    * 关掉现有等待操作按钮
+   *
+   * 正常会在退出运行结果界面后自动关闭，也可手动关闭
    */
-  closeWaitBtn(): void;
+  closeWaitButton(): void;
 
   /**
    * 监听用户按键，并执行回调函数
@@ -191,6 +193,13 @@ interface quickcommandApi {
    * @param callback 按键回调函数
    */
   listenKeydown(callback: (event) => void): void;
+
+  /**
+   * 移除所有按键监听
+   *
+   * 正常会在退出运行结果界面后自动移除，也可手动移除
+   */
+  removeListener(): void;
 
   /**
    * 同步等待，会阻塞进程

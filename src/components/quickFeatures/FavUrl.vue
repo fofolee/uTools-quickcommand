@@ -24,7 +24,7 @@ export default {
       );
       url = choise.text + "://" + url;
     }
-    let title = quickcommand.enterData.payload.title
+    let title = this.$root.payload.title
       .replace(/和另外 \d+ 个页面.*/, "")
       .replace(/[-|—] .*?[Edge|Firefox|Chrome].*/, "")
       .trim();

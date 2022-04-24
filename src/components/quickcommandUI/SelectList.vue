@@ -1,66 +1,54 @@
 <template>
-  <q-dialog
-    @keydown="keyEvent"
-    maximized
-    ref="dialog"
-    transition-show="fade"
-    transition-hide="fade"
-    @hide="onDialogHide"
-  >
-    <q-card>
-      <q-virtual-scroll
-        ref="scrollBar"
-        :style="{ maxHeight: listMaxHeight + 'px', height: '100vh' }"
-        :virtual-scroll-slice-size="lazyItemSize"
-        :virtual-scroll-item-size="itemHeight"
-        @virtual-scroll="scrollEvent"
-        :items="matchedItems"
-      >
-        <template v-slot="{ item, index }">
-          <q-item
-            :key="index"
-            clickable
-            v-ripple
-            @mousemove="currentIndex = index"
-            @click="onOKClick"
-            manual-focus
-            :focused="index === currentIndex"
-            :active="index === currentIndex"
-            :style="{
-              height: itemHeight + 'px',
-            }"
-          >
-            <q-item-section v-if="isText">
-              <q-item-label lines="1">{{ item }}</q-item-label>
-            </q-item-section>
-            <q-item-section
-              v-else-if="isJson"
-              class="content-start q-gutter-md"
-            >
-              <q-avatar size="40px" v-if="item.icon">
-                <q-img :src="item.icon" />
-              </q-avatar>
-              <q-item-label lines="1">{{ item.title }}</q-item-label>
-              <q-item-label lines="1" caption>{{
-                item.description
-              }}</q-item-label>
-            </q-item-section>
-            <q-item-section v-else-if="isHtml">
-              <div v-html="item"></div>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-virtual-scroll>
-      <q-btn
-        v-if="options.showCancelButton"
-        class="absolute-bottom-right q-ma-xs"
-        round
-        color="primary"
-        icon="close"
-        @click="onCancelClick"
-      />
-    </q-card>
-  </q-dialog>
+  <q-card @keydown="keyEvent">
+    <q-virtual-scroll
+      ref="scrollBar"
+      :style="{ maxHeight: listMaxHeight + 'px', height: '100vh' }"
+      :virtual-scroll-slice-size="lazyItemSize"
+      :virtual-scroll-item-size="itemHeight"
+      @virtual-scroll="scrollEvent"
+      :items="matchedItems"
+    >
+      <template v-slot="{ item, index }">
+        <q-item
+          :key="index"
+          clickable
+          v-ripple
+          @mousemove="currentIndex = index"
+          @click="clickOK"
+          manual-focus
+          :focused="index === currentIndex"
+          :active="index === currentIndex"
+          :style="{
+            height: itemHeight + 'px',
+          }"
+        >
+          <q-item-section v-if="isText">
+            <q-item-label lines="1">{{ item }}</q-item-label>
+          </q-item-section>
+          <q-item-section v-else-if="isJson" class="content-start q-gutter-md">
+            <q-avatar size="40px" v-if="item.icon">
+              <q-img :src="item.icon" />
+            </q-avatar>
+            <q-item-label lines="1">{{ item.title }}</q-item-label>
+            <q-item-label lines="1" caption>{{
+              item.description
+            }}</q-item-label>
+          </q-item-section>
+          <q-item-section v-else-if="isHtml">
+            <div v-html="item"></div>
+          </q-item-section>
+        </q-item>
+      </template>
+    </q-virtual-scroll>
+    <q-btn
+      v-if="options.showCancelButton"
+      class="absolute-bottom-right q-ma-xs"
+      round
+      color="primary"
+      icon="close"
+      @click="hide"
+    />
+  </q-card>
 </template>
 
 <script>
@@ -69,7 +57,7 @@ import pinyinMatch from "pinyin-match";
 export default {
   data() {
     return {
-      items: this.initItems,
+      items: this.options.initItems,
       listMaxHeight: 500,
       currentIndex: 0,
       itemHeight: 50,
@@ -78,11 +66,7 @@ export default {
     };
   },
   mounted() {
-    quickcommand.updateSelectList = (opt, id) => {
-      if (typeof id === "undefined") this.items.push(opt);
-      else this.items[id] = opt;
-    };
-    this.options.enableSearch && this.setSubInput();
+    this.options.options.enableSearch && this.setSubInput();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
   },
   unmounted() {
@@ -102,48 +86,33 @@ export default {
       return this.matchedItems.length;
     },
     isJson() {
-      return this.options.optionType === "json";
+      return this.options.options.optionType === "json";
     },
     isHtml() {
-      return this.options.optionType === "html";
+      return this.options.options.optionType === "html";
     },
     isText() {
-      return this.options.optionType === "plaintext";
+      return this.options.options.optionType === "plaintext";
     },
   },
   props: {
     options: Object,
-    initItems: Array,
   },
-  emits: ["ok", "hide"],
   methods: {
-    show() {
-      this.$refs.dialog.show();
-    },
-
     hide() {
-      this.$refs.dialog.hide();
-    },
-
-    onDialogHide() {
       this.clear();
       this.$emit("hide");
     },
 
-    onOKClick() {
-      let selected =
-        this.options.optionType === "json"
-          ? this.matchedItems[this.currentIndex]
-          : {
-              id: this.currentIndex,
-              text: this.matchedItems[this.currentIndex],
-            };
-      this.$emit("ok", selected);
-      this.options.closeOnSelect && this.hide();
-    },
-
-    onCancelClick() {
-      this.hide();
+    clickOK() {
+      let selected = this.isJson
+        ? this.matchedItems[this.currentIndex]
+        : {
+            id: this.currentIndex,
+            text: this.matchedItems[this.currentIndex],
+          };
+      this.$emit("clickOK", selected);
+      this.options.options.closeOnSelect && this.hide();
     },
 
     keyEvent(e) {
@@ -159,7 +128,7 @@ export default {
           );
           break;
         case 13:
-          this.onOKClick();
+          this.clickOK();
           return;
       }
       this.$refs.scrollBar.scrollTo(this.currentIndex);
@@ -181,7 +150,7 @@ export default {
     setSubInput() {
       utools.setSubInput(({ text }) => {
         this.searchWords = text;
-      }, this.options.placeholder);
+      }, this.options.options.placeholder);
     },
 
     setUtoolsHeight(height) {
@@ -191,8 +160,13 @@ export default {
     clear() {
       utools.removeSubInput();
       this.setUtoolsHeight(this.listMaxHeight);
-      quickcommand.updateSelectList = () => {};
     },
   },
 };
 </script>
+
+<style scoped>
+.q-card--dark {
+  background: var(--q-dark-page);
+}
+</style>

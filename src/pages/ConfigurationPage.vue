@@ -315,8 +315,8 @@ export default {
     initPage() {
       // 如果从 newcommand 进入则直接新建命令
       if (this.newCommandDirect) {
-        if (quickcommand.enterData.type === "text") this.addNewCommand();
-        else this.editCommand(JSON.parse(quickcommand.enterData.payload));
+        if (this.$root.enterData.type === "text") this.addNewCommand();
+        else this.editCommand(JSON.parse(this.$root.enterData.payload));
         this.$router.push("/configuration");
       }
       // 已启用的 features

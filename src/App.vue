@@ -2,6 +2,7 @@
   <router-view v-slot="{ Component }">
     <component ref="view" :is="Component" />
   </router-view>
+  <QuickCommand />
 </template>
 
 <script>
@@ -11,8 +12,10 @@ import UTOOLS from "./js/utools.js";
 import programmings from "./js/options/programs.js";
 import defaultProfile from "./js/options/defaultProfile.js";
 import Cron from "croner";
+import QuickCommand from "components/quickcommandUI/QuickCommand";
 
 export default defineComponent({
+  components: { QuickCommand },
   name: "App",
   data() {
     return {
@@ -21,6 +24,7 @@ export default defineComponent({
       profile: defaultProfile,
       utools: UTOOLS,
       cronJobs: {},
+      enterData: {},
     };
   },
   computed: {},
@@ -82,8 +86,7 @@ export default defineComponent({
       // 使用情况统计
       this.usageStatistics(enter.code, this.parseDate(new Date()));
       this.$q.dark.set(utools.isDarkColors());
-      quickcommand.enterData = enter;
-      quickcommand.payload = enter.payload;
+      this.enterData = enter;
       this.$router.push(enter.code);
     },
     outPlugin() {
@@ -91,7 +94,7 @@ export default defineComponent({
         _.cloneDeep(this.profile),
         this.utools.DBPRE.CFG + "preferences"
       );
-      this.$refs.view.$refs?.commandEditor?.saveCodeHistory()
+      this.$refs.view.$refs?.commandEditor?.saveCodeHistory();
       this.$router.push("/");
     },
     runCronTask(featureCode, cronExp) {
@@ -102,7 +105,9 @@ export default defineComponent({
     runCommandSilently(featureCode) {
       let command = this.utools.getDB(this.utools.DBPRE.QC + featureCode);
       if (command.program === "quickcommand") {
-        window.runCodeInSandbox(command.cmd, () => {});
+        window.runCodeInSandbox(command.cmd, () => {}, {
+          quickcommand: _.cloneDeep(quickcommand),
+        });
       } else {
         let option =
           command.program === "custom"

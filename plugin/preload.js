@@ -212,22 +212,22 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
-    if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
-        // 直接 existsSync wt.exe 无效
-        if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+        let cd = ''
+        if (utools.isWindows()) {
+            let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+                // 直接 existsSync wt.exe 无效
+            if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
+                cmdline = cmdline.replace(/"/g, `\\"`)
+                if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
+                command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            } else {
+                cmdline = cmdline.replace(/"/g, `^"`)
+                if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
+                command = `${cd} start "" cmd /k "${cmdline}"`
+            }
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
-        }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
+            cmdline = cmdline.replace(/"/g, `\\"`)
+            if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
         if (fs.existsSync('/Applications/iTerm.app')) {
             command = `osascript -e 'tell application "iTerm"
             create window with default profile
@@ -476,12 +476,11 @@ let getSandboxFuns = () => {
     var sandbox = {
         fetch: fetch.bind(window),
         utools: getuToolsLite(),
-        quickcommand: _.cloneDeep(quickcommand),
         electron,
         axios,
         Audio,
         _,
-        // 兼容老版本 
+        // 兼容老版本
         fs,
         path,
         os,
@@ -503,17 +502,17 @@ let liteErr = e => {
 utools.isDev() && (window.godMode = code => eval(code))
 
 // vm 模块将无法在渲染进程中使用，改用 ses 来执行代码
-window.evalCodeInSandbox = (code, userVars = {}) => {
-    let sandboxWithUV = Object.assign(userVars, getSandboxFuns())
+window.evalCodeInSandbox = (code, addVars = {}) => {
+    let sandboxWithAD = Object.assign(addVars, getSandboxFuns())
     try {
-        return new Compartment(sandboxWithUV).evaluate(code);
+        return new Compartment(sandboxWithAD).evaluate(code);
     } catch (error) {
         throw liteErr(error)
     }
 }
 
 let isWatchingError = false
-window.runCodeInSandbox = (code, callback, userVars = {}) => {
+window.runCodeInSandbox = (code, callback, addVars = {}) => {
     let sandbox = getSandboxFuns()
     sandbox.console = {
         log: (...stdout) => {
@@ -524,9 +523,9 @@ window.runCodeInSandbox = (code, callback, userVars = {}) => {
             callback(null, parseStdout(stderr))
         }
     }
-    let sandboxWithUV = Object.assign(userVars, sandbox)
+    let sandboxWithAD = Object.assign(addVars, sandbox)
     try {
-        new Compartment(sandboxWithUV).evaluate(code)
+        new Compartment(sandboxWithAD).evaluate(code)
     } catch (e) {
         console.log('Error: ', e)
         callback(null, liteErr(e))
@@ -629,7 +628,7 @@ window.quickcommandHttpServer = () => {
                 // 错误返回 500
                 if (stderr) return httpResponse(res, 500, stderr)
                 return httpResponse(res, 200, stdout)
-            }, userVars)
+            }, Object.assign(userVars, _.cloneDeep(quickcommand)))
         }
         httpServer = http.createServer()
         httpServer.on('request', (req, res) => {
