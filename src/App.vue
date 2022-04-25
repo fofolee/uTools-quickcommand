@@ -105,9 +105,7 @@ export default defineComponent({
     runCommandSilently(featureCode) {
       let command = this.utools.getDB(this.utools.DBPRE.QC + featureCode);
       if (command.program === "quickcommand") {
-        window.runCodeInSandbox(command.cmd, () => {}, {
-          quickcommand: _.cloneDeep(quickcommand),
-        });
+        window.runCodeInSandbox(command.cmd, () => {});
       } else {
         let option =
           command.program === "custom"

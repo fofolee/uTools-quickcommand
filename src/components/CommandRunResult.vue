@@ -113,9 +113,6 @@ export default {
           utools.outPlugin();
         }, 500);
       if (currentCommand.program === "quickcommand") {
-        let qc = _.cloneDeep(quickcommand);
-        qc.enterData = this.$root.enterData;
-        qc.type = this.$root.enterData.type;
         window.runCodeInSandbox(
           currentCommand.cmd,
           (stdout, stderr) => {
@@ -126,7 +123,7 @@ export default {
             }
             !outPlugin && this.showRunResult(stdout, true, action);
           },
-          { quickcommand: qc }
+          { enterData: this.$root.enterData }
         );
       } else if (currentCommand.program === "html") {
         this.showRunResult(currentCommand.cmd, true, action);
