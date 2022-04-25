@@ -7,7 +7,6 @@ const path = require("path")
 const axios = require('axios');
 const http = require('http');
 const url = require('url')
-const nodeFns = require("./lib/nodeFns")
 const kill = require('tree-kill')
 require('ses')
 
@@ -63,6 +62,7 @@ const shortCodes = [
 const ctlKey = utools.isMacOs() ? 'command' : 'control'
 
 const createBrowserWindow = utools.createBrowserWindow
+let browserWindow
 window.quickcommand = {
     // 模拟复制操作
     simulateCopy: function() {
@@ -179,23 +179,19 @@ window.quickcommand = {
 
     // 显示一个全功能的 devTools
     showDevTools: function() {
-        const browserWindow = createBrowserWindow('lib/sandbox.html', {
-            show: false,
-            title: '快捷命令',
-            webPreferences: {
-                preload: 'lib/sandbox.js',
-            },
-        }, () => {
-            browserWindow.webContents.openDevTools({
-                mode: 'detach'
-            })
-            let timer = setInterval(() => {
-                if (!browserWindow.webContents.isDevToolsOpened()) {
-                    clearInterval(timer)
-                    browserWindow.destroy()
-                }
-            }, 1000)
+        if (!browserWindow || browserWindow.webContents.isDestroyed()) {
+            browserWindow = createBrowserWindow('lib/sandbox.html', {
+                show: false,
+                title: '快捷命令',
+                webPreferences: {
+                    preload: 'lib/sandbox.js',
+                },
+            }, () => {})
+        }
+        browserWindow.webContents.openDevTools({
+            mode: 'detach'
         })
+        // browserWindow.webContents.executeJavaScript(``)
         return browserWindow
     }
 }
@@ -482,6 +478,10 @@ let getSandboxFuns = () => {
         axios,
         Audio,
         _,
+        AbortController,
+        AbortSignal,
+        Buffer,
+        require,
         // 兼容老版本
         fs,
         path,
@@ -491,7 +491,7 @@ let getSandboxFuns = () => {
     shortCodes.forEach(f => {
         sandbox[f.name] = f
     })
-    Object.assign(sandbox, nodeFns)
+    // Object.assign(sandbox, nodeFns)
     return sandbox
 }
 

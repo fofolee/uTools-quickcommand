@@ -1,7 +1,13 @@
-const nodeFns = require("./nodeFns")
 window._ = require("lodash")
 window.utools = require("./utoolsLite")()
-
-Object.keys(nodeFns).forEach(key => {
-    window[key] = nodeFns[key]
-})
+window.exit = () => {
+    process.exit()
+}
+// 绕过限制
+setTimeout(() => {
+    Object.assign(window, {
+        process,
+        Buffer,
+        require
+    })
+}, 100);
