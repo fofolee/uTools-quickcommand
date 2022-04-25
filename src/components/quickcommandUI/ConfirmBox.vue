@@ -24,7 +24,7 @@
 export default {
   methods: {
     clickOK() {
-      this.$emit("clickOK");
+      this.$emit("clickOK", true);
     },
   },
   props: {
