@@ -17,8 +17,8 @@
       </div>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="blue-9" label="确定" @click="clickOK" v-close-popup />
       <q-btn color="negative" label="取消" v-close-popup />
+      <q-btn color="blue-9" label="确定" @click="clickOK" v-close-popup />
     </q-card-actions>
   </q-card>
 </template>
