@@ -12,6 +12,7 @@ const kill = require('tree-kill')
 require('ses')
 
 window._ = require("lodash")
+window.getuToolsLite = require("./lib/utoolsLite")
 window.yuQueClient = axios.create({
     baseURL: 'https://www.yuque.com/api/v2/',
     headers: {
@@ -61,6 +62,7 @@ const shortCodes = [
 
 const ctlKey = utools.isMacOs() ? 'command' : 'control'
 
+const createBrowserWindow = utools.createBrowserWindow
 window.quickcommand = {
     // 模拟复制操作
     simulateCopy: function() {
@@ -173,6 +175,28 @@ window.quickcommand = {
             process.execPath.replace(/\/Frameworks\/.*/, "/MacOS/uTools") :
             process.execPath
         child_process.exec(uToolsPath, () => {})
+    },
+
+    // 显示一个全功能的 devTools
+    showDevTools: function() {
+        const browserWindow = createBrowserWindow('lib/sandbox.html', {
+            show: false,
+            title: '快捷命令',
+            webPreferences: {
+                preload: 'lib/sandbox.js',
+            },
+        }, () => {
+            browserWindow.webContents.openDevTools({
+                mode: 'detach'
+            })
+            let timer = setInterval(() => {
+                if (!browserWindow.webContents.isDevToolsOpened()) {
+                    clearInterval(timer)
+                    browserWindow.destroy()
+                }
+            }, 1000)
+        })
+        return browserWindow
     }
 }
 
@@ -449,28 +473,6 @@ let parseItem = item => {
 }
 
 let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
-
-// 屏蔽危险函数
-window.getuToolsLite = () => {
-    var utoolsLite = Object.assign({}, _.cloneDeep(utools))
-    // if (utools.isDev()) return utoolsLite
-    // 数据库相关接口
-    delete utoolsLite.db
-    delete utoolsLite.dbStorage
-    delete utoolsLite.removeFeature
-    delete utoolsLite.setFeature
-    delete utoolsLite.onDbPull
-    // 支付相关接口
-    delete utoolsLite.fetchUserServerTemporaryToken
-    delete utoolsLite.getUserServerTemporaryToken
-    delete utoolsLite.openPayment
-    delete utoolsLite.fetchUserPayments
-    // 其他
-    delete utoolsLite.onPluginEnter
-    delete utoolsLite.onPluginOut
-    Object.freeze(utoolsLite)
-    return utoolsLite
-}
 
 let getSandboxFuns = () => {
     var sandbox = {
