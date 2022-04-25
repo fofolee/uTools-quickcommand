@@ -144,6 +144,18 @@ const specialVars = {
         type: "command",
         match: /{{py:(.*?)}}/mg,
         repl: py => window.runPythonCommand(py.slice(5, -2))
+    },
+    userData: {
+        name: "userData",
+        label: "{{usr:}}",
+        desc: "用户设置的变量",
+        match: /{{usr:(.*?)}}/mg,
+        repl: (text, userData) => {
+            console.log(userData);
+            let filterd = userData.filter(x => x.id === text.slice(6, -2))
+            return filterd.length ? filterd[0].value : ''
+        },
+        tooltip: "仅本机可用时，该变量值只在本机有效，否则，所有电脑有效",
     }
 }
 

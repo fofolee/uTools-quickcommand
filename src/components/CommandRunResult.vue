@@ -151,12 +151,13 @@ export default {
     },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
+      let userData = this.$root.utools.userData.all();
       let spVars = _.filter(specialVars, (sp) => sp.repl);
       _.forIn(spVars, (val, key) => {
-        if (cmd.includes(val.label.slice(0, -2))) {
-          cmd = cmd.replace(val.match, (x) =>
-            val.repl(x, this.$root.enterData)
-          );
+        let label = val.label.slice(0, -2);
+        if (cmd.includes(label)) {
+          let replData = label === "{{usr:" ? userData : this.$root.enterData;
+          cmd = cmd.replace(val.match, (x) => val.repl(x, replData));
         }
       });
       return cmd;

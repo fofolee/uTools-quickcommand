@@ -155,7 +155,12 @@
             transition-show="jump-down"
             transition-hide="jump-up"
             borderless
-            @update:model-value="(val) => insertSpecialVar(val.label)"
+            @popup-hide="
+              () => {
+                if (specialVar.label === '{{usr:}}') showUserData = true;
+                else insertSpecialVar(specialVar.label);
+              }
+            "
             square
             :options="specialVarsOptions"
             v-model="specialVar"
@@ -263,6 +268,9 @@
         ref="icon"
       />
     </q-dialog>
+    <q-dialog v-model="showUserData">
+      <UserData @insertText="insertSpecialVar" />
+    </q-dialog>
   </q-scroll-area>
 </template>
 
@@ -272,10 +280,11 @@ import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import platformTypes from "../js/options/platformTypes.js";
 import iconPicker from "components/popup/IconPicker.vue";
+import UserData from "components/popup/UserData.vue";
 let commandTypesOptions = Object.values(commandTypes);
 
 export default {
-  components: { iconPicker },
+  components: { iconPicker, UserData },
   data() {
     return {
       currentCommand: {
@@ -298,6 +307,7 @@ export default {
       specialVar: "{{}}",
       allQuickCommandTags: this.$parent.allQuickCommandTags,
       showIconPicker: false,
+      showUserData: false,
     };
   },
   props: {

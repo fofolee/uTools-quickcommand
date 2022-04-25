@@ -8,10 +8,11 @@ let whole = window.utools
 
 // 数据库前缀
 const DBPRE = {
-    QC: 'qc_',
-    CFG: 'cfg_',
-    PAN: 'pan_',
-    STATUS: 'st_'
+    QC: 'qc_', // 快捷命令
+    CFG: 'cfg_', // 配置
+    PAN: 'pan_', // 面板视图
+    STATUS: 'st_', // 状态变量
+    USR: 'usr_' // 用户数据
 }
 
 // 数据库函数封装
@@ -41,11 +42,44 @@ let getDocs = key => {
     return whole.db.allDocs(key)
 }
 
+const nativeId = utools.getNativeId()
+
+let userData = {
+    put: function(value, id, isNative = true) {
+        let userData = getDB(DBPRE.USR + id)
+        if (isNative) {
+            userData[nativeId] = value;
+        } else {
+            userData.common = value;
+            delete userData[nativeId];
+        }
+        putDB(userData, DBPRE.USR + id);
+    },
+    get: function(id) {
+        let userData = getDB(DBPRE.USR + id)
+        return userData[nativeId] ? userData[nativeId] : userData.common
+    },
+    del: function(id) {
+        delDB(DBPRE.USR + id)
+    },
+    all: function() {
+        return getDocs(DBPRE.USR).map((item) => {
+            let isNative = !!item.data[nativeId];
+            return {
+                id: item._id.replace(DBPRE.USR, ""),
+                value: isNative ? item.data[nativeId] : item.data.common,
+                isNative: isNative,
+            };
+        })
+    }
+}
+
 export default {
     whole,
     getDB,
     putDB,
     delDB,
     getDocs,
+    userData,
     DBPRE,
 }
