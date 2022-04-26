@@ -16,6 +16,7 @@
         :prefix="`${item.id}`"
         suffix="仅本机"
         outlined
+        :placeholder="item.value || '本机未设置'"
       >
         <template v-slot:append>
           <q-toggle v-model="item.isNative" color="primary" />
