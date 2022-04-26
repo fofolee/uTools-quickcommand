@@ -287,7 +287,7 @@
               <q-item-section side>
                 <q-icon name="search" />
               </q-item-section>
-              <q-item-section class="flex">自定聚焦搜索 </q-item-section>
+              <q-item-section class="flex">自动聚焦搜索 </q-item-section>
               <q-tooltip>进入插件时自动聚焦搜索</q-tooltip>
               <q-item-section side
                 ><q-toggle
