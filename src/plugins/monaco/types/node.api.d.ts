@@ -8417,4 +8417,3 @@ declare namespace NodeJS {
       readonly [key: string]: T | undefined;
   }
 }
-declare var global: typeof globalThis;
