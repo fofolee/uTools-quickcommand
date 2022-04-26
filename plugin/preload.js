@@ -61,8 +61,6 @@ const shortCodes = [
 
 const ctlKey = utools.isMacOs() ? 'command' : 'control'
 
-const createBrowserWindow = utools.createBrowserWindow
-let browserWindow
 window.quickcommand = {
     // 模拟复制操作
     simulateCopy: function() {
@@ -418,35 +416,33 @@ window.convertFilePathToUtoolsPayload = files => files.map(file => {
 let stringifyAll = item => {
     var cache = [];
     var string = JSON.stringify(item, (key, value) => {
+        if (typeof value === 'function') return value.toString().replace(/\{[\s\S]*\}/, '{...}');
         if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) return
+            if (cache.includes(value)) return value.toString()
             cache.push(value);
         }
         return value;
-    }, '\t')
-    if (string != "{}") return string
-    else return item.toString()
+    }, 2);
+    return string
 }
 
 let parseItem = item => {
-    if (typeof item == "object") {
-        if (Buffer.isBuffer(item)) {
-            var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`
-            if (item.length > 50) bufferString += `... ${(item.length / 1000).toFixed(2)}kb`
-            return bufferString + ']'
-        } else if (item instanceof ArrayBuffer) {
-            return `ArrayBuffer(${item.byteLength})`
-        } else if (item instanceof Blob) {
-            return `Blob {size: ${item.size}, type: "${item.type}"}`
-        } else {
-            try {
-                return stringifyAll(item)
-            } catch (error) {}
-        }
-    } else if (typeof item == "undefined") {
-        return "undefined"
+    if (typeof item === "undefined") return "undefined"
+    if (typeof item !== "object") return item.toString()
+    if (Object.keys(item).length == 0) return "{}"
+    if (Buffer.isBuffer(item)) {
+        var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`;
+        if (item.length > 50) bufferString += `...${(item.length / 1000).toFixed(2)} kb `;
+        return bufferString + ']'
     }
-    return item.toString()
+    if (item instanceof ArrayBuffer) return `ArrayBuffer(${item.byteLength})`;
+    if (item instanceof Blob) return `Blob { size: ${item.size}, type: "${item.type}" }`;
+    try {
+        return stringifyAll(item)
+    } catch (error) {
+        console.log(error);
+        return item.toString()
+    }
 }
 
 let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
