@@ -189,9 +189,9 @@ window.quickcommand = {
             }, () => {})
         }
         browserWindow.webContents.openDevTools({
-            mode: 'detach'
-        })
-        // browserWindow.webContents.executeJavaScript(``)
+                mode: 'detach'
+            })
+            // browserWindow.webContents.executeJavaScript(``)
         return browserWindow
     }
 }
@@ -232,36 +232,35 @@ if (process.platform !== 'linux') quickcommand.runInTerminal = function(cmdline,
 }
 
 let getCommandToLaunchTerminal = (cmdline, dir) => {
-    let cd = ''
+    let cd, command;
     if (utools.isWindows()) {
-        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/')
+        let appPath = path.join(utools.getPath('home'), '/AppData/Local/Microsoft/WindowsApps/');
         // 直接 existsSync wt.exe 无效
         if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes('wt.exe')) {
-            cmdline = cmdline.replace(/"/g, `\\"`)
-            if (dir) cd = `-d "${dir.replace(/\\/g, '/')}"`
-            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`
+            cmdline = cmdline.replace(/"/g, `\\"`);
+            cd = dir ? `-d "${dir.replace(/\\/g, '/')}"` : '';
+            command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`;
         } else {
-            cmdline = cmdline.replace(/"/g, `^"`)
-            if (dir) cd = `cd /d "${dir.replace(/\\/g, '/')}" &&`
-            command = `${cd} start "" cmd /k "${cmdline}"`
+            cmdline = cmdline.replace(/"/g, `^"`);
+            cd = dir ? `cd /d "${dir.replace(/\\/g, '/')}" &&` : '';
+            command = `${cd} start "" cmd /k "${cmdline}"`;
         }
-    } else {
-        cmdline = cmdline.replace(/"/g, `\\"`)
-        if (dir) cd = `cd ${dir.replace(/ /g, `\\\\ `)} &&`
-        if (fs.existsSync('/Applications/iTerm.app')) {
-            command = `osascript -e 'tell application "iTerm"
+    } else if (utools.isMacOs()) {
+        cmdline = cmdline.replace(/"/g, `\\"`);
+        cd = dir ? `cd ${dir.replace(/ /g, '\\\\ ')} &&` : '';
+        command = fs.existsSync('/Applications/iTerm.app') ?
+            `osascript -e 'tell application "iTerm"
             create window with default profile
             tell current session of current window to write text "clear && ${cd} ${cmdline}"
-    end tell'`
-        } else {
-            command = `osascript -e 'tell application "Terminal"
-        do script "clear && ${cd} ${cmdline}"
+    end tell'` :
+            `osascript -e 'tell application "Terminal"
+          do script "clear && ${cd} ${cmdline}"
         activate
-    end tell'`
-        }
+    end tell'`;
+
     }
     console.log(command);
-    return command
+    return command;
 }
 
 window.pluginInfo = () => {
@@ -491,7 +490,6 @@ let getSandboxFuns = () => {
     shortCodes.forEach(f => {
         sandbox[f.name] = f
     })
-    // Object.assign(sandbox, nodeFns)
     return sandbox
 }
 
@@ -500,8 +498,6 @@ let liteErr = e => {
     if (!e) return
     return e.error ? e.error.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, '').trim() : e.message
 }
-
-utools.isDev() && (window.godMode = code => eval(code))
 
 // vm 模块将无法在渲染进程中使用，改用 ses 来执行代码
 window.evalCodeInSandbox = (code, addVars = {}) => {
@@ -571,7 +567,7 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
         charset = option.charset,
         scptarg = option.scptarg || "";
     let script = getQuickcommandTempFile(ext)
-    // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
+        // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);
     // var argvs = [script]
@@ -593,27 +589,27 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     // 在终端中输出
     if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
     child = child_process.spawn(cmdline, {
-        encoding: 'buffer',
-        shell: true
-    })
-    // var chunks = [],
-    //     err_chunks = [];
+            encoding: 'buffer',
+            shell: true
+        })
+        // var chunks = [],
+        //     err_chunks = [];
     console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode)
         callback(chunk.toString(), null)
-        // chunks.push(chunk)
+            // chunks.push(chunk)
     })
     child.stderr.on('data', stderr => {
-        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
-        callback(null, stderr.toString())
-        // err_chunks.push(err_chunk)
-    })
-    // child.on('close', code => {
-    //     let stdout = chunks.join("");
-    //     let stderr = err_chunks.join("");
-    //     callback(stdout, stderr)
-    // })
+            if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
+            callback(null, stderr.toString())
+                // err_chunks.push(err_chunk)
+        })
+        // child.on('close', code => {
+        //     let stdout = chunks.join("");
+        //     let stderr = err_chunks.join("");
+        //     callback(stdout, stderr)
+        // })
     return child
 }
 
@@ -651,7 +647,7 @@ window.quickcommandHttpServer = () => {
                 req.on('end', () => {
                     let parsedParams
                     let params = data.join("").toString()
-                    // 先尝试作为 json 解析
+                        // 先尝试作为 json 解析
                     try {
                         parsedParams = JSON.parse(params)
                     } catch (error) {
