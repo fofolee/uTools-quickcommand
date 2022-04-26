@@ -281,13 +281,6 @@ interface UToolsApi {
    */
   subInputBlur(): boolean;
   /**
-   * 创建独立窗口
-   * @param url 相对路径 html 文件
-   * @param options 参考 https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions
-   * @param callback url 加载完成时的回调
-   */
-  createBrowserWindow(url: string, options: { width?: number, height?: number }, callback?: () => void): { id: number, [key: string]: any, webContents: { id: number, [key: string]: any } };
-  /**
    * 隐藏插件到后台
    */
   outPlugin(): boolean;
