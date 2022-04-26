@@ -58,9 +58,6 @@ export default {
     frameInitHeight: Number,
   },
   computed: {
-    cfw() {
-      return this.$refs?.iframe?.contentWindow;
-    },
     showFrame() {
       return this.enableHtml && this.runResultStatus;
     },
@@ -79,17 +76,18 @@ export default {
   },
   methods: {
     frameInit() {
-      if (!this.cfw) return;
+      let cfw = this.$refs?.iframe?.contentWindow;
+      if (!cfw) return;
       let ctx = {
         quickcommand: _.cloneDeep(quickcommand),
         utools: _.cloneDeep(utools),
         parent: undefined,
       };
-      Object.assign(this.cfw, ctx);
-      this.cfw.onload = () => {
+      Object.assign(cfw, ctx);
+      cfw.onload = () => {
         this.frameHeight = Math.min(
-          this.cfw.document.body.innerText
-            ? this.cfw.document.documentElement.getBoundingClientRect().height
+          cfw.document.body.innerText
+            ? cfw.document.documentElement.getBoundingClientRect().height
             : 0,
           this.maxHeight
         );
