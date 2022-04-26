@@ -166,7 +166,7 @@ export default {
     setSubInput(currentCommand) {
       this.fromUtools && utools.setExpendHeight(0);
       let matched = specialVars.subinput.match.exec(currentCommand.cmd);
-      let placeholder = matched[1] || "↩ 执行命令，↑↓ 切换历史";
+      let placeholder = matched[1]?.slice(1) || "↩ 执行命令，↑↓ 切换历史";
       utools.setSubInput(({ text }) => {
         this.subInputValue = text;
       }, placeholder);
