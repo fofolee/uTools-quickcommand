@@ -273,13 +273,19 @@ export default {
           (!this.isCommandActivated || !this.canCommandRun),
       };
     },
+    // 命令是否适合当前平台
+    canCommandRunAtCurrentOS() {
+      let { platform } = this.commandInfo.features;
+      return !_.isEmpty(platform) && !platform.includes(window.processPlatform)
+        ? false
+        : true;
+    },
     // 命令是否可直接运行, 无论 cmds 长度为多少，只运行 cmds[0]
     canCommandRun() {
       // 未启用
       if (!this.isCommandActivated) return false;
-      let { platform, cmds } = this.commandInfo.features;
-      if (!_.isEmpty(platform) && !platform.includes(window.processPlatform))
-        return false;
+      if (!this.canCommandRunAtCurrentOS) return false;
+      let { cmds } = this.commandInfo.features;
       // 窗口模式
       if (cmds[0].type && cmds[0].type === "window") return false;
       return true;
@@ -296,7 +302,7 @@ export default {
     // 匹配类型的颜色
     matchTypeColor() {
       return (cmdType = "key") => {
-        return this.isCommandActivated
+        return this.canCommandRunAtCurrentOS && this.isCommandActivated
           ? this.commandTypes[cmdType].color
           : this.disabledColor;
       };
