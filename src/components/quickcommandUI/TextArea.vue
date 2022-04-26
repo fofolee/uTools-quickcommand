@@ -19,7 +19,7 @@
       }"
     />
     <div class="fixed-bottom-right q-pa-md q-gutter-sm">
-      <q-btn round color="blue-grey" icon="arrow_back" v-close-popup />
+      <q-btn round color="blue-grey" icon="arrow_back" @click="hide" />
       <q-btn round color="primary" icon="done" @click="clickOK" />
     </div>
   </q-card>
@@ -36,8 +36,12 @@ export default {
     options: Object,
   },
   methods: {
+    hide() {
+      this.$emit("hide");
+    },
     clickOK() {
       this.$emit("clickOK", this.result);
+      this.hide();
     },
   },
 };

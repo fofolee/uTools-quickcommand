@@ -11,14 +11,14 @@
           :label="label"
           :hint="options.hints[index]"
           hide-hint
-          autofocus
+          :autofocus="index === 0"
           @keyup.enter="clickOK"
         />
       </div>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="negative" label="取消" v-close-popup />
-      <q-btn color="blue-9" label="确定" @click="clickOK" v-close-popup />
+      <q-btn color="negative" label="取消" @click="hide" />
+      <q-btn color="blue-9" label="确定" @click="clickOK" />
     </q-card-actions>
   </q-card>
 </template>
@@ -34,8 +34,12 @@ export default {
     options: Object,
   },
   methods: {
+    hide() {
+      this.$emit("hide");
+    },
     clickOK() {
       this.$emit("clickOK", this.results);
+      this.hide();
     },
   },
 };

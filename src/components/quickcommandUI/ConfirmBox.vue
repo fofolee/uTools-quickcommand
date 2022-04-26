@@ -7,15 +7,8 @@
       {{ options.message }}
     </q-card-section>
     <q-card-section class="flex justify-end q-gutter-sm">
-      <q-btn flat label="取消" color="grey" v-close-popup />
-      <q-btn
-        flat
-        autofocus
-        label="确定"
-        color="primary"
-        v-close-popup
-        @click="clickOK()"
-      />
+      <q-btn flat label="取消" color="grey" @click="hide" />
+      <q-btn flat autofocus label="确定" color="primary" @click="clickOK()" />
     </q-card-section>
   </q-card>
 </template>
@@ -23,8 +16,12 @@
 <script>
 export default {
   methods: {
+    hide() {
+      this.$emit("hide");
+    },
     clickOK() {
       this.$emit("clickOK", true);
+      this.hide();
     },
   },
   props: {

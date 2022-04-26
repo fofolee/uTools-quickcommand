@@ -16,7 +16,14 @@
   <!-- waitButton 单独一个 -->
   <q-dialog seamless position="right" style="z-index: 9999" v-model="showWb">
     <q-card>
-      <q-btn color="primary" :label="wbLabel" @click="wbEvent" v-close-popup />
+      <q-btn
+        color="primary"
+        :label="wbLabel"
+        @click="
+          showWb = false;
+          wbEvent();
+        "
+      />
     </q-card>
   </q-dialog>
 </template>

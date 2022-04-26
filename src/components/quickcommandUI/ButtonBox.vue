@@ -9,7 +9,6 @@
           class="full-width"
           color="primary"
           :label="label"
-          v-close-popup
           @click="clickOK(label, index)"
         />
       </div>
@@ -28,8 +27,12 @@ export default {
     options: Object,
   },
   methods: {
+    hide() {
+      this.$emit("hide");
+    },
     clickOK(label, index) {
       this.$emit("clickOK", { id: index, text: label });
+      this.hide();
     },
   },
 };
