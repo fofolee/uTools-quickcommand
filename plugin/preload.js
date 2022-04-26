@@ -176,24 +176,6 @@ window.quickcommand = {
             process.execPath
         child_process.exec(uToolsPath, () => {})
     },
-
-    // 显示一个全功能的 devTools
-    showDevTools: function() {
-        if (!browserWindow || browserWindow.webContents.isDestroyed()) {
-            browserWindow = createBrowserWindow('lib/sandbox.html', {
-                show: false,
-                title: '快捷命令',
-                webPreferences: {
-                    preload: 'lib/sandbox.js',
-                },
-            }, () => {})
-        }
-        browserWindow.webContents.openDevTools({
-                mode: 'detach'
-            })
-            // browserWindow.webContents.executeJavaScript(``)
-        return browserWindow
-    }
 }
 
 // 运行vbs脚本
