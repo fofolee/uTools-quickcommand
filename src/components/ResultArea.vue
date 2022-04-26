@@ -3,7 +3,7 @@
     <iframe
       ref="iframe"
       sandbox="allow-scripts allow-forms"
-      :srcdoc="frameStyle + runResult"
+      :src="src"
       :height="frameHeight"
       frameborder="0"
       @load="frameLoad"
@@ -39,6 +39,7 @@ const frameStyle = `<style>::-webkit-scrollbar {
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
 body {
+  padding: 10px 20px;
   margin: 0;
   color: ${utools.isDarkColors() ? "white" : "unset"}
 }
@@ -63,6 +64,15 @@ export default {
     showFrame() {
       return this.enableHtml && this.runResultStatus;
     },
+    src() {
+      return this.showFrame
+        ? window.URL.createObjectURL(
+            new Blob([this.frameStyle, this.runResult], {
+              type: "text/html",
+            })
+          )
+        : "";
+    },
   },
   mounted() {
     this.frameInit();
@@ -78,7 +88,9 @@ export default {
       Object.assign(this.cfw, ctx);
       this.cfw.onload = () => {
         this.frameHeight = Math.min(
-          this.cfw.document.documentElement.getBoundingClientRect().height,
+          this.cfw.document.body.innerText
+            ? this.cfw.document.documentElement.getBoundingClientRect().height
+            : 0,
           this.maxHeight
         );
         this.$emit("frameLoad", this.frameHeight);
