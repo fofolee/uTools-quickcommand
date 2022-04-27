@@ -104,6 +104,7 @@ export default {
   word-wrap: break-word;
   max-width: 100%;
   margin: 0;
+  font-family: Consolas, Monaco, "Courier New";
 }
 iframe {
   width: 100%;

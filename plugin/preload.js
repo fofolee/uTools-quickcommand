@@ -8,6 +8,7 @@ const axios = require('axios');
 const http = require('http');
 const url = require('url')
 const kill = require('tree-kill')
+const beautifyLog = require('./lib/beautifyLog')
 require('ses')
 
 window._ = require("lodash")
@@ -413,39 +414,7 @@ window.convertFilePathToUtoolsPayload = files => files.map(file => {
     }
 })
 
-let stringifyAll = item => {
-    var cache = [];
-    var string = JSON.stringify(item, (key, value) => {
-        if (typeof value === 'function') return value.toString().replace(/\{[\s\S]*\}/, '{...}');
-        if (typeof value === 'object' && value !== null) {
-            if (cache.includes(value)) return value.toString()
-            cache.push(value);
-        }
-        return value;
-    }, 2);
-    return string
-}
-
-let parseItem = item => {
-    if (typeof item === "undefined") return "undefined"
-    if (typeof item !== "object") return item.toString()
-    if (Object.keys(item).length == 0) return "{}"
-    if (Buffer.isBuffer(item)) {
-        var bufferString = `[Buffer ${item.slice(0, 50).toString('hex').match(/\w{1,2}/g).join(" ")}`;
-        if (item.length > 50) bufferString += `...${(item.length / 1000).toFixed(2)} kb `;
-        return bufferString + ']'
-    }
-    if (item instanceof ArrayBuffer) return `ArrayBuffer(${item.byteLength})`;
-    if (item instanceof Blob) return `Blob { size: ${item.size}, type: "${item.type}" }`;
-    try {
-        return stringifyAll(item)
-    } catch (error) {
-        console.log(error);
-        return item.toString()
-    }
-}
-
-let parseStdout = stdout => stdout.map(x => parseItem(x)).join("\n")
+let parseStdout = stdout => stdout.map(x => beautifyLog(x)).join("\n")
 
 let getSandboxFuns = () => {
     var sandbox = {
@@ -545,7 +514,7 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
         charset = option.charset,
         scptarg = option.scptarg || "";
     let script = getQuickcommandTempFile(ext)
-        // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
+    // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);
     // var argvs = [script]
@@ -567,27 +536,27 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     // 在终端中输出
     if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
     child = child_process.spawn(cmdline, {
-            encoding: 'buffer',
-            shell: true
-        })
-        // var chunks = [],
-        //     err_chunks = [];
+        encoding: 'buffer',
+        shell: true
+    })
+    // var chunks = [],
+    //     err_chunks = [];
     console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode)
         callback(chunk.toString(), null)
-            // chunks.push(chunk)
+        // chunks.push(chunk)
     })
     child.stderr.on('data', stderr => {
-            if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
-            callback(null, stderr.toString())
-                // err_chunks.push(err_chunk)
-        })
-        // child.on('close', code => {
-        //     let stdout = chunks.join("");
-        //     let stderr = err_chunks.join("");
-        //     callback(stdout, stderr)
-        // })
+        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
+        callback(null, stderr.toString())
+        // err_chunks.push(err_chunk)
+    })
+    // child.on('close', code => {
+    //     let stdout = chunks.join("");
+    //     let stderr = err_chunks.join("");
+    //     callback(stdout, stderr)
+    // })
     return child
 }
 
@@ -625,7 +594,7 @@ window.quickcommandHttpServer = () => {
                 req.on('end', () => {
                     let parsedParams
                     let params = data.join("").toString()
-                        // 先尝试作为 json 解析
+                    // 先尝试作为 json 解析
                     try {
                         parsedParams = JSON.parse(params)
                     } catch (error) {
