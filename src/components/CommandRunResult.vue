@@ -2,7 +2,7 @@
   <div>
     <div v-if="!fromUtools">
       <q-dialog v-model="isResultShow" position="bottom" @hide="stopRun">
-        <q-card style="width: 90vh">
+        <q-card style="max-width: 700px; min-width: 500px; overflow: hidden">
           <q-toolbar>
             <q-avatar>
               <q-icon
@@ -16,16 +16,21 @@
             >
             <q-btn flat round icon="close" color="negative" v-close-popup />
           </q-toolbar>
-          <ResultArea
-            v-if="isResultShow"
-            @frameLoad="frameLoad"
-            :frameInitHeight="frameInitHeight"
-            :enableHtml="enableHtml"
-            :runResultStatus="runResultStatus"
-            :runResult="runResult"
-            :maxHeight="maxHeight"
-            :key="timeStamp"
-          />
+          <q-card-section
+            style="max-height: calc(100% - 50px); padding: 0"
+            class="scroll"
+          >
+            <ResultArea
+              v-if="isResultShow"
+              @frameLoad="frameLoad"
+              :frameInitHeight="frameInitHeight"
+              :enableHtml="enableHtml"
+              :runResultStatus="runResultStatus"
+              :runResult="runResult"
+              :maxHeight="maxHeight"
+              :key="timeStamp"
+            />
+          </q-card-section>
         </q-card>
       </q-dialog>
     </div>
