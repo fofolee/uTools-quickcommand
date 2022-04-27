@@ -2,7 +2,7 @@
   <div>
     <div v-if="!fromUtools">
       <q-dialog v-model="isResultShow" position="bottom" @hide="stopRun">
-        <q-card style="max-width: 700px; min-width: 500px; overflow: hidden">
+        <q-card style="max-width: 700px; min-width: 700px; overflow: hidden">
           <q-toolbar>
             <q-avatar>
               <q-icon
@@ -23,6 +23,7 @@
             <ResultArea
               v-if="isResultShow"
               @frameLoad="frameLoad"
+              @expandTrees="outputAutoHeight(fromUtools)"
               :frameInitHeight="frameInitHeight"
               :enableHtml="enableHtml"
               :runResultStatus="runResultStatus"
@@ -38,6 +39,7 @@
       <ResultArea
         v-if="isResultShow"
         @frameLoad="frameLoad"
+        @expandTrees="outputAutoHeight(fromUtools)"
         :frameInitHeight="frameInitHeight"
         :enableHtml="enableHtml"
         :runResultStatus="runResultStatus"
@@ -61,7 +63,7 @@ export default {
   data() {
     return {
       isResultShow: false,
-      runResult: "",
+      runResult: [],
       runResultStatus: true,
       subInputValue: "",
       subInputListener: null,
@@ -230,16 +232,17 @@ export default {
       this.isResultShow = true;
       this.timeStamp = new Date().getTime();
       this.runResultStatus = isSuccess;
-      let contlength = content?.length || 0;
-      if (contlength > this.resultMaxLength)
-        content =
-          content.slice(0, this.resultMaxLength - 100) +
-          `\n\n...\n${
-            contlength - this.resultMaxLength - 100
-          } 字省略\n...\n\n` +
-          content.slice(contlength - 100);
-      let pretreatment = action(content);
-      pretreatment && (this.runResult += pretreatment);
+      //   let contlength = content?.length || 0;
+      //   if (contlength > this.resultMaxLength)
+      //     content =
+      //       content.slice(0, this.resultMaxLength - 100) +
+      //       `\n\n...\n${
+      //         contlength - this.resultMaxLength - 100
+      //       } 字省略\n...\n\n` +
+      //       content.slice(contlength - 100);
+      //   let pretreatment = action(content);
+      //   pretreatment && (this.runResult += pretreatment);
+      this.runResult = this.runResult.concat(content);
       this.outputAutoHeight(this.fromUtools);
     },
     // 根据输出自动滚动及调整 utools 高度
@@ -258,7 +261,7 @@ export default {
       });
     },
     stopRun() {
-      this.runResult = "";
+      this.runResult = [];
       if (!!this.subInputListener) {
         this.subInputValue = "";
         utools.removeSubInput();

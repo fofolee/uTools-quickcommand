@@ -9,20 +9,22 @@
       @load="frameLoad"
       v-if="showFrame"
     ></iframe>
-    <pre
-      v-else
-      v-show="!!runResult"
-      :class="{
-        'text-red': !runResultStatus,
-        'q-pa-md': 1,
-        result: 1,
-      }"
-      v-text="runResult"
-    ></pre>
+    <div v-else v-show="!!runResult" :class="{ 'text-red': !runResultStatus }">
+      <div v-for="item in runResult" :key="item">
+        <ObjectTree
+          :obj="item"
+          v-if="typeof item === 'object'"
+          @expandTrees="$emit('expandTrees')"
+        />
+        <pre class="q-pa-md result" v-text="item" v-else></pre>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import ObjectTree from "components/popup/ObjectTree";
+
 const frameStyle = `<style>::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -47,13 +49,14 @@ body {
 `;
 
 export default {
+  components: { ObjectTree },
   data() {
     return { frameStyle: frameStyle, frameHeight: this.frameInitHeight };
   },
   props: {
     enableHtml: Boolean,
     runResultStatus: Boolean,
-    runResult: String,
+    runResult: Object,
     maxHeight: Number,
     frameInitHeight: Number,
   },
@@ -73,6 +76,7 @@ export default {
   },
   mounted() {
     this.frameInit();
+    console.log(this.runResult);
   },
   methods: {
     frameInit() {

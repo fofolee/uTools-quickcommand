@@ -463,7 +463,7 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
     sandbox.console = {
         log: (...stdout) => {
             console.log(stdout);
-            callback(parseStdout(stdout), null)
+            callback(stdout, null)
         },
         error: (...stderr) => {
             callback(null, parseStdout(stderr))
