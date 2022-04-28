@@ -16,12 +16,8 @@
       class="text q-pa-md"
     >
       <div v-for="item in runResult" :key="item">
-        <ObjectTree
-          :obj="item"
-          v-if="typeof item === 'object'"
-          @expandTrees="$emit('expandTrees')"
-        />
-        <pre class="result" v-text="item" v-else></pre>
+        <ObjectTree :obj="item" v-if="typeof item === 'object'" />
+        <pre class="result" v-text="item" v-else-if="!!item"></pre>
       </div>
     </div>
   </div>

@@ -120,7 +120,6 @@ export default {
         }
       }
       done(children);
-      this.$emit("expandTrees");
     },
     hasChildren(item) {
       if (typeof item === "object")

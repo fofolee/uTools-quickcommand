@@ -23,7 +23,6 @@
             <ResultArea
               v-if="isResultShow"
               @frameLoad="frameLoad"
-              @expandTrees="outputAutoHeight(fromUtools)"
               :frameInitHeight="frameInitHeight"
               :enableHtml="enableHtml"
               :runResultStatus="runResultStatus"
@@ -39,7 +38,6 @@
       <ResultArea
         v-if="isResultShow"
         @frameLoad="frameLoad"
-        @expandTrees="outputAutoHeight(fromUtools)"
         :frameInitHeight="frameInitHeight"
         :enableHtml="enableHtml"
         :runResultStatus="runResultStatus"
@@ -48,6 +46,7 @@
         :key="timeStamp"
       />
     </div>
+    <q-resize-observer @resize="outputAutoHeight" debounce="0" />
   </div>
 </template>
 
@@ -238,22 +237,18 @@ export default {
       this.runResultStatus = isSuccess;
       if (!_.isArray(content)) content = [content];
       this.runResult = this.runResult.concat(content);
-      this.outputAutoHeight(this.fromUtools);
     },
     // 根据输出自动滚动及调整 utools 高度
-    outputAutoHeight(autoHeight = true, autoScroll = true) {
-      this.$nextTick(() => {
-        let clientHeight = document.body.clientHeight;
-        let pluginHeight =
-          clientHeight < this.maxHeight ? clientHeight : this.maxHeight;
-        autoHeight && utools.setExpendHeight(pluginHeight);
-        autoScroll &&
-          window.scroll({
-            top: clientHeight,
-            left: 0,
-            behavior: "smooth",
-          });
-      });
+    outputAutoHeight(e) {
+      let autoScroll = 1;
+      let pluginHeight = e.height < this.maxHeight ? e.height : this.maxHeight;
+      this.fromUtools && utools.setExpendHeight(pluginHeight);
+      autoScroll &&
+        window.scroll({
+          top: e.height,
+          left: 0,
+          behavior: "smooth",
+        });
     },
     stopRun() {
       this.runResult = [];
@@ -272,7 +267,6 @@ export default {
       quickcommand.closeWaitButton();
     },
     frameLoad(initHeight) {
-      this.outputAutoHeight(this.fromUtools);
       this.frameInitHeight = initHeight;
     },
   },
