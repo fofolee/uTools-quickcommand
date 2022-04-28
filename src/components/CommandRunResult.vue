@@ -16,10 +16,7 @@
             >
             <q-btn flat round icon="close" color="negative" v-close-popup />
           </q-toolbar>
-          <q-card-section
-            style="max-height: calc(100% - 50px); padding: 0"
-            class="scroll"
-          >
+          <div style="max-height: calc(100% - 50px)" class="scroll">
             <ResultArea
               v-if="isResultShow"
               @frameLoad="frameLoad"
@@ -30,7 +27,7 @@
               :maxHeight="maxHeight"
               :key="timeStamp"
             />
-          </q-card-section>
+          </div>
         </q-card>
       </q-dialog>
     </div>
@@ -46,7 +43,7 @@
         :key="timeStamp"
       />
     </div>
-    <q-resize-observer @resize="outputAutoHeight" debounce="0" />
+    <q-resize-observer @resize="autoHeight" debounce="0" />
   </div>
 </template>
 
@@ -237,18 +234,23 @@ export default {
       this.runResultStatus = isSuccess;
       if (!_.isArray(content)) content = [content];
       this.runResult = this.runResult.concat(content);
+      this.autoScroll();
     },
     // 根据输出自动滚动及调整 utools 高度
-    outputAutoHeight(e) {
-      let autoScroll = 1;
+    autoHeight(e) {
+      if (!this.fromUtools) return;
       let pluginHeight = e.height < this.maxHeight ? e.height : this.maxHeight;
-      this.fromUtools && utools.setExpendHeight(pluginHeight);
-      autoScroll &&
-        window.scroll({
-          top: e.height,
-          left: 0,
+      utools.setExpendHeight(pluginHeight);
+    },
+    autoScroll() {
+      if (this.enableHtml) return;
+      this.$nextTick(() => {
+        let results = document.querySelectorAll(".result");
+        results[results.length - 1].scrollIntoView({
+          block: "end",
           behavior: "smooth",
         });
+      });
     },
     stopRun() {
       this.runResult = [];
