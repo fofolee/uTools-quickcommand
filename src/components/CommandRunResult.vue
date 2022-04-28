@@ -24,7 +24,6 @@
               :enableHtml="enableHtml"
               :runResultStatus="runResultStatus"
               :runResult="runResult"
-              :maxHeight="maxHeight"
               :key="timeStamp"
             />
           </div>
@@ -39,7 +38,6 @@
         :enableHtml="enableHtml"
         :runResultStatus="runResultStatus"
         :runResult="runResult"
-        :maxHeight="maxHeight"
         :key="timeStamp"
       />
     </div>
