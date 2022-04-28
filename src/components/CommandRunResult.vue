@@ -61,6 +61,7 @@ export default {
       runResultStatus: true,
       subInputValue: "",
       subInputListener: null,
+      ctrlCListener: null,
       quickcommandListener: null,
       history: [],
       historyIdx: null,
@@ -152,6 +153,15 @@ export default {
               : this.showRunResult(stdout, true);
           }
         );
+        // ctrl c 终止
+        this.ctrlCListener = (e) => {
+          if (e.key === "c" && e.ctrlKey) {
+            quickcommand.kill(this.childProcess.pid);
+            quickcommand.showMessageBox("命令已终止");
+            document.removeEventListener("keydown", this.ctrlCListener);
+          }
+        };
+        document.addEventListener("keydown", this.ctrlCListener);
       }
     },
     // 特殊变量赋值
@@ -260,9 +270,8 @@ export default {
       this.clear();
     },
     clear() {
-      if (!!this.childProcess) {
-        quickcommand.kill(this.childProcess.pid);
-      }
+      !!this.ctrlCListener &&
+        document.removeEventListener("keydown", this.ctrlCListener);
       quickcommand.removeListener();
       quickcommand.closeWaitButton();
     },
