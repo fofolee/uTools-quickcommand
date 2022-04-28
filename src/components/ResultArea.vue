@@ -89,9 +89,9 @@ export default {
       };
       Object.assign(cfw, ctx);
       cfw.onload = () => {
-        this.frameHeight = cfw.document.body.innerText
-          ? cfw.document.documentElement.getBoundingClientRect().height
-          : 0;
+        let clientHeight =
+          cfw.document.documentElement.getBoundingClientRect().height;
+        this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
         this.$emit("frameLoad", this.frameHeight);
       };
     },
