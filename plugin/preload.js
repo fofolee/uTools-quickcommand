@@ -8,7 +8,6 @@ const axios = require('axios');
 const http = require('http');
 const url = require('url')
 const kill = require('tree-kill')
-const beautifyLog = require('./lib/beautifyLog')
 require('ses')
 
 window._ = require("lodash")
@@ -414,8 +413,6 @@ window.convertFilePathToUtoolsPayload = files => files.map(file => {
     }
 })
 
-let parseStdout = stdout => stdout.map(x => beautifyLog(x)).join("\n")
-
 let getSandboxFuns = () => {
     var sandbox = {
         fetch: fetch.bind(window),
@@ -466,7 +463,7 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
             callback(stdout, null)
         },
         error: (...stderr) => {
-            callback(null, parseStdout(stderr))
+            callback(null, stderr)
         }
     }
     let sandboxWithAD = Object.assign(addVars, sandbox)

@@ -9,14 +9,19 @@
       @load="frameLoad"
       v-if="showFrame"
     ></iframe>
-    <div v-else v-show="!!runResult" :class="{ 'text-red': !runResultStatus }">
+    <div
+      v-else
+      v-show="!!runResult"
+      :class="{ 'text-red': !runResultStatus }"
+      class="text q-pa-md"
+    >
       <div v-for="item in runResult" :key="item">
         <ObjectTree
           :obj="item"
           v-if="typeof item === 'object'"
           @expandTrees="$emit('expandTrees')"
         />
-        <pre class="q-pa-md result" v-text="item" v-else></pre>
+        <pre class="result" v-text="item" v-else></pre>
       </div>
     </div>
   </div>
@@ -103,12 +108,14 @@ export default {
 </script>
 
 <style scoped>
+.text {
+  font-family: Consolas, Monaco, "Courier New";
+}
 .result {
   white-space: pre-wrap;
   word-wrap: break-word;
   max-width: 100%;
   margin: 0;
-  font-family: Consolas, Monaco, "Courier New";
 }
 iframe {
   width: 100%;

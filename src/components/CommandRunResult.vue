@@ -128,7 +128,9 @@ export default {
                 ? alert(stderr)
                 : this.showRunResult(stderr, false, action);
             }
-            !outPlugin && this.showRunResult(stdout, true, action);
+            outPlugin
+              ? action(stdout.toString())
+              : this.showRunResult(stdout, true);
           },
           { enterData: this.$root.enterData }
         );
@@ -151,7 +153,9 @@ export default {
                 ? alert(stderr)
                 : this.showRunResult(stderr, false, action);
             }
-            !outPlugin && this.showRunResult(stdout, true, action);
+            outPlugin
+              ? action(stdout.toString())
+              : this.showRunResult(stdout, true);
           }
         );
       }
@@ -228,20 +232,11 @@ export default {
       };
     },
     // 显示运行结果
-    showRunResult(content, isSuccess, action) {
+    showRunResult(content, isSuccess) {
       this.isResultShow = true;
       this.timeStamp = new Date().getTime();
       this.runResultStatus = isSuccess;
-      //   let contlength = content?.length || 0;
-      //   if (contlength > this.resultMaxLength)
-      //     content =
-      //       content.slice(0, this.resultMaxLength - 100) +
-      //       `\n\n...\n${
-      //         contlength - this.resultMaxLength - 100
-      //       } 字省略\n...\n\n` +
-      //       content.slice(contlength - 100);
-      //   let pretreatment = action(content);
-      //   pretreatment && (this.runResult += pretreatment);
+      if (!_.isArray(content)) content = [content];
       this.runResult = this.runResult.concat(content);
       this.outputAutoHeight(this.fromUtools);
     },
