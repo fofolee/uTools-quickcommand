@@ -67,7 +67,7 @@ export default {
     src() {
       return this.showFrame
         ? window.URL.createObjectURL(
-            new Blob([this.frameStyle, this.runResult], {
+            new Blob([this.frameStyle].concat(this.runResult), {
               type: "text/html",
             })
           )
