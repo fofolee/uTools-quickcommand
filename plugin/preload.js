@@ -174,6 +174,14 @@ window.quickcommand = {
             process.execPath
         child_process.exec(uToolsPath, () => {})
     },
+
+    readClipboard: function() {
+        return electron.clipboard.readText()
+    },
+
+    writeClipboard: function(text) {
+        electron.clipboard.writeText(text)
+    }
 }
 
 // 运行vbs脚本
@@ -511,7 +519,7 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
         charset = option.charset,
         scptarg = option.scptarg || "";
     let script = getQuickcommandTempFile(ext)
-    // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
+        // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);
     // var argvs = [script]
@@ -533,27 +541,27 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     // 在终端中输出
     if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
     child = child_process.spawn(cmdline, {
-        encoding: 'buffer',
-        shell: true
-    })
-    // var chunks = [],
-    //     err_chunks = [];
+            encoding: 'buffer',
+            shell: true
+        })
+        // var chunks = [],
+        //     err_chunks = [];
     console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode)
         callback(chunk.toString(), null)
-        // chunks.push(chunk)
+            // chunks.push(chunk)
     })
     child.stderr.on('data', stderr => {
-        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
-        callback(null, stderr.toString())
-        // err_chunks.push(err_chunk)
-    })
-    // child.on('close', code => {
-    //     let stdout = chunks.join("");
-    //     let stderr = err_chunks.join("");
-    //     callback(stdout, stderr)
-    // })
+            if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
+            callback(null, stderr.toString())
+                // err_chunks.push(err_chunk)
+        })
+        // child.on('close', code => {
+        //     let stdout = chunks.join("");
+        //     let stderr = err_chunks.join("");
+        //     callback(stdout, stderr)
+        // })
     return child
 }
 
@@ -591,7 +599,7 @@ window.quickcommandHttpServer = () => {
                 req.on('end', () => {
                     let parsedParams
                     let params = data.join("").toString()
-                    // 先尝试作为 json 解析
+                        // 先尝试作为 json 解析
                     try {
                         parsedParams = JSON.parse(params)
                     } catch (error) {

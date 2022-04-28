@@ -353,6 +353,18 @@ interface quickcommandApi {
   simulatePaste();
 
   /**
+   * 读取剪贴板
+   */
+  readClipboard(): text<string>;
+
+  /**
+   * 写入剪贴板
+   *
+   * @param text 要写入的文本
+   */
+  writeClipboard(text: string);
+
+  /**
    * 唤醒 uTools
    *
    * 当插件自身已经退出时，utools.showMainWindow() 将不再起作用
