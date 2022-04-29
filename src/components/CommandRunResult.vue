@@ -109,8 +109,8 @@ export default {
       hideWindow && utools.hideMainWindow();
       // 对于本身就没有输出的命令，无法确认命令是否执行完成，所以干脆提前退出插件
       // 弊端就是如果勾选了隐藏后台就完全退出的话，会造成命令直接中断
-      let quitBeforeShowResult = this.fromUtools && outPlugin;
-      quitBeforeShowResult &&
+      let earlyExit = this.fromUtools && outPlugin;
+      earlyExit &&
         setTimeout(() => {
           utools.outPlugin();
         }, 500);
@@ -118,14 +118,7 @@ export default {
         window.runCodeInSandbox(
           currentCommand.cmd,
           (stdout, stderr) => {
-            if (stderr) {
-              return quitBeforeShowResult
-                ? alert(stderr)
-                : this.showRunResult(stderr, false, action);
-            }
-            outPlugin
-              ? action(stdout.toString())
-              : this.showRunResult(stdout, true);
+            this.handleResult(stdout, stderr, { outPlugin, action, earlyExit });
           },
           { enterData: this.$root.enterData }
         );
@@ -143,14 +136,7 @@ export default {
           option,
           currentCommand.output === "terminal",
           (stdout, stderr) => {
-            if (stderr) {
-              return quitBeforeShowResult
-                ? alert(stderr)
-                : this.showRunResult(stderr, false, action);
-            }
-            outPlugin
-              ? action(stdout.toString())
-              : this.showRunResult(stdout, true);
+            this.handleResult(stdout, stderr, { outPlugin, action, earlyExit });
           }
         );
         // ctrl c 终止
@@ -234,6 +220,16 @@ export default {
         type: type || "text",
         payload: await commandTypes[type]?.tempPayload?.(),
       };
+    },
+    handleResult(stdout, stderr, options) {
+      if (stderr) {
+        return options.earlyExit
+          ? alert(stderr)
+          : this.showRunResult(stderr, false);
+      }
+      options.outPlugin
+        ? options.action(stdout.toString())
+        : this.showRunResult(stdout, true);
     },
     // 显示运行结果
     showRunResult(content, isSuccess) {
