@@ -58,7 +58,6 @@ export default {
     enableHtml: Boolean,
     runResultStatus: Boolean,
     runResult: Object,
-    maxHeight: Number,
     frameInitHeight: Number,
   },
   computed: {
@@ -68,7 +67,7 @@ export default {
     src() {
       return this.showFrame
         ? window.URL.createObjectURL(
-            new Blob([this.frameStyle, this.runResult], {
+            new Blob([this.frameStyle].concat(this.runResult), {
               type: "text/html",
             })
           )
@@ -101,12 +100,9 @@ export default {
       };
       Object.assign(cfw, ctx);
       cfw.onload = () => {
-        this.frameHeight = Math.min(
-          cfw.document.body.innerText
-            ? cfw.document.documentElement.getBoundingClientRect().height
-            : 0,
-          this.maxHeight
-        );
+        let clientHeight =
+          cfw.document.documentElement.getBoundingClientRect().height;
+        this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
         this.$emit("frameLoad", this.frameHeight);
       };
     },
