@@ -104,10 +104,7 @@ export default {
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
-      if (currentCommand.output === "html") {
-        this.enableHtml = true;
-        currentCommand.cmd = await this.cacheScript(currentCommand.cmd);
-      }
+      this.enableHtml = currentCommand.output === "html";
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
@@ -237,11 +234,12 @@ export default {
         : this.showRunResult(stdout, true);
     },
     // 显示运行结果
-    showRunResult(content, isSuccess) {
+    async showRunResult(content, isSuccess) {
       this.isResultShow = true;
       this.timeStamp = new Date().getTime();
       this.runResultStatus = isSuccess;
       if (!_.isArray(content)) content = [content];
+      content = await this.cacheScript(content);
       this.runResult = this.runResult.concat(content);
       this.autoScroll();
     },
@@ -280,17 +278,22 @@ export default {
       this.frameInitHeight = initHeight;
     },
     // 预先下载远程脚本
-    async cacheScript(cmd) {
-      let html = quickcommand.htmlParse(cmd);
-      let scriptDoms = html.querySelectorAll("script");
-      for (let i = 0; i < scriptDoms.length; i++) {
-        let src = scriptDoms[i].src;
-        if (!this.urlReg.test(src)) continue;
-        let dest = window.getQuickcommandTempFile("js", "remoteScript_" + i);
-        await quickcommand.downloadFile(src, dest);
-        scriptDoms[i].src = "file://" + dest;
+    async cacheScript(content) {
+      if (!this.enableHtml) return;
+      let htmls = [];
+      for (let item of content) {
+        let html = quickcommand.htmlParse(item);
+        let scriptDoms = html.querySelectorAll("script");
+        for (let i = 0; i < scriptDoms.length; i++) {
+          let src = scriptDoms[i].src;
+          if (!this.urlReg.test(src)) continue;
+          let dest = window.getQuickcommandTempFile("js", "remoteScript_" + i);
+          await quickcommand.downloadFile(src, dest);
+          scriptDoms[i].src = "file://" + dest;
+        }
+        htmls.push(html.documentElement.innerHTML);
       }
-      return html.documentElement.innerHTML;
+      return htmls;
     },
   },
   unmounted() {
