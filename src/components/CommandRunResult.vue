@@ -69,6 +69,8 @@ export default {
       frameInitHeight: 0,
       childProcess: null,
       timeStamp: null,
+      urlReg:
+        /^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/,
     };
   },
   props: {
@@ -102,7 +104,10 @@ export default {
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
-      this.enableHtml = currentCommand.output === "html";
+      if (currentCommand.output === "html") {
+        this.enableHtml = true;
+        currentCommand.cmd = await this.cacheScript(currentCommand.cmd);
+      }
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
@@ -123,7 +128,7 @@ export default {
           { enterData: this.$root.enterData }
         );
       } else if (currentCommand.program === "html") {
-        this.showRunResult(currentCommand.cmd, true, action);
+        this.showRunResult(currentCommand.cmd, true);
       } else {
         let option =
           currentCommand.program === "custom"
@@ -273,6 +278,19 @@ export default {
     },
     frameLoad(initHeight) {
       this.frameInitHeight = initHeight;
+    },
+    // 预先下载远程脚本
+    async cacheScript(cmd) {
+      let html = quickcommand.htmlParse(cmd);
+      let scriptDoms = html.querySelectorAll("script");
+      for (let i = 0; i < scriptDoms.length; i++) {
+        let src = scriptDoms[i].src;
+        if (!this.urlReg.test(src)) continue;
+        let dest = window.getQuickcommandTempFile("js", "remoteScript_" + i);
+        await quickcommand.downloadFile(src, dest);
+        scriptDoms[i].src = "file://" + dest;
+      }
+      return html.documentElement.innerHTML;
     },
   },
   unmounted() {
