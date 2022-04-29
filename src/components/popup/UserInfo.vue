@@ -179,7 +179,7 @@ export default {
           )
         : 1;
       this.$root.utools.whole.fetchUserPayments().then((ret) => {
-        console.log(ret);
+        console.log("PayInfo:", ret);
         !ret.filter((x) => x.goods_id === this.goodsId).length ||
           (this.isPluginVIP = true);
       });

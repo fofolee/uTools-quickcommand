@@ -150,7 +150,6 @@ export default {
   },
   mounted() {
     window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
-      console.log(res.data);
       this.allCommands = res.data.data;
       this.matchedCommands = _.cloneDeep(this.allCommands);
       this.fetchCommandDetails(1);

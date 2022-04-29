@@ -76,7 +76,6 @@ export default {
   },
   mounted() {
     this.frameInit();
-    console.log(this.runResult);
   },
   methods: {
     frameInit() {

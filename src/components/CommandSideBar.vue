@@ -380,7 +380,6 @@ export default {
     },
     // 正则不和规则自动加斜杠
     regexVerify() {
-      console.log(1);
       if (
         this.cmdType.valueType === "regex" &&
         !/^\/.*?\/[igm]*$/.test(this.cmdMatch)

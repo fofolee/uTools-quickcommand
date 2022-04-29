@@ -330,9 +330,6 @@ export default {
     isCommandActivated: Boolean,
     cardStyle: Object,
   },
-  mounted() {
-    // console.log(this.commandInfo.features.code, this);
-  },
   methods: {
     // 匹配类型太长的话截断
     getShortStrByByte(str) {

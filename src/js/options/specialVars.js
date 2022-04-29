@@ -151,7 +151,6 @@ const specialVars = {
         desc: "用户设置的变量",
         match: /{{usr:(.*?)}}/mg,
         repl: (text, userData) => {
-            console.log(userData);
             let filterd = userData.filter(x => x.id === text.slice(6, -2))
             return filterd.length ? filterd[0].value : ''
         },
