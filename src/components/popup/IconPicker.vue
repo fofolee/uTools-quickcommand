@@ -177,7 +177,7 @@ export default {
         argvs: imgUrl,
         readfile: false,
       });
-      let imgPath = window.getQuickcommandTempFile(imgInfo.ext);
+      let imgPath = window.getQuickcommandTempFile(imgInfo.ext, 'TempImgFile');
       quickcommand
         .downloadFile(imgUrl, imgPath)
         .then(() => {

@@ -69,6 +69,8 @@ export default {
       frameInitHeight: 0,
       childProcess: null,
       timeStamp: null,
+      urlReg:
+        /^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/,
     };
   },
   props: {
@@ -102,15 +104,18 @@ export default {
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
-      this.enableHtml = currentCommand.output === "html";
+      if (currentCommand.output === "html") {
+        this.enableHtml = true;
+        currentCommand.cmd = await this.cacheScript(currentCommand.cmd);
+      }
       let { hideWindow, outPlugin, action } =
         outputTypes[currentCommand.output];
       // 需要隐藏的提前隐藏窗口
       hideWindow && utools.hideMainWindow();
       // 对于本身就没有输出的命令，无法确认命令是否执行完成，所以干脆提前退出插件
       // 弊端就是如果勾选了隐藏后台就完全退出的话，会造成命令直接中断
-      let quitBeforeShowResult = this.fromUtools && outPlugin;
-      quitBeforeShowResult &&
+      let earlyExit = this.fromUtools && outPlugin;
+      earlyExit &&
         setTimeout(() => {
           utools.outPlugin();
         }, 500);
@@ -118,19 +123,12 @@ export default {
         window.runCodeInSandbox(
           currentCommand.cmd,
           (stdout, stderr) => {
-            if (stderr) {
-              return quitBeforeShowResult
-                ? alert(stderr)
-                : this.showRunResult(stderr, false, action);
-            }
-            outPlugin
-              ? action(stdout.toString())
-              : this.showRunResult(stdout, true);
+            this.handleResult(stdout, stderr, { outPlugin, action, earlyExit });
           },
           { enterData: this.$root.enterData }
         );
       } else if (currentCommand.program === "html") {
-        this.showRunResult(currentCommand.cmd, true, action);
+        this.showRunResult(currentCommand.cmd, true);
       } else {
         let option =
           currentCommand.program === "custom"
@@ -143,14 +141,7 @@ export default {
           option,
           currentCommand.output === "terminal",
           (stdout, stderr) => {
-            if (stderr) {
-              return quitBeforeShowResult
-                ? alert(stderr)
-                : this.showRunResult(stderr, false, action);
-            }
-            outPlugin
-              ? action(stdout.toString())
-              : this.showRunResult(stdout, true);
+            this.handleResult(stdout, stderr, { outPlugin, action, earlyExit });
           }
         );
         // ctrl c 终止
@@ -235,6 +226,16 @@ export default {
         payload: await commandTypes[type]?.tempPayload?.(),
       };
     },
+    handleResult(stdout, stderr, options) {
+      if (stderr) {
+        return options.earlyExit
+          ? alert(stderr)
+          : this.showRunResult(stderr, false);
+      }
+      options.outPlugin
+        ? options.action(stdout.toString())
+        : this.showRunResult(stdout, true);
+    },
     // 显示运行结果
     showRunResult(content, isSuccess) {
       this.isResultShow = true;
@@ -277,6 +278,19 @@ export default {
     },
     frameLoad(initHeight) {
       this.frameInitHeight = initHeight;
+    },
+    // 预先下载远程脚本
+    async cacheScript(cmd) {
+      let html = quickcommand.htmlParse(cmd);
+      let scriptDoms = html.querySelectorAll("script");
+      for (let i = 0; i < scriptDoms.length; i++) {
+        let src = scriptDoms[i].src;
+        if (!this.urlReg.test(src)) continue;
+        let dest = window.getQuickcommandTempFile("js", "remoteScript_" + i);
+        await quickcommand.downloadFile(src, dest);
+        scriptDoms[i].src = "file://" + dest;
+      }
+      return html.documentElement.innerHTML;
     },
   },
   unmounted() {

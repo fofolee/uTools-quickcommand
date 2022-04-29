@@ -157,14 +157,13 @@ window.quickcommand = {
     },
 
     // 载入在线资源
-    loadRemoteScript: async function(url, forceUpdate = false) {
+    loadRemoteScript: async function(url) {
         if (!/^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/.test(url)) throw 'url 不合法'
-        let remote = url
-        let root = path.join(os.tmpdir(), 'qcRemoteScript')
-        if (!fs.existsSync(root)) fs.mkdirSync(root)
-        let local = path.join(root, require('crypto').createHash('md5').update(url).digest('hex'))
-        if (forceUpdate || !fs.existsSync(local)) await this.downloadFile(remote, local)
-        return require(local)
+        let local = getQuickcommandTempFile('js')
+        await this.downloadFile(url, local)
+        let source = require(local)
+        fs.unlinkSync(local)
+        return source
     },
 
     // 唤醒 uTools
@@ -187,7 +186,7 @@ window.quickcommand = {
 // 运行vbs脚本
 if (process.platform == 'win32') quickcommand.runVbs = function(script) {
     return new Promise((reslove, reject) => {
-        var tempfile = path.join(os.tmpdir(), 'TempVBSScript.vbs')
+        var tempfile = getQuickcommandTempFile('vbs', 'TempVBSScript')
         fs.writeFile(tempfile, iconv.encode(script, 'gbk'), err => {
             child_process.exec(`cscript.exe /nologo "${tempfile}"`, {
                 encoding: "buffer"
@@ -258,7 +257,7 @@ window.pluginInfo = () => {
 let getSleepCodeByShell = ms => {
     var cmd, tempFilePath
     if (utools.isWindows()) {
-        tempFilePath = getQuickcommandTempFile('vbs')
+        tempFilePath = getQuickcommandTempFile('vbs', 'SleepVBSScript')
         cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`
     } else {
         cmd = `sleep ${ms / 1000}`
@@ -316,8 +315,16 @@ window.getUtoolsPlugins = () => {
     return plugins;
 }
 
-window.getQuickcommandTempFile = ext => {
-    return path.join(os.tmpdir(), `quickcommandTempFile.${ext}`)
+window.getQuickcommandTempFile = (ext, name, dir = 'quickcommandTempDir') => {
+    if (!name) name = new Date().getTime() + (Math.random() * 10 ** 6).toFixed()
+    let tempDir = path.join(os.tmpdir(), dir)
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir)
+    return path.join(tempDir, `${name}.${ext}`)
+}
+
+window.delTempFile = (...args) => {
+    let tmpPath = path.join(os.tmpdir(), ...args)
+    if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath)
 }
 
 window.getBase64Ico = filepath => {
@@ -518,8 +525,8 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
         ext = option.ext,
         charset = option.charset,
         scptarg = option.scptarg || "";
-    let script = getQuickcommandTempFile(ext)
-        // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
+    let script = getQuickcommandTempFile(ext, 'quickcommandTempScript')
+    // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);
     // var argvs = [script]
@@ -541,27 +548,27 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     // 在终端中输出
     if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
     child = child_process.spawn(cmdline, {
-            encoding: 'buffer',
-            shell: true
-        })
-        // var chunks = [],
-        //     err_chunks = [];
+        encoding: 'buffer',
+        shell: true
+    })
+    // var chunks = [],
+    //     err_chunks = [];
     console.log('running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode)
         callback(chunk.toString(), null)
-            // chunks.push(chunk)
+        // chunks.push(chunk)
     })
     child.stderr.on('data', stderr => {
-            if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
-            callback(null, stderr.toString())
-                // err_chunks.push(err_chunk)
-        })
-        // child.on('close', code => {
-        //     let stdout = chunks.join("");
-        //     let stderr = err_chunks.join("");
-        //     callback(stdout, stderr)
-        // })
+        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
+        callback(null, stderr.toString())
+        // err_chunks.push(err_chunk)
+    })
+    // child.on('close', code => {
+    //     let stdout = chunks.join("");
+    //     let stderr = err_chunks.join("");
+    //     callback(stdout, stderr)
+    // })
     return child
 }
 
@@ -599,7 +606,7 @@ window.quickcommandHttpServer = () => {
                 req.on('end', () => {
                     let parsedParams
                     let params = data.join("").toString()
-                        // 先尝试作为 json 解析
+                    // 先尝试作为 json 解析
                     try {
                         parsedParams = JSON.parse(params)
                     } catch (error) {

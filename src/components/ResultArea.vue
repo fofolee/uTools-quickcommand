@@ -82,10 +82,21 @@ export default {
     frameInit() {
       let cfw = this.$refs?.iframe?.contentWindow;
       if (!cfw) return;
+      let showError = (...args) => {
+        quickcommand.showMessageBox(args.join(" "), "error", 0);
+      };
+      let showLog = (...args) => {
+        quickcommand.showMessageBox(args.join(" "), "success", 0);
+      };
       let ctx = {
         quickcommand: _.cloneDeep(quickcommand),
         utools: _.cloneDeep(utools),
         parent: undefined,
+        console: {
+          log: showLog,
+          error: showError,
+        },
+        onerror: (e) => showError(e),
       };
       Object.assign(cfw, ctx);
       cfw.onload = () => {

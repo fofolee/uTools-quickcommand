@@ -138,7 +138,7 @@ interface quickcommandApi {
    * ```
    * @param message 显示的消息内容
    * @param icon 图标，默认为 success
-   * @param time 多少毫秒后消失，默认为 3000
+   * @param time 多少毫秒后消失，默认为 3000，当设为 0 时则需要手动点击关闭
    */
   showMessageBox(
     message: string,
@@ -351,18 +351,6 @@ interface quickcommandApi {
    * 模拟粘贴操作
    */
   simulatePaste();
-
-  /**
-   * 读取剪贴板
-   */
-  readClipboard(): text<string>;
-
-  /**
-   * 写入剪贴板
-   *
-   * @param text 要写入的文本
-   */
-  writeClipboard(text: string);
 
   /**
    * 唤醒 uTools
