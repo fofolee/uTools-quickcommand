@@ -58,6 +58,7 @@ export default {
     enableHtml: Boolean,
     runResultStatus: Boolean,
     runResult: Object,
+    maxHeight: Number,
     frameInitHeight: Number,
   },
   computed: {
@@ -67,7 +68,7 @@ export default {
     src() {
       return this.showFrame
         ? window.URL.createObjectURL(
-            new Blob([this.frameStyle].concat(this.runResult), {
+            new Blob([this.frameStyle, this.runResult], {
               type: "text/html",
             })
           )
@@ -82,16 +83,30 @@ export default {
     frameInit() {
       let cfw = this.$refs?.iframe?.contentWindow;
       if (!cfw) return;
+      let showError = (...args) => {
+        quickcommand.showMessageBox(args.join(" "), "error", 0);
+      };
+      let showLog = (...args) => {
+        quickcommand.showMessageBox(args.join(" "), "success", 0);
+      };
       let ctx = {
         quickcommand: _.cloneDeep(quickcommand),
         utools: _.cloneDeep(utools),
         parent: undefined,
+        console: {
+          log: showLog,
+          error: showError,
+        },
+        onerror: (e) => showError(e),
       };
       Object.assign(cfw, ctx);
       cfw.onload = () => {
-        let clientHeight =
-          cfw.document.documentElement.getBoundingClientRect().height;
-        this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
+        this.frameHeight = Math.min(
+          cfw.document.body.innerText
+            ? cfw.document.documentElement.getBoundingClientRect().height
+            : 0,
+          this.maxHeight
+        );
         this.$emit("frameLoad", this.frameHeight);
       };
     },

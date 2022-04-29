@@ -92,6 +92,15 @@ export default {
           message: message,
           timeout: time,
           position: "top",
+          actions:
+            time === 0
+              ? [
+                  {
+                    label: "确定",
+                    color: "white",
+                  },
+                ]
+              : [],
         });
       },
 
