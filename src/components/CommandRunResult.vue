@@ -116,41 +116,58 @@ export default {
         setTimeout(() => {
           utools.outPlugin();
         }, 500);
-      if (currentCommand.program === "quickcommand") {
-        window.runCodeInSandbox(
-          currentCommand.cmd,
-          (stdout, stderr) => {
-            this.handleResult(stdout, stderr, { outPlugin, action, earlyExit });
-          },
-          { enterData: this.$root.enterData }
-        );
-      } else if (currentCommand.program === "html") {
-        this.showRunResult(currentCommand.cmd, true);
-      } else {
-        let option =
-          currentCommand.program === "custom"
-            ? currentCommand.customOptions
-            : this.$root.programs[currentCommand.program];
-        option.scptarg = currentCommand.scptarg || "";
-        option.charset = currentCommand.charset || {};
-        this.childProcess = window.runCodeFile(
-          currentCommand.cmd,
-          option,
-          currentCommand.output === "terminal",
-          (stdout, stderr) => {
-            this.handleResult(stdout, stderr, { outPlugin, action, earlyExit });
-          }
-        );
-        // ctrl c 终止
-        this.ctrlCListener = (e) => {
-          if (e.key === "c" && e.ctrlKey) {
-            quickcommand.kill(this.childProcess.pid);
-            quickcommand.showMessageBox("命令已终止");
-            document.removeEventListener("keydown", this.ctrlCListener);
-          }
-        };
-        document.addEventListener("keydown", this.ctrlCListener);
+      switch (currentCommand.program) {
+        case "quickcommand":
+          window.runCodeInSandbox(
+            currentCommand.cmd,
+            (stdout, stderr) => {
+              this.handleResult(stdout, stderr, {
+                outPlugin,
+                action,
+                earlyExit,
+              });
+            },
+            { enterData: this.$root.enterData }
+          );
+          break;
+        case "html":
+          this.showRunResult(currentCommand.cmd, true);
+          break;
+        default:
+          this.childProcess = window.runCodeFile(
+            currentCommand.cmd,
+            this.getCommandOpt(currentCommand),
+            currentCommand.output === "terminal",
+            (stdout, stderr) => {
+              this.handleResult(stdout, stderr, {
+                outPlugin,
+                action,
+                earlyExit,
+              });
+            }
+          );
+          this.listenStopSign();
+          break;
       }
+    },
+    getCommandOpt(command) {
+      let option =
+        command.program === "custom"
+          ? command.customOptions
+          : this.$root.programs[command.program];
+      option.scptarg = command.scptarg || "";
+      option.charset = command.charset || {};
+    },
+    listenStopSign() {
+      // ctrl c 终止
+      this.ctrlCListener = (e) => {
+        if (e.key === "c" && e.ctrlKey) {
+          quickcommand.kill(this.childProcess.pid);
+          quickcommand.showMessageBox("命令已终止");
+          document.removeEventListener("keydown", this.ctrlCListener);
+        }
+      };
+      document.addEventListener("keydown", this.ctrlCListener);
     },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
@@ -239,7 +256,7 @@ export default {
       this.timeStamp = new Date().getTime();
       this.runResultStatus = isSuccess;
       if (!_.isArray(content)) content = [content];
-      content = await this.cacheScript(content);
+      if (this.enableHtml) content = await this.cacheScript(content);
       this.runResult = this.runResult.concat(content);
       this.autoScroll();
     },
@@ -253,6 +270,7 @@ export default {
       if (this.enableHtml) return;
       this.$nextTick(() => {
         let results = document.querySelectorAll(".result");
+        if (!results.length) return;
         results[results.length - 1].scrollIntoView({
           block: "end",
           behavior: "smooth",
@@ -279,21 +297,16 @@ export default {
     },
     // 预先下载远程脚本
     async cacheScript(content) {
-      if (!this.enableHtml) return;
-      let htmls = [];
-      for (let item of content) {
-        let html = quickcommand.htmlParse(item);
-        let scriptDoms = html.querySelectorAll("script");
-        for (let i = 0; i < scriptDoms.length; i++) {
-          let src = scriptDoms[i].src;
-          if (!this.urlReg.test(src)) continue;
-          let dest = window.getQuickcommandTempFile("js", "remoteScript_" + i);
-          await quickcommand.downloadFile(src, dest);
-          scriptDoms[i].src = "file://" + dest;
-        }
-        htmls.push(html.documentElement.innerHTML);
+      let html = quickcommand.htmlParse(content.join(""));
+      let scriptDoms = html.querySelectorAll("script");
+      for (let i = 0; i < scriptDoms.length; i++) {
+        let src = scriptDoms[i].src;
+        if (!this.urlReg.test(src)) continue;
+        let dest = window.getQuickcommandTempFile("js", "remoteScript_" + i);
+        await quickcommand.downloadFile(src, dest);
+        scriptDoms[i].src = "file://" + dest;
       }
-      return htmls;
+      return [html.documentElement.innerHTML];
     },
   },
   unmounted() {

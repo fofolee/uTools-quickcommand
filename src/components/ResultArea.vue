@@ -79,15 +79,24 @@ export default {
   },
   methods: {
     frameInit() {
-      let cfw = this.$refs?.iframe?.contentWindow;
-      if (!cfw) return;
+      if (!this.showFrame) return;
+      let cfw = this.$refs.iframe.contentWindow;
+      Object.assign(cfw, this.context());
+      cfw.onload = () => {
+        let clientHeight =
+          cfw.document.documentElement.getBoundingClientRect().height;
+        this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
+        this.$emit("frameLoad", this.frameHeight);
+      };
+    },
+    context() {
       let showError = (...args) => {
         quickcommand.showMessageBox(args.join(" "), "error", 0);
       };
       let showLog = (...args) => {
         quickcommand.showMessageBox(args.join(" "), "success", 0);
       };
-      let ctx = {
+      return {
         quickcommand: _.cloneDeep(quickcommand),
         utools: _.cloneDeep(utools),
         parent: undefined,
@@ -96,13 +105,6 @@ export default {
           error: showError,
         },
         onerror: (e) => showError(e),
-      };
-      Object.assign(cfw, ctx);
-      cfw.onload = () => {
-        let clientHeight =
-          cfw.document.documentElement.getBoundingClientRect().height;
-        this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
-        this.$emit("frameLoad", this.frameHeight);
       };
     },
   },
