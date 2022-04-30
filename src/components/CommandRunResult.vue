@@ -252,13 +252,19 @@ export default {
     },
     // 显示运行结果
     async showRunResult(content, isSuccess) {
-      this.isResultShow = true;
-      this.timeStamp = new Date().getTime();
+      content = await this.handleContent(content);
       this.runResultStatus = isSuccess;
+      this.runResult = this.runResult.concat(content);
+      // 刷新组件
+      this.isResultShow
+        ? (this.timeStamp = new Date().getTime())
+        : (this.isResultShow = true);
+      this.autoScroll();
+    },
+    async handleContent(content) {
       if (!_.isArray(content)) content = [content];
       if (this.enableHtml) content = await this.cacheScript(content);
-      this.runResult = this.runResult.concat(content);
-      this.autoScroll();
+      return content;
     },
     // 根据输出自动滚动及调整 utools 高度
     autoHeight(e) {
