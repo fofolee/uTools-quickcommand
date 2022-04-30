@@ -130,7 +130,6 @@ export default {
       perPage: 8,
       commandSearchKeyword: "",
       releaseRepo: "fofolee/qcreleases",
-      shareRepo: "fofolee/qcshares",
       commandTypes: commandTypes,
       platform: window.processPlatform,
     };

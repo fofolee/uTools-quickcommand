@@ -56,19 +56,12 @@
                   </q-item-section>
                   <q-item-section>复制到剪贴板</q-item-section>
                 </q-item>
-                <q-item clickable disable>
+                <q-item clickable @click="showShare = true" v-close-popup>
                   <q-item-section side>
                     <q-icon name="share" />
                   </q-item-section>
                   <q-item-section>分享</q-item-section>
-                  <q-tooltip>暂未开放</q-tooltip>
-                </q-item>
-                <q-item clickable disable>
-                  <q-item-section side>
-                    <q-icon name="supervisor_account" />
-                  </q-item-section>
-                  <q-item-section>分享设置</q-item-section>
-                  <q-tooltip>暂未开放</q-tooltip>
+                  <q-tooltip>分享到分享中心</q-tooltip>
                 </q-item>
                 <q-item
                   clickable
@@ -236,6 +229,9 @@
         @delCrontab="delCrontab"
       />
     </q-dialog>
+    <q-dialog v-model="showShare">
+      <ShareDialog :command="getRawCommand(commandInfo)" />
+    </q-dialog>
   </div>
 </template>
 
@@ -243,9 +239,10 @@
 import commandTypes from "../js/options/commandTypes.js";
 import platformTypes from "../js/options/platformTypes.js";
 import CrontabSetting from "components/popup/CrontabSetting";
+import ShareDialog from "components/popup/ShareDialog";
 
 export default {
-  components: { CrontabSetting },
+  components: { CrontabSetting, ShareDialog },
   data() {
     return {
       allProgrammings: this.$root.programs,
@@ -253,6 +250,7 @@ export default {
       commandTypes: commandTypes,
       platformTypes: platformTypes,
       showCrontab: false,
+      showShare: false,
       cronJob: null,
     };
   },
