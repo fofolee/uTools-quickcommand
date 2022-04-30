@@ -1,3 +1,5 @@
+utools.getAppVersion() < '2.6.1' && alert('请升级 uTools 至最新版本');
+// -----------------------------------------------------------------
 const fs = require('fs');
 const os = require('os');
 const child_process = require("child_process")
