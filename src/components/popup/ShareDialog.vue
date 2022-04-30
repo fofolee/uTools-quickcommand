@@ -1,10 +1,9 @@
 <template>
-  <q-card style="width: 450px">
-    <q-card-section class="text-h5 text-center">分享</q-card-section>
+  <q-card>
     <q-card-section>
       <div class="full-width">
         <q-input
-          outlined
+          standout="bg-primary text-white"
           v-model="yuQueInfo.yuQueToken"
           type="text"
           label="语雀 token"
@@ -14,7 +13,7 @@
           </template>
         </q-input>
       </div>
-      <div class="full-width text-center q-pa-xs q-gutter-xs">
+      <div class="full-width text-center q-pa-sm q-gutter-xs">
         <q-radio
           v-for="count in 5"
           :key="count"
@@ -27,7 +26,7 @@
         >
       </div>
     </q-card-section>
-    <q-card-actions align="center">
+    <q-card-actions align="right">
       <q-btn
         flat
         color="grey"
@@ -35,9 +34,10 @@
         label="返回"
         v-close-popup
       />
-      <q-btn flat color="positive" icon="help" label="帮助" @click="showHelp" />
+      <q-btn flat color="info" icon="help" label="帮助" @click="showHelp" />
       <q-btn
         flat
+        autofocus
         color="primary"
         icon="share"
         :disable="disableShare"
