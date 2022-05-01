@@ -47,7 +47,7 @@
         left: tabBarWidth,
         background:
           commandCardStyle === 'mini' && $root.profile.backgroundImg
-            ? 'url(file:///' + $root.profile.backgroundImg + ')'
+            ? `url('${$root.profile.backgroundImg}')`
             : 'none',
         backgroundSize: 'cover',
       }"

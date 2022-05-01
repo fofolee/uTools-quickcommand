@@ -431,7 +431,8 @@ export default {
     },
     // 修改面板视图背景
     changeBackground(reset = false) {
-      this.$root.profile.backgroundImg = reset ? null : this.selectFile.path;
+      let base64 = window.getBase64Ico(this.selectFile.path);
+      this.$root.profile.backgroundImg = reset ? null : base64;
       this.configurationPage.$forceUpdate();
     },
     // 取消收藏
