@@ -94,6 +94,10 @@
             <q-icon size="sm" name="image" class="q-mr-sm"></q-icon>
             为面板视图设置背景图片
           </div>
+          <div class="row items-center q-mr-lg">
+            <q-icon size="sm" name="label" class="q-mr-sm"></q-icon>
+            更为紧凑的标签栏
+          </div>
           <div>走过路过不要错过~</div>
         </q-card-section>
         <q-card-actions align="right">
