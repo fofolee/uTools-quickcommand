@@ -166,13 +166,13 @@
             />
             <q-separator vertical />
             <!-- 下拉菜单 -->
-            <q-btn color="primary" flat size="xs"
-              ><q-spinner-bars color="primary" size="1.5em" />
-              <ConfigurationMenu
-                :isTagStared="activatedQuickPanels.includes(currentTag)"
-                :currentTag="currentTag"
-              ></ConfigurationMenu>
-            </q-btn>
+            <ConfigurationMenu
+              :style="{
+                height: footerBarHeight,
+              }"
+              :isTagStared="activatedQuickPanels.includes(currentTag)"
+              :currentTag="currentTag"
+            ></ConfigurationMenu>
           </q-btn-group>
         </div>
       </div>

@@ -1,51 +1,64 @@
 <template>
-  <q-card>
-    <q-card-section class="q-gutter-md flex items-center">
-      <q-avatar square size="48px">
-        <img src="logo/quickcommand.png" />
-      </q-avatar>
-      <span class="text-h5"
-        >{{ pluginInfo.pluginName }} v{{ pluginInfo.version }}</span
-      >
-    </q-card-section>
-    <q-card-section> {{ pluginInfo.description }} </q-card-section>
-    <q-card-section>
-      <div v-for="group in Object.keys(links)" :key="group" class="q-gutter-sm">
-        <q-btn
-          flat
-          color="primary"
-          v-for="item in links[group]"
-          :key="item"
-          @click="visit(item.url)"
-          :label="item.name"
-          ><q-tooltip>{{ item.desc }} </q-tooltip></q-btn
+  <div>
+    <q-card>
+      <q-card-section class="q-gutter-md flex items-center">
+        <q-avatar square size="48px">
+          <img src="logo/quickcommand.png" />
+        </q-avatar>
+        <span class="text-h5"
+          >{{ pluginInfo.pluginName }} v{{ pluginInfo.version }}</span
         >
-        <br />
-      </div>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn flat label="确定" color="primary" v-close-popup />
-    </q-card-actions>
-  </q-card>
+      </q-card-section>
+      <q-card-section> {{ pluginInfo.description }} </q-card-section>
+      <q-card-section>
+        <div
+          v-for="group in Object.keys(links)"
+          :key="group"
+          class="q-gutter-sm"
+        >
+          <q-btn
+            flat
+            color="primary"
+            v-for="item in links[group]"
+            :key="item"
+            @click="item.url ? visit(item.url) : (showMore = true)"
+            :label="item.name"
+            ><q-tooltip>{{ item.desc }} </q-tooltip></q-btn
+          >
+          <br />
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat label="确定" color="primary" v-close-popup />
+      </q-card-actions>
+    </q-card>
+    <q-dialog v-model="showMore"> <MorePlugins /></q-dialog>
+  </div>
 </template>
 
 <script>
+import MorePlugins from "./MorePlugins";
+
 const links = {
   plugin: [
     {
       name: "帮助",
-      url: "",
+      url: "https://www.yuque.com/fofolee/mwsoos/bg31vl",
       desc: "查看插件使用帮助",
     },
     {
       name: "源码",
       url: "https://github.com/fofolee/uTools-quickcommand",
-      desc: "本插件完全开源，记得 Star 哟",
+      desc: "本插件完全开源，记得 ⭐️ 哟",
     },
     {
       name: "论坛",
       url: "https://yuanliao.info/d/424-242-242",
       desc: "到猿料论坛参与讨论吧",
+    },
+    {
+      name: "更多插件",
+      desc: "看一看作者的其他插件吧",
     },
   ],
   tech: [
@@ -73,10 +86,12 @@ const links = {
 };
 
 export default {
+  components: { MorePlugins },
   data() {
     return {
       pluginInfo: window.pluginInfo(),
       links: links,
+      showMore: false,
     };
   },
   methods: {

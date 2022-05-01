@@ -84,7 +84,7 @@
             折优惠
           </div>
           <div>
-            会员功能将在保障用户完整的插件功能体验的前提下，提供以下个性化功能：
+            会员功能将在保障用户完整的插件功能体验的前提下，提供主题样式类个性化功能
           </div>
           <div class="row items-center">
             <q-icon size="sm" name="color_lens" class="q-mr-sm"></q-icon>
@@ -109,6 +109,12 @@
             v-close-popup
             @click="thinkOver"
           />
+          <q-btn
+            label="功能介绍"
+            icon="info"
+            color="deep-orange"
+            @click="showHelp"
+          ></q-btn>
           <q-btn
             v-if="!isPluginVIP"
             label="赏了！"
@@ -199,6 +205,9 @@ export default {
         this.isPluginVIP = true;
         this.showPayPage = false;
       });
+    },
+    showHelp() {
+      window.showUb.help("#yiSRi");
     },
   },
 };

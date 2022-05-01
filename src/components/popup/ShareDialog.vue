@@ -154,7 +154,9 @@ export default {
         quickcommand.showMessageBox("Token 校验失败", "error");
       }
     },
-    showHelp() {},
+    showHelp() {
+      window.showUb.help('#rWU2i')
+    },
     joinRepo() {
       quickcommand
         .showConfirmBox(

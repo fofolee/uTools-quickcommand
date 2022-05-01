@@ -131,7 +131,7 @@ export default {
       }, 1000);
     },
     showHelp() {
-      window.showHelpPage("#GNjEg");
+      window.showUb.help("#GNjEg");
     },
   },
 };

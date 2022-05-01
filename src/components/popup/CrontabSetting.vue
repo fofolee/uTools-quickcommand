@@ -126,7 +126,7 @@ export default {
       }, 1000);
     },
     showHelp() {
-      window.showHelpPage("#Q0e7s");
+      window.showUb.help("#Q0e7s");
     },
     initValue() {
       this.cronDetail = _.cloneDeep(this.default);

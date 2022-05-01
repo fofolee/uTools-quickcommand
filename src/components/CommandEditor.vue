@@ -340,10 +340,7 @@ export default {
     },
     // 打开文档
     showHelp() {
-      utools.createBrowserWindow("./helps/quickcommand.html", {
-        width: 1280,
-        height: 920,
-      });
+      window.showUb.docs();
     },
     // 展开收起侧栏
     toggleSideBarWidth() {

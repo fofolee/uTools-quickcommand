@@ -407,13 +407,22 @@ window.getSelectFile = hwnd => {
     }
 }
 
-window.showHelpPage = path => {
-    utools.ubrowser
-        .goto("https://www.yuque.com/fofolee-awga0/cpbg1m/bg31vl" + path)
-        .run({
-            width: 1380,
-            height: 750
-        });
+let runUbrowser = path => {
+    utools.ubrowser.goto(path).run({
+        width: 1380,
+        height: 750
+    });
+}
+
+const docsRepoUrl = 'https://www.yuque.com/fofolee/mwsoos'
+
+window.showUb = {
+    help: function(path = '') {
+        runUbrowser(docsRepoUrl + '/bg31vl' + path)
+    },
+    docs: function(path = '') {
+        runUbrowser(docsRepoUrl + '/pt589p' + path)
+    }
 }
 
 window.clipboardReadText = () => electron.clipboard.readText()
