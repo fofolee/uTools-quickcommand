@@ -38,7 +38,9 @@
                 ><q-icon name="account_circle"></q-icon
                 >{{ commands[count - 1]?.authorName }}
                 <q-icon name="watch_later"></q-icon
-                >{{ commands[count - 1]?.updateTime }}</q-item-label
+                >{{
+                  commands[count - 1]?.updateTime.slice(0, 10)
+                }}</q-item-label
               >
               <q-item-label caption
                 ><q-icon name="fiber_manual_record"></q-icon
@@ -149,7 +151,9 @@ export default {
   },
   mounted() {
     window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
-      this.initCommands = res.data.data;
+      this.initCommands = res.data.data.sort(
+        (x, y) => y.updated_at - x.updated_at
+      );
       this.matchedCommands = _.cloneDeep(this.initCommands);
       this.fetchCommandDetails(1);
     });
@@ -167,7 +171,7 @@ export default {
         .forEach((item) => {
           this.getCommand(
             item.slug,
-            item.content_updated_at.slice(0, 10),
+            item.content_updated_at,
             item.last_editor.name
           ).then((command) => {
             this.commands.push(command);
