@@ -157,6 +157,7 @@ export default {
           : this.$root.programs[command.program];
       option.scptarg = command.scptarg || "";
       option.charset = command.charset || {};
+      return option;
     },
     listenStopSign() {
       // ctrl c 终止
