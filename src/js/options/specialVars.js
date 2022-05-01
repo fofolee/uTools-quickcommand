@@ -148,7 +148,7 @@ const specialVars = {
     userData: {
         name: "userData",
         label: "{{usr:}}",
-        desc: "用户设置的变量",
+        desc: "用户设置的变量，类似一个全局配置项",
         match: /{{usr:(.*?)}}/mg,
         repl: (text, userData) => {
             let filterd = userData.filter(x => x.id === text.slice(6, -2))

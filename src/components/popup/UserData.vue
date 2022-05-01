@@ -13,20 +13,24 @@
         v-model="item.value"
         class="full-width q-ma-md"
         type="text"
-        :prefix="`${item.id}`"
         suffix="仅本机"
         outlined
         :placeholder="item.value || '本机未设置'"
       >
+        <template v-slot:prepend>
+          <q-chip color="primary" dense>{{ item.id }}</q-chip>
+        </template>
         <template v-slot:append>
-          <q-toggle v-model="item.isNative" color="primary" />
+          <q-toggle dense class="q-mr-sm" v-model="item.isNative" color="primary" />
           <q-btn
             flat
+            dense
             color="primary"
             icon="send"
             @click="insertText(`{{usr:${item.id}}}`)" />
           <q-btn
             flat
+            dense
             color="negative"
             icon="close"
             @click="delUserData(item.id)" /></template
