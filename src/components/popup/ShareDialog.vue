@@ -1,6 +1,12 @@
 <template>
   <q-card>
     <q-card-section>
+      <div v-show="!!yuQueInfo.avatar" class="q-pa-sm">
+        <q-avatar class="q-mr-sm">
+          <q-img :src="yuQueInfo.avatar" />
+        </q-avatar>
+        {{ yuQueInfo.authorName }}
+      </div>
       <div class="full-width">
         <q-input
           standout="bg-primary text-white"
@@ -64,6 +70,7 @@ export default {
         yuQueToken: "",
         authorId: "",
         authorName: "",
+        avatar: "",
         repo: 1,
       },
       maxCommandSize: 5 * 1024 * 1024,
@@ -140,6 +147,7 @@ export default {
         let res = await window.yuQueClient("user");
         this.yuQueInfo.authorId = res.data.data.account_id;
         this.yuQueInfo.authorName = res.data.data.name;
+        this.yuQueInfo.avatar = res.data.data.avatar_url;
         this.saveYuQueInfo();
         quickcommand.showMessageBox("设置成功~");
       } catch (e) {
