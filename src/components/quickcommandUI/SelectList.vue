@@ -41,7 +41,7 @@
       </template>
     </q-virtual-scroll>
     <q-btn
-      v-if="options.showCancelButton"
+      v-if="options.options.showCancelButton"
       class="absolute-bottom-right q-ma-xs"
       round
       color="primary"
