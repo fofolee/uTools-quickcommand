@@ -4,6 +4,7 @@ export default {
     defaultPrimaryColor: "#009688",
     backgroundImg: null,
     autofocusSearch: false,
+    denseTagBar: false,
     crontabs: {},
     quickFeatures: {
         favFile: {

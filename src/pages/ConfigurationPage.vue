@@ -11,7 +11,14 @@
         overflow: 'hidden',
       }"
     >
-      <q-tabs v-model="currentTag" vertical outside-arrows class="text-primary">
+      <q-tabs
+        v-model="currentTag"
+        vertical
+        outside-arrows
+        class="text-primary"
+        :key="$root.profile.denseTagBar"
+        :dense="$root.profile.denseTagBar"
+      >
         <!-- 所有标签 -->
         <q-tab
           v-for="tag in allQuickCommandTags"

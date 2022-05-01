@@ -285,6 +285,19 @@
             </q-item>
             <q-item clickable :disable="!$refs.user.isVIP">
               <q-item-section side>
+                <q-icon name="label" />
+              </q-item-section>
+              <q-item-section class="flex">紧凑标签栏 </q-item-section>
+              <q-tooltip>更为紧凑的标签栏，适用于标签非常多的情形</q-tooltip>
+              <q-item-section side
+                ><q-toggle
+                  v-model="$root.profile.denseTagBar"
+                  :disable="!$refs.user.isVIP"
+                  color="primary"
+              /></q-item-section>
+            </q-item>
+            <q-item clickable>
+              <q-item-section side>
                 <q-icon name="search" />
               </q-item-section>
               <q-item-section class="flex">自动聚焦搜索 </q-item-section>
