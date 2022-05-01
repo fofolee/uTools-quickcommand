@@ -29,7 +29,6 @@
               ? 'text-blue-7 text-weight-bolder'
               : ''
           "
-          v-show="!(tag === '搜索结果' && commandSearchKeyword?.length < 2)"
         >
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
@@ -299,7 +298,7 @@ export default {
           Object.values(this.allQuickCommands).map((x) => x.tags)
         )
       ).concat(["未分类", "来自分享"]);
-      allTags.push("搜索结果");
+      if (this.commandSearchKeyword?.length > 1) allTags.push("搜索结果");
       return allTags;
     },
     // 标签栏宽度
@@ -551,9 +550,9 @@ export default {
       if (this.currentTag !== "搜索结果") this.lastTag = this.currentTag;
       if (this.commandSearchKeyword?.length > 1) {
         // 搜索时跳转到搜索结果标签
-        this.$nextTick(() => {
+        setTimeout(() => {
           this.currentTag = "搜索结果";
-        });
+        }, 100);
       } else {
         // 清空搜索回跳到之前标签
         if (this.currentTag !== this.lastTag) this.currentTag = this.lastTag;
