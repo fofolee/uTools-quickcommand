@@ -123,10 +123,10 @@ import commandTypes from "../js/options/commandTypes.js";
 export default {
   data() {
     return {
-      currentPage: 1,
-      commands: [],
-      allCommands: [],
+      initCommands: [],
       matchedCommands: [],
+      commands: [],
+      currentPage: 1,
       perPage: 8,
       commandSearchKeyword: "",
       releaseRepo: "fofolee/qcreleases",
@@ -149,8 +149,8 @@ export default {
   },
   mounted() {
     window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
-      this.allCommands = res.data.data;
-      this.matchedCommands = _.cloneDeep(this.allCommands);
+      this.initCommands = res.data.data;
+      this.matchedCommands = _.cloneDeep(this.initCommands);
       this.fetchCommandDetails(1);
     });
   },
@@ -165,17 +165,13 @@ export default {
       this.matchedCommands
         .slice((page - 1) * this.perPage, page * this.perPage)
         .forEach((item) => {
-          window
-            .yuQueClient(`repos/${this.releaseRepo}/docs/${item.slug}?raw=1`)
-            .then((res) => {
-              let command = JSON.parse(
-                res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
-              );
-              if (!command) return;
-              command.authorName = item.last_editor.name;
-              command.updateTime = item.content_updated_at.slice(0, 10);
-              this.commands.push(command);
-            });
+          this.getCommand(
+            item.slug,
+            item.content_updated_at.slice(0, 10),
+            item.last_editor.name
+          ).then((command) => {
+            this.commands.push(command);
+          });
         });
     },
     importCommand(command) {
@@ -191,14 +187,30 @@ export default {
       quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
     },
     updateSearch() {
-      if (!this.commandSearchKeyword) this.matchedCommands = this.allCommands;
+      if (!this.commandSearchKeyword) this.matchedCommands = this.initCommands;
       else
-        this.matchedCommands = this.allCommands.filter((x) =>
+        this.matchedCommands = this.initCommands.filter((x) =>
           x.title
             .toLowerCase()
             .includes(this.commandSearchKeyword.toLowerCase())
         );
       this.fetchCommandDetails(1);
+    },
+    // 如果远端更新时间和本地相同则读取本地缓存，否则更新
+    async getCommand(id, updateTime, authorName) {
+      let localCache = JSON.parse(localStorage.getItem(id));
+      if (localCache?.updateTime === updateTime) return localCache;
+      let res = await window.yuQueClient(
+        `repos/${this.releaseRepo}/docs/${id}?raw=1`
+      );
+      let command = JSON.parse(
+        res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
+      );
+      if (!command) return;
+      command.authorName = authorName;
+      command.updateTime = updateTime;
+      localStorage.setItem(id, JSON.stringify(command));
+      return command;
     },
   },
 };
