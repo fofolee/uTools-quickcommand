@@ -139,6 +139,7 @@
             use-chips
             multiple
             new-value-mode="add-unique"
+            @new-value="tagVerify"
             input-debounce="0"
             :options="allQuickCommandTags"
           >
@@ -372,6 +373,12 @@ export default {
         data.match = data.type === "key" ? cmds : JSON.stringify(cmds, null, 4);
       }
       return data;
+    },
+    tagVerify(val, done) {
+      if (["默认", "未分类", "搜索结果", "来自分享"].includes(val)) {
+        return done(`_${val}_`);
+      }
+      done(val);
     },
     // 平台为空自动补充
     platformVerify() {

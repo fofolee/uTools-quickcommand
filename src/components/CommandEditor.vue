@@ -292,7 +292,8 @@ export default {
         this.configurationPage.allQuickCommandTags,
         "默认",
         "未分类",
-        "搜索结果"
+        "搜索结果",
+        "来自分享"
       );
     },
   },
