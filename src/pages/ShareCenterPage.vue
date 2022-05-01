@@ -69,10 +69,21 @@
                 :color="
                   !commands[count - 1]?.features.platform.includes(platform)
                     ? 'grey'
+                    : needUpdateCodes.includes(
+                        commands[count - 1]?.features.code
+                      )
+                    ? 'negative'
                     : 'primary'
                 "
                 icon="download"
-                label="导入"
+                :label="
+                  needUpdateCodes.includes(commands[count - 1]?.features.code)
+                    ? '更新'
+                    : '导入'
+                "
+                v-show="
+                  !installedCodes.includes(commands[count - 1]?.features.code)
+                "
                 ><q-tooltip
                   v-if="
                     !commands[count - 1]?.features.platform.includes(platform)
@@ -128,6 +139,8 @@ export default {
       initCommands: [],
       matchedCommands: [],
       commands: [],
+      installedCodes: [],
+      needUpdateCodes: [],
       currentPage: 1,
       perPage: 8,
       commandSearchKeyword: "",
@@ -150,13 +163,7 @@ export default {
     },
   },
   mounted() {
-    window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
-      this.initCommands = res.data.data.sort(
-        (x, y) => y.updated_at - x.updated_at
-      );
-      this.matchedCommands = _.cloneDeep(this.initCommands);
-      this.fetchCommandDetails(1);
-    });
+    this.fetchCommands();
   },
   watch: {
     currentPage(val) {
@@ -182,9 +189,9 @@ export default {
       let code = command?.features?.code;
       if (!code)
         return quickcommand.showMessageBox("该命令格式有误！", "error");
+      this.installedCodes.push(code);
       let pushData = _.cloneDeep(command);
       pushData.fromShare = true;
-      if (!pushData?.tags.includes("来自分享")) pushData.tags.push("来自分享");
       this.$root.utools.putDB(
         _.cloneDeep(pushData),
         this.$root.utools.DBPRE.QC + code
@@ -216,10 +223,44 @@ export default {
         res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
       );
       if (!command) return;
-      command.authorName = authorName;
+      Object.assign(command, { authorName, updateTime });
       command.updateTime = updateTime;
       localStorage.setItem(id, JSON.stringify(command));
       return command;
+    },
+    fetchCommands() {
+      window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
+        // 按更新日期排序
+        this.initCommands = res.data.data.sort((x, y) =>
+          this.compareTime(y.content_updated_at, x.content_updated_at)
+        );
+        this.checkCommands();
+        this.matchedCommands = _.cloneDeep(this.initCommands);
+        this.fetchCommandDetails(1);
+      });
+    },
+    checkCommands() {
+      let installed = [];
+      let needUpdate = [];
+      this.$root.utools.getDocs(this.$root.utools.DBPRE.QC).forEach((item) => {
+        if (!item.data.fromShare) return;
+        let code = item._id.slice(3);
+        if(code.includes('pro')) console.log(code);
+        let remote = this.initCommands.filter((cmd) => cmd.slug === code)[0];
+        if (!remote) return;
+        let localUpdateTime =
+          item.data.updateTime || "2022-04-01T00:00:00.000Z";
+        if (this.compareTime(remote.content_updated_at, localUpdateTime) > 0) {
+          needUpdate.push(code);
+          _.pull(this.initCommands, remote);
+          this.initCommands.unshift(remote);
+        } else installed.push(code);
+        this.installedCodes = installed;
+        this.needUpdateCodes = needUpdate;
+      });
+    },
+    compareTime(x, y) {
+      return new Date(x).getTime() - new Date(y).getTime();
     },
   },
 };
