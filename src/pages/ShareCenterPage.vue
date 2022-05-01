@@ -183,11 +183,16 @@ export default {
       if (!code)
         return quickcommand.showMessageBox("该命令格式有误！", "error");
       let pushData = _.cloneDeep(command);
+      pushData.fromShare = true;
       if (!pushData?.tags.includes("来自分享")) pushData.tags.push("来自分享");
       this.$root.utools.putDB(
         _.cloneDeep(pushData),
         this.$root.utools.DBPRE.QC + code
       );
+      // 通过模拟访问页面来统计下载量
+      utools.ubrowser
+        .goto(`https://www.yuque.com/${this.releaseRepo}/${code}`)
+        .run({ show: false });
       quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
     },
     updateSearch() {

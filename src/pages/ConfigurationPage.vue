@@ -102,9 +102,7 @@
             debounce="200"
             filled
             dense
-            clearable
             :autofocus="$root.profile.autofocusSearch"
-            clear-icon="close"
             @update:model-value="updateSearch"
             placeholder="搜索，支持拼音首字母"
           >
@@ -257,6 +255,8 @@ export default {
       switch (this.currentTag) {
         case "未分类":
           return commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0);
+        case "来自分享":
+          return commands.filter((cmd) => cmd.fromShare);
         case "搜索结果":
           if (this.commandSearchKeyword?.length < 2) return;
           let searchResult = [];
@@ -291,11 +291,7 @@ export default {
           "默认",
           Object.values(this.allQuickCommands).map((x) => x.tags)
         )
-      ).concat(["未分类"]);
-      if (allTags.includes("来自分享")) {
-        _.pull(allTags, "来自分享");
-        allTags.push("来自分享");
-      }
+      ).concat(["未分类", "来自分享"]);
       allTags.push("搜索结果");
       return allTags;
     },
