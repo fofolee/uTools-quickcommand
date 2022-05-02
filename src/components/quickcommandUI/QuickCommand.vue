@@ -84,9 +84,10 @@ export default {
           this.showUI(ConfirmBox, { message, title }, false, reslove);
         }),
 
-      showMessageBox: (message, icon = "success", time = 3000) => {
+      showMessageBox: (message, icon = "success", time) => {
         if (icon === "success") icon = "positive";
         if (icon === "error") icon = "negative";
+        if (!time) time = Math.max(message.toString().length * 120, 1000);
         Notify.create({
           type: icon,
           message: message,
