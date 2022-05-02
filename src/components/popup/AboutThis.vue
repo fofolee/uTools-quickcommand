@@ -32,7 +32,13 @@
         <q-btn flat label="确定" color="primary" v-close-popup />
       </q-card-actions>
     </q-card>
-    <q-dialog v-model="showMore"> <MorePlugins /></q-dialog>
+    <q-dialog
+      transition-show="fade"
+      transition-hide="fade"
+      v-model="showMore"
+    >
+      <MorePlugins
+    /></q-dialog>
   </div>
 </template>
 
