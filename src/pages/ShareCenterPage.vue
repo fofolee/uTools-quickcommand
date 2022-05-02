@@ -136,7 +136,7 @@ import commandTypes from "../js/options/commandTypes.js";
 export default {
   data() {
     return {
-      initCommands: [],
+      remoteCommands: [],
       matchedCommands: [],
       commands: [],
       installedCodes: [],
@@ -203,9 +203,10 @@ export default {
       quickcommand.showMessageBox("导入成功！可到「来自分享」标签查看");
     },
     updateSearch() {
-      if (!this.commandSearchKeyword) this.matchedCommands = this.initCommands;
+      if (!this.commandSearchKeyword)
+        this.matchedCommands = this.remoteCommands;
       else
-        this.matchedCommands = this.initCommands.filter((x) =>
+        this.matchedCommands = this.remoteCommands.filter((x) =>
           x.title
             .toLowerCase()
             .includes(this.commandSearchKeyword.toLowerCase())
@@ -224,18 +225,17 @@ export default {
       );
       if (!command) return;
       Object.assign(command, { authorName, updateTime });
-      command.updateTime = updateTime;
       localStorage.setItem(id, JSON.stringify(command));
       return command;
     },
     fetchCommands() {
       window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
         // 按更新日期排序
-        this.initCommands = res.data.data.sort((x, y) =>
+        this.remoteCommands = res.data.data.sort((x, y) =>
           this.compareTime(y.content_updated_at, x.content_updated_at)
         );
         this.checkCommands();
-        this.matchedCommands = _.cloneDeep(this.initCommands);
+        this.matchedCommands = _.cloneDeep(this.remoteCommands);
         this.fetchCommandDetails(1);
       });
     },
@@ -245,19 +245,21 @@ export default {
       this.$root.utools.getDocs(this.$root.utools.DBPRE.QC).forEach((item) => {
         if (!item.data.fromShare) return;
         let code = item._id.slice(3);
-        if(code.includes('pro')) console.log(code);
-        let remote = this.initCommands.filter((cmd) => cmd.slug === code)[0];
+        let remote = this.remoteCommands.filter((cmd) => cmd.slug === code)[0];
         if (!remote) return;
         let localUpdateTime =
           item.data.updateTime || "2022-04-01T00:00:00.000Z";
         if (this.compareTime(remote.content_updated_at, localUpdateTime) > 0) {
           needUpdate.push(code);
-          _.pull(this.initCommands, remote);
-          this.initCommands.unshift(remote);
+          _.pull(this.remoteCommands, remote);
+          this.remoteCommands.unshift(remote);
         } else installed.push(code);
         this.installedCodes = installed;
         this.needUpdateCodes = needUpdate;
       });
+      console.log("installedCodes", this.installedCodes);
+      console.log("needUpdateCodes", this.needUpdateCodes);
+      console.log("remoteCommands", this.remoteCommands);
     },
     compareTime(x, y) {
       return new Date(x).getTime() - new Date(y).getTime();
