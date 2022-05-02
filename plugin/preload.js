@@ -534,8 +534,8 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
         ext = option.ext,
         charset = option.charset,
         scptarg = option.scptarg || "";
-    let script = getQuickcommandTempFile(ext, 'quickcommandTempScript')
-        // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
+    let script = getQuickcommandTempFile(ext, 'quickcommandTempScript');
+    // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
     fs.writeFileSync(script, cmd);
     // var argvs = [script]
@@ -543,7 +543,7 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     //     argvs = argv.split(' ')
     //     argvs.push(script);
     // }
-    var child, cmdline
+    let child, cmdline;
     if (bin.slice(-7) == 'csc.exe') {
         cmdline = `${bin} ${argv} /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}" ${scptarg}`
     } else if (bin == 'gcc') {
@@ -557,33 +557,34 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     // 在终端中输出
     if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
     child = child_process.spawn(cmdline, {
-            encoding: 'buffer',
-            shell: true
-        })
-        // var chunks = [],
-        //     err_chunks = [];
+        encoding: 'buffer',
+        shell: true
+    });
+    // var chunks = [],
+    //     err_chunks = [];
     console.log('Running: ' + cmdline);
     child.stdout.on('data', chunk => {
-        if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode)
-        callback(chunk.toString(), null)
-            // chunks.push(chunk)
-    })
+        if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode);
+        callback(chunk.toString(), null);
+        // chunks.push(chunk)
+    });
     child.stderr.on('data', stderr => {
-            if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode)
-            callback(null, stderr.toString())
-                // err_chunks.push(err_chunk)
-        })
-        // child.on('close', code => {
-        //     let stdout = chunks.join("");
-        //     let stderr = err_chunks.join("");
-        //     callback(stdout, stderr)
-        // })
+        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode);
+        callback(null, stderr.toString());
+        // err_chunks.push(err_chunk)
+    });
+    // child.on('close', code => {
+    //     let stdout = chunks.join("");
+    //     let stderr = err_chunks.join("");
+    //     callback(stdout, stderr)
+    // })
     return child
 }
 
-let httpServer
+const dbStorage = utools.dbStorage;
+let httpServer;
 window.quickcommandHttpServer = () => {
-    let run = (cmd = '', port = 33442) => {
+    let run = (port = 33442) => {
         let httpResponse = (res, code, result) => {
             // 只收受一次 console.log，接收后就关闭连接
             if (res.finished) return
@@ -593,38 +594,39 @@ window.quickcommandHttpServer = () => {
             if (result) res.write(result);
             res.end();
         }
-        let runUserCode = (res, cmd, userVars) => {
+        let runUserCode = (res, userVars) => {
+            let cmd = dbStorage.getItem('cfg_serverCode');
             // 不需要返回输出的提前关闭连接
-            if (!cmd.includes('console.log')) httpResponse(res, 200)
+            if (!cmd.includes('console.log')) httpResponse(res, 200);
             window.runCodeInSandbox(cmd, (stdout, stderr) => {
                 // 错误返回 500
-                if (stderr) return httpResponse(res, 500, stderr)
-                return httpResponse(res, 200, stdout)
+                if (stderr) return httpResponse(res, 500, stderr.join(" "));
+                return httpResponse(res, 200, stdout.join(" "));
             }, userVars)
         }
-        httpServer = http.createServer()
+        httpServer = http.createServer();
         httpServer.on('request', (req, res) => {
             if (req.method === 'GET') {
-                let parsedParams = _.cloneDeep(url.parse(req.url, true).query)
-                runUserCode(res, cmd, parsedParams)
+                let parsedParams = _.cloneDeep(url.parse(req.url, true).query);
+                runUserCode(res, parsedParams);
             } else if (req.method === 'POST') {
-                let data = []
+                let data = [];
                 req.on('data', (chunk) => {
-                    data.push(chunk)
+                    data.push(chunk);
                 })
                 req.on('end', () => {
-                    let parsedParams
-                    let params = data.join("").toString()
-                        // 先尝试作为 json 解析
+                    let parsedParams;
+                    let params = data.join("").toString();
+                    // 先尝试作为 json 解析
                     try {
-                        parsedParams = JSON.parse(params)
+                        parsedParams = JSON.parse(params);
                     } catch (error) {
-                        parsedParams = _.cloneDeep(url.parse('?' + params, true).query)
+                        parsedParams = _.cloneDeep(url.parse('?' + params, true).query);
                     }
-                    runUserCode(res, cmd, parsedParams)
+                    runUserCode(res, parsedParams);
                 })
             } else {
-                httpResponse(res, 405)
+                httpResponse(res, 405);
             }
         })
         httpServer.listen(port, 'localhost');

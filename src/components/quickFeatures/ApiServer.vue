@@ -6,10 +6,9 @@
       ref="editor"
       @typing="
         (val) => {
-          if ($root.profile.quickFeatures.apiServer.cmd !== val) {
-            $root.profile.quickFeatures.apiServer.cmd = val;
-          }
-          restartServer();
+          if (cmd === val) return;
+          cmd = val;
+          saveCode();
         }
       "
       :style="{
@@ -40,35 +39,34 @@
       <q-btn-group unelevated>
         <q-btn flat color="primary" icon="help" @click="showHelp" />
         <q-separator inset vertical />
-        <q-btn
-          flat
-          color="negative"
-          icon="stop"
-          v-if="
-            $root.profile.quickFeatures.apiServer.serverStatus && !restartTimer
-          "
-          @click="stopServer"
-          label="停止服务"
-        />
-        <q-btn
-          flat
-          color="warning"
-          icon="restart_alt"
-          v-else-if="
-            $root.profile.quickFeatures.apiServer.serverStatus && !!restartTimer
-          "
-          @click="restartServer"
-          label="正在重载"
-        />
-        <q-btn
-          flat
-          color="primary"
-          icon="play_arrow"
-          v-else
-          label="开启服务"
-          @click="enableServer"
-        >
-        </q-btn>
+        <div v-if="!!saveCodeTimer">
+          <q-btn
+            flat
+            color="warning"
+            icon="restart_alt"
+            @click="saveCode"
+            label="正在保存"
+          />
+        </div>
+        <div v-else>
+          <q-btn
+            flat
+            color="negative"
+            icon="stop"
+            v-if="$root.profile.quickFeatures.apiServer.serverStatus"
+            @click="stopServer"
+            label="停止服务"
+          />
+          <q-btn
+            flat
+            color="primary"
+            icon="play_arrow"
+            v-else
+            label="开启服务"
+            @click="enableServer"
+          >
+          </q-btn>
+        </div>
       </q-btn-group>
     </div>
   </div>
@@ -82,32 +80,30 @@ export default {
   data() {
     return {
       bottomHeight: 40,
-      restartTimer: null,
+      saveCodeTimer: null,
+      cmd: null,
     };
   },
   mounted() {
-    this.$refs.editor.setEditorValue(
-      this.$root.profile.quickFeatures.apiServer.cmd
-    );
+    this.cmd =
+      this.$root.utools.whole.dbStorage.getItem("cfg_serverCode") || "";
+    this.$refs.editor.setEditorValue(this.cmd);
     this.$refs.editor.setEditorLanguage("javascript");
-    this.restartTimer = null;
   },
   methods: {
     enableServer() {
+      if (!this.cmd)
+        return quickcommand.showMessageBox("脚本不能为空！", "warning");
       quickcommand
         .showConfirmBox(
           "请注意，该接口未做任何权限鉴定，千万不要试图将本端口转发出去，否则无异于将本机的 shell 权限暴露在公网！",
           "FBI WARNING"
         )
-        .then((ok) => {
-          if (!ok) return;
+        .then(() => {
           this.$root.profile.quickFeatures.apiServer.serverStatus = true;
           window
             .quickcommandHttpServer()
-            .run(
-              this.$root.profile.quickFeatures.apiServer.cmd,
-              this.$root.profile.quickFeatures.apiServer.port
-            );
+            .run(this.$root.profile.quickFeatures.apiServer.port);
           quickcommand.showMessageBox("启动服务成功！");
         });
     },
@@ -116,18 +112,11 @@ export default {
       this.$root.profile.quickFeatures.apiServer.serverStatus = false;
       quickcommand.showMessageBox("关闭服务成功！");
     },
-    restartServer() {
-      if (!this.$root.profile.quickFeatures.apiServer.serverStatus) return;
-      clearTimeout(this.restartTimer);
-      this.restartTimer = setTimeout(() => {
-        window.quickcommandHttpServer().stop();
-        window
-          .quickcommandHttpServer()
-          .run(
-            this.$root.profile.quickFeatures.apiServer.cmd,
-            this.$root.profile.quickFeatures.apiServer.port
-          );
-        this.restartTimer = null;
+    saveCode() {
+      clearTimeout(this.saveCodeTimer);
+      this.saveCodeTimer = setTimeout(() => {
+        this.$root.utools.whole.dbStorage.setItem("cfg_serverCode", this.cmd);
+        this.saveCodeTimer = null;
       }, 1000);
     },
     showHelp() {

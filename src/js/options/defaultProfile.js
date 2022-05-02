@@ -22,7 +22,6 @@ export default {
         apiServer: {
             enable: false,
             port: 33442,
-            cmd: "",
             serverStatus: false
         }
     }
