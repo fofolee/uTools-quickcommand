@@ -427,10 +427,23 @@ window.getSelectFile = hwnd => {
 }
 
 let runUbrowser = path => {
-    utools.ubrowser.goto(path).run({
-        width: 1380,
-        height: 750
-    });
+    utools.ubrowser.goto(path)
+        .css(`
+        .ant-modal-content,
+        .ant-modal-mask,
+        [class*='index-module_contentWrapper'],
+        [class*='index-module_reward'],
+        [class*='ReaderLayout-module_asideWrapper'],
+        [class*='CornerBubble-module_cornerBubble'],
+        [class*='DocReader-module_comment'],
+        #header,
+        #footer {
+          display: none
+        }`)
+        .run({
+            width: 980,
+            height: 750
+        });
 }
 
 const docsRepoUrl = 'https://www.yuque.com/fofolee/qcdocs3'
@@ -564,7 +577,10 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     // }
     let child, cmdline;
     if (bin.slice(-7) == 'csc.exe') {
-        cmdline = `${bin} ${argv} /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}" ${scptarg}`
+        cmdline = `
+            $ { bin }
+            $ { argv }
+            /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}" ${scptarg}`
     } else if (bin == 'gcc') {
         var suffix = utools.isWindows() ? '.exe' : ''
         cmdline = `${bin} ${argv} "${script.slice(0, -2)}" "${script}" && "${script.slice(0, -2) + suffix}" ${scptarg}`
