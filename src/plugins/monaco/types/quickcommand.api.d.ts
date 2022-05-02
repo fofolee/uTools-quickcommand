@@ -360,6 +360,18 @@ interface quickcommandApi {
    * 此时可以用此接口呼出 uTools 窗口
    */
   wakeUtools();
+
+  /**
+   * 读剪贴板
+   */
+  readClipboard(): text<string>;
+
+  /**
+   * 写剪贴板
+   *
+   * @param txt 要写入的文本
+   */
+  writeClipboard(txt: string);
 }
 
 declare var quickcommand: quickcommandApi;
