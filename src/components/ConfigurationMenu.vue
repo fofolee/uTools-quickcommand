@@ -212,7 +212,7 @@
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
-                  <q-item-section>删除所有命令</q-item-section>
+                  <q-item-section>清空数据</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
@@ -455,6 +455,13 @@ export default {
     toggleFeature(type) {
       this.$root.utools.whole.removeFeature(this.features[type].code) ||
         this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]));
+      if (
+        type === "apiServer" &&
+        !this.$root.profile.quickFeatures.apiServer.enable
+      ) {
+        window.quickcommandHttpServer().stop();
+        this.$root.profile.quickFeatures.apiServer.serverStatus = false;
+      }
     },
   },
 };

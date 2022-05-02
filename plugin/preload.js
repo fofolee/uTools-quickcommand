@@ -633,6 +633,7 @@ window.quickcommandHttpServer = () => {
         })
     }
     let stop = () => {
+        if (!httpServer) return
         httpServer.close()
     }
     return {

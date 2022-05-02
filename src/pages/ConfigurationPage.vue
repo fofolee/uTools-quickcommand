@@ -207,6 +207,7 @@ import ConfigurationMenu from "components/ConfigurationMenu.vue";
 import CommandRunResult from "components/CommandRunResult.vue";
 import importAll from "../js/common/importAll.js";
 import pinyinMatch from "pinyin-match";
+import defaultProfile from "../js/options/defaultProfile.js";
 
 const CommandEditor = defineAsyncComponent(() =>
   import("components/CommandEditor.vue")
@@ -517,7 +518,7 @@ export default {
     // 清空
     clearAllCommands() {
       quickcommand
-        .showConfirmBox("将会清空所有自定义命令，请确认！")
+        .showConfirmBox("将会清空所有自定义命令，停用所有实用功能，请确认！")
         .then((isConfirmed) => {
           if (!isConfirmed)
             return quickcommand.showMessageBox("取消操作", "info");
@@ -527,6 +528,7 @@ export default {
             .map((x) => x._id)
             .forEach((y) => this.$root.utools.delDB(y));
           this.importDefaultCommands();
+          this.resetQuickFeatures();
           this.clearAllFeatures();
           Object.keys(this.allQuickCommands).forEach((featureCode) => {
             if (!featureCode.includes("default_"))
@@ -543,6 +545,13 @@ export default {
       for (var feature of utools.getFeatures()) {
         this.$root.utools.whole.removeFeature(feature.code);
       }
+    },
+    resetQuickFeatures() {
+      Object.assign(
+        this.$root.profile.quickFeatures,
+        _.cloneDeep(defaultProfile.quickFeatures)
+      );
+      window.quickcommandHttpServer().stop();
     },
     // 搜索
     updateSearch() {

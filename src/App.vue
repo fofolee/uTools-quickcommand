@@ -64,7 +64,10 @@ export default defineComponent({
       let userProfile = this.utools.getDB(
         this.utools.DBPRE.CFG + "preferences"
       );
-      _.merge(defaultProfile, _.cloneDeep(userProfile));
+      this.profile = _.merge(
+        _.cloneDeep(defaultProfile),
+        _.cloneDeep(userProfile)
+      );
       // 计划任务
       _.forIn(this.profile.crontabs, (cronExp, featureCode) => {
         this.runCronTask(featureCode, cronExp);
