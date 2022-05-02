@@ -77,7 +77,7 @@ const commandTypes = {
             minNum: 1,
         }, ],
         verify: rules => !!rules > 0 || "正则不能为空",
-        tempPayload: async () => {
+        tempPayload: async() => {
             let values = await quickcommand.showInputBox(["需要处理的文本"])
             return values[0]
         }
@@ -97,7 +97,7 @@ const commandTypes = {
             minNum: 1,
         }],
         verify: rules => true,
-        tempPayload: async () => {
+        tempPayload: async() => {
             let values = await quickcommand.showInputBox(["需要处理的文本"])
             return values[0]
         }
@@ -126,7 +126,7 @@ const commandTypes = {
         matchLabel: "无需配置",
         icon: "panorama",
         color: "deep-orange",
-        desc: "匹配主输入框或超级面板选中的图片，并返回图片的 DataUrl",
+        desc: "匹配剪贴板的图片，并返回图片的 DataUrl",
         valueType: null,
         disabledSpecialVars: /{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}|{{MatchedFiles.*?}}/g,
         matchToCmds: (rules, desc) => [{
