@@ -433,7 +433,7 @@ let runUbrowser = path => {
     });
 }
 
-const docsRepoUrl = 'https://www.yuque.com/fofolee/mwsoos'
+const docsRepoUrl = 'https://www.yuque.com/fofolee/qcdocs3'
 
 window.showUb = {
     help: function(path = '') {
