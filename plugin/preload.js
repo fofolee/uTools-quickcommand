@@ -600,7 +600,7 @@ window.quickcommandHttpServer = () => {
                 // 错误返回 500
                 if (stderr) return httpResponse(res, 500, stderr)
                 return httpResponse(res, 200, stdout)
-            })
+            }, userVars)
         }
         httpServer = http.createServer()
         httpServer.on('request', (req, res) => {
