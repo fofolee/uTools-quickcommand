@@ -60,7 +60,7 @@
               @update:model-value="programChanged"
               v-model="quickcommandInfo.program"
               :options="programLanguages"
-              label="编程语言"
+              label="环境"
             >
               <template v-slot:append>
                 <q-avatar size="lg" square>
