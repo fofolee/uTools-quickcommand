@@ -68,6 +68,14 @@ export default defineComponent({
         _.cloneDeep(defaultProfile),
         _.cloneDeep(userProfile)
       );
+      // 默认主题色
+      this.setCssVar("primary", this.profile.primaryColor);
+      this.startUpOnce();
+    },
+    // 插件全生命周期只运行一次，主要针对多开的情况
+    startUpOnce() {
+      if (window.multiProcessDetection())
+        return console.log("multiProcess Detected");
       // 计划任务
       _.forIn(this.profile.crontabs, (cronExp, featureCode) => {
         this.runCronTask(featureCode, cronExp);
@@ -82,8 +90,6 @@ export default defineComponent({
           );
         console.log("Server Start...");
       }
-      // 默认主题色
-      this.setCssVar("primary", this.profile.primaryColor);
     },
     enterPlugin(enter) {
       // 使用情况统计

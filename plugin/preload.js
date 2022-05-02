@@ -23,6 +23,25 @@ window.yuQueClient = axios.create({
     }
 });
 
+// 检测进程是否存在
+let isProcessExits = pid => {
+    try {
+        return process.kill(pid, 0)
+    } catch (e) {
+        return false
+    }
+}
+
+// 多开检测
+window.multiProcessDetection = () => {
+    let pids = JSON.parse(localStorage.getItem('processes')) || [];
+    if (pids.length) pids = pids.filter(x => isProcessExits(x));
+    pids.push(process.pid)
+    localStorage.setItem('processes', JSON.stringify(pids))
+    if (pids.length > 1) return true;
+    return false;
+}
+
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
 if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
