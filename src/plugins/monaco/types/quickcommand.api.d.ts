@@ -134,7 +134,7 @@ interface quickcommandApi {
    * 显示一个自动消失的提示框
    *
    * ```js
-   * quickcommand.showMessageBox("这是一段3s后自动消失的成功提示")
+   * quickcommand.showMessageBox("这是一段3s后自动消失的成功提示", "success", 3000)
    * ```
    * @param message 显示的消息内容
    * @param icon 图标，默认为 success
