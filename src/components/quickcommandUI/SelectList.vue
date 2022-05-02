@@ -19,17 +19,20 @@
           :active="index === currentIndex"
           :style="{
             height: itemHeight + 'px',
+            paddingRight: shortCurtWidth + 'px',
           }"
         >
           <q-item-section v-if="isText">
             <q-item-label lines="1">{{ item }}</q-item-label>
           </q-item-section>
-          <q-item-section v-else-if="isJson" class="content-start q-gutter-md">
-            <q-avatar size="40px" v-if="item.icon">
+          <q-item-section v-else-if="isJson" class="content-start">
+            <q-avatar size="34px" style="margin-right: 16px" v-if="item.icon">
               <q-img :src="item.icon" />
             </q-avatar>
-            <q-item-label lines="1">{{ item.title }}</q-item-label>
-            <q-item-label lines="1" caption>{{
+            <q-item-label lines="1" style="padding-right: 50px">{{
+              item.title
+            }}</q-item-label>
+            <q-item-label lines="1" style="padding-right: 50px" caption>{{
               item.description
             }}</q-item-label>
           </q-item-section>
@@ -39,6 +42,19 @@
         </q-item>
       </template>
     </q-virtual-scroll>
+    <div
+      :style="{ top: 0, bottom: 0, width: shortCurtWidth + 'px' }"
+      class="fixed-right"
+    >
+      <div
+        :style="{ height: itemHeight + 'px' }"
+        class="flex content-center justify-start q-pa-xs"
+        v-for="count in 10"
+        :key="count"
+      >
+        {{ $q.platform.is.mac ? "⌘" : "Alt" }}+{{ count % 10 }}
+      </div>
+    </div>
     <q-btn
       v-if="options.options.showCancelButton"
       class="absolute-bottom-right q-ma-xs"
@@ -61,11 +77,13 @@ export default {
       currentIndex: 0,
       itemHeight: 50,
       lazyItemSize: 50,
+      shortCurtWidth: 50,
       searchWords: "",
       lastTimeStamp: null,
     };
   },
   mounted() {
+    window.aa = this;
     this.options.options.enableSearch && this.setSubInput();
     this.addListeners();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
@@ -119,6 +137,7 @@ export default {
     changeItemIndex(e) {
       e.preventDefault();
       if (e.keyCode === 13) return this.clickOK();
+      if (e.keyCode && e.keyCode !== 38 && e.keyCode !== 40) return;
       if (e.timeStamp - this.lastTimeStamp < 50) return;
       let value = e.deltaY ? e.deltaY : e.keyCode - 39;
       switch (value > 0) {
@@ -136,6 +155,18 @@ export default {
       this.lastTimeStamp = e.timeStamp;
     },
 
+    shuortCurtHandle(e) {
+      e.preventDefault();
+      if (!(this.$q.platform.is.mac ? e.metaKey : e.altKey) || isNaN(e.key))
+        return;
+      let index = parseInt(e.key);
+      this.currentIndex =
+        Math.ceil(this.$refs.scrollBar.$el.scrollTop / 50) +
+        (index === 0 ? 10 : index) -
+        1;
+      this.clickOK();
+    },
+
     setSubInput() {
       utools.setSubInput(({ text }) => {
         this.searchWords = text;
@@ -149,6 +180,7 @@ export default {
     clear() {
       utools.removeSubInput();
       document.removeEventListener("keydown", this.changeItemIndex);
+      document.removeEventListener("keydown", this.shuortCurtHandle);
       document.removeEventListener("mousewheel", this.changeItemIndex, {
         passive: false,
       });
@@ -157,6 +189,7 @@ export default {
 
     addListeners() {
       document.addEventListener("keydown", this.changeItemIndex);
+      document.addEventListener("keydown", this.shuortCurtHandle);
       document.addEventListener("mousewheel", this.changeItemIndex, {
         passive: false,
       });
