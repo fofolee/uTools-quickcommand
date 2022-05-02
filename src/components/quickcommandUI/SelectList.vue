@@ -1,11 +1,10 @@
 <template>
-  <q-card @keydown="keyEvent">
+  <q-card>
     <q-virtual-scroll
       ref="scrollBar"
       :style="{ maxHeight: listMaxHeight + 'px', height: '100vh' }"
       :virtual-scroll-slice-size="lazyItemSize"
       :virtual-scroll-item-size="itemHeight"
-      @virtual-scroll="scrollEvent"
       :items="matchedItems"
     >
       <template v-slot="{ item, index }">
@@ -63,10 +62,12 @@ export default {
       itemHeight: 50,
       lazyItemSize: 50,
       searchWords: "",
+      lastTimeStamp: null,
     };
   },
   mounted() {
     this.options.options.enableSearch && this.setSubInput();
+    this.addListeners();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
   },
   unmounted() {
@@ -115,36 +116,24 @@ export default {
       this.options.options.closeOnSelect && this.hide();
     },
 
-    keyEvent(e) {
+    changeItemIndex(e) {
       e.preventDefault();
-      switch (e.keyCode) {
-        case 38:
+      if (e.keyCode === 13) return this.clickOK();
+      if (e.timeStamp - this.lastTimeStamp < 50) return;
+      let value = e.deltaY ? e.deltaY : e.keyCode - 39;
+      switch (value > 0) {
+        case false:
           this.currentIndex = Math.max(0, this.currentIndex - 1);
           break;
-        case 40:
+        case true:
           this.currentIndex = Math.min(
             this.matchedItemsSize - 1,
             this.currentIndex + 1
           );
           break;
-        case 13:
-          this.clickOK();
-          return;
       }
       this.$refs.scrollBar.scrollTo(this.currentIndex);
-    },
-
-    scrollEvent(e) {
-      //e.index为当前列表第一个可见项的索引
-      this.currentIndex =
-        // increase代表向下滚动
-        e.direction === "increase"
-          ? Math.max(
-              //当滚动到底时，e.index会突然变成列表最后一个选项的索引
-              Math.min(this.matchedItems.length - 10, e.index),
-              this.currentIndex
-            )
-          : Math.min(e.index + 9, this.currentIndex);
+      this.lastTimeStamp = e.timeStamp;
     },
 
     setSubInput() {
@@ -159,7 +148,18 @@ export default {
 
     clear() {
       utools.removeSubInput();
+      document.removeEventListener("keydown", this.changeItemIndex);
+      document.removeEventListener("mousewheel", this.changeItemIndex, {
+        passive: false,
+      });
       this.setUtoolsHeight(this.listMaxHeight);
+    },
+
+    addListeners() {
+      document.addEventListener("keydown", this.changeItemIndex);
+      document.addEventListener("mousewheel", this.changeItemIndex, {
+        passive: false,
+      });
     },
   },
 };
