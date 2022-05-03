@@ -19,7 +19,7 @@
           :active="index === currentIndex"
           :style="{
             height: itemHeight + 'px',
-            paddingRight: shortCurtWidth + 'px',
+            paddingRight: shortCutWidth + 'px',
           }"
         >
           <q-item-section v-if="isText">
@@ -43,7 +43,7 @@
       </template>
     </q-virtual-scroll>
     <div
-      :style="{ top: 0, bottom: 0, width: shortCurtWidth + 'px' }"
+      :style="{ top: 0, bottom: 0, width: shortCutWidth + 'px' }"
       class="fixed-right"
     >
       <div
@@ -77,7 +77,7 @@ export default {
       currentIndex: 0,
       itemHeight: 50,
       lazyItemSize: 50,
-      shortCurtWidth: 50,
+      shortCutWidth: 50,
       searchWords: "",
       lastTimeStamp: null,
     };
@@ -155,7 +155,7 @@ export default {
       this.lastTimeStamp = e.timeStamp;
     },
 
-    shuortCurtHandle(e) {
+    shortCutHandle(e) {
       e.preventDefault();
       if (!(this.$q.platform.is.mac ? e.metaKey : e.altKey) || isNaN(e.key))
         return;
@@ -180,7 +180,7 @@ export default {
     clear() {
       utools.removeSubInput();
       document.removeEventListener("keydown", this.changeItemIndex);
-      document.removeEventListener("keydown", this.shuortCurtHandle);
+      document.removeEventListener("keydown", this.shortCutHandle);
       document.removeEventListener("mousewheel", this.changeItemIndex, {
         passive: false,
       });
@@ -189,7 +189,7 @@ export default {
 
     addListeners() {
       document.addEventListener("keydown", this.changeItemIndex);
-      document.addEventListener("keydown", this.shuortCurtHandle);
+      document.addEventListener("keydown", this.shortCutHandle);
       document.addEventListener("mousewheel", this.changeItemIndex, {
         passive: false,
       });
