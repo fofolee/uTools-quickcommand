@@ -2,6 +2,7 @@
   <q-card>
     <q-virtual-scroll
       ref="scrollBar"
+      @scroll="scrollHandler"
       :style="{ maxHeight: listMaxHeight + 'px', height: '100vh' }"
       :virtual-scroll-slice-size="lazyItemSize"
       :virtual-scroll-item-size="itemHeight"
@@ -16,16 +17,15 @@
           @click="clickOK"
           manual-focus
           :focused="index === currentIndex"
-          :active="index === currentIndex"
           :style="{
             height: itemHeight + 'px',
             paddingRight: shortCutWidth + 'px',
           }"
         >
-          <q-item-section v-if="isText">
+          <q-item-section v-if="is.text">
             <q-item-label lines="1">{{ item }}</q-item-label>
           </q-item-section>
-          <q-item-section v-else-if="isJson" class="content-start">
+          <q-item-section v-else-if="is.json" class="content-start">
             <q-avatar size="34px" style="margin-right: 16px" v-if="item.icon">
               <q-img :src="item.icon" />
             </q-avatar>
@@ -36,7 +36,7 @@
               item.description
             }}</q-item-label>
           </q-item-section>
-          <q-item-section v-else-if="isHtml">
+          <q-item-section v-else-if="is.html">
             <div v-html="item"></div>
           </q-item-section>
         </q-item>
@@ -44,15 +44,15 @@
     </q-virtual-scroll>
     <div
       :style="{ top: 0, bottom: 0, width: shortCutWidth + 'px' }"
-      class="fixed-right"
+      class="fixed-right shortcut"
     >
       <div
         :style="{ height: itemHeight + 'px' }"
         class="flex content-center justify-start q-pa-xs"
-        v-for="count in 10"
+        v-for="count in countsPerPage"
         :key="count"
       >
-        {{ $q.platform.is.mac ? "⌘" : "Alt" }}+{{ count % 10 }}
+        {{ $q.platform.is.mac ? "⌘" : "Alt" }}+{{ count % countsPerPage }}
       </div>
     </div>
     <q-btn
@@ -76,14 +76,14 @@ export default {
       listMaxHeight: 500,
       currentIndex: 0,
       itemHeight: 50,
-      lazyItemSize: 50,
+      lazyItemSize: 100,
       shortCutWidth: 50,
       searchWords: "",
-      lastTimeStamp: null,
+      topIndex: 0,
+      timeoutId: null,
     };
   },
   mounted() {
-    window.aa = this;
     this.options.options.enableSearch && this.setSubInput();
     this.addListeners();
     this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
@@ -104,14 +104,18 @@ export default {
     matchedItemsSize() {
       return this.matchedItems.length;
     },
-    isJson() {
-      return this.options.options.optionType === "json";
+    countsPerPage() {
+      return this.listMaxHeight / this.itemHeight;
     },
-    isHtml() {
-      return this.options.options.optionType === "html";
+    bottomIndex() {
+      return this.topIndex + this.countsPerPage - 1;
     },
-    isText() {
-      return this.options.options.optionType === "plaintext";
+    is() {
+      return {
+        json: this.options.options.optionType === "json",
+        html: this.options.options.optionType === "html",
+        text: this.options.options.optionType === "plaintext",
+      };
     },
   },
   props: {
@@ -124,7 +128,7 @@ export default {
     },
 
     clickOK() {
-      let selected = this.isJson
+      let selected = this.is.json
         ? this.matchedItems[this.currentIndex]
         : {
             id: this.currentIndex,
@@ -134,37 +138,47 @@ export default {
       this.options.options.closeOnSelect && this.hide();
     },
 
-    changeItemIndex(e) {
+    keyHandler(e) {
       e.preventDefault();
-      if (e.keyCode === 13) return this.clickOK();
-      if (e.keyCode && e.keyCode !== 38 && e.keyCode !== 40) return;
-      if (e.timeStamp - this.lastTimeStamp < 50) return;
-      let value = e.deltaY ? e.deltaY : e.keyCode - 39;
-      switch (value > 0) {
-        case false:
+      if (this.$q.platform.is.mac ? e.metaKey : e.altKey && !isNaN(e.key)) {
+        let index = e.key === "0" ? 10 : parseInt(e.key);
+        this.currentIndex = this.topIndex + index - 1;
+        return this.clickOK();
+      }
+      switch (e.keyCode) {
+        case 38: // 上
           this.currentIndex = Math.max(0, this.currentIndex - 1);
           break;
-        case true:
+        case 40: // 下
           this.currentIndex = Math.min(
             this.matchedItemsSize - 1,
             this.currentIndex + 1
           );
           break;
+        case 13: // 回车
+          return this.clickOK();
       }
       this.$refs.scrollBar.scrollTo(this.currentIndex);
-      this.lastTimeStamp = e.timeStamp;
     },
 
-    shortCutHandle(e) {
+    scrollHandler(e) {
+      this.topIndex = parseInt(e.target.scrollTop / this.itemHeight);
+      clearTimeout(this.timeoutId);
+      this.timeoutId = setTimeout(() => {
+        if (this.currentIndex < this.topIndex)
+          this.currentIndex = this.topIndex;
+        if (this.currentIndex > this.bottomIndex)
+          this.currentIndex = this.bottomIndex;
+        this.timeoutId = null;
+      }, 200);
+    },
+
+    mouseHandler(e) {
       e.preventDefault();
-      if (!(this.$q.platform.is.mac ? e.metaKey : e.altKey) || isNaN(e.key))
-        return;
-      let index = parseInt(e.key);
-      this.currentIndex =
-        Math.ceil(this.$refs.scrollBar.$el.scrollTop / 50) +
-        (index === 0 ? 10 : index) -
-        1;
-      this.clickOK();
+      this.$refs.scrollBar.$el.scrollBy(
+        0,
+        (e.deltaY / this.itemHeight).toFixed() * this.itemHeight
+      );
     },
 
     setSubInput() {
@@ -179,18 +193,16 @@ export default {
 
     clear() {
       utools.removeSubInput();
-      document.removeEventListener("keydown", this.changeItemIndex);
-      document.removeEventListener("keydown", this.shortCutHandle);
-      document.removeEventListener("mousewheel", this.changeItemIndex, {
+      document.removeEventListener("keydown", this.keyHandler);
+      document.removeEventListener("wheel", this.mouseHandler, {
         passive: false,
       });
       this.setUtoolsHeight(this.listMaxHeight);
     },
 
     addListeners() {
-      document.addEventListener("keydown", this.changeItemIndex);
-      document.addEventListener("keydown", this.shortCutHandle);
-      document.addEventListener("mousewheel", this.changeItemIndex, {
+      document.addEventListener("keydown", this.keyHandler);
+      document.addEventListener("wheel", this.mouseHandler, {
         passive: false,
       });
     },
@@ -201,5 +213,9 @@ export default {
 <style scoped>
 .q-card--dark {
   background: var(--q-dark-page);
+}
+.q-item,
+.shortcut {
+  user-select: none;
 }
 </style>
