@@ -16,7 +16,9 @@
           @mousemove="currentIndex = index"
           @click="clickOK"
           manual-focus
-          :focused="index === currentIndex"
+          :class="{
+            'item-selected': index === currentIndex,
+          }"
           :style="{
             height: itemHeight + 'px',
             paddingRight: shortCutWidth + 'px',
@@ -158,7 +160,9 @@ export default {
         case 13: // 回车
           return this.clickOK();
       }
-      this.$refs.scrollBar.scrollTo(this.currentIndex);
+      this.$nextTick(() => {
+        document.querySelector(".item-selected").scrollIntoViewIfNeeded(0);
+      });
     },
 
     scrollHandler(e) {
@@ -217,5 +221,12 @@ export default {
 .q-item,
 .shortcut {
   user-select: none;
+  transition: 0s;
+}
+.item-selected {
+  background: #dfe2e6;
+}
+.item-selected.q-item--dark {
+  background: #515151;
 }
 </style>
