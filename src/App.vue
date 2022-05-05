@@ -223,10 +223,10 @@ export default defineComponent({
   border-radius: 10px;
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   background: rgba(194, 194, 194, 0.4);
+  border: rgba(194, 194, 194, 0.4);
 }
 
-::-webkit-scrollbar-track {
-  border-radius: 10px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+::-webkit-scrollbar-track-piece {
+  background: rgba(194, 194, 194, 0.1);
 }
 </style>
