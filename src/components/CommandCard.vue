@@ -74,7 +74,8 @@
                   </q-item-section>
                   <q-item-section>定时任务</q-item-section>
                   <q-tooltip
-                    >在后台定时执行当前命令，仅匹配类型为关键字时可用，且一律忽略输出</q-tooltip
+                    >在后台定时执行当前命令，仅匹配类型为关键字时可用，且一律忽略输出<br />
+                    不同电脑间的定时任务不会同步</q-tooltip
                   >
                 </q-item>
               </q-list>
