@@ -86,7 +86,7 @@ export default defineComponent({
           .quickcommandHttpServer()
           .run(
             this.profile.quickFeatures.apiServer.cmd,
-            this.profile.quickFeatures.apiServer.port
+            this.profile.apiServerPort
           );
         console.log("Server Start...");
       }

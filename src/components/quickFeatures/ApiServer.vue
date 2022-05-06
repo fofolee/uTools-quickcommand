@@ -31,9 +31,7 @@
       <div class="q-gutter-xs">
         <q-badge color="primary" dense square>POST</q-badge
         ><q-badge color="primary" dense square>GET</q-badge>
-        <span>
-          http://127.0.0.1:{{ $root.profile.quickFeatures.apiServer.port }}
-        </span>
+        <span> http://127.0.0.1:{{ $root.profile.apiServerPort }} </span>
         <span>的参数，均会作为本脚本里的变量 </span>
       </div>
       <q-btn-group unelevated>
@@ -101,9 +99,7 @@ export default {
         )
         .then(() => {
           this.$root.profile.quickFeatures.apiServer.serverStatus = true;
-          window
-            .quickcommandHttpServer()
-            .run(this.$root.profile.quickFeatures.apiServer.port);
+          window.quickcommandHttpServer().run(this.$root.profile.apiServerPort);
           quickcommand.showMessageBox("启动服务成功！");
         });
     },

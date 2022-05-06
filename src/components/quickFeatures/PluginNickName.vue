@@ -127,7 +127,7 @@ export default {
         program: "quickcommand",
         cmd: `utools.redirect("${this.feature.cmd}");utools.showMainWindow()`,
         output: "ignore",
-        tags: [this.$root.profile.quickFeatures.pluNickName.tag],
+        tags: [this.$root.profile.pluNickNameTag],
       };
       this.importCommand(command);
       this.nickName = [];

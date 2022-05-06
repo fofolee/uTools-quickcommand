@@ -5,24 +5,12 @@ export default {
     backgroundImg: null,
     autofocusSearch: false,
     denseTagBar: false,
-    crontabs: {},
-    quickFeatures: {
-        favFile: {
-            enable: false,
-            tag: "文件"
-        },
-        favUrl: {
-            enable: false,
-            tag: "网址"
-        },
-        pluNickName: {
-            enable: false,
-            tag: "别名"
-        },
-        apiServer: {
-            enable: false,
-            port: 33442,
-            serverStatus: false
-        }
-    }
+    quickFileEnable: false,
+    quickFileTag: "文件",
+    quickUrlEnable: false,
+    quickUrlTag: "网址",
+    pluNickNameEnable: false,
+    pluNickNameTag: "别名",
+    apiServerEnable: false,
+    apiServerPort: 33442,
 }

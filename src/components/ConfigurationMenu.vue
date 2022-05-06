@@ -36,20 +36,20 @@
                     input-class="text-center"
                     style="width: 280px"
                     autofocus
-                    v-model="$root.profile.quickFeatures.favFile.tag"
+                    v-model="$root.profile.quickFileTag"
                     type="text"
                   >
                     <template v-slot:append>
                       <q-toggle
                         @click="toggleFeature('favFile')"
-                        v-model="$root.profile.quickFeatures.favFile.enable"
+                        v-model="$root.profile.quickFileEnable"
                         checked-icon="check"
                         color="primary"
                       />
                     </template>
                     <q-tooltip
                       >启用后，选中文件可以通过超级面板快速将文件收藏到「{{
-                        $root.profile.quickFeatures.favFile.tag
+                        $root.profile.quickFileTag
                       }}」标签
                     </q-tooltip>
                   </q-input>
@@ -65,20 +65,20 @@
                     outlined
                     input-class="text-center"
                     style="width: 280px"
-                    v-model="$root.profile.quickFeatures.favUrl.tag"
+                    v-model="$root.profile.quickUrlTag"
                     type="text"
                   >
                     <template v-slot:append>
                       <q-toggle
                         @click="toggleFeature('favUrl')"
-                        v-model="$root.profile.quickFeatures.favUrl.enable"
+                        v-model="$root.profile.quickUrlEnable"
                         checked-icon="check"
                         color="primary"
                       />
                     </template>
                     <q-tooltip
                       >启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{
-                        $root.profile.quickFeatures.favUrl.tag
+                        $root.profile.quickUrlTag
                       }}」标签
                     </q-tooltip>
                   </q-input>
@@ -95,13 +95,13 @@
                     input-class="text-center"
                     style="width: 280px"
                     autofocus
-                    v-model="$root.profile.quickFeatures.pluNickName.tag"
+                    v-model="$root.profile.pluNickNameTag"
                     type="text"
                   >
                     <template v-slot:append>
                       <q-toggle
                         @click="toggleFeature('pluNickName')"
-                        v-model="$root.profile.quickFeatures.pluNickName.enable"
+                        v-model="$root.profile.pluNickNameEnable"
                         checked-icon="check"
                         color="primary"
                       />
@@ -109,7 +109,7 @@
                     <q-tooltip
                       >启用后，在主输入框输入「插件别名」可以快速设置插件别名<br />
                       并将所有设置的别名保存至「{{
-                        $root.profile.quickFeatures.pluNickName.tag
+                        $root.profile.pluNickNameTag
                       }}」标签
                     </q-tooltip>
                   </q-input>
@@ -123,7 +123,7 @@
                     prefix="开启快捷命令服务"
                     suffix="端口"
                     outlined
-                    v-model="$root.profile.quickFeatures.apiServer.port"
+                    v-model="$root.profile.apiServerPort"
                     input-class="text-center"
                     style="width: 280px"
                     type="text"
@@ -131,7 +131,7 @@
                     <template v-slot:append>
                       <q-toggle
                         @click="toggleFeature('apiServer')"
-                        v-model="$root.profile.quickFeatures.apiServer.enable"
+                        v-model="$root.profile.apiServerEnable"
                         checked-icon="check"
                         color="primary"
                       />
@@ -139,7 +139,7 @@
                     <q-tooltip
                       >启用后，在主输入框输入「快捷命令服务」可以进入配置一个后台服务<br />
                       通过本地监听{{
-                        $root.profile.quickFeatures.apiServer.port
+                        $root.profile.apiServerPort
                       }}端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
                       <br />
                       本功能的意义在于，将 utools
@@ -455,10 +455,7 @@ export default {
     toggleFeature(type) {
       this.$root.utools.whole.removeFeature(this.features[type].code) ||
         this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]));
-      if (
-        type === "apiServer" &&
-        !this.$root.profile.quickFeatures.apiServer.enable
-      ) {
+      if (type === "apiServer" && !this.$root.profile.apiServerEnable) {
         window.quickcommandHttpServer().stop();
         this.$root.profile.quickFeatures.apiServer.serverStatus = false;
       }

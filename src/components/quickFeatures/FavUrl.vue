@@ -47,7 +47,7 @@ export default {
       program: "quickcommand",
       cmd: `visit(\"${url}\")\n`,
       output: "ignore",
-      tags: [this.$root.profile.quickFeatures.favUrl.tag],
+      tags: [this.$root.profile.quickUrlTag],
     };
     try {
       let res = await quickcommand.downloadFile(iconUrl, iconPath);
