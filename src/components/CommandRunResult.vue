@@ -1,47 +1,86 @@
 <template>
   <div>
-    <div v-if="!fromUtools">
-      <q-dialog v-model="isResultShow" position="bottom" @hide="stopRun">
-        <q-card style="max-width: 700px; min-width: 700px; overflow: hidden">
-          <q-toolbar>
-            <q-avatar>
+    <q-dialog
+      v-model="isResultShow"
+      :position="fromUtools ? 'top' : 'bottom'"
+      @hide="stopRun"
+      :maximized="fromUtools"
+      :transition-duration="fromUtools ? 0 : 200"
+    >
+      <q-card
+        :style="{
+          maxWidth: fromUtools ? '100%' : '700px',
+          width: fromUtools ? '100%' : '700px',
+          overflow: 'hidden',
+        }"
+      >
+        <div
+          v-if="!(enableHtml && fromUtools)"
+          :style="{
+            height: headerHeight + 'px',
+          }"
+          class="flex items-center justify-between"
+        >
+          <div>
+            <q-avatar :size="`${headerHeight}`">
               <q-icon
                 :class="runResultStatus ? 'text-green' : 'text-red'"
-                style="font-size: 30px"
                 :name="runResultStatus ? 'task_alt' : 'error'"
               ></q-icon>
             </q-avatar>
-            <q-toolbar-title
-              ><span class="text-weight-bold">运行结果</span></q-toolbar-title
-            >
-            <q-btn flat round icon="close" color="negative" v-close-popup />
-          </q-toolbar>
-          <div style="max-height: calc(100% - 50px)" class="scroll">
-            <ResultArea
-              v-if="isResultShow"
-              @frameLoad="frameLoad"
-              :frameInitHeight="frameInitHeight"
-              :enableHtml="enableHtml"
-              :runResultStatus="runResultStatus"
-              :runResult="runResult"
-              :key="timeStamp"
-            />
+            <span class="text-weight-bold text-h6">运行结果</span>
           </div>
-        </q-card>
-      </q-dialog>
-    </div>
-    <div v-else>
-      <ResultArea
-        v-if="isResultShow"
-        @frameLoad="frameLoad"
-        :frameInitHeight="frameInitHeight"
-        :enableHtml="enableHtml"
-        :runResultStatus="runResultStatus"
-        :runResult="runResult"
-        :key="timeStamp"
-      />
-    </div>
-    <q-resize-observer @resize="autoHeight" debounce="0" />
+          <q-btn-group stretch class="no-shadow">
+            <q-btn
+              flat
+              icon="image"
+              color="primary"
+              @click="dataUrlToImg"
+              v-show="isDataUrl && !enableHtml"
+              ><q-tooltip>将 DataUrl 转为图片</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              icon="content_paste"
+              color="primary"
+              @click="copyResult"
+              v-show="!enableHtml"
+              ><q-tooltip>复制到剪贴板</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              icon="send"
+              color="primary"
+              @click="sendResult"
+              v-show="!enableHtml"
+              ><q-tooltip>发送到活动窗口</q-tooltip></q-btn
+            >
+            <q-btn
+              flat
+              icon="close"
+              color="negative"
+              v-close-popup
+              v-show="!fromUtools"
+            />
+          </q-btn-group>
+        </div>
+        <div
+          :style="{ maxHeight: maxHeight - headerHeight + 'px' }"
+          class="scroll"
+        >
+          <ResultArea
+            v-if="isResultShow"
+            @frameLoad="frameLoad"
+            :frameInitHeight="frameInitHeight"
+            :enableHtml="enableHtml"
+            :runResultStatus="runResultStatus"
+            :runResult="runResult"
+            :key="timeStamp"
+          />
+          <q-resize-observer @resize="autoHeight" debounce="0" />
+        </div>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -91,7 +130,13 @@ export default {
       return ["edit", "new", "config"].includes(this.action.type);
     },
     maxHeight() {
-      return this.fromUtools ? 600 : 300;
+      return this.fromUtools ? 600 : 400;
+    },
+    headerHeight() {
+      return this.enableHtml && this.fromUtools ? 0 : 40;
+    },
+    isDataUrl() {
+      return this.runResult.join("").includes("data:image/");
     },
   },
   methods: {
@@ -270,7 +315,10 @@ export default {
     // 根据输出自动滚动及调整 utools 高度
     autoHeight(e) {
       if (!this.fromUtools) return;
-      let pluginHeight = e.height < this.maxHeight ? e.height : this.maxHeight;
+      let pluginHeight =
+        e.height + this.headerHeight < this.maxHeight
+          ? e.height + this.headerHeight
+          : this.maxHeight;
       utools.setExpendHeight(pluginHeight);
     },
     autoScroll() {
@@ -292,6 +340,7 @@ export default {
         document.removeEventListener("keydown", this.subInputListener, true);
       }
       this.clear();
+      this.frameInitHeight = 0;
     },
     clear() {
       !!this.ctrlCListener &&
@@ -314,6 +363,25 @@ export default {
         scriptDoms[i].src = "file://" + dest;
       }
       return [html.documentElement.innerHTML];
+    },
+    copyResult() {
+      utools.copyText(this.runResult.join("\n"));
+      quickcommand.showMessageBox("已复制到剪贴板");
+    },
+    sendResult() {
+      utools.copyText(this.runResult.join("\n"));
+      utools.hideMainWindow();
+      quickcommand.simulatePaste();
+    },
+    dataUrlToImg() {
+      let imgs = this.runResult
+        .join("\n")
+        .match(/data:image\/.*?;base64,.*/g)
+        ?.map((dataUrl) => `<img src="${dataUrl}"><br>`);
+      if (!imgs) return quickcommand.showMessageBox("dataUrl 格式不正确！");
+      this.runResult = [];
+      this.enableHtml = true;
+      this.showRunResult(imgs, true);
     },
   },
   unmounted() {
