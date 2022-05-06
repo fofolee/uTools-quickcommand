@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card @contextmenu="mouseHandler">
     <q-virtual-scroll
       ref="scrollBar"
       @scroll="scrollHandler"
@@ -198,17 +198,11 @@ export default {
     clear() {
       utools.removeSubInput();
       document.removeEventListener("keydown", this.keyHandler);
-      document.removeEventListener("wheel", this.mouseHandler, {
-        passive: false,
-      });
       this.setUtoolsHeight(this.listMaxHeight);
     },
 
     addListeners() {
       document.addEventListener("keydown", this.keyHandler);
-      document.addEventListener("wheel", this.mouseHandler, {
-        passive: false,
-      });
     },
   },
 };

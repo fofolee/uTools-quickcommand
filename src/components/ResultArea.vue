@@ -13,7 +13,7 @@
       v-else
       v-show="!!runResult"
       :class="{ 'text-red': !runResultStatus }"
-      class="text q-pa-md"
+      class="text q-px-md q-py-sm"
     >
       <div v-for="item in runResult" :key="item">
         <ObjectTree :obj="item" v-if="typeof item === 'object'" />
