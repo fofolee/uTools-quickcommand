@@ -83,8 +83,7 @@ export default {
     };
   },
   mounted() {
-    this.cmd =
-      this.$root.utools.whole.dbStorage.getItem("cfg_serverCode") || "";
+    this.cmd = this.$root.utools.getStorage("cfg_serverCode") || "";
     this.$refs.editor.setEditorValue(this.cmd);
     this.$refs.editor.setEditorLanguage("javascript");
   },
@@ -111,7 +110,7 @@ export default {
     saveCode() {
       clearTimeout(this.saveCodeTimer);
       this.saveCodeTimer = setTimeout(() => {
-        this.$root.utools.whole.dbStorage.setItem("cfg_serverCode", this.cmd);
+        this.$root.utools.setStorage("cfg_serverCode", this.cmd);
         this.saveCodeTimer = null;
       }, 1000);
     },

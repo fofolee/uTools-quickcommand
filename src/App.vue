@@ -27,7 +27,6 @@ export default defineComponent({
       enterData: {},
     };
   },
-  computed: {},
   created: function () {
     this.init();
   },
@@ -156,7 +155,7 @@ export default defineComponent({
       };
     },
     v2DataHandler() {
-      let v2DataHandled = this.utools.whole.dbStorage.getItem(
+      let v2DataHandled = this.utools.getStorage(
         this.utools.DBPRE.STATUS + "v2DataHandled"
       );
       if (v2DataHandled) return;
@@ -180,10 +179,7 @@ export default defineComponent({
       );
       // 处理历史代码
       // ...
-      this.utools.whole.dbStorage.setItem(
-        this.utools.DBPRE.STATUS + "v2DataHandled",
-        true
-      );
+      this.utools.setStorage(this.utools.DBPRE.STATUS + "v2DataHandled", true);
     },
   },
 });

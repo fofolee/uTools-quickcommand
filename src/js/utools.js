@@ -42,6 +42,9 @@ let getDocs = key => {
     return whole.db.allDocs(key)
 }
 
+let setStorage = whole.dbStorage.setItem
+let getStorage = whole.dbStorage.getItem
+
 const nativeId = utools.getNativeId()
 
 let userData = {
@@ -79,7 +82,8 @@ export default {
     getDB,
     putDB,
     delDB,
-    getDocs,
+    setStorage,
+    getStorage,
     userData,
     DBPRE,
 }
