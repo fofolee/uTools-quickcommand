@@ -21,7 +21,8 @@ export default defineComponent({
     return {
       setCssVar: setCssVar,
       programs: programmings,
-      profile: defaultProfile,
+      profile: defaultProfile.common,
+      nativeProfile: defaultProfile.native,
       utools: UTOOLS,
       cronJobs: {},
       enterData: {},
@@ -60,12 +61,14 @@ export default defineComponent({
       // 处理旧版本数据
       this.v2DataHandler();
       // 读取用户配置
-      let userProfile = this.utools.getDB(
-        this.utools.DBPRE.CFG + "preferences"
+      let commonProfile = this.utools.getDB("cfg_profile");
+      let nativeProfile = this.utools.getDB(
+        "cfg_" + utools.getNativeId() + "_profile"
       );
-      this.profile = _.merge(
-        _.cloneDeep(defaultProfile),
-        _.cloneDeep(userProfile)
+      this.profile = Object.assign(_.cloneDeep(this.profile), commonProfile);
+      this.nativeProfile = Object.assign(
+        _.cloneDeep(this.nativeProfile),
+        nativeProfile
       );
       // 默认主题色
       this.setCssVar("primary", this.profile.primaryColor);
@@ -76,17 +79,12 @@ export default defineComponent({
       if (window.multiProcessDetection())
         return console.log("multiProcess Detected");
       // 计划任务
-      _.forIn(this.profile.crontabs, (cronExp, featureCode) => {
+      _.forIn(this.nativeProfile.crontabs, (cronExp, featureCode) => {
         this.runCronTask(featureCode, cronExp);
       });
       // 快捷命令服务
-      if (this.profile.quickFeatures.apiServer.serverStatus) {
-        window
-          .quickcommandHttpServer()
-          .run(
-            this.profile.quickFeatures.apiServer.cmd,
-            this.profile.apiServerPort
-          );
+      if (this.nativeProfile.apiServerStatus) {
+        window.quickcommandHttpServer().run(this.profile.apiServerPort);
         console.log("Server Start...");
       }
     },
@@ -98,9 +96,10 @@ export default defineComponent({
       this.$router.push(enter.code);
     },
     outPlugin() {
+      this.utools.putDB(_.cloneDeep(this.profile), "cfg_profile");
       this.utools.putDB(
-        _.cloneDeep(this.profile),
-        this.utools.DBPRE.CFG + "preferences"
+        _.cloneDeep(this.nativeProfile),
+        "cfg_" + utools.getNativeId() + "_profile"
       );
       this.$refs.view.$refs?.commandEditor?.saveCodeHistory();
       this.$router.push("/");
@@ -111,7 +110,7 @@ export default defineComponent({
       });
     },
     runCommandSilently(featureCode) {
-      let command = this.utools.getDB(this.utools.DBPRE.QC + featureCode);
+      let command = this.utools.getDB("qc_" + featureCode);
       if (command.program === "quickcommand") {
         window.runCodeInSandbox(command.cmd, () => {});
       } else {
@@ -125,9 +124,7 @@ export default defineComponent({
       }
     },
     usageStatistics(featureCode, runTime) {
-      let statisticsData = this.utools.getDB(
-        this.utools.DBPRE.CFG + "statisticsData"
-      );
+      let statisticsData = this.utools.getDB("cfg_statisticsData");
       let thisYear = runTime.year;
       if (!statisticsData[thisYear]) statisticsData[thisYear] = [];
       statisticsData[thisYear].push({
@@ -139,10 +136,7 @@ export default defineComponent({
           minute: runTime.minute,
         },
       });
-      this.utools.putDB(
-        statisticsData,
-        this.utools.DBPRE.CFG + "statisticsData"
-      );
+      this.utools.putDB(statisticsData, "cfg_statisticsData");
     },
     parseDate: (dateString) => {
       return {
@@ -155,14 +149,10 @@ export default defineComponent({
       };
     },
     v2DataHandler() {
-      let v2DataHandled = this.utools.getStorage(
-        this.utools.DBPRE.STATUS + "v2DataHandled"
-      );
+      let v2DataHandled = this.utools.getStorage("st_v2DataHandled");
       if (v2DataHandled) return;
       // 处理统计数据
-      let statisticsData = this.utools.getDB(
-        this.utools.DBPRE.CFG + "statisticsData"
-      );
+      let statisticsData = this.utools.getDB("cfg_statisticsData");
       _.forIn(statisticsData, (data, year) => {
         statisticsData[year] = data.map((x) => {
           let code =
@@ -173,13 +163,10 @@ export default defineComponent({
           };
         });
       });
-      this.utools.putDB(
-        statisticsData,
-        this.utools.DBPRE.CFG + "statisticsData"
-      );
+      this.utools.putDB(statisticsData, "cfg_statisticsData");
       // 处理历史代码
       // ...
-      this.utools.setStorage(this.utools.DBPRE.STATUS + "v2DataHandled", true);
+      this.utools.setStorage("st_v2DataHandled", true);
     },
   },
 });

@@ -155,7 +155,7 @@ export default {
       }
     },
     showHelp() {
-      window.showUb.help('#rWU2i')
+      window.showUb.help("#rWU2i");
     },
     joinRepo() {
       quickcommand
@@ -167,13 +167,10 @@ export default {
         });
     },
     loadYuQueInfo() {
-      return this.$root.utools.getDB(this.$root.utools.DBPRE.CFG + "extraInfo");
+      return this.$root.utools.getDB("cfg_extraInfo");
     },
     saveYuQueInfo() {
-      this.$root.utools.putDB(
-        _.cloneDeep(this.yuQueInfo),
-        this.$root.utools.DBPRE.CFG + "extraInfo"
-      );
+      this.$root.utools.putDB(_.cloneDeep(this.yuQueInfo), "cfg_extraInfo");
     },
   },
 };

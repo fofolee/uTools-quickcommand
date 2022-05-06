@@ -457,7 +457,7 @@ export default {
         this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]));
       if (type === "apiServer" && !this.$root.profile.apiServerEnable) {
         window.quickcommandHttpServer().stop();
-        this.$root.profile.quickFeatures.apiServer.serverStatus = false;
+        this.$root.nativeProfile.apiServerStatus = false;
       }
     },
   },

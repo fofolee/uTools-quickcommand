@@ -10,7 +10,7 @@ let whole = window.utools
 const DBPRE = {
     QC: 'qc_', // 快捷命令
     CFG: 'cfg_', // 配置
-    PAN: 'pan_', // 面板视图
+    PAN: 'panel_', // 面板视图
     STATUS: 'st_', // 状态变量
     USR: 'usr_' // 用户数据
 }
@@ -85,5 +85,5 @@ export default {
     setStorage,
     getStorage,
     userData,
-    DBPRE,
+    getDocs,
 }

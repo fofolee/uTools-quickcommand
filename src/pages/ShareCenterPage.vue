@@ -192,10 +192,7 @@ export default {
       this.installedCodes.push(code);
       let pushData = _.cloneDeep(command);
       pushData.fromShare = true;
-      this.$root.utools.putDB(
-        _.cloneDeep(pushData),
-        this.$root.utools.DBPRE.QC + code
-      );
+      this.$root.utools.putDB(_.cloneDeep(pushData), "qc_" + code);
       // 通过模拟访问页面来统计下载量
       utools.ubrowser
         .goto(`https://www.yuque.com/${this.releaseRepo}/${code}`)
@@ -242,7 +239,7 @@ export default {
     checkCommands() {
       let installed = [];
       let needUpdate = [];
-      this.$root.utools.getDocs(this.$root.utools.DBPRE.QC).forEach((item) => {
+      this.$root.utools.getDocs("qc_").forEach((item) => {
         if (!item.data.fromShare) return;
         let code = item._id.slice(3);
         let remote = this.remoteCommands.filter((cmd) => cmd.slug === code)[0];

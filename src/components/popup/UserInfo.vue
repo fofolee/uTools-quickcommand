@@ -170,9 +170,7 @@ export default {
   methods: {
     getUserInfo() {
       Object.assign(this.userInfo, this.$root.utools.whole.getUser());
-      let statisticsData = this.$root.utools.getDB(
-        this.$root.utools.DBPRE.CFG + "statisticsData"
-      );
+      let statisticsData = this.$root.utools.getDB("cfg_statisticsData");
       this.userInfo.exp = Object.values(statisticsData)
         .map((x) => x.length)
         .reduce((x, y) => x + y);

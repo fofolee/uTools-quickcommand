@@ -24,10 +24,7 @@ export default {
   methods: {
     importCommand(command) {
       command = _.cloneDeep(command);
-      this.$root.utools.putDB(
-        command,
-        this.$root.utools.DBPRE.QC + command.features.code
-      );
+      this.$root.utools.putDB(command, "qc_" + command.features.code);
       this.$root.utools.whole.setFeature(command.features);
     },
     getUid() {

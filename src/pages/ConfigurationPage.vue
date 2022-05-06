@@ -339,10 +339,7 @@ export default {
     },
     importDefaultCommands() {
       for (var code of Object.keys(defaultCommands)) {
-        this.$root.utools.putDB(
-          defaultCommands[code],
-          this.$root.utools.DBPRE.QC + code
-        );
+        this.$root.utools.putDB(defaultCommands[code], "qc_" + code);
       }
       Object.assign(this.allQuickCommands, defaultCommands);
     },
@@ -365,7 +362,7 @@ export default {
     getAllQuickCommands() {
       let allQcs = {};
       this.$root.utools
-        .getDocs(this.$root.utools.DBPRE.QC)
+        .getDocs("qc_")
         .forEach((x) => (allQcs[x.data.features.code] = x.data));
       return allQcs;
     },
@@ -413,7 +410,7 @@ export default {
     removeCommand(code) {
       utools.copyText(JSON.stringify(this.allQuickCommands[code], null, 4));
       delete this.allQuickCommands[code];
-      this.$root.utools.delDB(this.$root.utools.DBPRE.QC + code);
+      this.$root.utools.delDB("qc_" + code);
       this.disableCommand(code);
       if (!this.allQuickCommandTags.includes(this.currentTag))
         this.currentTag = "默认";
@@ -463,10 +460,7 @@ export default {
         dataToPushed = parsedData.qc;
       }
       for (var code of Object.keys(dataToPushed)) {
-        this.$root.utools.putDB(
-          dataToPushed[code],
-          this.$root.utools.DBPRE.QC + code
-        );
+        this.$root.utools.putDB(dataToPushed[code], "qc_" + code);
       }
       Object.assign(this.allQuickCommands, dataToPushed);
       quickcommand.showMessageBox("导入成功！");
@@ -524,7 +518,7 @@ export default {
             return quickcommand.showMessageBox("取消操作", "info");
           this.exportAllCommands(false);
           this.$root.utools
-            .getDocs(this.$root.utools.DBPRE.QC)
+            .getDocs("qc_")
             .map((x) => x._id)
             .forEach((y) => this.$root.utools.delDB(y));
           this.importDefaultCommands();

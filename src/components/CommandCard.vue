@@ -320,7 +320,7 @@ export default {
       return this.commandInfo.features.code;
     },
     cronExp() {
-      return this.$root.profile.crontabs[this.featureCode];
+      return this.$root.nativeProfile.crontabs[this.featureCode];
     },
   },
   props: {
@@ -363,11 +363,11 @@ export default {
       this.$emit("commandChanged", event);
     },
     addCrontab(cronExp) {
-      this.$root.profile.crontabs[this.featureCode] = cronExp;
+      this.$root.nativeProfile.crontabs[this.featureCode] = cronExp;
       this.$root.runCronTask(this.featureCode, cronExp);
     },
     delCrontab() {
-      delete this.$root.profile.crontabs[this.featureCode];
+      delete this.$root.nativeProfile.crontabs[this.featureCode];
       this.$root.cronJobs[this.featureCode].stop();
     },
     // 启用/禁用命令

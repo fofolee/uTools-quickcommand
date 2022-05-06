@@ -301,7 +301,7 @@ export default {
     init() {
       let quickCommandInfo =
         this.action.type === "run"
-          ? this.$root.utools.getDB(this.$root.utools.DBPRE.CFG + "codeHistory")
+          ? this.$root.utools.getDB("cfg_codeHistory")
           : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
@@ -360,7 +360,7 @@ export default {
       let newQuickcommandInfo = _.cloneDeep(this.quickcommandInfo);
       this.$root.utools.putDB(
         newQuickcommandInfo,
-        this.$root.utools.DBPRE.QC + this.quickcommandInfo.features.code
+        "qc_" + this.quickcommandInfo.features.code
       );
       this.$emit("editorEvent", {
         type: "save",
@@ -380,10 +380,7 @@ export default {
       if (this.action.type !== "run") return;
       let command = _.cloneDeep(this.quickcommandInfo);
       command.cursorPosition = this.$refs.editor.getCursorPosition();
-      this.$root.utools.putDB(
-        command,
-        this.$root.utools.DBPRE.CFG + "codeHistory"
-      );
+      this.$root.utools.putDB(command, "cfg_codeHistory");
     },
     monacoKeyStroke(event) {
       switch (event) {

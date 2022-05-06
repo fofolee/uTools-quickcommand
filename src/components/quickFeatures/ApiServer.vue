@@ -51,7 +51,7 @@
             flat
             color="negative"
             icon="stop"
-            v-if="$root.profile.quickFeatures.apiServer.serverStatus"
+            v-if="$root.nativeProfile.apiServerStatus"
             @click="stopServer"
             label="停止服务"
           />
@@ -97,14 +97,14 @@ export default {
           "FBI WARNING"
         )
         .then(() => {
-          this.$root.profile.quickFeatures.apiServer.serverStatus = true;
+          this.$root.nativeProfile.apiServerStatus = true;
           window.quickcommandHttpServer().run(this.$root.profile.apiServerPort);
           quickcommand.showMessageBox("启动服务成功！");
         });
     },
     stopServer() {
       window.quickcommandHttpServer().stop();
-      this.$root.profile.quickFeatures.apiServer.serverStatus = false;
+      this.$root.nativeProfile.apiServerStatus = false;
       quickcommand.showMessageBox("关闭服务成功！");
     },
     saveCode() {
