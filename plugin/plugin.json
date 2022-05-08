@@ -29,7 +29,8 @@
             "cmds": [
                 "运行代码",
                 "RunCode"
-            ]
+            ],
+            "icon": "features/code.png"
         },
         {
             "code": "newcommand",
@@ -51,7 +52,8 @@
             "cmds": [
                 "分享中心",
                 "ShareCenter"
-            ]
+            ],
+            "icon": "features/share.png"
         },
         {
             "code": "server",
@@ -59,7 +61,8 @@
             "cmds": [
                 "快捷命令服务配置",
                 "quickcommandServer"
-            ]
+            ],
+            "icon": "features/server.png"
         }
     ]
 }
