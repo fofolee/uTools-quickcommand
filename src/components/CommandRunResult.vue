@@ -30,39 +30,15 @@
             </q-avatar>
             <span class="text-weight-bold text-h6">运行结果</span>
           </div>
-          <q-btn-group stretch class="no-shadow">
-            <q-btn
-              flat
-              icon="image"
-              color="primary"
-              @click="dataUrlToImg"
-              v-show="isDataUrl && !enableHtml"
-              ><q-tooltip>将 DataUrl 转为图片</q-tooltip></q-btn
-            >
-            <q-btn
-              flat
-              icon="content_paste"
-              color="primary"
-              @click="copyResult"
-              v-show="!enableHtml"
-              ><q-tooltip>复制到剪贴板</q-tooltip></q-btn
-            >
-            <q-btn
-              flat
-              icon="send"
-              color="primary"
-              @click="sendResult"
-              v-show="!enableHtml"
-              ><q-tooltip>发送到活动窗口</q-tooltip></q-btn
-            >
-            <q-btn
-              flat
-              icon="close"
-              color="negative"
-              v-close-popup
-              v-show="!fromUtools"
-            />
-          </q-btn-group>
+          <ResultMenu
+            class="no-shadow"
+            :stretch="true"
+            :content="runResult.join('')"
+            :closebtn="!fromUtools"
+            :textbtn="!enableHtml"
+            :imagebtn="!enableHtml && isDataUrl"
+            @showImg="showBase64Img"
+          />
         </div>
         <div
           :style="{ maxHeight: maxHeight - headerHeight + 'px' }"
@@ -76,9 +52,13 @@
             :runResultStatus="runResultStatus"
             :runResult="runResult"
             :key="timeStamp"
+            @mouseup="selectHandler"
           />
           <q-resize-observer @resize="autoHeight" debounce="0" />
         </div>
+        <q-menu v-if="selectText" touch-position @before-hide="clearSelect">
+          <ResultMenu :dense="true" :content="selectText" :textbtn="true" />
+        </q-menu>
       </q-card>
     </q-dialog>
   </div>
@@ -90,12 +70,14 @@ import outputTypes from "../js/options/outputTypes.js";
 import specialVars from "../js/options/specialVars.js";
 import commandTypes from "../js/options/commandTypes.js";
 import ResultArea from "components/ResultArea.vue";
+import ResultMenu from "components/popup/ResultMenu.vue";
 
 export default {
-  components: { ResultArea },
+  components: { ResultArea, ResultMenu },
   data() {
     return {
       isResultShow: false,
+      selectText: null,
       runResult: [],
       runResultStatus: true,
       subInputValue: "",
@@ -364,21 +346,14 @@ export default {
       }
       return [html.documentElement.innerHTML];
     },
-    copyResult() {
-      utools.copyText(this.runResult.join("\n"));
-      quickcommand.showMessageBox("已复制到剪贴板");
+    selectHandler() {
+      this.selectText = window.getSelection().toString().trim();
     },
-    sendResult() {
-      utools.copyText(this.runResult.join("\n"));
-      utools.hideMainWindow();
-      quickcommand.simulatePaste();
+    clearSelect() {
+      window.getSelection().removeAllRanges();
+      this.selectText = null;
     },
-    dataUrlToImg() {
-      let imgs = this.runResult
-        .join("\n")
-        .match(/data:image\/.*?;base64,.*/g)
-        ?.map((dataUrl) => `<img src="${dataUrl}"><br>`);
-      if (!imgs) return quickcommand.showMessageBox("dataUrl 格式不正确！");
+    showBase64Img(imgs) {
       this.runResult = [];
       this.enableHtml = true;
       this.showRunResult(imgs, true);
