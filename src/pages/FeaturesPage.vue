@@ -4,7 +4,6 @@
 
 <script>
 import PluginNickName from "components/quickFeatures/PluginNickName";
-import ApiServer from "components/quickFeatures/ApiServer";
 import FavFile from "components/quickFeatures/FavFile";
 import FavUrl from "components/quickFeatures/FavUrl";
 import { markRaw } from "vue";
@@ -12,7 +11,6 @@ import { markRaw } from "vue";
 export default {
   components: {
     pluNickName: markRaw(PluginNickName),
-    apiServer: markRaw(ApiServer),
     favFile: markRaw(FavFile),
     favUrl: markRaw(FavUrl),
   },

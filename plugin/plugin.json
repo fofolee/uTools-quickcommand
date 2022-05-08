@@ -52,6 +52,14 @@
                 "分享中心",
                 "ShareCenter"
             ]
+        },
+        {
+            "code": "server",
+            "explain": "配置快捷命令后台服务",
+            "cmds": [
+                "快捷命令服务配置",
+                "quickcommandServer"
+            ]
         }
     ]
 }

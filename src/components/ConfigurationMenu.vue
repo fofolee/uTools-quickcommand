@@ -118,36 +118,57 @@
                   <q-item-section side>
                     <q-icon name="api" />
                   </q-item-section>
-                  <q-input
-                    dense
-                    prefix="开启快捷命令服务"
-                    suffix="端口"
-                    outlined
-                    v-model="$root.profile.apiServerPort"
-                    input-class="text-center"
-                    style="width: 280px"
-                    type="text"
-                  >
+                  <q-field dense outlined style="width: 280px">
+                    <template v-slot:control>
+                      <div
+                        class="self-center full-width no-outline"
+                        tabindex="0"
+                      >
+                        快捷命令服务
+                      </div>
+                    </template>
                     <template v-slot:append>
-                      <q-toggle
-                        @click="toggleFeature('apiServer')"
-                        v-model="$root.profile.apiServerEnable"
-                        checked-icon="check"
-                        color="primary"
+                      <q-btn
+                        flat
+                        @click="$router.push('server')"
+                        icon="open_in_new"
                       />
                     </template>
                     <q-tooltip
-                      >启用后，在主输入框输入「快捷命令服务」可以进入配置一个后台服务<br />
-                      通过本地监听{{
-                        $root.profile.apiServerPort
-                      }}端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
+                      >通过本地监听
+                      {{ $root.nativeProfile.serverPort }}
+                      端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
                       <br />
-                      本功能的意义在于，将 utools
-                      的接口暴露出来，可以通过命令行等外部途径 <br />
-                      直接启用 ubrowser 或者直接redirect 到相应的插件<br />
-                      需要配置插件跟随 utools 启动和保留后台
+                      需要配置插件跟随 utools 启动和保留后台<br />
+                      也可在主输入框通过关键字「快捷命令服务配置」进入
                     </q-tooltip>
-                  </q-input>
+                  </q-field>
+                </q-item>
+                <q-item>
+                  <q-item-section side>
+                    <q-icon name="code" />
+                  </q-item-section>
+                  <q-field dense outlined style="width: 280px">
+                    <template v-slot:control>
+                      <div
+                        class="self-center full-width no-outline"
+                        tabindex="0"
+                      >
+                        运行代码
+                      </div>
+                    </template>
+                    <template v-slot:append>
+                      <q-btn
+                        flat
+                        @click="$router.push('code')"
+                        icon="open_in_new"
+                      />
+                    </template>
+                    <q-tooltip
+                      >一个可以直接运行代码的代码编辑器<br />
+                      也可在主输入框输入关键字「RunCode」进入
+                    </q-tooltip>
+                  </q-field>
                 </q-item>
               </q-list>
             </q-menu>
@@ -384,6 +405,7 @@ export default {
       showAbout: false,
       showPanelConf: false,
       features: features,
+      redirect: utools.redirect,
     };
   },
   computed: {
@@ -457,7 +479,7 @@ export default {
         this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]));
       if (type === "apiServer" && !this.$root.profile.apiServerEnable) {
         window.quickcommandHttpServer().stop();
-        this.$root.nativeProfile.apiServerStatus = false;
+        this.$root.nativeProfile.serverStatus = false;
       }
     },
   },

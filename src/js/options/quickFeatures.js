@@ -42,13 +42,6 @@ const quickFeatures = {
         cmds: ["插件别名"],
         icon: require("../../assets/feature/plugin.png"),
         platform: ["win32", "darwin", "linux"],
-    },
-    apiServer: {
-        code: "feature_apiServer",
-        explain: "配置快捷命令后台服务",
-        cmds: ["快捷命令服务配置", "quickcommandServer"],
-        icon: require("../../assets/feature/api.png"),
-        platform: ["win32", "darwin", "linux"],
     }
 }
 

@@ -28,10 +28,19 @@
         height: bottomHeight + 'px',
       }"
     >
-      <div class="q-gutter-xs">
+      <div class="q-gutter-xs flex items-center full-height content-center">
         <q-badge color="primary" dense square>POST</q-badge
         ><q-badge color="primary" dense square>GET</q-badge>
-        <span> http://127.0.0.1:{{ $root.profile.apiServerPort }} </span>
+        <span> http://127.0.0.1:</span>
+        <q-input
+          borderless
+          dense
+          v-model="$root.nativeProfile.serverPort"
+          style="width: 40px"
+          input-class="text-weight-bolder"
+          @blur="restartServer"
+          ><q-tooltip>点击修改端口</q-tooltip></q-input
+        >
         <span>的参数，均会作为本脚本里的变量 </span>
       </div>
       <q-btn-group unelevated>
@@ -51,7 +60,7 @@
             flat
             color="negative"
             icon="stop"
-            v-if="$root.nativeProfile.apiServerStatus"
+            v-if="$root.nativeProfile.serverStatus"
             @click="stopServer"
             label="停止服务"
           />
@@ -97,15 +106,28 @@ export default {
           "FBI WARNING"
         )
         .then(() => {
-          this.$root.nativeProfile.apiServerStatus = true;
-          window.quickcommandHttpServer().run(this.$root.profile.apiServerPort);
+          this.$root.nativeProfile.serverStatus = true;
+          window
+            .quickcommandHttpServer()
+            .run(this.$root.nativeProfile.serverPort);
           quickcommand.showMessageBox("启动服务成功！");
         });
     },
     stopServer() {
       window.quickcommandHttpServer().stop();
-      this.$root.nativeProfile.apiServerStatus = false;
+      this.$root.nativeProfile.serverStatus = false;
       quickcommand.showMessageBox("关闭服务成功！");
+    },
+    restartServer() {
+      if (!this.$root.nativeProfile.serverPort)
+        this.$root.nativeProfile.serverPort = 33442;
+      if ((this.$root.nativeProfile.serverStatus = true)) {
+        window.quickcommandHttpServer().stop();
+        window
+          .quickcommandHttpServer()
+          .run(this.$root.nativeProfile.serverPort);
+        quickcommand.showMessageBox("服务已重启");
+      }
     },
     saveCode() {
       clearTimeout(this.saveCodeTimer);
