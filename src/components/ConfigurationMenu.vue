@@ -41,7 +41,9 @@
                   >
                     <template v-slot:append>
                       <q-toggle
-                        @click="toggleFeature('favFile')"
+                        @update:model-value="
+                          (val, e) => toggleFeature('favFile', val)
+                        "
                         v-model="$root.profile.quickFileEnable"
                         checked-icon="check"
                         color="primary"
@@ -70,7 +72,9 @@
                   >
                     <template v-slot:append>
                       <q-toggle
-                        @click="toggleFeature('favUrl')"
+                        @update:model-value="
+                          (val, e) => toggleFeature('favUrl', val)
+                        "
                         v-model="$root.profile.quickUrlEnable"
                         checked-icon="check"
                         color="primary"
@@ -100,7 +104,9 @@
                   >
                     <template v-slot:append>
                       <q-toggle
-                        @click="toggleFeature('pluNickName')"
+                        @update:model-value="
+                          (val, e) => toggleFeature('pluNickName', val)
+                        "
                         v-model="$root.profile.pluNickNameEnable"
                         checked-icon="check"
                         color="primary"
@@ -474,13 +480,10 @@ export default {
       quickcommand.showMessageBox("取消收藏成功");
     },
     // 实用功能
-    toggleFeature(type) {
-      this.$root.utools.whole.removeFeature(this.features[type].code) ||
-        this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]));
-      if (type === "apiServer" && !this.$root.profile.apiServerEnable) {
-        window.quickcommandHttpServer().stop();
-        this.$root.nativeProfile.serverStatus = false;
-      }
+    toggleFeature(type, enable) {
+      enable
+        ? this.$root.utools.whole.setFeature(_.cloneDeep(this.features[type]))
+        : this.$root.utools.whole.removeFeature(this.features[type].code);
     },
   },
 };
