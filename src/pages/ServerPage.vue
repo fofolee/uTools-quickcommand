@@ -121,7 +121,7 @@ export default {
     restartServer() {
       if (!this.$root.nativeProfile.serverPort)
         this.$root.nativeProfile.serverPort = 33442;
-      if ((this.$root.nativeProfile.serverStatus = true)) {
+      if (this.$root.nativeProfile.serverStatus) {
         window.quickcommandHttpServer().stop();
         window
           .quickcommandHttpServer()
