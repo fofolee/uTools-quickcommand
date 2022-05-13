@@ -165,7 +165,7 @@ const commandTypes = {
         verify: rules => !!rules > 0 || "正则不能为空",
         tempPayload: () => window.convertFilePathToUtoolsPayload(utools.showOpenDialog({
             title: "需要处理的文件",
-            properties: ['openFile', 'openDirectory', 'multiSelections']
+            properties: ['openFile', 'multiSelections']
         }))
 
     },
