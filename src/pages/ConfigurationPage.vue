@@ -54,6 +54,7 @@
       v-model="currentTag"
       transition-prev="slide-down"
       transition-next="slide-up"
+      transition-duration="200"
       swipeable
       vertical
     >

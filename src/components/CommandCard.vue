@@ -18,7 +18,10 @@
           />
         </div>
         <!-- 选项按钮 -->
-        <div class="absolute" style="z-index: 1; right: 16px; top: 16px">
+        <div
+          class="absolute"
+          style="z-index: 1; right: 16px; top: 16px; transition: 0.2s"
+        >
           <q-btn
             flat
             round
@@ -439,7 +442,7 @@ export default {
   text-align: right;
 }
 .wrapper {
-  transition: 0.5s;
+  transition: 0.2s;
 }
 .wrapper:hover {
   transition: 0.5s;
