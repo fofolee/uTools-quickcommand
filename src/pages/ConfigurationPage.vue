@@ -199,7 +199,6 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from "vue";
 import quickcommandParser from "../js/common/quickcommandParser.js";
 import CommandCard from "components/CommandCard";
 import ConfigurationMenu from "components/ConfigurationMenu.vue";
@@ -207,10 +206,7 @@ import CommandRunResult from "components/CommandRunResult.vue";
 import importAll from "../js/common/importAll.js";
 import pinyinMatch from "pinyin-match";
 import defaultProfile from "../js/options/defaultProfile.js";
-
-const CommandEditor = defineAsyncComponent(() =>
-  import("components/CommandEditor.vue")
-);
+import CommandEditor from "components/CommandEditor";
 
 // 默认命令
 let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
