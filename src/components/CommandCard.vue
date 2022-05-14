@@ -111,7 +111,7 @@
           <!-- logo -->
           <div class="row" :class="cardStyleVars.logoPosition">
             <q-avatar square size="48px">
-              <q-img :src="commandInfo.features.icon" />
+              <img :src="commandInfo.features.icon" />
             </q-avatar>
           </div>
           <!-- 名称 -->
