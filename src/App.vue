@@ -84,7 +84,7 @@ export default defineComponent({
         this.runCronTask(featureCode, cronExp);
       });
       // 快捷命令服务
-      if (this.nativeProfile.serverStatus && this.profile.apiServerEnable) {
+      if (this.nativeProfile.serverStatus) {
         window.quickcommandHttpServer().run(this.nativeProfile.serverPort);
         console.log("Server Start...");
       }
