@@ -35,7 +35,6 @@ export default defineComponent({
   },
   methods: {
     init() {
-      utools.isDev() && (window.root = this);
       window.utools = window.getuToolsLite();
       if (!this.checkVer()) return;
       this.startUp();
