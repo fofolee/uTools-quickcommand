@@ -1,6 +1,8 @@
 <template>
   <router-view v-slot="{ Component }">
-    <component ref="view" :is="Component" />
+    <transition name="fade">
+      <component ref="view" :is="Component" />
+    </transition>
   </router-view>
   <QuickCommand />
 </template>
@@ -96,13 +98,13 @@ export default defineComponent({
       this.$router.push(enter.code);
     },
     outPlugin() {
+      this.$refs.view.$refs?.commandEditor?.saveCodeHistory();
+      this.$router.push("/");
       this.utools.putDB(_.cloneDeep(this.profile), "cfg_profile");
       this.utools.putDB(
         _.cloneDeep(this.nativeProfile),
         "cfg_" + utools.getNativeId() + "_profile"
       );
-      this.$refs.view.$refs?.commandEditor?.saveCodeHistory();
-      this.$router.push("/");
     },
     runCronTask(featureCode, cronExp) {
       this.cronJobs[featureCode] = Cron(cronExp, () => {
@@ -211,5 +213,15 @@ export default defineComponent({
 
 ::-webkit-scrollbar-track-piece {
   background: rgba(194, 194, 194, 0.1);
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+.fade-enter-to {
+  opacity: 1;
+}
+.fade-enter-active {
+  transition: opacity 0.3s ease;
 }
 </style>
