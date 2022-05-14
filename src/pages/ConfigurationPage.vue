@@ -52,11 +52,9 @@
         backgroundSize: 'cover',
       }"
       v-model="currentTag"
-      transition-prev="slide-down"
-      transition-next="slide-up"
-      transition-duration="200"
+      transition-prev="fade"
+      transition-next="fade"
       swipeable
-      vertical
     >
       <q-tab-panel
         style="padding: 0"
