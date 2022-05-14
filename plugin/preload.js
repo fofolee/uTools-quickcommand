@@ -666,7 +666,7 @@ window.quickcommandHttpServer = () => {
         })
         httpServer.listen(port, 'localhost');
         httpServer.on('error', err => {
-            console.log('httpErr:', err)
+            utools.showNotification('快捷命令服务:', err)
         })
     }
     let stop = () => {
