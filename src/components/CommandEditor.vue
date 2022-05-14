@@ -368,8 +368,9 @@ export default {
       });
     },
     // 运行
-    runCurrentCommand() {
+    runCurrentCommand(cmd) {
       let command = _.cloneDeep(this.quickcommandInfo);
+      if (cmd) command.cmd = cmd;
       command.output =
         this.$refs.sidebar?.currentCommand.output ||
         (command.program === "html" ? "html" : "text");
@@ -382,13 +383,17 @@ export default {
       command.cursorPosition = this.$refs.editor.getCursorPosition();
       this.$root.utools.putDB(command, "cfg_codeHistory");
     },
-    monacoKeyStroke(event) {
+    monacoKeyStroke(event, data) {
       switch (event) {
         case "run":
           this.runCurrentCommand();
           break;
         case "save":
           this.saveCurrentCommand();
+          break;
+        case "log":
+          if (this.quickcommandInfo.program !== "quickcommand") return;
+          this.runCurrentCommand(`console.log(${data})`);
           break;
         default:
           break;

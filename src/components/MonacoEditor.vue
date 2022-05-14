@@ -232,6 +232,27 @@ export default {
           that.$emit("keyStroke", "save");
         }
       );
+      // ctrl + space 快速 console.log
+      this.rawEditor.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space,
+        () => {
+          that.$emit("keyStroke", "log", that.getSelectionOrLineContent());
+        }
+      );
+    },
+    getSelectionOrLineContent() {
+      let selection = this.rawEditor.getSelection();
+      let range = new monaco.Range(
+        selection.startLineNumber,
+        selection.startColumn,
+        selection.endLineNumber,
+        selection.endColumn
+      );
+      let model = this.rawEditor.getModel();
+      return (
+        model.getValueInRange(range) ||
+        model.getLineContent(selection.startLineNumber)
+      );
     },
   },
   beforeUnmount() {

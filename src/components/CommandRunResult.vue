@@ -38,6 +38,9 @@
             :textbtn="!enableHtml"
             :imagebtn="!enableHtml && isDataUrl"
             @showImg="showBase64Img"
+            :style="{
+              height: headerHeight + 'px',
+            }"
           />
         </div>
         <div
@@ -143,17 +146,12 @@ export default {
         setTimeout(() => {
           utools.outPlugin();
         }, 500);
+      let resultOpts = { outPlugin, action, earlyExit };
       switch (currentCommand.program) {
         case "quickcommand":
           window.runCodeInSandbox(
             currentCommand.cmd,
-            (stdout, stderr) => {
-              this.handleResult(stdout, stderr, {
-                outPlugin,
-                action,
-                earlyExit,
-              });
-            },
+            (stdout, stderr) => this.handleResult(stdout, stderr, resultOpts),
             { enterData: this.$root.enterData }
           );
           break;
@@ -165,13 +163,7 @@ export default {
             currentCommand.cmd,
             this.getCommandOpt(currentCommand),
             currentCommand.output === "terminal",
-            (stdout, stderr) => {
-              this.handleResult(stdout, stderr, {
-                outPlugin,
-                action,
-                earlyExit,
-              });
-            }
+            (stdout, stderr) => this.handleResult(stdout, stderr, resultOpts)
           );
           this.listenStopSign();
           break;
