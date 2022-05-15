@@ -224,7 +224,7 @@ export default {
       lastTag: "",
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
-      allQuickCommands: [],
+      allQuickCommands: {},
       commandSearchKeyword: "",
       isCommandEditorShow: false,
       commandEditorAction: {},
@@ -317,25 +317,15 @@ export default {
         else this.editCommand(JSON.parse(this.$root.enterData.payload));
         this.$router.push("/configuration");
       }
-      // 已启用的 features
-      let activatedFeatures = this.getActivatedFeatures();
-      // 已启用的命令的 featureCode
-      this.activatedQuickCommandFeatureCodes =
-        activatedFeatures.quickcommand.map((f) => f.code);
-      // 已启用的面板
-      this.activatedQuickPanels = activatedFeatures.quickpanels;
-      // 所有的快捷命令
-      this.allQuickCommands = this.getAllQuickCommands();
-      this.importDefaultCommands();
       if (this.$route.params.tags) {
         this.currentTag = window.hexDecode(this.$route.params.tags);
         this.commandCardStyle = "mini";
       }
+      // 异步读取
+      setTimeout(this.getActivatedFeatures, 0);
+      setTimeout(this.getAllQuickCommands, 0);
     },
     importDefaultCommands() {
-      for (var code of Object.keys(defaultCommands)) {
-        this.$root.utools.putDB(defaultCommands[code], "qc_" + code);
-      }
       Object.assign(this.allQuickCommands, defaultCommands);
     },
     // 获取所有已启用的命令的 features 以及面板名称
@@ -348,18 +338,17 @@ export default {
           ? quickpanels.push(window.hexDecode(x.code.slice(6)))
           : currentFts.push(x)
       );
-      return {
-        quickcommand: currentFts,
-        quickpanels: quickpanels,
-      };
+      this.activatedQuickCommandFeatureCodes = currentFts.map((f) => f.code);
+      // 已启用的面板
+      this.activatedQuickPanels = quickpanels;
     },
     // 获取所有的快捷命令（导出的格式）
     getAllQuickCommands() {
-      let allQcs = {};
+      this.allQuickCommands = {};
       this.$root.utools
         .getDocs("qc_")
-        .forEach((x) => (allQcs[x.data.features.code] = x.data));
-      return allQcs;
+        .forEach((x) => (this.allQuickCommands[x.data.features.code] = x.data));
+      this.importDefaultCommands();
     },
     // 监听命令变更事件
     commandChanged(event) {
