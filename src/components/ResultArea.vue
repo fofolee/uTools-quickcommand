@@ -26,7 +26,8 @@
 <script>
 import ObjectTree from "components/popup/ObjectTree";
 
-const frameStyle = `<style>::-webkit-scrollbar {
+const frameStyle = `<style>
+::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
@@ -44,7 +45,6 @@ const frameStyle = `<style>::-webkit-scrollbar {
 body {
   padding: 10px 20px;
   margin: 0;
-  color: ${utools.isDarkColors() ? "white" : "unset"}
 }
 </style>
 `;
@@ -83,6 +83,7 @@ export default {
       let cfw = this.$refs.iframe.contentWindow;
       Object.assign(cfw, this.context());
       cfw.onload = () => {
+        !utools.isDarkColors() || (cfw.document.body.style.color = "white");
         let clientHeight =
           cfw.document.documentElement.getBoundingClientRect().height;
         this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
