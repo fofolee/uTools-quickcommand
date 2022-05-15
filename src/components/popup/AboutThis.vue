@@ -20,6 +20,7 @@
             flat
             color="primary"
             v-for="item in links[group]"
+            :icon="item.icon"
             :key="item"
             @click="item.url ? visit(item.url) : (showMore = true)"
             :label="item.name"
@@ -32,11 +33,7 @@
         <q-btn flat label="确定" color="primary" v-close-popup />
       </q-card-actions>
     </q-card>
-    <q-dialog
-      transition-show="fade"
-      transition-hide="fade"
-      v-model="showMore"
-    >
+    <q-dialog transition-show="fade" transition-hide="fade" v-model="showMore">
       <MorePlugins
     /></q-dialog>
   </div>
@@ -49,21 +46,25 @@ const links = {
   plugin: [
     {
       name: "帮助",
+      icon: "help",
       url: "https://www.yuque.com/fofolee/mwsoos/bg31vl",
       desc: "查看插件使用帮助",
     },
     {
       name: "源码",
+      icon: "code",
       url: "https://github.com/fofolee/uTools-quickcommand",
       desc: "本插件完全开源，记得 ⭐️ 哟",
     },
     {
       name: "论坛",
+      icon: "forum",
       url: "https://yuanliao.info/d/424-242-242",
       desc: "到猿料论坛参与讨论吧",
     },
     {
       name: "更多插件",
+      icon: "extension",
       desc: "看一看作者的其他插件吧",
     },
   ],
