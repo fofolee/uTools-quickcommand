@@ -16,12 +16,12 @@
         icon="arrow_back_ios_new"
         v-close-popup
       />
-      <q-img
-        class="commandLogo"
-        @click="showIconPicker = true"
-        width="64px"
-        :src="currentCommand.features.icon"
-      />
+      <q-avatar size="64" square class="commandLogo">
+        <q-img
+          @click="showIconPicker = true"
+          :src="currentCommand.features.icon"
+        />
+      </q-avatar>
       <div class="row">
         <div>
           <!-- 说明 -->
