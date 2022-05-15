@@ -454,7 +454,10 @@ window.showUb = {
     },
     docs: function(path = '') {
         runUbrowser(docsRepoUrl + '/pt589p' + path)
-    }
+    },
+    changelog: function(path = '') {
+        runUbrowser(docsRepoUrl + '/ucnd2o' + path)
+    },
 }
 
 window.clipboardReadText = () => electron.clipboard.readText()

@@ -289,10 +289,7 @@ export default {
     // 所有命令对应的标签
     allQuickCommandTags() {
       let allTags = _.union(
-        ..._.concat(
-          "默认",
-          Object.values(this.allQuickCommands).map((x) => x.tags)
-        )
+        ...Object.values(this.allQuickCommands).map((x) => x.tags)
       ).concat(["未分类", "来自分享"]);
       if (this.commandSearchKeyword?.length > 1) allTags.push("搜索结果");
       return allTags;
@@ -326,7 +323,10 @@ export default {
       setTimeout(this.getAllQuickCommands, 0);
     },
     importDefaultCommands() {
-      Object.assign(this.allQuickCommands, defaultCommands);
+      this.allQuickCommands = Object.assign(
+        _.cloneDeep(defaultCommands),
+        this.allQuickCommands
+      );
     },
     // 获取所有已启用的命令的 features 以及面板名称
     getActivatedFeatures() {
@@ -505,13 +505,11 @@ export default {
             .getDocs("qc_")
             .map((x) => x._id)
             .forEach((y) => this.$root.utools.delDB(y));
-          this.importDefaultCommands();
-          this.resetQuickFeatures();
           this.clearAllFeatures();
           Object.keys(this.allQuickCommands).forEach((featureCode) => {
-            if (!featureCode.includes("default_"))
-              delete this.allQuickCommands[featureCode];
+            delete this.allQuickCommands[featureCode];
           });
+          this.importDefaultCommands();
           this.currentTag = "默认";
           quickcommand.showMessageBox(
             "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
@@ -521,15 +519,10 @@ export default {
     // 删除所有 features
     clearAllFeatures() {
       for (var feature of utools.getFeatures()) {
+        if (feature.code.slice(0, 8) === "feature_") continue;
         this.$root.utools.whole.removeFeature(feature.code);
       }
-    },
-    resetQuickFeatures() {
-      Object.assign(
-        this.$root.profile.quickFeatures,
-        _.cloneDeep(defaultProfile.quickFeatures)
-      );
-      window.quickcommandHttpServer().stop();
+      this.activatedQuickCommandFeatureCodes = [];
     },
     // 搜索
     updateSearch() {

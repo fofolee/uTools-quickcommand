@@ -37,13 +37,8 @@ export default defineComponent({
     init() {
       window.utools = window.getuToolsLite();
       if (!this.checkVer()) return;
+      this.showChangeLog();
       this.startUp();
-      this.utools.whole.onPluginEnter((enter) => {
-        this.enterPlugin(enter);
-      });
-      this.utools.whole.onPluginOut(() => {
-        this.outPlugin();
-      });
     },
     checkVer() {
       const requiredVersion = "2.6.1";
@@ -59,9 +54,18 @@ export default defineComponent({
       return true;
     },
     startUp() {
-      // 处理旧版本数据
-      this.v2DataHandler();
-      // 读取用户配置
+      this.loadProfile();
+      // 默认主题色
+      this.setCssVar("primary", this.profile.primaryColor);
+      this.startUpOnce();
+      this.utools.whole.onPluginEnter((enter) => {
+        this.enterPlugin(enter);
+      });
+      this.utools.whole.onPluginOut(() => {
+        this.outPlugin();
+      });
+    },
+    loadProfile() {
       let commonProfile = this.utools.getDB("cfg_profile");
       let nativeProfile = this.utools.getDB(
         "cfg_" + utools.getNativeId() + "_profile"
@@ -71,9 +75,13 @@ export default defineComponent({
         _.cloneDeep(this.nativeProfile),
         nativeProfile
       );
-      // 默认主题色
-      this.setCssVar("primary", this.profile.primaryColor);
-      this.startUpOnce();
+    },
+    saveProfile() {
+      this.utools.putDB(_.cloneDeep(this.profile), "cfg_profile");
+      this.utools.putDB(
+        _.cloneDeep(this.nativeProfile),
+        "cfg_" + utools.getNativeId() + "_profile"
+      );
     },
     // 插件全生命周期只运行一次，主要针对多开的情况
     startUpOnce() {
@@ -99,11 +107,7 @@ export default defineComponent({
     outPlugin() {
       this.$refs.view.$refs?.commandEditor?.saveCodeHistory();
       this.$router.push("/");
-      this.utools.putDB(_.cloneDeep(this.profile), "cfg_profile");
-      this.utools.putDB(
-        _.cloneDeep(this.nativeProfile),
-        "cfg_" + utools.getNativeId() + "_profile"
-      );
+      this.saveProfile();
     },
     runCronTask(featureCode, cronExp) {
       this.cronJobs[featureCode] = Cron(cronExp, () => {
@@ -149,13 +153,14 @@ export default defineComponent({
         second: dateString.getSeconds(),
       };
     },
-    v2DataHandler() {
-      let v2DataHandled = this.utools.getStorage("st_v2DataHandled");
-      if (v2DataHandled) return;
+    showChangeLog() {
+      if (this.utools.getStorage("st_v300Inited")) return;
+      window.showUb.changelog();
       // 处理统计数据
       let statisticsData = this.utools.getDB("cfg_statisticsData");
       _.forIn(statisticsData, (data, year) => {
         statisticsData[year] = data.map((x) => {
+          if (!x.command) return x;
           let code =
             x.command.code === "options" ? "configuration" : x.command.code;
           return {
@@ -165,9 +170,11 @@ export default defineComponent({
         });
       });
       this.utools.putDB(statisticsData, "cfg_statisticsData");
-      // 处理历史代码
-      // ...
-      this.utools.setStorage("st_v2DataHandled", true);
+      // 删掉数据库内的默认命令
+      this.utools
+        .getDocs("qc_default")
+        .forEach((x) => this.utools.delDB(x._id));
+      this.utools.setStorage("st_v300Inited", true);
     },
   },
 });
