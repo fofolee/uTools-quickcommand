@@ -9,39 +9,47 @@
       :items="matchedItems"
     >
       <template v-slot="{ item, index }">
-        <q-item
+        <div
           :key="index"
-          clickable
           v-ripple
           @mousemove="currentIndex = index"
           @click="clickOK"
-          manual-focus
           :class="{
             'item-selected': index === currentIndex,
           }"
           :style="{
             height: itemHeight + 'px',
-            paddingRight: shortCutWidth + 'px',
+            paddingRight: shortCutWidth - 16 + 'px',
+            cursor: 'pointer',
           }"
         >
-          <q-item-section v-if="is.text">
-            <q-item-label lines="1">{{ item }}</q-item-label>
-          </q-item-section>
-          <q-item-section v-else-if="is.json" class="content-start">
-            <q-avatar size="34px" style="margin-right: 16px" v-if="item.icon">
-              <q-img :src="item.icon" />
-            </q-avatar>
-            <q-item-label lines="1" style="padding-right: 50px">{{
-              item.title
-            }}</q-item-label>
-            <q-item-label lines="1" style="padding-right: 50px" caption>{{
-              item.description
-            }}</q-item-label>
-          </q-item-section>
-          <q-item-section v-else-if="is.html">
-            <div v-html="item"></div>
-          </q-item-section>
-        </q-item>
+          <!-- 纯文本 -->
+          <q-item v-if="is.text">
+            <q-item-section>
+              <q-item-label lines="1">{{ item }}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <!-- json -->
+          <q-item v-else-if="is.json">
+            <q-item-section avatar v-if="item.icon">
+              <q-avatar size="34px">
+                <q-img :src="item.icon" />
+              </q-avatar>
+            </q-item-section>
+            <q-item-section>
+              <q-item-label lines="1">{{ item.title }}</q-item-label>
+              <q-item-label lines="1" caption>{{
+                item.description
+              }}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <!-- html -->
+          <q-item v-else-if="is.html">
+            <q-item-section>
+              <div v-html="item" class="full-width"></div>
+            </q-item-section>
+          </q-item>
+        </div>
       </template>
     </q-virtual-scroll>
     <div
