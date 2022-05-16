@@ -4,12 +4,11 @@
     "main": "index.html",
     "homepage": "https://github.com/fofolee/uTools-quickcommand",
     "publishPage": "https://yuanliao.info/d/424",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "development": {
         "main": "http://127.0.0.1:8080/"
     },
     "author": "云之轩",
-    "unpack": "autopep8.py",
     "logo": "logo.png",
     "preload": "preload.js",
     "pluginSetting": {
