@@ -19,16 +19,15 @@ export default {
     };
   },
   mounted() {
-    this.runCurrentCommand();
-  },
-  computed: {
-    currentCommand() {
-      return this.$root.utools.whole.db.get("qc_" + this.featureCode).data;
-    },
+    let command =
+      this.featureCode.slice(0, 8) === "default_"
+        ? require(`../json/${this.featureCode}.json`)
+        : this.$root.utools.whole.db.get("qc_" + this.featureCode).data;
+    this.runCurrentCommand(command);
   },
   methods: {
-    runCurrentCommand() {
-      this.$refs.result.runCurrentCommand(_.cloneDeep(this.currentCommand));
+    runCurrentCommand(command) {
+      this.$refs.result.runCurrentCommand(_.cloneDeep(command));
     },
   },
 };
