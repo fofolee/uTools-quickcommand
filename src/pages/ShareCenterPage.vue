@@ -239,7 +239,7 @@ export default {
     checkCommands() {
       let installed = [];
       let needUpdate = [];
-      this.$root.utools.getDocs("qc_").forEach((item) => {
+      this.$root.utools.getAll("qc_").forEach((item) => {
         if (!item.data.fromShare) return;
         let code = item._id.slice(3);
         let remote = this.remoteCommands.filter((cmd) => cmd.slug === code)[0];

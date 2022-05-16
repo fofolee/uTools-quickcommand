@@ -38,8 +38,12 @@ let delDB = id => {
     return whole.db.remove(id)
 }
 
-let getDocs = key => {
+let getAll = key => {
     return whole.db.allDocs(key)
+}
+
+let delAll = key => {
+    return getAll(key).forEach(x => delDB(x._id))
 }
 
 let setStorage = whole.dbStorage.setItem
@@ -66,7 +70,7 @@ let userData = {
         delDB(DBPRE.USR + id)
     },
     all: function() {
-        return getDocs(DBPRE.USR).map((item) => {
+        return getAll(DBPRE.USR).map((item) => {
             let isNative = !!item.data[nativeId];
             return {
                 id: item._id.replace(DBPRE.USR, ""),
@@ -85,5 +89,6 @@ export default {
     setStorage,
     getStorage,
     userData,
-    getDocs,
+    getAll,
+    delAll
 }
