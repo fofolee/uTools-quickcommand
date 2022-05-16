@@ -171,9 +171,7 @@ export default defineComponent({
       });
       this.utools.putDB(statisticsData, "cfg_statisticsData");
       // 删掉数据库内的默认命令
-      this.utools
-        .getDocs("qc_default")
-        .forEach((x) => this.utools.delDB(x._id));
+      this.utools.delAll("qc_default");
       this.utools.setStorage("st_v300Inited", true);
     },
   },

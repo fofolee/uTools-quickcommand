@@ -205,7 +205,6 @@ import ConfigurationMenu from "components/ConfigurationMenu.vue";
 import CommandRunResult from "components/CommandRunResult.vue";
 import importAll from "../js/common/importAll.js";
 import pinyinMatch from "pinyin-match";
-import defaultProfile from "../js/options/defaultProfile.js";
 import CommandEditor from "components/CommandEditor";
 
 // 默认命令
@@ -322,12 +321,6 @@ export default {
       setTimeout(this.getActivatedFeatures, 0);
       setTimeout(this.getAllQuickCommands, 0);
     },
-    importDefaultCommands() {
-      this.allQuickCommands = Object.assign(
-        _.cloneDeep(defaultCommands),
-        this.allQuickCommands
-      );
-    },
     // 获取所有已启用的命令的 features 以及面板名称
     getActivatedFeatures() {
       let features = utools.getFeatures();
@@ -344,11 +337,10 @@ export default {
     },
     // 获取所有的快捷命令（导出的格式）
     getAllQuickCommands() {
-      this.allQuickCommands = {};
+      this.allQuickCommands = _.cloneDeep(defaultCommands);
       this.$root.utools
-        .getDocs("qc_")
+        .getAll("qc_")
         .forEach((x) => (this.allQuickCommands[x.data.features.code] = x.data));
-      this.importDefaultCommands();
     },
     // 监听命令变更事件
     commandChanged(event) {
@@ -426,6 +418,10 @@ export default {
     importCommandFromClipboard() {
       return window.clipboardReadText();
     },
+    // 是否为默认命令
+    isDefaultCommand(code) {
+      return code.slice(0, 8) === "default_";
+    },
     // 导入命令
     importCommand(fromFile = true) {
       let quickCommandInfo = fromFile
@@ -438,12 +434,15 @@ export default {
       // 单个命令导入
       let dataToPushed = {};
       if (parsedData.single) {
+        if (this.isDefaultCommand(parsedData.qc.features.code))
+          return quickcommand.showMessageBox("默认命令不能导入！", "error");
         dataToPushed[parsedData.qc.features.code] = parsedData.qc;
         // 多个
       } else {
         dataToPushed = parsedData.qc;
       }
       for (var code of Object.keys(dataToPushed)) {
+        if (this.isDefaultCommand(code)) continue;
         this.$root.utools.putDB(dataToPushed[code], "qc_" + code);
       }
       Object.assign(this.allQuickCommands, dataToPushed);
@@ -481,10 +480,9 @@ export default {
       };
       let commandsToExport = _.cloneDeep(this.allQuickCommands);
       // 不导出默认命令
-      if (!utools.isDev())
-        Object.keys(commandsToExport).forEach((code) => {
-          if (code.includes("default_")) delete commandsToExport[code];
-        });
+      Object.keys(commandsToExport).forEach((code) => {
+        if (this.isDefaultCommand(code)) delete commandsToExport[code];
+      });
       let stringifyCommands = JSON.stringify(commandsToExport);
       if (saveAsFile) {
         window.saveFile(stringifyCommands, options) &&
@@ -501,15 +499,9 @@ export default {
           if (!isConfirmed)
             return quickcommand.showMessageBox("取消操作", "info");
           this.exportAllCommands(false);
-          this.$root.utools
-            .getDocs("qc_")
-            .map((x) => x._id)
-            .forEach((y) => this.$root.utools.delDB(y));
+          this.$root.utools.delAll("qc_");
           this.clearAllFeatures();
-          Object.keys(this.allQuickCommands).forEach((featureCode) => {
-            delete this.allQuickCommands[featureCode];
-          });
-          this.importDefaultCommands();
+          this.allQuickCommands = _.cloneDeep(defaultCommands);
           this.currentTag = "默认";
           quickcommand.showMessageBox(
             "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
