@@ -228,7 +228,7 @@ export default {
 .item-selected {
   background: #dfe2e6;
 }
-.item-selected.q-item--dark {
+.body--dark .item-selected {
   background: #515151;
 }
 </style>

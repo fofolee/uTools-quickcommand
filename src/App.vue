@@ -186,6 +186,14 @@ export default defineComponent({
 .q-card--dark {
   background: var(--q-dark-page);
 }
+.container {
+  color: black;
+  background: white;
+}
+.body--dark .container {
+  color: white;
+  background: var(--q-dark-page);
+}
 .q-tooltip {
   font-size: 11px;
 }

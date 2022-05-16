@@ -4,14 +4,13 @@
       v-model="result"
       :placeholder="options.placeholder"
       autofocus
-      class="fixed"
+      class="fixed container"
       :style="{
         top: 0,
         bottom: 0,
         left: 0,
         right: 0,
         background: '#00000000',
-        color: $q.dark.isActive ? 'white' : 'black',
         fontSize: '16px',
         outline: 'none',
         border: '3px solid #3577cb',

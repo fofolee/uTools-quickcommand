@@ -7,13 +7,7 @@
         v-for="count in currentPageCounts"
         :key="count"
       >
-        <q-card
-          class="my-card"
-          :style="{
-            padding: '8px',
-            background: $q.dark.isActive ? '#ffffff08' : '#00000008',
-          }"
-        >
+        <q-card>
           <q-item v-if="loading">
             <q-item-section avatar>
               <q-skeleton square width="48px" height="48px" animation="fade" />
@@ -269,6 +263,11 @@ export default {
 <style scoped>
 .q-card {
   user-select: none;
+  padding: 8px;
+  background: #00000008;
+}
+.q-card--dark {
+  background: #ffffff08;
 }
 .tag {
   background: var(--q-primary);
@@ -282,7 +281,7 @@ export default {
 }
 .wrapper:hover {
   transition: 0.5s;
-  transform: translateY(-1px);
+  transform: scale(0.97);
   filter: drop-shadow(1px 1px 5px #0000008e);
 }
 </style>

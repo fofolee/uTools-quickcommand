@@ -37,7 +37,6 @@ export default {
       editor: null,
       value: null,
       wordWrap: "off",
-      shortCutKeyBg: this.$q.dark.isActive ? "#262626" : "#f3f4f6",
       shortCuts: [
         ["保存", cmdCtrlKey, "S"],
         ["运行", cmdCtrlKey, "B"],
@@ -51,9 +50,6 @@ export default {
   computed: {
     rawEditor() {
       return toRaw(this.editor);
-    },
-    isDark() {
-      return this.$q.dark.isActive;
     },
   },
   props: {
@@ -169,7 +165,7 @@ export default {
       });
     },
     setEditorTheme() {
-      monaco.editor.setTheme(this.isDark ? "vs-dark" : "vs");
+      monaco.editor.setTheme(this.$q.dark.isActive ? "vs-dark" : "vs");
     },
     getEditorValue() {
       return this.rawEditor.getValue();
@@ -269,10 +265,13 @@ export default {
   user-select: none;
 }
 .shortcut-key {
-  background-color: v-bind(shortCutKeyBg);
+  background-color: #f3f4f6;
   border-radius: 0.25rem;
   margin-left: 0.5rem;
   padding-left: 0.25rem;
   padding-right: 0.25rem;
+}
+.body--dark .shortcut-key {
+  background-color: #262626;
 }
 </style>

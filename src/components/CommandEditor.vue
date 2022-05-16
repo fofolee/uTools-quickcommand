@@ -1,11 +1,5 @@
 <template>
-  <div
-    class="absolute-full"
-    :style="{
-      background: $q.dark.isActive ? 'var(--q-dark-page)' : '#ffffff',
-      overflow: 'hidden',
-    }"
-  >
+  <div class="absolute-full container" style="overflow: 'hidden'">
     <!-- 命令设置栏 -->
     <CommandSideBar
       ref="sidebar"
@@ -25,6 +19,7 @@
       :style="{
         left: showSidebar ? sideBarWidth + 'px' : 65,
         zIndex: 1,
+        transition: '0.3s',
       }"
     >
       <div class="row" v-show="languageBarHeight">
@@ -34,12 +29,7 @@
             flat
             dense
             color="primary"
-            :style="{
-              background: $q.dark.isActive
-                ? 'rgba(255, 255, 255, 0.07)'
-                : 'rgba(0, 0, 0, 0.05)',
-              borderRadius: '0',
-            }"
+            class="menuBtn"
             icon="menu"
             @click="toggleSideBarWidth"
             ><q-tooltip
@@ -402,3 +392,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.menuBtn {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 0;
+}
+.body--dark .menuBtn {
+  background: rgba(255, 255, 255, 0.07);
+}
+</style>

@@ -103,9 +103,6 @@
         @click="handleCardClick"
         v-ripple
         :class="{ [`text-${disabledColor}`]: !isCommandActivated }"
-        :style="{
-          background: cardBgColor,
-        }"
       >
         <q-card-section>
           <!-- logo -->
@@ -317,9 +314,6 @@ export default {
     disabledColor() {
       return this.$q.dark.isActive ? "grey-6" : "grey-5";
     },
-    cardBgColor() {
-      return this.$q.dark.isActive ? "#ffffff08" : "#00000008";
-    },
     featureCode() {
       return this.commandInfo.features.code;
     },
@@ -425,6 +419,10 @@ export default {
 .q-card {
   cursor: pointer;
   user-select: none;
+  background: #00000008;
+}
+.q-card--dark {
+  background: #ffffff08;
 }
 .q-badge {
   font-size: 15px;
