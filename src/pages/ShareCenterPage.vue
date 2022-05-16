@@ -179,7 +179,8 @@ export default {
           this.getCommand(
             item.slug,
             item.content_updated_at,
-            item.last_editor.name
+            item.last_editor.name,
+            item.last_editor.id
           ).then((command) => {
             this.commands.push(command);
           });
@@ -211,7 +212,7 @@ export default {
       this.fetchCommandDetails(1);
     },
     // 如果远端更新时间和本地相同则读取本地缓存，否则更新
-    async getCommand(id, updateTime, authorName) {
+    async getCommand(id, updateTime, authorName, authorId) {
       let localCache = JSON.parse(localStorage.getItem(id));
       if (localCache?.updateTime === updateTime) return localCache;
       let res = await window.yuQueClient(
@@ -221,7 +222,7 @@ export default {
         res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
       );
       if (!command) return;
-      Object.assign(command, { authorName, updateTime });
+      Object.assign(command, { authorName, updateTime, authorId });
       localStorage.setItem(id, JSON.stringify(command));
       return command;
     },

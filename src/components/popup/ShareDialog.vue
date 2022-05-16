@@ -84,7 +84,11 @@ export default {
   },
   computed: {
     disableShare() {
-      return this.shareLock || !this.yuQueInfo.yuQueToken;
+      return (
+        this.shareLock ||
+        !this.yuQueInfo.yuQueToken ||
+        this.yuQueInfo.authorId !== this.command.authorId
+      );
     },
   },
   mounted() {
