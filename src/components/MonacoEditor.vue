@@ -234,7 +234,7 @@ export default {
       );
       // ctrl + space 快速 console.log
       this.rawEditor.addCommand(
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE,
         () => {
           that.$emit("keyStroke", "log", that.getSelectionOrLineContent());
         }
