@@ -28,6 +28,7 @@ export default defineComponent({
       utools: UTOOLS,
       cronJobs: {},
       enterData: {},
+      subInputEvent: null,
     };
   },
   created: function () {

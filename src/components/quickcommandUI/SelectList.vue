@@ -205,12 +205,15 @@ export default {
 
     clear() {
       utools.removeSubInput();
-      document.removeEventListener("keydown", this.keyHandler);
+      document.removeEventListener("keydown", this.keyHandler, true);
       this.setUtoolsHeight(this.listMaxHeight);
     },
 
     addListeners() {
-      document.addEventListener("keydown", this.keyHandler);
+      // 如果之前启用了子输入框，先移除监听
+      if (this.$root.subInputEvent)
+        document.removeEventListener(...this.$root.subInputEvent);
+      document.addEventListener("keydown", this.keyHandler, true);
     },
   },
 };
