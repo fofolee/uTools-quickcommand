@@ -87,7 +87,8 @@ export default {
       return (
         this.shareLock ||
         !this.yuQueInfo.yuQueToken ||
-        this.yuQueInfo.authorId !== this.command.authorId
+        (this.yuQueInfo.authorId !== this.command.authorId &&
+          this.command.fromShare)
       );
     },
   },
