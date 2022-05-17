@@ -102,7 +102,7 @@
       <q-card
         @click="handleCardClick"
         v-ripple
-        :class="{ [`text-${disabledColor}`]: !isCommandActivated }"
+        :class="{ [`text-${disabledColor}`]: !isCommandActivated, command: 1 }"
       >
         <q-card-section>
           <!-- logo -->
@@ -416,12 +416,12 @@ export default {
 </script>
 
 <style scoped>
-.q-card {
+.q-card.command {
   cursor: pointer;
   user-select: none;
   background: #00000008;
 }
-.q-card--dark {
+.q-card--dark.command {
   background: #ffffff08;
 }
 .q-badge {

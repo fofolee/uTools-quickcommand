@@ -7,7 +7,7 @@
         v-for="count in currentPageCounts"
         :key="count"
       >
-        <q-card>
+        <q-card class="command">
           <q-item v-if="loading">
             <q-item-section avatar>
               <q-skeleton square width="48px" height="48px" animation="fade" />
@@ -261,12 +261,12 @@ export default {
 </script>
 
 <style scoped>
-.q-card {
+.q-card.command {
   user-select: none;
   padding: 8px;
   background: #00000008;
 }
-.q-card--dark {
+.q-card--dark.command {
   background: #ffffff08;
 }
 .tag {
