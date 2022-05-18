@@ -1,5 +1,5 @@
 <template>
-  <q-card @contextmenu="mouseHandler">
+  <q-card @mousewheel="mouseHandler">
     <q-virtual-scroll
       ref="scrollBar"
       @scroll="scrollHandler"
