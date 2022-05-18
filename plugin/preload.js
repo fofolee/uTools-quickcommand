@@ -258,14 +258,20 @@ let getCommandToLaunchTerminal = (cmdline, dir) => {
         cd = dir ? `cd ${dir.replace(/ /g, '\\\\ ')} &&` : '';
         command = fs.existsSync('/Applications/iTerm.app') ?
             `osascript -e 'tell application "iTerm"
-            create window with default profile
-            tell current session of current window to write text "clear && ${cd} ${cmdline}"
-    end tell'` :
+                if application "iTerm" is running then
+                  create window with default profile
+                end if
+                tell current session of first window to write text "clear && ${cd} ${cmdline}"
+                activate
+              end tell'` :
             `osascript -e 'tell application "Terminal"
-          do script "clear && ${cd} ${cmdline}"
-        activate
-    end tell'`;
-
+                if application "Terminal" is running then
+                  do script "clear && ${cd} ${cmdline}"
+                else
+                  do script "clear && ${cd} ${cmdline}" in window 1
+                end if
+                activate
+              end tell'`;
     }
     return command;
 }
