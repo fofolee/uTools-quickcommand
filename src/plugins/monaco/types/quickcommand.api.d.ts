@@ -324,6 +324,16 @@ interface quickcommandApi {
   runVbs(script: string): Promise<string>;
 
   /**
+   * 在终端运行，不支持 Linux
+   *
+   * @param command 要在终端运行的命令
+   * ```js
+   * quickcommand.runInTerminal(`whoami`)
+   * ```
+   */
+  runInTerminal(command: string);
+
+  /**
    * 对应 utools.onPluginEnter 的 code type 和 payload
    *
    * code: 唯一标识
