@@ -570,11 +570,15 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
 }
 
 window.runCodeFile = (cmd, option, terminal, callback) => {
-    var bin = option.bin,
-        argv = option.argv,
-        ext = option.ext,
-        charset = option.charset,
-        scptarg = option.scptarg || "";
+    let {
+        bin,
+        argv,
+        ext,
+        charset,
+        scptarg,
+        envPath,
+        alias
+    } = option
     let script = getQuickcommandTempFile(ext, 'quickcommandTempScript');
     // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
     if (charset.scriptCode) cmd = iconv.encode(cmd.replace(/\n/g, '\r\n'), charset.scriptCode);
@@ -598,11 +602,15 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
     } else {
         cmdline = `${bin} ${argv} "${script}" ${scptarg}`
     }
+    let processEnv = _.cloneDeep(process.env);
+    if (envPath) processEnv.PATH = envPath;
+    if (alias) cmdline = alias + '\n' + cmdline;
     // 在终端中输出
     if (terminal) cmdline = getCommandToLaunchTerminal(cmdline)
     child = child_process.spawn(cmdline, {
         encoding: 'buffer',
-        shell: true
+        shell: true,
+        env: processEnv
     });
     // var chunks = [],
     //     err_chunks = [];

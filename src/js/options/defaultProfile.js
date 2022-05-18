@@ -16,6 +16,8 @@ export default {
     native: {
         crontabs: {},
         serverPort: 33442,
-        serverStatus: false
+        serverStatus: false,
+        envPath: '',
+        alias: ''
     }
 }

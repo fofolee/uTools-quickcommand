@@ -175,6 +175,8 @@ export default {
           : this.$root.programs[command.program];
       option.scptarg = command.scptarg || "";
       option.charset = command.charset || {};
+      option.envPath = this.$root.nativeProfile.envPath.trim() || "";
+      option.alias = this.$root.nativeProfile.alias.trim() || "";
       return option;
     },
     listenStopSign() {

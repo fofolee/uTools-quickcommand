@@ -21,13 +21,18 @@
           <q-chip color="primary" dense>{{ item.id }}</q-chip>
         </template>
         <template v-slot:append>
-          <q-toggle dense class="q-mr-sm" v-model="item.isNative" color="primary" />
+          <q-toggle
+            dense
+            class="q-mr-sm"
+            v-model="item.isNative"
+            color="primary" />
           <q-btn
             flat
             dense
             color="primary"
             icon="send"
-            @click="insertText(`{{usr:${item.id}}}`)" />
+            @click="insertText(`{{usr:${item.id}}}`)"
+            v-if="showInsertBtn" />
           <q-btn
             flat
             dense
@@ -56,6 +61,9 @@ export default {
     return {
       allUserData: [],
     };
+  },
+  props: {
+    showInsertBtn: Boolean,
   },
   mounted() {
     this.allUserData = this.$root.utools.userData.all();

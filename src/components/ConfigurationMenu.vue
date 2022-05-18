@@ -184,20 +184,20 @@
             <q-item-section side>
               <q-icon name="keyboard_arrow_left" />
             </q-item-section>
-            <q-item-section>导入导出</q-item-section>
+            <q-item-section>命令管理</q-item-section>
             <q-menu anchor="top end" self="top start">
               <q-list>
                 <q-item clickable v-close-popup @click="importCommand">
                   <q-item-section side>
                     <q-icon name="text_snippet" />
                   </q-item-section>
-                  <q-item-section>从文件导入</q-item-section>
+                  <q-item-section>从文件导入命令</q-item-section>
                 </q-item>
                 <q-item clickable v-close-popup @click="importCommand(false)">
                   <q-item-section side>
                     <q-icon name="content_paste" />
                   </q-item-section>
-                  <q-item-section>从剪贴板导入</q-item-section>
+                  <q-item-section>从剪贴板导入命令</q-item-section>
                 </q-item>
                 <!-- 导出 -->
                 <q-item clickable v-close-popup @click="exportAllCommands">
@@ -206,17 +206,6 @@
                   </q-item-section>
                   <q-item-section>导出所有命令</q-item-section>
                 </q-item>
-              </q-list>
-            </q-menu>
-          </q-item>
-          <!-- 批处理 -->
-          <q-item clickable>
-            <q-item-section side>
-              <q-icon name="keyboard_arrow_left" />
-            </q-item-section>
-            <q-item-section>批处理</q-item-section>
-            <q-menu anchor="top end" self="top start">
-              <q-list>
                 <q-item clickable v-close-popup @click="enableAllCommands">
                   <q-item-section side>
                     <q-icon name="checklist_rtl" />
@@ -244,7 +233,68 @@
               </q-list>
             </q-menu>
           </q-item>
-          <!-- 选项 -->
+          <q-item clickable>
+            <q-item-section side>
+              <q-icon name="keyboard_arrow_left" />
+            </q-item-section>
+            <q-item-section>环境配置</q-item-section>
+            <q-menu anchor="bottom end" self="bottom start">
+              <q-list>
+                <q-item clickable @click="showUserDara = true">
+                  <q-item-section side>
+                    <q-icon name="manage_accounts" />
+                  </q-item-section>
+                  <q-item-section>用户特殊变量</q-item-section>
+                  <q-tooltip
+                    >用户设置的变量，类似一个全局配置项<br />
+                    配置好后可选择特殊变量中的「usr:」插入<br />
+                    也可直接在特殊变量中配置</q-tooltip
+                  >
+                </q-item>
+                <q-item>
+                  <q-item-section side>
+                    <q-icon name="dvr" />
+                  </q-item-section>
+                  <q-input
+                    dense
+                    outlined
+                    autogrow
+                    style="width: 280px"
+                    autofocus
+                    v-model="$root.nativeProfile.envPath"
+                    type="text"
+                    label="环境变量 PATH"
+                  >
+                    <q-tooltip
+                      >修改本插件环境变量中的 PATH，直接覆盖而非追加
+                      <br />将会影响到除 quickcommand、html
+                      以外的所有环境</q-tooltip
+                    >
+                  </q-input>
+                </q-item>
+                <q-item v-if="showAlias">
+                  <q-item-section side>
+                    <q-icon name="code" />
+                  </q-item-section>
+                  <q-input
+                    dense
+                    outlined
+                    autogrow
+                    style="width: 280px"
+                    v-model="$root.nativeProfile.alias"
+                    type="text"
+                    label="Alias"
+                  >
+                    <q-tooltip
+                      >一行一条，配置方法和 shell 的语法一样<br />如 alias
+                      python="/home/user/.bin/python"<br />将会影响到除
+                      quickcommand、html 以外的所有环境</q-tooltip
+                    >
+                  </q-input>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-item>
           <q-item clickable>
             <q-item-section side>
               <q-icon name="keyboard_arrow_left" />
@@ -387,6 +437,9 @@
     <q-dialog v-model="showPanelConf">
       <PanelSetting :isTagStared="isTagStared" :currentTag="currentTag" />
     </q-dialog>
+    <q-dialog v-model="showUserDara">
+      <UserData :showInsertBtn="false" />
+    </q-dialog>
   </div>
 </template>
 
@@ -397,12 +450,14 @@ import AboutThis from "components/popup/AboutThis";
 import PanelSetting from "components/popup/PanelSetting";
 import UserInfo from "components/popup/UserInfo";
 import features from "../js/options/quickFeatures.js";
+import UserData from "components/popup/UserData";
 
 export default {
   components: {
     AboutThis,
     PanelSetting,
     UserInfo,
+    UserData,
   },
   data() {
     return {
@@ -410,8 +465,10 @@ export default {
       selectFile: ref(null),
       showAbout: false,
       showPanelConf: false,
+      showUserDara: false,
       features: features,
       redirect: utools.redirect,
+      showAlias: this.$q.platform.is.mac || this.$q.platform.is.linux,
     };
   },
   computed: {
