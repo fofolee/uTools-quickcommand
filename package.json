@@ -1,0 +1,54 @@
+{
+  "name": "quickcommand",
+  "version": "0.0.1",
+  "description": "plugin for uTools",
+  "productName": "quickcommand",
+  "author": "fofolee <fofolee@qq.com>",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.vue ./",
+    "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.13.5",
+    "core-js": "^3.6.5",
+    "croner": "^4.3.9",
+    "monaco-editor": "^0.33.0",
+    "monaco-editor-webpack-plugin": "^7.0.1",
+    "picture-compressor": "^1.1.0",
+    "pinyin-match": "^1.2.2",
+    "quasar": "^2.6.6",
+    "raw-loader": "^4.0.2",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.13.14",
+    "@quasar/app-webpack": "^3.5.1",
+    "@types/mousetrap": "^1.6.9",
+    "copy-webpack-plugin": "^10.2.4",
+    "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^8.5.0",
+    "eslint-webpack-plugin": "^3.1.1",
+    "prettier": "^2.5.1",
+    "utools-api-types": "^2.6.0"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}
