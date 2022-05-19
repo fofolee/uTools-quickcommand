@@ -11,21 +11,21 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "^1.13.5",
+    "@quasar/extras": "^1.14.0",
     "core-js": "^3.6.5",
     "croner": "^4.3.9",
     "monaco-editor": "^0.33.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "picture-compressor": "^1.1.0",
     "pinyin-match": "^1.2.2",
-    "quasar": "^2.6.6",
+    "quasar": "^2.7.0",
     "raw-loader": "^4.0.2",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
-    "@quasar/app-webpack": "^3.5.1",
+    "@quasar/app-webpack": "^3.5.2",
     "@types/mousetrap": "^1.6.9",
     "copy-webpack-plugin": "^10.2.4",
     "eslint": "^8.10.0",
