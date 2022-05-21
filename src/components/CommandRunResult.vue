@@ -134,17 +134,14 @@ export default {
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
       this.enableHtml = currentCommand.output === "html";
-      let { hideWindow, outPlugin, action } =
-        outputTypes[currentCommand.output];
-      // 需要隐藏的提前隐藏窗口
-      hideWindow && utools.hideMainWindow();
+      let { outPlugin, action } = outputTypes[currentCommand.output];
+      let earlyExit = this.fromUtools && outPlugin;
       // 对于本身就没有输出的命令，无法确认命令是否执行完成，所以干脆提前退出插件
       // 弊端就是如果勾选了隐藏后台就完全退出的话，会造成命令直接中断
-      let earlyExit = this.fromUtools && outPlugin;
-      earlyExit &&
-        setTimeout(() => {
-          utools.outPlugin();
-        }, 500);
+      if (outPlugin) {
+        utools.hideMainWindow();
+        !earlyExit || setTimeout(utools.outPlugin, 500);
+      }
       let resultOpts = { outPlugin, action, earlyExit };
       switch (currentCommand.program) {
         case "quickcommand":
@@ -268,9 +265,7 @@ export default {
           ? alert(stderr)
           : this.showRunResult(stderr, false);
       }
-      options.outPlugin
-        ? options.action(stdout.toString())
-        : this.showRunResult(stdout, true);
+      !options.action(stdout.toString()) || this.showRunResult(stdout, true);
     },
     // 显示运行结果
     async showRunResult(content, isSuccess) {
