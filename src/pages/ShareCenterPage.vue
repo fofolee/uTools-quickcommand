@@ -141,6 +141,7 @@ export default {
       releaseRepo: "fofolee/qcreleases",
       commandTypes: commandTypes,
       platform: window.processPlatform,
+      errCommandsCount: 0,
     };
   },
   computed: {
@@ -151,9 +152,11 @@ export default {
       return this.commands.length === this.currentPageCounts ? false : true;
     },
     currentPageCounts() {
-      return this.currentPage === this.maxPages
-        ? this.matchedCommands.length % this.perPage
-        : this.perPage;
+      return (
+        (this.currentPage === this.maxPages
+          ? this.matchedCommands.length % this.perPage
+          : this.perPage) - this.errCommandsCount
+      );
     },
   },
   mounted() {
@@ -166,6 +169,7 @@ export default {
   },
   methods: {
     fetchCommandDetails(page) {
+      this.errCommandsCount = 0;
       this.commands = [];
       this.matchedCommands
         .slice((page - 1) * this.perPage, page * this.perPage)
@@ -176,6 +180,10 @@ export default {
             item.last_editor.name,
             item.last_editor.id
           ).then((command) => {
+            if (!command) {
+              this.errCommandsCount++;
+              return;
+            }
             this.commands.push(command);
           });
         });
@@ -212,9 +220,14 @@ export default {
       let res = await window.yuQueClient(
         `repos/${this.releaseRepo}/docs/${id}?raw=1`
       );
-      let command = JSON.parse(
-        res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
-      );
+      let command;
+      try {
+        command = JSON.parse(
+          res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
+        );
+      } catch (error) {
+        console.log("parseErr", command, error);
+      }
       if (!command) return;
       Object.assign(command, { authorName, updateTime, authorId });
       localStorage.setItem(id, JSON.stringify(command));
