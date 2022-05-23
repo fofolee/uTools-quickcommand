@@ -184,7 +184,9 @@ export default {
               this.errCommandsCount++;
               return;
             }
-            this.commands.push(command);
+            command.updated
+              ? this.commands.unshift(command.data)
+              : this.commands.push(command.data);
           });
         });
     },
@@ -216,7 +218,11 @@ export default {
     // 如果远端更新时间和本地相同则读取本地缓存，否则更新
     async getCommand(id, updateTime, authorName, authorId) {
       let localCache = JSON.parse(localStorage.getItem(id));
-      if (localCache?.updateTime === updateTime) return localCache;
+      if (localCache?.updateTime === updateTime)
+        return {
+          data: localCache,
+          updated: false,
+        };
       let res = await window.yuQueClient(
         `repos/${this.releaseRepo}/docs/${id}?raw=1`
       );
@@ -231,7 +237,10 @@ export default {
       if (!command) return;
       Object.assign(command, { authorName, updateTime, authorId });
       localStorage.setItem(id, JSON.stringify(command));
-      return command;
+      return {
+        data: command,
+        updated: true,
+      };
     },
     fetchCommands() {
       window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {
