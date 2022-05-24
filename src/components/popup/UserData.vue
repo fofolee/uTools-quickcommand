@@ -18,7 +18,9 @@
         :placeholder="item.value || '本机未设置'"
       >
         <template v-slot:prepend>
-          <q-chip color="primary" dense>{{ item.id }}</q-chip>
+          <q-chip color="primary" text-color="white" dense>{{
+            item.id
+          }}</q-chip>
         </template>
         <template v-slot:append>
           <q-toggle
