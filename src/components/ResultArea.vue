@@ -11,13 +11,13 @@
     ></iframe>
     <div
       v-else
-      v-show="!!runResult"
+      v-show="!!runResult.length"
       :class="{ 'text-red': !runResultStatus }"
       class="text q-px-md q-py-sm"
     >
       <div v-for="item in runResult" :key="item">
         <ObjectTree :obj="item" v-if="typeof item === 'object'" />
-        <pre class="result" v-text="item" v-else-if="!!item"></pre>
+        <pre class="result" v-text="item" v-else></pre>
       </div>
     </div>
   </div>
