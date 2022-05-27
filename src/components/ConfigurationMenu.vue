@@ -37,6 +37,7 @@
                     style="width: 280px"
                     autofocus
                     v-model="$root.profile.quickFileTag"
+                    @blur="$root.profile.quickFileTag || ($root.profile.quickFileTag = '文件')"
                     type="text"
                   >
                     <template v-slot:append>
@@ -68,6 +69,8 @@
                     input-class="text-center"
                     style="width: 280px"
                     v-model="$root.profile.quickUrlTag"
+                    @blur="$root.profile.quickUrlTag || ($root.profile.quickUrlTag = '网址')"
+
                     type="text"
                   >
                     <template v-slot:append>

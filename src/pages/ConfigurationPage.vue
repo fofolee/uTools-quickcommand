@@ -289,7 +289,9 @@ export default {
     allQuickCommandTags() {
       let allTags = _.union(
         ...Object.values(this.allQuickCommands).map((x) => x.tags)
-      ).concat(["未分类", "来自分享"]);
+      )
+        .concat(["未分类", "来自分享"])
+        .filter((x) => x);
       if (this.commandSearchKeyword?.length > 1) allTags.push("搜索结果");
       return allTags;
     },
