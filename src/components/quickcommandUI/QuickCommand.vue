@@ -85,9 +85,11 @@ export default {
         }),
 
       showMessageBox: (message, icon = "success", time) => {
+        message = _.truncate(message, { length: 1200 });
         if (icon === "success") icon = "positive";
         if (icon === "error") icon = "negative";
-        if (!time) time = Math.max(message.toString().length * 120, 1000);
+        if (typeof time === "undefined")
+          time = Math.max(message.toString().length * 120, 1000);
         Notify.create({
           type: icon,
           message: message,
