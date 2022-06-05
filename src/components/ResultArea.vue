@@ -86,7 +86,12 @@ export default {
         !utools.isDarkColors() || (cfw.document.body.style.color = "white");
         let clientHeight =
           cfw.document.documentElement.getBoundingClientRect().height;
-        this.frameHeight = clientHeight === 20 ? 0 : clientHeight;
+        clientHeight = clientHeight === 20 ? 0 : clientHeight;
+        this.frameHeight = Math.max(
+          // 当有绝对定位的元素时只能通过遍历获取高度
+          this.getMaxElHeight(cfw.document),
+          clientHeight
+        );
         this.$emit("frameLoad", this.frameHeight);
       };
     },
@@ -107,6 +112,14 @@ export default {
         },
         onerror: (e) => showError(e),
       };
+    },
+    getMaxElHeight(doc) {
+      let els = Array.prototype.slice.call(doc.body.getElementsByTagName("*"));
+      let elHeights = [];
+      for (let i = 0, l = els.length; i < l; i++) {
+        elHeights.push(els[i].scrollTop + els[i].offsetHeight);
+      }
+      return Math.max.apply(Math, elHeights);
     },
   },
 };
