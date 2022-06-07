@@ -305,9 +305,9 @@ export default {
     },
     stopRun() {
       this.runResult = [];
+      utools.removeSubInput();
       if (!!this.$root.subInputEvent) {
         this.subInputValue = "";
-        utools.removeSubInput();
         document.removeEventListener(...this.$root.subInputEvent);
       }
       this.clear();
