@@ -270,7 +270,7 @@
       />
     </q-dialog>
     <q-dialog v-model="showUserData">
-      <UserData @insertText="insertSpecialVar" />
+      <UserData @insertText="insertSpecialVar" :showInsertBtn="true" />
     </q-dialog>
   </q-scroll-area>
 </template>

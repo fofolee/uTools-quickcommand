@@ -2,7 +2,7 @@
 export default {
   mounted() {
     utools.setExpendHeight(0);
-    this.$root.payload.forEach((file) => {
+    this.$root.enterData.payload.forEach((file) => {
       let uid = this.getUid();
       let fileInfo = window.getFileInfo({
         type: "file",

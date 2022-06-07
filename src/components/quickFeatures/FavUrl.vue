@@ -24,7 +24,7 @@ export default {
       );
       url = choise.text + "://" + url;
     }
-    let title = this.$root.payload.title
+    let title = this.$root.enterData.payload.title
       .replace(/和另外 \d+ 个页面.*/, "")
       .replace(/[-|—] .*?[Edge|Firefox|Chrome].*/, "")
       .trim();
@@ -39,7 +39,7 @@ export default {
     let uid = this.getUid();
     let command = {
       features: {
-        explain: `访问${title}`,
+        explain: title,
         cmds: [title],
         platform: ["linux", "win32", "darwin"],
         code: `key_${uid}`,
@@ -51,7 +51,7 @@ export default {
     };
     try {
       let res = await quickcommand.downloadFile(iconUrl, iconPath);
-      if (res) command.features.icon = iconPath;
+      if (res) command.features.icon = window.getBase64Ico(iconPath);
     } catch (e) {}
     this.importCommand(command);
     utools.showNotification("操作成功！");

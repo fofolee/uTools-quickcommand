@@ -141,6 +141,7 @@ export default {
       releaseRepo: "fofolee/qcreleases",
       commandTypes: commandTypes,
       platform: window.processPlatform,
+      errCommandsCount: 0,
     };
   },
   computed: {
@@ -151,9 +152,11 @@ export default {
       return this.commands.length === this.currentPageCounts ? false : true;
     },
     currentPageCounts() {
-      return this.currentPage === this.maxPages
-        ? this.matchedCommands.length % this.perPage
-        : this.perPage;
+      return (
+        (this.currentPage === this.maxPages
+          ? this.matchedCommands.length % this.perPage
+          : this.perPage) - this.errCommandsCount
+      );
     },
   },
   mounted() {
@@ -166,6 +169,7 @@ export default {
   },
   methods: {
     fetchCommandDetails(page) {
+      this.errCommandsCount = 0;
       this.commands = [];
       this.matchedCommands
         .slice((page - 1) * this.perPage, page * this.perPage)
@@ -176,7 +180,13 @@ export default {
             item.last_editor.name,
             item.last_editor.id
           ).then((command) => {
-            this.commands.push(command);
+            if (!command) {
+              this.errCommandsCount++;
+              return;
+            }
+            command.updated
+              ? this.commands.unshift(command.data)
+              : this.commands.push(command.data);
           });
         });
     },
@@ -208,17 +218,29 @@ export default {
     // 如果远端更新时间和本地相同则读取本地缓存，否则更新
     async getCommand(id, updateTime, authorName, authorId) {
       let localCache = JSON.parse(localStorage.getItem(id));
-      if (localCache?.updateTime === updateTime) return localCache;
+      if (localCache?.updateTime === updateTime)
+        return {
+          data: localCache,
+          updated: false,
+        };
       let res = await window.yuQueClient(
         `repos/${this.releaseRepo}/docs/${id}?raw=1`
       );
-      let command = JSON.parse(
-        res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
-      );
+      let command;
+      try {
+        command = JSON.parse(
+          res.data?.data.body.match(/```json([\s\S]*)```/)?.[1]
+        );
+      } catch (error) {
+        console.log("parseErr", command, error);
+      }
       if (!command) return;
       Object.assign(command, { authorName, updateTime, authorId });
       localStorage.setItem(id, JSON.stringify(command));
-      return command;
+      return {
+        data: command,
+        updated: true,
+      };
     },
     fetchCommands() {
       window.yuQueClient(`repos/${this.releaseRepo}/docs`).then((res) => {

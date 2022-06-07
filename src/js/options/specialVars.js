@@ -4,7 +4,7 @@
 
 let escapeItem = item => {
     if (typeof item === 'number') return item
-    item = typeof item === 'object' ? JSON.stringify(item) : item.replace('\\', '\\\\')
+    item = typeof item === 'object' ? JSON.stringify(item) : item.replace(/\\/g, '\\\\')
     return item.replace('$', '$$$')
 }
 
