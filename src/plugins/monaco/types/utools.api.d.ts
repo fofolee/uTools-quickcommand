@@ -29,7 +29,7 @@ interface UBrowser {
   /**
    * 键盘按键
    */
-  press(key: string, ...modifier: ('control' | 'ctrl' | 'shift' | 'meta' | 'alt' | 'command' | 'cmd')[]): this;
+  press(key: string, ...modifier: ('ctrl' | 'shift' | 'alt' | 'meta')[]): this;
   /**
    * 粘贴
    * @param text 如果是图片的base64编码字符串，粘贴图片，为空只执行粘贴动作
@@ -159,10 +159,9 @@ interface UBrowser {
    */
   scroll(x: number, y: number): this;
   /**
-   * 运行在闲置的 ubrowser 上
-   * @param ubrowserId utools.getIdleUBrowsers() 中获得
+   * 下载文件
    */
-  run(ubrowserId: number): Promise<any[]>;
+  download(url: string, savePath?: string): this;
   /**
    * 启动一个 ubrowser 运行
    * 当运行结束后，窗口如果为隐藏状态将自动销毁窗口
@@ -189,6 +188,11 @@ interface UBrowser {
     enableLargerThanScreen?: boolean,
     opacity?: number
   }): Promise<any[]>;
+  /**
+   * 运行在闲置的 ubrowser 上
+   * @param ubrowserId 1. run(options) 运行结束后, 当 ubrowser 实例窗口仍然显示时返回 2. utools.getIdleUBrowsers() 中获得
+   */
+  run(ubrowserId: number): Promise<any[]>;
 }
 
 interface Display {
@@ -225,21 +229,25 @@ interface DbReturn {
 
 interface UToolsApi {
   /**
-   * 插件进入时触发
+   * 插件应用进入时触发
    */
-  onPluginEnter(callback: (action: {code: string, type: string, payload: any }) => void): void;
+  //onPluginEnter(callback: (action: {code: string, type: string, payload: any, option: any }) => void): void;
   /**
-   * 插件隐藏时触发
+  * 向搜索面板推送消息
+  */
+  //onMainPush(callback: (action: {code: string, type: string, payload: any }) => { icon?: string, text: string, title?: string }[], selectCallback: (action: {code: string, type: string, payload: any,  option: { icon?: string, text: string, title?: string }}) => void): void;
+  /**
+   * 插件应用隐藏后台或完全退出时触发
    */
-  onPluginOut(callback: () => void): void;
+  //onPluginOut(callback: (processExit: boolean) => void): void;
   /**
-   * 插件分离时触发
+   * 插件应用分离时触发
    */
   onPluginDetach(callback: () => void): void;
   /**
-   * 插件从云端拉取到数据时触发
+   * 插件应用从云端拉取到数据时触发
    */
-  // onDbPull(callback: (docs: { _id: string, _rev: string }[]) => void): void;
+  //onDbPull(callback: (docs: { _id: string, _rev: string }[]) => void): void;
   /**
    * 隐藏主窗口
    * @param isRestorePreWindow 是否焦点回归到前面的活动窗口，默认 true
@@ -250,7 +258,7 @@ interface UToolsApi {
    */
   showMainWindow(): boolean;
   /**
-   * 设置插件自身高度
+   * 设置插件应用自身高度
    */
   setExpendHeight(height: number): boolean;
   /**
@@ -277,11 +285,18 @@ interface UToolsApi {
    */
   subInputSelect(): boolean;
   /**
-   * 子输入框失去焦点，插件获得焦点
+   * 子输入框失去焦点，插件应用获得焦点
    */
   subInputBlur(): boolean;
   /**
-   * 隐藏插件到后台
+   * 创建独立窗口
+   * @param url 相对路径 html 文件
+   * @param options 参考 https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions
+   * @param callback url 加载完成时的回调
+   */
+  //createBrowserWindow(url: string, options: { width?: number, height?: number }, callback?: () => void): { id: number, [key: string]: any, webContents: { id: number, [key: string]: any } };
+  /**
+   * 隐藏插件应用到后台
    */
   outPlugin(): boolean;
   /**
@@ -295,63 +310,85 @@ interface UToolsApi {
   /**
    * 获取用户服务端临时令牌
    */
-  // fetchUserServerTemporaryToken(): Promise<{ token: string, expiredAt: number }>;
+  //fetchUserServerTemporaryToken(): Promise<{ token: string, expiredAt: number }>;
   /**
-   * 打开支付
-   * @param callback 支付成功触发
+   * 是否插件应用的付费用户
    */
-  // openPayment(options: {
-  //   /**
-  //    * 商品ID，在 “uTools 开发者工具” 插件中创建
-  //    */
-  //   goodsId: string,
-  //   /**
-  //    * 第三方服务生成的订单号(可选)
-  //    */
-  //   outOrderId?: string,
-  //   /**
-  //    * 第三方服务附加数据，在查询API和支付通知中原样返回，可作为自定义参数使用(可选)
-  //    */
-  //   attach?: string
-  // }, callback?: () => void): void;
+  //isPurchasedUser(): boolean;
+//   /**
+//    * 打开付费 (软件付费)
+//    * @param callback 购买成功触发
+//    */
+//   openPurchase(options: {
+//     /**
+//      * 商品 ID，在「开发者工具」插件应用中创建
+//      */
+//     goodsId: string,
+//     /**
+//      * 第三方服务生成的订单号(可选)
+//      */
+//     outOrderId?: string,
+//     /**
+//      * 第三方服务附加数据，在查询API和支付通知中原样返回，可作为自定义参数使用(可选)
+//      */
+//     attach?: string
+//   }, callback?: () => void): void;
+//   /**
+//    * 打开支付 (付费付费)
+//    * @param callback 支付成功触发
+//    */
+//   openPayment(options: {
+//     /**
+//      * 商品 ID，在「开发者工具」插件应用中创建
+//      */
+//     goodsId: string,
+//     /**
+//      * 第三方服务生成的订单号(可选)
+//      */
+//     outOrderId?: string,
+//     /**
+//      * 第三方服务附加数据，在查询API和支付通知中原样返回，可作为自定义参数使用(可选)
+//      */
+//     attach?: string
+//   }, callback?: () => void): void;
+//   /**
+//    * 获取用户支付记录
+//    */
+//   fetchUserPayments(): Promise<{ order_id: string, total_fee: number, body: string, attach: string, goods_id: string, out_order_id: string, paid_at: string }[]>;
+//   /**
+//    * 设置插件应用动态功能
+//    */
+//   setFeature(feature: {
+//     code: string,
+//     explain: string,
+//     platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
+//     icon?: string,
+//     cmds: (string | {
+//       type: 'img' | 'files' | 'regex' | 'over' | 'window',
+//       label: string
+//     })[]
+//   }): boolean;
+//   /**
+//    * 移除插件应用动态功能
+//    */
+//   removeFeature(code: string): boolean;
+//   /**
+//    * 获取插件应用动态功能，参数为空获取所有动态功能
+//    */
+  getFeatures(codes?: string[]): {
+    code: string,
+    explain: string,
+    platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
+    icon?: string,
+    cmds: string | {
+      type: 'img' | 'files' | 'regex' | 'over' | 'window',
+      label: string
+    }[]
+  }[];
   /**
-   * 获取用户支付记录
+   * 插件应用间跳转
    */
-  // fetchUserPayments(): Promise<{ order_id: string, total_fee: number, body: string, attach: string, goods_id: string, out_order_id: string, paid_at: string }[]>;
-  /**
-   * 设置插件动态功能
-   */
-  // setFeature(feature: {
-  //   code: string,
-  //   explain: string,
-  //   platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
-  //   icon?: string,
-  //   cmds: string | {
-  //     type: 'img' | 'files' | 'regex' | 'over' | 'window',
-  //     label: string
-  //   }[]
-  // }): boolean;
-  /**
-   * 移除插件动态功能
-   */
-  // removeFeature(code: string): boolean;
-  /**
-   * 获取插件所有动态功能
-   */
-  // getFeatures(): {
-  //   code: string,
-  //   explain: string,
-  //   platform: ('darwin' | 'win32' | 'linux') | (Array<'darwin' | 'win32' | 'linux'>),
-  //   icon?: string,
-  //   cmds: string | {
-  //     type: 'img' | 'files' | 'regex' | 'over' | 'window',
-  //     label: string
-  //   }[]
-  // }[];
-  /**
-   * 插件间跳转
-   */
-  redirect(label: string, payload: string | { type: 'text' | 'img' | 'files', data: any }): void;
+  redirect(label: string | string[], payload: string | { type: 'text' | 'img' | 'files', data: any }): void;
   /**
    * 获取闲置的 ubrowser
    */
@@ -395,7 +432,7 @@ interface UToolsApi {
     securityScopedBookmarks?: boolean
   }): (string) | (undefined);
   /**
-   * 插件页面中查找
+   * 插件应用页面中查找
    */
   findInPage(text: string, options?: {
     forward?: boolean,
@@ -405,7 +442,7 @@ interface UToolsApi {
     medialCapitalAsWordStart?: boolean
   }): void;
   /**
-   * 停止插件页面中查找
+   * 停止插件应用页面中查找
    */
   stopFindInPage (action: 'clearSelection' | 'keepSelection' | 'activateSelection'): void;
   /**
@@ -428,6 +465,10 @@ interface UToolsApi {
    * 获取软件版本
    */
   getAppVersion(): string;
+  /**
+   * 获取软件名称
+   */
+  getAppName(): string;
   /**
    * 获取路径
    */
@@ -480,6 +521,22 @@ interface UToolsApi {
    * 播放哔哔声
    */
   shellBeep(): void;
+  /*
+  * 键入字符串
+  */
+  hideMainWindowTypeString(str: string): void;
+  /*
+  * 粘贴文件
+  */
+  hideMainWindowPasteFile(file: string | string[]): void;
+  /*
+  * 粘贴图像
+  */
+  hideMainWindowPasteImage(img: string): void;
+  /*
+  * 粘贴文本
+  */
+  hideMainWindowPasteText(text: string): void;
   /**
    * 模拟键盘按键
    */
@@ -521,13 +578,17 @@ interface UToolsApi {
    */
   getDisplayMatching(rect: { x: number, y: number, width: number, height: number }): Display;
   /**
+   * 录屏源
+   */
+  desktopCaptureSources(options: { types: string[], thumbnailSize?: { width: number, height: number }, fetchWindowIcons?: boolean }):Promise<{appIcon: {}, display_id: string, id: string, name: string, thumbnail: {} }>;
+  /**
    * 是否开发中
    */
   isDev(): boolean;
   /**
    * 是否 MacOs 操作系统
    */
-  isMacOs(): boolean;
+  isMacOS(): boolean;
   /**
    * 是否 Windows 操作系统
    */
@@ -537,104 +598,112 @@ interface UToolsApi {
    */
   isLinux(): boolean;
 
-  // db: {
-  //   /**
-  //    * 创建/更新文档
-  //    */
-  //   put(doc: DbDoc): DbReturn;
-  //   /**
-  //    * 获取文档
-  //    */
-  //   get(id: string): DbDoc | null;
-  //   /**
-  //    * 删除文档
-  //    */
-  //   remove(doc: string | DbDoc): DbReturn;
-  //   /**
-  //    * 批量操作文档(新增、修改、删除)
-  //    */
-  //   bulkDocs(docs: DbDoc[]): DbReturn[];
-  //   /**
-  //    * 获取所有文档 可根据文档id前缀查找
-  //    */
-  //   allDocs(key?: string): DbDoc[];
-  //   /**
-  //    * 存储附件到新文档
-  //    * @param docId 文档ID
-  //    * @param attachment 附件 buffer
-  //    * @param type 附件类型，示例：image/png, text/plain
-  //    */
-  //   postAttachment(docId: string, attachment: Uint8Array, type: string): DbReturn;
-  //   /**
-  //    * 获取附件
-  //    * @param docId 文档ID
-  //    */
-  //   getAttachment(docId: string): Uint8Array | null;
-  //   /**
-  //    * 获取附件类型
-  //    * @param docId 文档ID
-  //    */
-  //   getAttachmentType(docId: string): string | null;
-  //   /**
-  //    * 异步
-  //    */
-  //   promises: {
-  //     /**
-  //      * 创建/更新文档
-  //      */
-  //     put(doc: DbDoc): Promise<DbReturn>;
-  //     /**
-  //       * 获取文档
-  //       */
-  //     get(id: string): Promise<DbDoc | null>;
-  //     /**
-  //       * 删除文档
-  //       */
-  //     remove(doc: string | DbDoc): Promise<DbReturn>;
-  //     /**
-  //       * 批量操作文档(新增、修改、删除)
-  //       */
-  //     bulkDocs(docs: DbDoc[]): Promise<DbReturn[]>;
-  //     /**
-  //       * 获取所有文档 可根据文档id前缀查找
-  //       */
-  //     allDocs(key?: string): Promise<DbDoc[]>;
-  //     /**
-  //       * 存储附件到新文档
-  //       * @param docId 文档ID
-  //       * @param attachment 附件 buffer
-  //       * @param type 附件类型，示例：image/png, text/plain
-  //       */
-  //     postAttachment(docId: string, attachment: Uint8Array, type: string): Promise<DbReturn>;
-  //     /**
-  //       * 获取附件
-  //       * @param docId 文档ID
-  //       */
-  //     getAttachment(docId: string): Promise<Uint8Array | null>;
-  //     /**
-  //       * 获取附件类型
-  //       * @param docId 文档ID
-  //       */
-  //     getAttachmentType(docId: string): Promise<string | null>;
-  //   }
-  // };
+//   db: {
+//     /**
+//      * 创建/更新文档
+//      */
+//     put(doc: DbDoc): DbReturn;
+//     /**
+//      * 获取文档
+//      */
+//     get(id: string): DbDoc | null;
+//     /**
+//      * 删除文档
+//      */
+//     remove(doc: string | DbDoc): DbReturn;
+//     /**
+//      * 批量操作文档(新增、修改、删除)
+//      */
+//     bulkDocs(docs: DbDoc[]): DbReturn[];
+//     /**
+//      * 获取所有文档 可根据文档id前缀查找
+//      */
+//     allDocs(key?: string): DbDoc[];
+//     /**
+//      * 存储附件到新文档
+//      * @param docId 文档ID
+//      * @param attachment 附件 buffer
+//      * @param type 附件类型，示例：image/png, text/plain
+//      */
+//     postAttachment(docId: string, attachment: Uint8Array, type: string): DbReturn;
+//     /**
+//      * 获取附件
+//      * @param docId 文档ID
+//      */
+//     getAttachment(docId: string): Uint8Array | null;
+//     /**
+//      * 获取附件类型
+//      * @param docId 文档ID
+//      */
+//     getAttachmentType(docId: string): string | null;
+//     /**
+//      * 云端复制数据状态 (null: 未开启数据同步、0: 已完成复制、1：复制中)
+//      */
+//     replicateStateFromCloud(): null | 0 | 1;
+//     /**
+//      * 异步
+//      */
+//     promises: {
+//       /**
+//        * 创建/更新文档
+//        */
+//       put(doc: DbDoc): Promise<DbReturn>;
+//       /**
+//         * 获取文档
+//         */
+//       get(id: string): Promise<DbDoc | null>;
+//       /**
+//         * 删除文档
+//         */
+//       remove(doc: string | DbDoc): Promise<DbReturn>;
+//       /**
+//         * 批量操作文档(新增、修改、删除)
+//         */
+//       bulkDocs(docs: DbDoc[]): Promise<DbReturn[]>;
+//       /**
+//         * 获取所有文档 可根据文档id前缀查找
+//         */
+//       allDocs(key?: string): Promise<DbDoc[]>;
+//       /**
+//         * 存储附件到新文档
+//         * @param docId 文档ID
+//         * @param attachment 附件 buffer
+//         * @param type 附件类型，示例：image/png, text/plain
+//         */
+//       postAttachment(docId: string, attachment: Uint8Array, type: string): Promise<DbReturn>;
+//       /**
+//         * 获取附件
+//         * @param docId 文档ID
+//         */
+//       getAttachment(docId: string): Promise<Uint8Array | null>;
+//       /**
+//         * 获取附件类型
+//         * @param docId 文档ID
+//         */
+//       getAttachmentType(docId: string): Promise<string | null>;
+//       /**
+//        * 云端复制数据状态 (null: 未开启数据同步、0: 已完成复制、1：复制中)
+//        */
+//       replicateStateFromCloud(): Promise<null | 0 | 1>;
+//     }
+//   };
 
-  // dbStorage: {
-  //   /**
-  //    * 键值对存储，如果键名存在，则更新其对应的值
-  //    * @param key 键名(同时为文档ID)
-  //    * @param value 键值
-  //    */
-  //   setItem (key: string, value: any): void;
-  //   /**
-  //    * 获取键名对应的值
-  //    */
-  //   getItem (key: string): any;
-  //   /**
-  //    * 删除键值对(删除文档)
-  //    */
-  //   removeItem (key: string): void;
-  // };
+//   dbStorage: {
+//     /**
+//      * 键值对存储，如果键名存在，则更新其对应的值
+//      * @param key 键名(同时为文档ID)
+//      * @param value 键值
+//      */
+//     setItem (key: string, value: any): void;
+//     /**
+//      * 获取键名对应的值
+//      */
+//     getItem (key: string): any;
+//     /**
+//      * 删除键值对(删除文档)
+//      */
+//     removeItem (key: string): void;
+//   };
 
   ubrowser: UBrowser;
 }
