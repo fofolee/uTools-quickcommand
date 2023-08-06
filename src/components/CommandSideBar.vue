@@ -23,6 +23,12 @@
         />
       </q-avatar>
       <div class="row">
+        <!-- 搜索面板推送 -->
+        <q-checkbox
+          v-model="currentCommand.features.mainPush"
+          color="primary"
+          label="搜索面板推送"
+        />
         <div>
           <!-- 说明 -->
           <q-input
@@ -295,6 +301,7 @@ export default {
           explain: "",
           platform: ["win32", "linux", "darwin"],
           icon: "",
+          mainPush: false,
         },
       },
       commandTypes: commandTypes,

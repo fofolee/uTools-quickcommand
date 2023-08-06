@@ -14,7 +14,8 @@
     "pluginSetting": {
         "single": false
     },
-    "features": [{
+    "features": [
+        {
             "code": "configuration",
             "explain": "创建或编辑快捷命令",
             "cmds": [

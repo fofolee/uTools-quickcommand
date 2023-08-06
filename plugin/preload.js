@@ -569,7 +569,7 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
     }
 }
 
-window.runCodeFile = (cmd, option, terminal, callback) => {
+window.runCodeFile = (cmd, option, terminal, callback, realTime=true) => {
     let {
         bin,
         argv,
@@ -612,24 +612,28 @@ window.runCodeFile = (cmd, option, terminal, callback) => {
         shell: true,
         env: processEnv
     });
-    // var chunks = [],
-    //     err_chunks = [];
+    let chunks = [], err_chunks = [];
     console.log('Running: ' + cmdline);
     child.stdout.on('data', chunk => {
         if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode);
-        callback(chunk.toString(), null);
-        // chunks.push(chunk)
+        realTime
+          ? callback(chunk.toString(), null)
+          : chunks.push(chunk);
     });
-    child.stderr.on('data', stderr => {
-        if (charset.outputCode) stderr = iconv.decode(stderr, charset.outputCode);
-        callback(null, stderr.toString());
-        // err_chunks.push(err_chunk)
+    child.stderr.on("data", (err_chunk) => {
+        if (charset.outputCode)
+          err_chunk = iconv.decode(err_chunk, charset.outputCode);
+        realTime
+          ? callback(null, err_chunk.toString())
+          : err_chunks.push(err_chunk);
     });
-    // child.on('close', code => {
-    //     let stdout = chunks.join("");
-    //     let stderr = err_chunks.join("");
-    //     callback(stdout, stderr)
-    // })
+    if (!realTime) {
+        child.on('close', code => {
+            let stdout = chunks.join("");
+            let stderr = err_chunks.join("");
+            callback(stdout, stderr)
+        }) 
+    }
     return child
 }
 

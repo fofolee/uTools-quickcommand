@@ -62,6 +62,20 @@ export default defineComponent({
       this.utools.whole.onPluginEnter((enter) => {
         this.enterPlugin(enter);
       });
+      this.utools.whole.onMainPush(
+        async ({ code, type, payload }) => {
+          let result = await this.runCommand(code, payload, 5000);
+          return result.map((x) => {
+            return {
+              text: x,
+            };
+          });
+        },
+        ({ code, type, payload, option }) => {
+          window.quickcommand.writeClipboard(option.text);
+          window.utools.showNotification("已复制");
+        }
+      );
       this.utools.whole.onPluginOut(() => {
         this.outPlugin();
       });
@@ -115,19 +129,43 @@ export default defineComponent({
         this.runCommandSilently(featureCode);
       });
     },
+    runCommand(featureCode, mainInput, timeout = false) {
+      return new Promise((reslove, reject) => {
+        timeout &&
+          setTimeout(() => {
+            reslove([`超过${timeout}ms未响应`]);
+          }, timeout);
+        let command = this.utools.getDB("qc_" + featureCode);
+        let commandCode = command.cmd;
+        if (mainInput)
+          commandCode = commandCode.replace(/\{\{input\}\}/g, mainInput);
+        if (command.program === "quickcommand") {
+          window.runCodeInSandbox(commandCode, (stdout, stderr) => {
+            stderr && reslove([stderr.toString()]);
+            reslove(stdout);
+          });
+        } else {
+          let option =
+            command.program === "custom"
+              ? command.customOptions
+              : this.programs[command.program];
+          option.scptarg = command.scptarg;
+          option.charset = command.charset;
+          window.runCodeFile(
+            commandCode,
+            option,
+            false,
+            (stdout, stderr) => {
+              stderr && reslove([stderr.toString()]);
+              reslove([stdout]);
+            },
+            false
+          );
+        }
+      });
+    },
     runCommandSilently(featureCode) {
-      let command = this.utools.getDB("qc_" + featureCode);
-      if (command.program === "quickcommand") {
-        window.runCodeInSandbox(command.cmd, () => {});
-      } else {
-        let option =
-          command.program === "custom"
-            ? command.customOptions
-            : this.programs[command.program];
-        option.scptarg = command.scptarg;
-        option.charset = command.charset;
-        window.runCodeFile(command.cmd, option, false, () => {});
-      }
+      this.runCommand(featureCode);
     },
     usageStatistics(featureCode, runTime) {
       let statisticsData = this.utools.getDB("cfg_statisticsData");
