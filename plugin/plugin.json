@@ -46,15 +46,6 @@
             ]
         },
         {
-            "code": "share",
-            "explain": "查看分享中心的快捷命令",
-            "cmds": [
-                "分享中心",
-                "ShareCenter"
-            ],
-            "icon": "features/share.png"
-        },
-        {
             "code": "server",
             "explain": "配置快捷命令后台服务",
             "cmds": [

@@ -59,13 +59,13 @@
                   </q-item-section>
                   <q-item-section>复制到剪贴板</q-item-section>
                 </q-item>
-                <q-item clickable @click="showShare = true" v-close-popup>
+                <!-- <q-item clickable @click="showShare = true" v-close-popup>
                   <q-item-section side>
                     <q-icon name="share" />
                   </q-item-section>
                   <q-item-section>分享</q-item-section>
                   <q-tooltip>分享到分享中心</q-tooltip>
-                </q-item>
+                </q-item> -->
                 <q-item
                   clickable
                   v-close-popup
