@@ -23,13 +23,37 @@
         />
       </q-avatar>
       <div class="row">
-        <!-- 搜索面板推送 -->
-        <q-checkbox
-          v-model="currentCommand.features.mainPush"
-          color="primary"
-          label="搜索面板推送"
-        />
         <div>
+          <!-- 搜索面板推送 -->
+          <q-field
+            :disable="!canCommandSave"
+            stack-label
+            label-color="primary"
+            borderless
+            square
+            type="text"
+            label="搜索面板推送"
+          >
+            <template v-slot:control>
+              <div class="self-center full-width no-outline" tabindex="0">
+                {{
+                  currentCommand.features.mainPush
+                    ? "主搜索框直接执行"
+                    : "进入插件后执行"
+                }}
+              </div>
+            </template>
+            <template v-slot:prepend>
+              <q-icon color="primary" name="troubleshoot" />
+            </template>
+            <template v-slot:append>
+              <q-toggle
+                v-model="currentCommand.features.mainPush"
+                color="primary"
+                size="xs"
+              />
+            </template>
+          </q-field>
           <!-- 说明 -->
           <q-input
             :disable="!canCommandSave"
@@ -323,8 +347,8 @@ export default {
   computed: {
     commandTypesOptions() {
       return this.currentCommand.features.mainPush
-        ? Object.values(commandTypes).filter(
-            (x) => x.name === "regex" || x.name === "over"
+        ? Object.values(commandTypes).filter((x) =>
+            ["regex", "over", "key"].includes(x.name)
           )
         : Object.values(commandTypes);
     },

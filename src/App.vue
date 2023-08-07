@@ -62,20 +62,21 @@ export default defineComponent({
       this.utools.whole.onPluginEnter((enter) => {
         this.enterPlugin(enter);
       });
-      this.utools.whole.onMainPush(
-        async ({ code, type, payload }) => {
-          let result = await this.runCommand(code, payload, 5000);
-          return result.map((x) => {
-            return {
-              text: x,
-            };
-          });
-        },
-        ({ code, type, payload, option }) => {
-          window.quickcommand.writeClipboard(option.text);
-          window.utools.showNotification("已复制");
-        }
-      );
+      window.isAppVersion4() &&
+        this.utools.whole.onMainPush(
+          async ({ code, type, payload }) => {
+            let result = await this.runCommand(code, payload, 5000);
+            return result.map((x) => {
+              return {
+                text: x,
+              };
+            });
+          },
+          ({ code, type, payload, option }) => {
+            window.quickcommand.writeClipboard(option.text);
+            window.utools.showNotification("已复制");
+          }
+        );
       this.utools.whole.onPluginOut(() => {
         this.outPlugin();
       });

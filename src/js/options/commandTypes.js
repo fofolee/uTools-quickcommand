@@ -55,7 +55,7 @@ const commandTypes = {
         icon: "font_download",
         color: "primary",
         matchLabel: "关键词",
-        desc: "在主输入框输入对应关键字进入插件，最通用的一种模式，关键字可以设置多个",
+        desc: "直接在主输入框输入对应关键字，最通用的一种模式，关键字可以设置多个",
         valueType: "array",
         disabledSpecialVars: /{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}|{{MatchedFiles.*?}}/g,
         matchToCmds: (rules, desc) => rules,

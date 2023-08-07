@@ -32,6 +32,8 @@ let isProcessExits = pid => {
     }
 }
 
+window.isAppVersion4 = () => utools.getAppVersion() >= "4.0.0";
+
 // 多开检测
 window.multiProcessDetection = () => {
     let pids = JSON.parse(localStorage.getItem('processes')) || [];
