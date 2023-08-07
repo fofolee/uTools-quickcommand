@@ -288,7 +288,6 @@ import specialVars from "../js/options/specialVars.js";
 import platformTypes from "../js/options/platformTypes.js";
 import iconPicker from "components/popup/IconPicker.vue";
 import UserData from "components/popup/UserData.vue";
-let commandTypesOptions = Object.values(commandTypes);
 
 export default {
   components: { iconPicker, UserData },
@@ -306,9 +305,8 @@ export default {
       },
       commandTypes: commandTypes,
       platformTypes: platformTypes,
-      commandTypesOptions: commandTypesOptions,
       currentMatchType: "关键字",
-      cmdType: commandTypesOptions[0],
+      cmdType: {},
       cmdMatch: "",
       outputTypes: outputTypes,
       outputTypesOptions: Object.keys(outputTypes),
@@ -323,13 +321,22 @@ export default {
     canCommandSave: Boolean,
   },
   computed: {
+    commandTypesOptions() {
+      return this.currentCommand.features.mainPush
+        ? Object.values(commandTypes).filter(
+            (x) => x.name === "regex" || x.name === "over"
+          )
+        : Object.values(commandTypes);
+    },
     specialVarsOptions() {
+      if (this.currentCommand.features.mainPush) return [specialVars.input];
       let x = Object.values(specialVars).filter(
         (x) => !x.label.match(this.cmdType.disabledSpecialVars)
       );
       return x;
     },
     outputTypesOptionsDy() {
+      if (this.currentCommand.features.mainPush) return ["text"];
       switch (this.$parent.quickcommandInfo.program) {
         case "quickcommand":
           return _.without(this.outputTypesOptions, "terminal");
@@ -344,6 +351,11 @@ export default {
     outputTypesOptionsDy(val) {
       if (!val.includes(this.currentCommand.output)) {
         this.currentCommand.output = val[0];
+      }
+    },
+    commandTypesOptions(val) {
+      if (!val.map((x) => x.name).includes(this.cmdType.name)) {
+        this.cmdType = val[0];
       }
     },
   },
@@ -401,6 +413,7 @@ export default {
         this.cmdMatch = `/${this.cmdMatch}/`;
     },
     insertSpecialVar(text) {
+      if (!text) return;
       this.$parent.$refs.editor.repacleEditorSelection(`'${text}'`);
     },
     // 保存各类数据
