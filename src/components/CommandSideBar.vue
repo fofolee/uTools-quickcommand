@@ -38,9 +38,17 @@
               <div class="self-center full-width no-outline" tabindex="0">
                 {{
                   currentCommand.features.mainPush
-                    ? "主搜索框直接执行"
-                    : "进入插件后执行"
+                    ? "主搜索框执行"
+                    : "进插件后执行"
                 }}
+                <q-btn
+                  flat
+                  round
+                  icon="help_outline"
+                  size="sm"
+                  dense
+                  @click="showMainPushHelp"
+                ></q-btn>
               </div>
             </template>
             <template v-slot:prepend>
@@ -50,7 +58,8 @@
               <q-toggle
                 v-model="currentCommand.features.mainPush"
                 color="primary"
-                size="xs"
+                size="md"
+                dense
               />
             </template>
           </q-field>
@@ -439,6 +448,9 @@ export default {
     insertSpecialVar(text) {
       if (!text) return;
       this.$parent.$refs.editor.repacleEditorSelection(`'${text}'`);
+    },
+    showMainPushHelp() {
+      window.showUb.help("#u0e9f1430");
     },
     // 保存各类数据
     SaveMenuData() {
