@@ -4,6 +4,8 @@
     class="wrapper"
     v-show="!cardStyleVars.hideCard"
     :id="commandInfo.features.code"
+    @mouseenter="showCtrlButtons = true"
+    @mouseleave="showCtrlButtons = false"
   >
     <div>
       <!-- mini 模式下不显示各类按钮 -->
@@ -21,6 +23,7 @@
         <div
           class="absolute"
           style="z-index: 1; right: 16px; top: 16px; transition: 0.2s"
+          v-show="showCtrlButtons"
         >
           <q-btn
             flat
@@ -253,6 +256,7 @@ export default {
       showCrontab: false,
       showShare: false,
       cronJob: null,
+      showCtrlButtons: false,
     };
   },
   computed: {
@@ -444,7 +448,7 @@ export default {
 }
 .wrapper:hover {
   transition: 0.5s;
-  transform: translateY(-5px);
+  transform: translateY(-0.5px);
   filter: drop-shadow(1px 1px 5px #0000008e);
 }
 </style>
