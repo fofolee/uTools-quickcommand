@@ -130,13 +130,15 @@
             v-model="cmdMatch"
             max-values="3"
             type="text"
-            placeholder="键入后回车"
+            placeholder="回车添加多个"
             use-input
             use-chips
             multiple
             new-value-mode="add-unique"
             input-debounce="0"
             :label="cmdType.matchLabel"
+            ref="cmdMatchRef"
+            @blur="(e) => autoAddInputVal(e, $refs.cmdMatchRef)"
           >
             <template v-slot:prepend>
               <q-icon color="primary" name="square_foot" />
@@ -173,7 +175,7 @@
             max-values="3"
             type="text"
             label="标签"
-            placeholder="键入后回车"
+            placeholder="回车添加多个"
             use-input
             use-chips
             multiple
@@ -181,6 +183,8 @@
             @new-value="tagVerify"
             input-debounce="0"
             :options="allQuickCommandTags"
+            ref="commandTagRef"
+            @blur="(e) => autoAddInputVal(e, $refs.commandTagRef)"
           >
             <template v-slot:prepend>
               <q-icon color="primary" name="label" />
@@ -444,6 +448,11 @@ export default {
         !/^\/.*?\/[igm]*$/.test(this.cmdMatch)
       )
         this.cmdMatch = `/${this.cmdMatch}/`;
+    },
+    autoAddInputVal(e, ref) {
+      let inputValue = e.target.value;
+      if (!inputValue) return;
+      ref.add(inputValue, true);
     },
     insertSpecialVar(text) {
       if (!text) return;
