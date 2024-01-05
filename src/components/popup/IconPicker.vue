@@ -10,7 +10,7 @@
         options-dense
         use-input
         :loading="loading"
-        input-debounce="1000"
+        input-debounce="2000"
         @input-value="searchIcon8s"
         @update:model-value="getIcon8sIcon"
         transition-show="jump-down"
@@ -92,7 +92,7 @@ export default {
       options: ref(null),
       loading: false,
       icon8: {
-        platform: "color",
+        platform: "office80,color,fluent,nolan,3d-fluency,isometric,emoji,dusk,stickers,plasticine,bubbles,cotton,clouds,doodle,arcade,pulsar-color,clr-gls,ultraviolet,flat_round,parakeet,neon,matisse,tiny-color,stencil,avantgarde,water-color,retro,3d-plastilina,stitch",
         amount: "300",
         baseUrl: "https://search.icons8.com/api/iconsets/v5/search",
       },
@@ -123,7 +123,7 @@ export default {
     },
 
     getIcon8sIconUrl(icon, size) {
-      return `https://img.icons8.com/color/${size}x/${icon.commonName}.png`;
+      return `https://img.icons8.com/${icon.platform}/${size}x/${icon.commonName}.png`;
     },
 
     getIcon8sIcon() {
