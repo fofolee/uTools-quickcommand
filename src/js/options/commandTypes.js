@@ -53,7 +53,7 @@ const commandTypes = {
         name: "key",
         label: "关键词",
         icon: "font_download",
-        color: "primary",
+        color: "teal",
         matchLabel: "关键词",
         desc: "直接在主输入框输入对应关键字，最通用的一种模式，关键字可以设置多个",
         valueType: "array",
