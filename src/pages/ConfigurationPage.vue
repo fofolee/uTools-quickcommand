@@ -2,20 +2,23 @@
   <div class="relative">
     <!-- 标签栏 -->
     <!-- 面板视图不显示标签栏 -->
-    <div
+    <q-scroll-area
       v-show="commandCardStyle !== 'mini'"
       class="absolute-left"
+      :thumb-style="{
+        width: '2px',
+      }"
       :style="{
         width: tabBarWidth,
         zIndex: 1,
-        overflow: 'hidden',
       }"
     >
       <q-tabs
         v-model="currentTag"
         vertical
-        outside-arrows
-        class="text-primary"
+        switch-indicator
+        active-class="text-primary text-weight-bolder"
+        content-class="text-blue-grey"
         :key="$root.profile.denseTagBar"
         :dense="$root.profile.denseTagBar"
       >
@@ -37,7 +40,7 @@
           </q-tooltip>
         </q-tab>
       </q-tabs>
-    </div>
+    </q-scroll-area>
     <!-- 面板栏 -->
     <q-tab-panels
       animated
