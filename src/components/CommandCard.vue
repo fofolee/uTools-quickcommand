@@ -447,8 +447,8 @@ export default {
   transition: 0.2s;
 }
 .wrapper:hover {
-  transition: 0.5s;
-  transform: translateY(-0.5px);
-  filter: drop-shadow(1px 1px 5px #0000008e);
+  transition: 0.2s;
+  transform: translateY(-3px);
+  /* filter: drop-shadow(1px 1px 5px #0000008e); */
 }
 </style>
