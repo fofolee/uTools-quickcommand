@@ -79,7 +79,9 @@ module.exports = configure(function(ctx) {
                         extensions: ['js', 'vue']
                     }])
                 chain.plugin("monaco-editor-webpack-plugin")
-                    .use(MonacoEditorPlugin);
+                  .use(MonacoEditorPlugin, [{
+                    languages: ['typescript', 'html'] // 只导入js和html
+                  }]);
                 chain.plugin("copy-webpack-plugin")
                     .use(CopyPlugin, [{
                         patterns: [{
