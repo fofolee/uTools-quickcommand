@@ -227,6 +227,7 @@ export default {
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
       allQuickCommands: {},
+      allQuickCommandTags: [],
       commandSearchKeyword: "",
       isCommandEditorShow: false,
       commandEditorAction: {},
@@ -288,16 +289,6 @@ export default {
           return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
       }
     },
-    // 所有命令对应的标签
-    allQuickCommandTags() {
-      let allTags = _.union(
-        ...Object.values(this.allQuickCommands).map((x) => x.tags)
-      )
-        .concat(["未分类", "来自分享"])
-        .filter((x) => x);
-      if (this.commandSearchKeyword?.length > 1) allTags.push("搜索结果");
-      return allTags;
-    },
     // 标签栏宽度
     tabBarWidth() {
       return this.commandCardStyle === "mini" ? "0" : "80px";
@@ -319,7 +310,7 @@ export default {
         this.$router.push("/configuration");
       }
       if (this.$route.params.tags) {
-        this.currentTag = window.hexDecode(this.$route.params.tags);
+        this.changeCurrentTag(window.hexDecode(this.$route.params.tags));
         this.commandCardStyle = "mini";
       }
       // 异步读取
@@ -346,6 +337,14 @@ export default {
       this.$root.utools
         .getAll("qc_")
         .forEach((x) => (this.allQuickCommands[x.data.features.code] = x.data));
+      this.getAllQuickCommandTags();
+    },
+    getAllQuickCommandTags() {
+      this.allQuickCommandTags = _.union(
+        ...Object.values(this.allQuickCommands).map((x) => x.tags)
+      )
+        .concat(["未分类", "来自分享"])
+        .filter((x) => x);
     },
     // 监听命令变更事件
     commandChanged(event) {
@@ -393,10 +392,13 @@ export default {
       delete this.allQuickCommands[code];
       this.$root.utools.delDB("qc_" + code);
       this.disableCommand(code);
+      this.getAllQuickCommandTags();
       if (!this.allQuickCommandTags.includes(this.currentTag))
-        this.currentTag = "默认";
+        this.changeCurrentTag("默认");
       quickcommand.showMessageBox(
-        "删除成功，为防止误操作，已将删除的命令复制到剪贴板"
+        "删除成功，为防止误操作，已将删除的命令复制到剪贴板",
+        "success",
+        1000
       );
     },
     // 编辑命令
@@ -451,10 +453,11 @@ export default {
         this.$root.utools.putDB(dataToPushed[code], "qc_" + code);
       }
       Object.assign(this.allQuickCommands, dataToPushed);
+      this.getAllQuickCommandTags();
       quickcommand.showMessageBox("导入成功！");
       this.locateToCommand(parsedData.qc.tags, parsedData.qc.features?.code);
     },
-    // 定位命令
+    // 定位命令, 包含changeCurrentTag
     locateToCommand(tags = ["默认"], code) {
       this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
       if (!code) return;
@@ -469,6 +472,19 @@ export default {
           el.style.filter = "";
           el.style.transform = "";
         }, 800);
+        // 跳转标签
+        document
+          .querySelector(".q-tab--active")
+          .scrollIntoView({ behavior: "smooth" });
+      });
+    },
+    // 修改并定位当前标签
+    changeCurrentTag(tagName) {
+      this.currentTag = tagName;
+      this.$nextTick(() => {
+        document
+          .querySelector(".q-tab--active")
+          .scrollIntoView({ behavior: "smooth" });
       });
     },
     // 全部导出
@@ -507,7 +523,8 @@ export default {
           this.$root.utools.delAll("qc_");
           this.clearAllFeatures();
           this.allQuickCommands = _.cloneDeep(defaultCommands);
-          this.currentTag = "默认";
+          this.getAllQuickCommandTags();
+          this.changeCurrentTag("默认");
           quickcommand.showMessageBox(
             "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
           );
@@ -524,15 +541,19 @@ export default {
     // 搜索
     updateSearch() {
       // 记录当前标签页
-      if (this.currentTag !== "搜索结果") this.lastTag = this.currentTag;
+      let searchTagName = "搜索结果";
+      if (this.currentTag !== searchTagName) this.lastTag = this.currentTag;
       if (this.commandSearchKeyword?.length > 1) {
+        if (!this.allQuickCommandTags.includes(searchTagName))
+          this.allQuickCommandTags.push(searchTagName);
         // 搜索时跳转到搜索结果标签
-        setTimeout(() => {
-          this.currentTag = "搜索结果";
-        }, 100);
+        this.changeCurrentTag(searchTagName);
       } else {
         // 清空搜索回跳到之前标签
-        if (this.currentTag !== this.lastTag) this.currentTag = this.lastTag;
+        if (this.allQuickCommandTags.slice(-1)[0] === searchTagName)
+          this.allQuickCommandTags.pop();
+        if (this.currentTag !== this.lastTag)
+          this.changeCurrentTag(this.lastTag);
       }
     },
     // 新建命令
@@ -552,6 +573,7 @@ export default {
       // 先删除再添加，强制刷新
       this.$root.utools.whole.removeFeature(code);
       this.$root.utools.whole.setFeature(command.features);
+      this.getAllQuickCommandTags();
       this.locateToCommand(command.tags, code);
     },
     editorEvent(event) {
