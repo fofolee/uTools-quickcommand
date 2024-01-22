@@ -17,8 +17,7 @@
     "cmds": [
       {
         "label": "文本处理",
-        "type": "regex",
-        "match": "/.*?/",
+        "type": "over",
         "minNum": 1
       }
     ],
