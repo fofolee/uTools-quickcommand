@@ -233,9 +233,9 @@
         @delCrontab="delCrontab"
       />
     </q-dialog>
-    <q-dialog v-model="showShare">
+    <!-- <q-dialog v-model="showShare">
       <ShareDialog :command="getRawCommand(commandInfo)" />
-    </q-dialog>
+    </q-dialog> -->
   </div>
 </template>
 
@@ -243,10 +243,13 @@
 import commandTypes from "../js/options/commandTypes.js";
 import platformTypes from "../js/options/platformTypes.js";
 import CrontabSetting from "components/popup/CrontabSetting";
-import ShareDialog from "components/popup/ShareDialog";
+// import ShareDialog from "components/popup/ShareDialog";
 
 export default {
-  components: { CrontabSetting, ShareDialog },
+  components: {
+    CrontabSetting,
+    // ShareDialog
+  },
   data() {
     return {
       allProgrammings: this.$root.programs,
@@ -254,7 +257,7 @@ export default {
       commandTypes: commandTypes,
       platformTypes: platformTypes,
       showCrontab: false,
-      showShare: false,
+      // showShare: false,
       cronJob: null,
       showCtrlButtons: false,
     };
