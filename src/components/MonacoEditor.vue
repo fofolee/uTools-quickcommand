@@ -47,11 +47,6 @@ export default {
   mounted() {
     this.initEditor();
   },
-  computed: {
-    rawEditor() {
-      return toRaw(this.editor);
-    },
-  },
   props: {
     placeholder: Boolean,
   },
@@ -110,7 +105,8 @@ export default {
       };
       let createDependencyProposals = (range, keyWords, editor, curWord) => {
         let keys = [];
-        let tokens = getTokens(toRaw(editor).getModel().getValue());
+        // fix getValue of undefined
+        let tokens = getTokens(toRaw(editor).getModel()?.getValue());
         // 自定义变量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
@@ -168,23 +164,23 @@ export default {
       monaco.editor.setTheme(this.$q.dark.isActive ? "vs-dark" : "vs");
     },
     getEditorValue() {
-      return this.rawEditor.getValue();
+      return this.rawEditor().getValue();
     },
     setEditorValue(value) {
-      this.rawEditor.setValue(value);
+      this.rawEditor().setValue(value);
     },
     setEditorLanguage(language) {
-      monaco.editor.setModelLanguage(this.rawEditor.getModel(), language);
+      monaco.editor.setModelLanguage(this.rawEditor().getModel(), language);
     },
     getCursorPosition() {
-      return this.rawEditor.getPosition();
+      return this.rawEditor().getPosition();
     },
     setCursorPosition(pos) {
       if (!pos) return;
-      this.rawEditor.setPosition(pos);
+      this.rawEditor().setPosition(pos);
     },
     repacleEditorSelection(text) {
-      var selection = this.rawEditor.getSelection();
+      var selection = this.rawEditor().getSelection();
       var range = new monaco.Range(
         selection.startLineNumber,
         selection.startColumn,
@@ -198,11 +194,11 @@ export default {
         text: text,
         forceMoveMarkers: true,
       };
-      this.rawEditor.executeEdits("my-source", [op]);
+      this.rawEditor().executeEdits("my-source", [op]);
     },
     listenEditorValue() {
-      this.rawEditor.focus();
-      this.rawEditor.onDidChangeModelContent(() => {
+      this.rawEditor().focus();
+      this.rawEditor().onDidChangeModelContent(() => {
         this.value = this.getEditorValue();
         this.$emit("typing", this.value);
       });
@@ -210,26 +206,26 @@ export default {
     bindKeys() {
       let that = this;
       // ctrl + b 运行
-      this.rawEditor.addCommand(
+      this.rawEditor().addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
         () => {
           that.$emit("keyStroke", "run");
         }
       );
       // alt + z 换行
-      this.rawEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
+      this.rawEditor().addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
         that.wordWrap = that.wordWrap === "off" ? "on" : "off";
         that.rawEditor.updateOptions({ wordWrap: that.wordWrap });
       });
       // ctrl + s 保存
-      this.rawEditor.addCommand(
+      this.rawEditor().addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
         () => {
           that.$emit("keyStroke", "save");
         }
       );
       // ctrl + space 快速 console.log
-      this.rawEditor.addCommand(
+      this.rawEditor().addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE,
         () => {
           that.$emit("keyStroke", "log", that.getSelectionOrLineContent());
@@ -237,22 +233,25 @@ export default {
       );
     },
     getSelectionOrLineContent() {
-      let selection = this.rawEditor.getSelection();
+      let selection = this.rawEditor().getSelection();
       let range = new monaco.Range(
         selection.startLineNumber,
         selection.startColumn,
         selection.endLineNumber,
         selection.endColumn
       );
-      let model = this.rawEditor.getModel();
+      let model = this.rawEditor().getModel();
       return (
         model.getValueInRange(range) ||
         model.getLineContent(selection.startLineNumber)
       );
     },
+    rawEditor() {
+      return toRaw(this.editor);
+    },
   },
   beforeUnmount() {
-    this.rawEditor.dispose();
+    this.rawEditor().dispose();
   },
 };
 </script>
