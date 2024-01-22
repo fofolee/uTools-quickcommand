@@ -92,7 +92,21 @@ module.exports = configure(function(ctx) {
                             },
                         }],
                     }]);
-            },
+              },
+            extendWebpack(cfg) {
+              cfg.optimization.splitChunks = {
+                chunks: 'all',
+                maxSize: 1 * 1000 * 1000,
+                minSize: 200 * 1000,
+                cacheGroups: {
+                  vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    chunks: 'all',
+                  },
+                },
+              }
+            }
         },
 
         // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-devServer
