@@ -17,7 +17,7 @@ const routes = [{
             import ('pages/ConfigurationPage.vue')
     },
     {
-        path: '/:type(default|files|img|key|regex|window|professional)_:uid(\\w+)',
+        path: '/:type(default|files|img|key|regex|over|window|professional)_:uid(\\w+)',
         name: 'command',
         component: () =>
             import ('pages/CommandPage.vue')
