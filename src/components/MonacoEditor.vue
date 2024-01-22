@@ -46,6 +46,7 @@ export default {
   },
   mounted() {
     this.initEditor();
+    this.$emit("loaded");
   },
   props: {
     placeholder: Boolean,
@@ -213,10 +214,13 @@ export default {
         }
       );
       // alt + z 换行
-      this.rawEditor().addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
-        that.wordWrap = that.wordWrap === "off" ? "on" : "off";
-        that.rawEditor.updateOptions({ wordWrap: that.wordWrap });
-      });
+      this.rawEditor().addCommand(
+        monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
+        () => {
+          that.wordWrap = that.wordWrap === "off" ? "on" : "off";
+          that.rawEditor.updateOptions({ wordWrap: that.wordWrap });
+        }
+      );
       // ctrl + s 保存
       this.rawEditor().addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,

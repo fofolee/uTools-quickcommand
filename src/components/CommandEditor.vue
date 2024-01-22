@@ -211,7 +211,8 @@
       class="absolute-bottom"
       :placeholder="true"
       ref="editor"
-      @typing="(val) => (quickcommandInfo.cmd = val)"
+      @loaded="monacoInit"
+      @typing="(val) => monacoTyping(val)"
       @keyStroke="monacoKeyStroke"
       :style="{
         top: languageBarHeight + 'px',
@@ -225,11 +226,15 @@
 </template>
 
 <script>
-import MonacoEditor from "components/MonacoEditor";
+import { defineAsyncComponent } from "vue";
 import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 import QuickAction from "components/popup/QuickAction";
 import KeyRecorder from "components/popup/KeyRecorder";
+// Monaco改用异步加载
+const MonacoEditor = defineAsyncComponent(() =>
+  import("components/MonacoEditor")
+);
 
 export default {
   components: {
@@ -270,8 +275,11 @@ export default {
   props: {
     action: Object,
   },
+  created() {
+    this.commandInit();
+  },
   mounted() {
-    this.init();
+    this.sidebarInit();
   },
   computed: {
     configurationPage() {
@@ -288,22 +296,28 @@ export default {
     },
   },
   methods: {
-    init() {
+    // 命令初始化
+    commandInit() {
       let quickCommandInfo =
         this.action.type === "run"
           ? this.$root.utools.getDB("cfg_codeHistory")
           : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
-      // monaco 相关
-      this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
-      this.setLanguage(this.quickcommandInfo.program);
-      this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition);
       // 默认命令不可编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
+    },
+    // 侧边栏初始化
+    sidebarInit() {
       this.$refs.sidebar?.init();
+    },
+    // Monaco编辑器初始化，Monaco异步加载完执行
+    monacoInit() {
+      this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
+      this.setLanguage(this.quickcommandInfo.program);
+      this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition);
     },
     programChanged(value) {
       this.setLanguage(value);
@@ -372,6 +386,9 @@ export default {
       let command = _.cloneDeep(this.quickcommandInfo);
       command.cursorPosition = this.$refs.editor.getCursorPosition();
       this.$root.utools.putDB(command, "cfg_codeHistory");
+    },
+    monacoTyping(val) {
+      this.quickcommandInfo.cmd = val;
     },
     monacoKeyStroke(event, data) {
       switch (event) {
