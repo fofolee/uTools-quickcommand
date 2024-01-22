@@ -46,7 +46,7 @@ window.multiProcessDetection = () => {
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
-if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin'
+if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin'
 
 const shortCodes = [
 
@@ -634,7 +634,7 @@ window.runCodeFile = (cmd, option, terminal, callback, realTime=true) => {
             let stdout = chunks.join("");
             let stderr = err_chunks.join("");
             callback(stdout, stderr)
-        }) 
+        })
     }
     return child
 }
