@@ -1,8 +1,8 @@
 <template>
   <router-view v-slot="{ Component }">
-    <transition name="fade">
+    <!-- <transition name="fade"> -->
       <component ref="view" :is="Component" />
-    </transition>
+    <!-- </transition> -->
   </router-view>
   <QuickCommand />
 </template>
