@@ -231,7 +231,7 @@ import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 import QuickAction from "components/popup/QuickAction";
 import KeyRecorder from "components/popup/KeyRecorder";
-// Monaco改用异步加载
+// Performance Scripting > 500ms
 const MonacoEditor = defineAsyncComponent(() =>
   import("components/MonacoEditor")
 );

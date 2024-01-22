@@ -167,14 +167,21 @@
               icon="add"
             />
             <q-separator vertical />
-            <!-- 下拉菜单 -->
-            <ConfigurationMenu
+            <q-btn
+              stretch
+              color="primary"
+              flat
+              size="xs"
               :style="{
                 height: footerBarHeight,
               }"
-              :isTagStared="activatedQuickPanels.includes(currentTag)"
-              :currentTag="currentTag"
-            ></ConfigurationMenu>
+              ><q-spinner-bars color="primary" size="1.5em" />
+              <!-- 菜单 -->
+              <ConfigurationMenu
+                :isTagStared="activatedQuickPanels.includes(currentTag)"
+                :currentTag="currentTag"
+              ></ConfigurationMenu>
+            </q-btn>
           </q-btn-group>
         </div>
       </div>
@@ -202,13 +209,19 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
 import quickcommandParser from "../js/common/quickcommandParser.js";
-import CommandCard from "components/CommandCard";
-import ConfigurationMenu from "components/ConfigurationMenu.vue";
-import CommandRunResult from "components/CommandRunResult.vue";
 import importAll from "../js/common/importAll.js";
 import pinyinMatch from "pinyin-match";
+import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor";
+const CommandRunResult = defineAsyncComponent(() =>
+  import("components/CommandRunResult.vue")
+);
+// Performance Rendering > 300ms
+const ConfigurationMenu = defineAsyncComponent(() =>
+  import("components/ConfigurationMenu.vue")
+);
 
 // 默认命令
 let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
@@ -216,8 +229,8 @@ let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
 export default {
   components: {
     CommandCard,
-    ConfigurationMenu,
     CommandEditor,
+    ConfigurationMenu,
     CommandRunResult,
   },
   data() {
