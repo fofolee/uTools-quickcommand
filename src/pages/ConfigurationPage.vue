@@ -334,9 +334,10 @@ export default {
     // 获取所有的快捷命令（导出的格式）
     getAllQuickCommands() {
       this.allQuickCommands = _.cloneDeep(defaultCommands);
-      this.$root.utools
-        .getAll("qc_")
-        .forEach((x) => (this.allQuickCommands[x.data.features.code] = x.data));
+      this.$root.utools.getAll("qc_").forEach((x) => {
+        if (x.data.features.code.includes("default_")) return;
+        this.allQuickCommands[x.data.features.code] = x.data;
+      });
       this.getAllQuickCommandTags();
     },
     getAllQuickCommandTags() {
