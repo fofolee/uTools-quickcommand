@@ -1,6 +1,6 @@
 export default {
     common: {
-        commandCardStyle: "normal",
+        commandCardStyle: "dense",
         primaryColor: "#009688",
         defaultPrimaryColor: "#009688",
         backgroundImg: null,
