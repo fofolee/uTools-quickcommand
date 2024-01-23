@@ -431,7 +431,14 @@ export default {
       return data;
     },
     tagVerify(val, done) {
-      if (["默认", "未分类", "搜索结果", "来自分享"].includes(val)) {
+      if (
+        [
+          "默认",
+          "未分类",
+          "搜索结果",
+          // "来自分享"
+        ].includes(val)
+      ) {
         return done(`_${val}_`);
       }
       done(val);

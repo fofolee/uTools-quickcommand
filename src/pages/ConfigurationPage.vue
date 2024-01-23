@@ -273,8 +273,8 @@ export default {
       switch (this.currentTag) {
         case "未分类":
           return commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0);
-        case "来自分享":
-          return commands.filter((cmd) => cmd.fromShare);
+        // case "来自分享":
+        //   return commands.filter((cmd) => cmd.fromShare);
         case "搜索结果":
           if (this.commandSearchKeyword?.length < 2) return;
           let searchResult = [];
@@ -357,7 +357,10 @@ export default {
       this.allQuickCommandTags = _.union(
         ...Object.values(this.allQuickCommands).map((x) => x.tags)
       )
-        .concat(["未分类", "来自分享"])
+        .concat([
+          "未分类",
+          // "来自分享"
+        ])
         .filter((x) => x);
     },
     // 监听命令变更事件
