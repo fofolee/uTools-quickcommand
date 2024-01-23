@@ -13,6 +13,61 @@
     />
     <!-- 菜单 -->
     <q-list>
+      <!-- 命令管理 -->
+      <q-item clickable>
+        <q-item-section side>
+          <q-icon name="keyboard_arrow_left" />
+        </q-item-section>
+        <q-item-section>命令管理</q-item-section>
+        <q-menu anchor="top end" self="top start">
+          <q-list>
+            <!-- 导入 -->
+            <q-item clickable v-close-popup @click="importCommand">
+              <q-item-section side>
+                <q-icon name="text_snippet" />
+              </q-item-section>
+              <q-item-section>从文件导入命令</q-item-section>
+            </q-item>
+            <q-item clickable v-close-popup @click="importCommand(false)">
+              <q-item-section side>
+                <q-icon name="content_paste" />
+              </q-item-section>
+              <q-item-section>从剪贴板导入命令</q-item-section>
+            </q-item>
+            <!-- 导出 -->
+            <q-item clickable v-close-popup @click="exportAllCommands">
+              <q-item-section side>
+                <q-icon name="file_upload" />
+              </q-item-section>
+              <q-item-section>导出所有命令</q-item-section>
+            </q-item>
+            <q-item clickable v-close-popup @click="enableAllCommands">
+              <q-item-section side>
+                <q-icon name="checklist_rtl" />
+              </q-item-section>
+              <q-item-section>启用本页所有命令</q-item-section>
+            </q-item>
+            <q-item clickable v-close-popup @click="disableAllCommands">
+              <q-item-section side>
+                <q-icon name="remove_done" />
+              </q-item-section>
+              <q-item-section>禁用本页所有命令</q-item-section>
+            </q-item>
+            <!-- 清空 -->
+            <q-item
+              style="color: red"
+              clickable
+              v-close-popup
+              @click="clearAllCommands"
+            >
+              <q-item-section side>
+                <q-icon name="delete" />
+              </q-item-section>
+              <q-item-section>清空数据</q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </q-item>
       <!-- 实用功能 -->
       <q-item clickable>
         <q-item-section side>
@@ -178,60 +233,7 @@
           </q-list>
         </q-menu>
       </q-item>
-      <!-- 导入 -->
-      <q-item clickable>
-        <q-item-section side>
-          <q-icon name="keyboard_arrow_left" />
-        </q-item-section>
-        <q-item-section>命令管理</q-item-section>
-        <q-menu anchor="top end" self="top start">
-          <q-list>
-            <q-item clickable v-close-popup @click="importCommand">
-              <q-item-section side>
-                <q-icon name="text_snippet" />
-              </q-item-section>
-              <q-item-section>从文件导入命令</q-item-section>
-            </q-item>
-            <q-item clickable v-close-popup @click="importCommand(false)">
-              <q-item-section side>
-                <q-icon name="content_paste" />
-              </q-item-section>
-              <q-item-section>从剪贴板导入命令</q-item-section>
-            </q-item>
-            <!-- 导出 -->
-            <q-item clickable v-close-popup @click="exportAllCommands">
-              <q-item-section side>
-                <q-icon name="file_upload" />
-              </q-item-section>
-              <q-item-section>导出所有命令</q-item-section>
-            </q-item>
-            <q-item clickable v-close-popup @click="enableAllCommands">
-              <q-item-section side>
-                <q-icon name="checklist_rtl" />
-              </q-item-section>
-              <q-item-section>启用本页所有命令</q-item-section>
-            </q-item>
-            <q-item clickable v-close-popup @click="disableAllCommands">
-              <q-item-section side>
-                <q-icon name="remove_done" />
-              </q-item-section>
-              <q-item-section>禁用本页所有命令</q-item-section>
-            </q-item>
-            <!-- 清空 -->
-            <q-item
-              style="color: red"
-              clickable
-              v-close-popup
-              @click="clearAllCommands"
-            >
-              <q-item-section side>
-                <q-icon name="delete" />
-              </q-item-section>
-              <q-item-section>清空数据</q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
-      </q-item>
+      <!-- 环境配置 -->
       <q-item clickable>
         <q-item-section side>
           <q-icon name="keyboard_arrow_left" />
@@ -294,6 +296,7 @@
           </q-list>
         </q-menu>
       </q-item>
+      <!-- 个性化设置 -->
       <q-item clickable>
         <q-item-section side>
           <q-icon name="keyboard_arrow_left" />
