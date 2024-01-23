@@ -4,7 +4,7 @@
     "main": "index.html",
     "homepage": "https://github.com/fofolee/uTools-quickcommand",
     "publishPage": "https://yuanliao.info/d/424",
-    "version": "3.0.2",
+    "version": "4.0.3",
     "development": {
         "main": "http://127.0.0.1:8080/"
     },
