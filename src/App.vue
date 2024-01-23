@@ -38,7 +38,7 @@ export default defineComponent({
     init() {
       window.utools = window.getuToolsLite();
       if (!this.checkVer()) return;
-      this.showChangeLog();
+      this.firstRun();
       this.startUp();
     },
     checkVer() {
@@ -193,9 +193,9 @@ export default defineComponent({
         second: dateString.getSeconds(),
       };
     },
-    showChangeLog() {
+    firstRun() {
       if (this.utools.getStorage("st_v300Inited")) return;
-      window.showUb.changelog();
+      window.showUb.help();
       // 处理统计数据
       let statisticsData = this.utools.getDB("cfg_statisticsData");
       _.forIn(statisticsData, (data, year) => {
