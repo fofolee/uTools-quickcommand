@@ -1,7 +1,7 @@
 <template>
   <router-view v-slot="{ Component }">
     <!-- <transition name="fade"> -->
-      <component ref="view" :is="Component" />
+    <component ref="view" :is="Component" />
     <!-- </transition> -->
   </router-view>
   <QuickCommand />
@@ -115,7 +115,8 @@ export default defineComponent({
     },
     enterPlugin(enter) {
       // 使用情况统计
-      this.usageStatistics(enter.code, this.parseDate(new Date()));
+      // this.usageStatistics(enter.code, this.parseDate(new Date()));
+      this.updateExp();
       this.$q.dark.set(utools.isDarkColors());
       this.enterData = enter;
       this.$router.push(enter.code);
@@ -168,20 +169,39 @@ export default defineComponent({
     runCommandSilently(featureCode) {
       this.runCommand(featureCode);
     },
-    usageStatistics(featureCode, runTime) {
-      let statisticsData = this.utools.getDB("cfg_statisticsData");
-      let thisYear = runTime.year;
-      if (!statisticsData[thisYear]) statisticsData[thisYear] = [];
-      statisticsData[thisYear].push({
-        code: featureCode,
-        time: {
-          month: runTime.month,
-          day: runTime.day,
-          hour: runTime.hour,
-          minute: runTime.minute,
-        },
-      });
-      this.utools.putDB(statisticsData, "cfg_statisticsData");
+    // usageStatistics(featureCode, runTime) {
+    //   let statisticsData = this.utools.getDB("cfg_statisticsData");
+    //   let thisYear = runTime.year;
+    //   if (!statisticsData[thisYear]) statisticsData[thisYear] = [];
+    //   statisticsData[thisYear].push({
+    //     code: featureCode,
+    //     time: {
+    //       month: runTime.month,
+    //       day: runTime.day,
+    //       hour: runTime.hour,
+    //       minute: runTime.minute,
+    //     },
+    //   });
+    //   this.utools.putDB(statisticsData, "cfg_statisticsData");
+    // },
+    updateExp() {
+      let exp = this.utools.getDB("cfg_exp");
+      if (typeof exp !== "object") {
+        exp += 1;
+        this.utools.putDB(exp, "cfg_exp");
+        return;
+      }
+      try {
+        let statisticsData = this.utools.getDB("cfg_statisticsData");
+        exp = Object.values(statisticsData)
+          .map((x) => x.length)
+          .reduce((x, y) => x + y);
+        // 有BUG可能删不掉
+        this.utools.delDB("cfg_statisticsData");
+      } catch (error) {
+        exp = 0;
+      }
+      this.utools.putDB(exp, "cfg_exp");
     },
     parseDate: (dateString) => {
       return {
@@ -197,19 +217,19 @@ export default defineComponent({
       if (this.utools.getStorage("st_v300Inited")) return;
       window.showUb.help();
       // 处理统计数据
-      let statisticsData = this.utools.getDB("cfg_statisticsData");
-      _.forIn(statisticsData, (data, year) => {
-        statisticsData[year] = data.map((x) => {
-          if (!x.command) return x;
-          let code =
-            x.command.code === "options" ? "configuration" : x.command.code;
-          return {
-            code: code,
-            time: x.time,
-          };
-        });
-      });
-      this.utools.putDB(statisticsData, "cfg_statisticsData");
+      // let statisticsData = this.utools.getDB("cfg_statisticsData");
+      // _.forIn(statisticsData, (data, year) => {
+      //   statisticsData[year] = data.map((x) => {
+      //     if (!x.command) return x;
+      //     let code =
+      //       x.command.code === "options" ? "configuration" : x.command.code;
+      //     return {
+      //       code: code,
+      //       time: x.time,
+      //     };
+      //   });
+      // });
+      // this.utools.putDB(statisticsData, "cfg_statisticsData");
       // 删掉数据库内的默认命令
       this.utools.delAll("qc_default");
       this.utools.setStorage("st_v300Inited", true);

@@ -170,10 +170,7 @@ export default {
   methods: {
     getUserInfo() {
       Object.assign(this.userInfo, this.$root.utools.whole.getUser());
-      let statisticsData = this.$root.utools.getDB("cfg_statisticsData");
-      this.userInfo.exp = Object.values(statisticsData)
-        .map((x) => x.length)
-        .reduce((x, y) => x + y);
+      this.userInfo.exp = this.$root.utools.getDB("cfg_exp");
       this.userInfo.level = this.levelDetail
         .filter((x) => this.userInfo.exp > x.minExp)
         .pop().lv;
