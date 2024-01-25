@@ -262,9 +262,9 @@ export default {
 
 <style scoped>
 .placeholder {
-  font-size: 12px;
+  font-size: 14px;
   font-family: sans-serif;
-  color: #a3a3a3;
+  color: #535353;
   user-select: none;
 }
 .shortcut-key {
