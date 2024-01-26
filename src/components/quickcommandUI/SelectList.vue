@@ -196,6 +196,7 @@ export default {
     setSubInput() {
       utools.setSubInput(({ text }) => {
         this.searchWords = text;
+        if (this.matchedItems.length < this.currentIndex + 1) this.currentIndex = 0
       }, this.options.options.placeholder);
     },
 
