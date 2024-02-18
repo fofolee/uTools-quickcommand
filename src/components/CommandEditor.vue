@@ -1,57 +1,29 @@
 <template>
   <div class="absolute-full container" style="overflow: 'hidden'">
     <!-- 命令设置栏 -->
-    <CommandSideBar
-      ref="sidebar"
-      :canCommandSave="canCommandSave"
-      :quickcommandInfo="quickcommandInfo"
-      class="absolute-left shadow-10"
-      :style="{
+    <CommandSideBar ref="sidebar" :canCommandSave="canCommandSave" :quickcommandInfo="quickcommandInfo"
+      class="absolute-left shadow-10" :style="{
         width: sideBarWidth + 'px',
         zIndex: 1,
-        transition: '0.3s',
-      }"
-      v-if="showSidebar"
-    ></CommandSideBar>
+        // transition: '0.3s',
+      }" v-if="showSidebar"></CommandSideBar>
     <!-- 编程语言栏 -->
-    <div
-      class="absolute-top"
-      :style="{
-        left: showSidebar ? sideBarWidth + 'px' : 65,
-        zIndex: 1,
-        transition: '0.3s',
-      }"
-    >
-      <div class="row" v-show="languageBarHeight">
-        <div class="col-auto flex">
-          <q-btn
-            v-if="!isRunCodePage"
-            flat
-            dense
-            color="primary"
-            class="menuBtn"
-            icon="menu"
-            @click="toggleSideBarWidth"
-            ><q-tooltip
-              >{{ sideBarWidth ? "收起" : "展开" }}侧栏</q-tooltip
-            ></q-btn
-          >
-        </div>
+    <div class="absolute-top" :style="{
+      left: showSidebar ? sideBarWidth + 'px' : 65,
+      zIndex: 1,
+      // transition: '0.3s',
+    }">
+      <div class="row" v-show="!!languageBarHeight">
+        <!-- 去掉收起侧栏功能，处理侧栏宽度变化时，Monaco调整大小导致ResizeObserver loop limit exceeded错误 -->
+        <!-- <div class="col-auto flex">
+          <q-btn v-if="!isRunCodePage" flat dense color="primary" class="menuBtn" icon="menu"
+            @click="toggleSideBarWidth"><q-tooltip>{{ !!sideBarWidth ? "收起" : "展开" }}侧栏</q-tooltip></q-btn>
+        </div> -->
         <div class="col">
           <div>
-            <q-select
-              dense
-              standout="bg-primary text-white"
-              square
-              hide-bottom-space
-              color="primary"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              @update:model-value="programChanged"
-              v-model="quickcommandInfo.program"
-              :options="programLanguages"
-              label="环境"
-            >
+            <q-select dense standout="bg-primary text-white" square hide-bottom-space color="primary"
+              transition-show="jump-down" transition-hide="jump-up" @update:model-value="programChanged"
+              v-model="quickcommandInfo.program" :options="programLanguages" label="环境">
               <template v-slot:append>
                 <q-avatar size="lg" square>
                   <img :src="$root.programs[quickcommandInfo.program].icon" />
@@ -73,34 +45,20 @@
         <q-separator vertical />
         <div class="col-auto justify-end flex">
           <q-btn-group unelevated>
-            <q-btn-dropdown
-              v-show="quickcommandInfo.program !== 'html'"
-              style="padding: 0 10px"
-              dense
-              flat
-              ref="settings"
-              color="primary"
-              :icon="
-                quickcommandInfo.program === 'quickcommand'
-                  ? 'insights'
-                  : 'settings'
-              "
-            >
+            <q-btn-dropdown v-show="quickcommandInfo.program !== 'html'" style="padding: 0 10px" dense flat ref="settings"
+              color="primary" :icon="quickcommandInfo.program === 'quickcommand'
+                ? 'insights'
+                : 'settings'
+                ">
               <q-list>
                 <!-- quickcommand系列按键 -->
-                <q-item
-                  clickable
-                  v-for="(item, index) in ['keyboard', 'ads_click', 'help']"
-                  :key="index"
-                  @click="
-                    [
-                      () => (showRecorder = true),
-                      () => (showActions = true),
-                      showHelp,
-                    ][index]
-                  "
-                  v-show="quickcommandInfo.program === 'quickcommand'"
-                >
+                <q-item clickable v-for="(item, index) in ['keyboard', 'ads_click', 'help']" :key="index" @click="
+                  [
+                    () => (showRecorder = true),
+                    () => (showActions = true),
+                    showHelp,
+                  ][index]
+                  " v-show="quickcommandInfo.program === 'quickcommand'">
                   <q-item-section avatar>
                     <q-icon :name="item" />
                   </q-item-section>
@@ -109,29 +67,15 @@
                   }}</q-item-section>
                 </q-item>
                 <!-- 自定义解释器 -->
-                <q-item
-                  v-for="(item, index) in Object.keys(
-                    quickcommandInfo.customOptions
-                  )"
-                  :key="index"
-                  v-show="quickcommandInfo.program === 'custom'"
-                >
-                  <q-input
-                    stack-label
-                    autofocus
-                    dense
-                    outlined
-                    class="full-width"
-                    @blur="matchLanguage"
-                    :label="
-                      [
-                        '解释器路径，如：/opt/python',
-                        '运行参数，如：-u',
-                        '脚本后缀，不含点，如：py',
-                      ][index]
-                    "
-                    v-model="quickcommandInfo.customOptions[item]"
-                  >
+                <q-item v-for="(item, index) in Object.keys(
+                  quickcommandInfo.customOptions
+                )" :key="index" v-show="quickcommandInfo.program === 'custom'">
+                  <q-input stack-label autofocus dense outlined class="full-width" @blur="matchLanguage" :label="[
+                    '解释器路径，如：/opt/python',
+                    '运行参数，如：-u',
+                    '脚本后缀，不含点，如：py',
+                  ][index]
+                    " v-model="quickcommandInfo.customOptions[item]">
                     <template v-slot:prepend>
                       <q-icon name="code" />
                     </template>
@@ -139,36 +83,17 @@
                 </q-item>
                 <!-- 脚本参数 -->
                 <q-item v-show="quickcommandInfo.program !== 'quickcommand'">
-                  <q-input
-                    dense
-                    stack-label
-                    outlined
-                    label="脚本参数"
-                    class="full-width"
-                    v-model="quickcommandInfo.scptarg"
-                  >
+                  <q-input dense stack-label outlined label="脚本参数" class="full-width" v-model="quickcommandInfo.scptarg">
                     <template v-slot:prepend>
                       <q-icon name="input" />
                     </template>
                   </q-input>
                 </q-item>
                 <!-- 编码设置 -->
-                <q-item
-                  v-for="(item, index) in Object.keys(quickcommandInfo.charset)"
-                  :key="index"
-                  v-show="quickcommandInfo.program !== 'quickcommand'"
-                >
-                  <q-select
-                    dense
-                    outlined
-                    stack-label
-                    clearable
-                    class="full-width"
-                    :label="['脚本编码', '输出编码'][index]"
-                    v-model="quickcommandInfo.charset[item]"
-                    :options="['GBK', 'utf8', 'Big5']"
-                    type="text"
-                  >
+                <q-item v-for="(item, index) in Object.keys(quickcommandInfo.charset)" :key="index"
+                  v-show="quickcommandInfo.program !== 'quickcommand'">
+                  <q-select dense outlined stack-label clearable class="full-width" :label="['脚本编码', '输出编码'][index]"
+                    v-model="quickcommandInfo.charset[item]" :options="['GBK', 'utf8', 'Big5']" type="text">
                     <template v-slot:prepend>
                       <q-icon :name="['format_size', 'output'][index]" />
                     </template>
@@ -177,49 +102,26 @@
               </q-list>
             </q-btn-dropdown>
             <q-separator vertical inset />
-            <q-btn
-              style="padding: 0 10px"
-              dense
-              flat
-              color="primary"
-              icon="play_arrow"
-              label="运行"
-              @click="runCurrentCommand()"
-            ></q-btn>
-            <q-btn
-              flat
-              style="padding: 0 10px"
-              dense
-              v-if="!isRunCodePage"
-              :disable="!canCommandSave"
-              :color="canCommandSave ? 'primary' : 'grey'"
-              icon="save"
-              label="保存"
-              @click="saveCurrentCommand()"
-            ></q-btn>
+            <q-btn style="padding: 0 10px" dense flat color="primary" icon="play_arrow" label="运行"
+              @click="runCurrentCommand()"></q-btn>
+            <q-btn flat style="padding: 0 10px" dense v-if="!isRunCodePage" :disable="!canCommandSave"
+              :color="canCommandSave ? 'primary' : 'grey'" icon="save" label="保存" @click="saveCurrentCommand()"></q-btn>
           </q-btn-group>
         </div>
-        <q-dialog v-model="showActions"
-          ><QuickAction @addAction="insertText" />
+        <q-dialog v-model="showActions">
+          <QuickAction @addAction="insertText" />
         </q-dialog>
-        <q-dialog v-model="showRecorder" position="bottom"
-          ><KeyRecorder @sendKeys="insertText" />
+        <q-dialog v-model="showRecorder" position="bottom">
+          <KeyRecorder @sendKeys="insertText" />
         </q-dialog>
       </div>
     </div>
-    <MonacoEditor
-      class="absolute-bottom"
-      :placeholder="true"
-      ref="editor"
-      @loaded="monacoInit"
-      @typing="(val) => monacoTyping(val)"
-      @keyStroke="monacoKeyStroke"
-      :style="{
+    <MonacoEditor class="absolute-bottom" :placeholder="true" ref="editor" @loaded="monacoInit"
+      @typing="(val) => monacoTyping(val)" @keyStroke="monacoKeyStroke" :style="{
         top: languageBarHeight + 'px',
-        left: this.action.type === 'run' ? 0 : this.sideBarWidth + 'px',
-        transition: '0.3s',
-      }"
-    />
+        left: action.type === 'run' ? 0 : sideBarWidth + 'px',
+        // transition: '0.3s',
+      }" />
     <!-- 运行结果 -->
     <CommandRunResult :action="action" ref="result"></CommandRunResult>
   </div>
@@ -236,6 +138,9 @@ const MonacoEditor = defineAsyncComponent(() =>
   import("components/MonacoEditor")
 );
 
+const defaultSideBarWidth = 250;
+const defaultlanguageBarHeight = 40;
+
 export default {
   components: {
     MonacoEditor,
@@ -247,8 +152,8 @@ export default {
   data() {
     return {
       programLanguages: Object.keys(this.$root.programs),
-      sideBarWidth: 250,
-      languageBarHeight: 40,
+      sideBarWidth: defaultSideBarWidth,
+      languageBarHeight: defaultlanguageBarHeight,
       canCommandSave: this.action.type === "code" ? false : true,
       showActions: false,
       showRecorder: false,
@@ -348,13 +253,7 @@ export default {
     },
     // 展开收起侧栏
     toggleSideBarWidth() {
-      if (this.sideBarWidth) {
-        this.lastSideBarWidth = this.sideBarWidth;
-        this.sideBarWidth = 0;
-      } else {
-        this.sideBarWidth = this.lastSideBarWidth;
-        this.lastSideBarWidth = 0;
-      }
+      this.sideBarWidth = !!this.sideBarWidth ? 0 : defaultSideBarWidth;
     },
     // 保存
     saveCurrentCommand() {
@@ -415,6 +314,7 @@ export default {
   background: rgba(0, 0, 0, 0.05);
   border-radius: 0;
 }
+
 .body--dark .menuBtn {
   background: rgba(255, 255, 255, 0.07);
 }

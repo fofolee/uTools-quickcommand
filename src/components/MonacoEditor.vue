@@ -4,9 +4,8 @@
     <div class="absolute-center flex" v-show="!value && placeholder">
       <div class="placeholder text-center q-gutter-md">
         <div v-for="shortCut in shortCuts" :key="shortCut">
-          <span>{{ shortCut[0] }}</span
-          ><span class="shortcut-key">{{ shortCut[1] }}</span
-          ><span class="shortcut-key">{{ shortCut[2] }}</span>
+          <span>{{ shortCut[0] }}</span><span class="shortcut-key">{{ shortCut[1] }}</span><span class="shortcut-key">{{
+            shortCut[2] }}</span>
         </div>
       </div>
     </div>
@@ -46,6 +45,8 @@ export default {
   },
   mounted() {
     this.initEditor();
+    // 手动监听窗口大小变化，解决Monaco自动调整大小时导致ResizeObserver loop limit exceeded错误
+    window.addEventListener('resize', this.resizeEditor);
     this.$emit("loaded");
   },
   props: {
@@ -55,7 +56,8 @@ export default {
     initEditor() {
       let monacoEditorPreferences = {
         value: "",
-        automaticLayout: true,
+        // 取消自动布局
+        automaticLayout: false,
         foldingStrategy: "indentation",
         autoClosingBrackets: true,
         tabSize: 2,
@@ -72,6 +74,9 @@ export default {
       this.setEditorTheme();
       this.listenEditorValue();
       this.bindKeys();
+    },
+    resizeEditor() {
+      this.rawEditor().layout();
     },
     loadTypes() {
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -255,6 +260,7 @@ export default {
     },
   },
   beforeUnmount() {
+    window.removeEventListener('resize', this.resizeEditor);
     this.rawEditor().dispose();
   },
 };
@@ -267,6 +273,7 @@ export default {
   color: #535353;
   user-select: none;
 }
+
 .shortcut-key {
   background-color: #f3f4f6;
   border-radius: 0.25rem;
@@ -274,6 +281,7 @@ export default {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
 }
+
 .body--dark .shortcut-key {
   background-color: #262626;
 }
