@@ -119,6 +119,12 @@ export default defineComponent({
       this.updateExp();
       this.$q.dark.set(utools.isDarkColors());
       this.enterData = enter;
+      if (this.$root.profile.autoDetachFeatures?.includes(enter.code)) {
+        // win下无效
+        let ctrlKey = utools.isWindows() ? "ctrl" : "command"
+        utools.simulateKeyboardTap("d", ctrlKey)
+        utools.simulateKeyboardTap("n", ctrlKey)
+      }
       this.$router.push(enter.code);
     },
     outPlugin() {
@@ -243,31 +249,39 @@ export default defineComponent({
   --q-dark: #464646;
   --q-dark-page: #303133;
 }
+
 .q-card--dark {
   background: var(--q-dark-page);
 }
+
 .container {
   color: black;
   background: white;
 }
+
 .body--dark .container {
   color: white;
   background: var(--q-dark-page);
 }
+
 .q-tooltip {
   font-size: 11px;
 }
+
 .q-chip {
   background: #e3e3e39a;
 }
+
 .q-chip--dark {
   background: #676666;
 }
+
 .commandLogo {
   cursor: pointer;
   transition: 0.2s;
   filter: drop-shadow(2px 1px 1px grey);
 }
+
 .commandLogo:hover {
   transition: 0.5s;
   transform: translateY(-5px);
@@ -293,9 +307,11 @@ export default defineComponent({
 .fade-enter-from {
   opacity: 0;
 }
+
 .fade-enter-to {
   opacity: 1;
 }
+
 .fade-enter-active {
   transition: opacity 0.3s ease;
 }
