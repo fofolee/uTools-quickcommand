@@ -27,6 +27,8 @@ let languageCompletions = importAll(
   require.context("../plugins/monaco/completions/", false, /\.js$/)
 );
 
+let monacoCompletionProviders = {};
+
 let cmdCtrlKey = utools.isMacOs() ? "⌘" : "Ctrl";
 let optAltKey = utools.isMacOs() ? "⌥" : "Alt";
 
@@ -145,6 +147,8 @@ export default {
       });
       // 注册自动补全
       Object.keys(languageCompletions).forEach((language) => {
+        // 防止自动补全被多次注册
+        if (monacoCompletionProviders[language]) return;
         monaco.languages.registerCompletionItemProvider(language, {
           provideCompletionItems: function (model, position) {
             var word = model.getWordUntilPosition(position);
@@ -164,6 +168,7 @@ export default {
             };
           },
         });
+        monacoCompletionProviders[language] = true
       });
     },
     setEditorTheme() {
