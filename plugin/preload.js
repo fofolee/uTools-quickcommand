@@ -46,7 +46,11 @@ window.multiProcessDetection = () => {
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
-if (!utools.isWindows()) process.env.PATH += ':/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin'
+if (!utools.isWindows())
+  process.env.PATH = `/usr/local/bin:/usr/local/sbin:${process.env.PATH}`;
+
+if (utools.isMacOS())
+  process.env.PATH = `/opt/homebrew/bin:/opt/homebrew/sbin:${process.env.PATH}`;
 
 const shortCodes = [
 
