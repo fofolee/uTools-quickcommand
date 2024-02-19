@@ -210,19 +210,56 @@ window.quickcommand = {
     }
 }
 
-// 运行vbs脚本
-if (process.platform == 'win32') quickcommand.runVbs = function(script) {
+if (process.platform === 'win32') {
+  // 运行vbs脚本
+  quickcommand.runVbs = function (script) {
     return new Promise((reslove, reject) => {
-        var tempfile = getQuickcommandTempFile('vbs', 'TempVBSScript')
-        fs.writeFile(tempfile, iconv.encode(script, 'gbk'), err => {
-            child_process.exec(`cscript.exe /nologo "${tempfile}"`, {
-                encoding: "buffer"
-            }, (err, stdout, stderr) => {
-                if (err) reject(iconv.decode(stderr, 'gbk'))
-                else reslove(iconv.decode(stdout, 'gbk'))
-            });
-        })
-    })
+      var tempfile = getQuickcommandTempFile("vbs", "TempVBSScript");
+      fs.writeFile(tempfile, iconv.encode(script, "gbk"), (err) => {
+        child_process.exec(
+          `cscript.exe /nologo "${tempfile}"`,
+          {
+            encoding: "buffer",
+          },
+          (err, stdout, stderr) => {
+            if (err) reject(iconv.decode(stderr, "gbk"));
+            else reslove(iconv.decode(stdout, "gbk"));
+          }
+        );
+      });
+    });
+  };
+  // 运行powershell脚本
+  quickcommand.runPowerShell = function (script) {
+    return new Promise((reslove, reject) => {
+      let base64str = Buffer.from(script, "utf16le").toString("base64");
+      child_process.exec(
+        `powershell.exe -e "${base64str}"`,
+        {
+          encoding: "buffer",
+        },
+        (err, stdout, stderr) => {
+          if (err) reject(iconv.decode(stderr, "gbk"));
+          else reslove(iconv.decode(stdout, "gbk"));
+        }
+      );
+    });
+  };
+}
+
+if (process.platform === 'darwin') {
+  // 运行AppleScript脚本
+  quickcommand.runAppleScript = function (script) {
+    return new Promise((reslove, reject) => {
+      child_process.execFile(
+        'osascript'['-e', script],
+        (err, stdout, stderr) => {
+          if (err) reject(stderr);
+          else reslove(stdout);
+        }
+      );
+    });
+  };
 }
 
 // python -c

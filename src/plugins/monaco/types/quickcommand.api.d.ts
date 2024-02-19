@@ -313,15 +313,38 @@ interface quickcommandApi {
   ): void;
 
   /**
-   * windows 下运行 VBS 脚本并返回运行结果
+   * windows 下运行 VBS 脚本并返回运行结果 (Promise)
    *
    * ```js
-   * quickcommand.runVbs(`CreateObject("SAPI.SpVoice").Speak"Hello"`)
+   * quickcommand.runVbs(`CreateObject("SAPI.SpVoice").Speak"Hello, World!"`)
    * ```
    *
-   * @param script VBS 代码
+   * @param script VBS 脚本代码
    */
   runVbs(script: string): Promise<string>;
+
+  /**
+   * windows 下运行 Powershell 脚本并返回运行结果 (Promise)
+   *
+   * ```js
+   * quickcommand.runPowerShell(`$voice = New-Object -ComObject SAPI.SPVOICE
+   * $voice.Speak('Hello, World!')`)
+   * ```
+   *
+   * @param script Powershell 脚本代码
+   */
+  runPowerShell(script: string): Promise<string>;
+
+  /**
+   * MacOS 下运行 AppleScript 脚本并返回运行结果 (Promise)
+   *
+   * ```js
+   * quickcommand.runAppleScript(`say "Hello, World!"`)
+   * ```
+   *
+   * @param script AppleScript 代码
+   */
+  runAppleScript(script: string): Promise<string>;
 
   /**
    * 在终端运行，不支持 Linux
