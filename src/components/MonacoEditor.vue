@@ -228,7 +228,7 @@ export default {
         monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
         () => {
           that.wordWrap = that.wordWrap === "off" ? "on" : "off";
-          that.rawEditor.updateOptions({ wordWrap: that.wordWrap });
+          that.rawEditor().updateOptions({ wordWrap: that.wordWrap });
         }
       );
       // ctrl + s 保存
@@ -238,7 +238,7 @@ export default {
           that.$emit("keyStroke", "save");
         }
       );
-      // ctrl + space 快速 console.log
+      // ctrl + e 快速 console.log
       this.rawEditor().addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE,
         () => {
