@@ -15,6 +15,7 @@ import programmings from "./js/options/programs.js";
 import defaultProfile from "./js/options/defaultProfile.js";
 import Cron from "croner";
 import QuickCommand from "components/quickcommandUI/QuickCommand";
+import autoDetach from "./js/autoDetach.js";
 
 export default defineComponent({
   components: { QuickCommand },
@@ -120,10 +121,7 @@ export default defineComponent({
       this.$q.dark.set(utools.isDarkColors());
       this.enterData = enter;
       if (this.$root.profile.autoDetachFeatures?.includes(enter.code)) {
-        // win下无效
-        let ctrlKey = utools.isWindows() ? "ctrl" : "command"
-        utools.simulateKeyboardTap("d", ctrlKey)
-        utools.simulateKeyboardTap("n", ctrlKey)
+        autoDetach.autoDetach();
       }
       this.$router.push(enter.code);
     },
