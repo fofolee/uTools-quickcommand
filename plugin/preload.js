@@ -252,7 +252,7 @@ if (process.platform === 'darwin') {
   quickcommand.runAppleScript = function (script) {
     return new Promise((reslove, reject) => {
       child_process.execFile(
-        'osascript'['-e', script],
+        'osascript', ['-e', script],
         (err, stdout, stderr) => {
           if (err) reject(stderr);
           else reslove(stdout);
