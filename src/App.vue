@@ -120,9 +120,10 @@ export default defineComponent({
       this.updateExp();
       this.$q.dark.set(utools.isDarkColors());
       this.enterData = enter;
-      if (this.$root.profile.autoDetachFeatures?.includes(enter.code)) {
-        autoDetach.autoDetach();
-      }
+      // 自动分离目前还没有好的方案
+      // if (this.$root.profile.autoDetachFeatures?.includes(enter.code)) {
+        // autoDetach.autoDetach();
+      // }
       this.$router.push(enter.code);
     },
     outPlugin() {

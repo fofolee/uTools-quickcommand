@@ -258,13 +258,14 @@
               <q-tooltip>进入插件时自动聚焦搜索</q-tooltip>
               <q-item-section side><q-toggle v-model="$root.profile.autofocusSearch" color="primary" /></q-item-section>
             </q-item>
-            <q-item clickable @click="getActivatedFutures(); showAutoDetachFeatures = true">
+            <!-- 自动分离 -->
+            <!-- <q-item clickable @click="getActivatedFutures(); showAutoDetachFeatures = true">
               <q-item-section side>
                 <q-icon name="web_stories" />
               </q-item-section>
               <q-item-section class="flex">自动分离 </q-item-section>
               <q-tooltip>utools的自动分离对整个插件生效，配置此选项可以实现只对某些特定的功能进行自动分离</q-tooltip>
-            </q-item>
+            </q-item> -->
           </q-list>
         </q-menu>
       </q-item>
@@ -309,7 +310,7 @@
     <q-dialog v-model="showUserDara">
       <UserData :showInsertBtn="false" />
     </q-dialog>
-    <q-dialog v-model="showAutoDetachFeatures">
+    <!-- <q-dialog v-model="showAutoDetachFeatures">
       <q-card>
         <q-card-section style="height: 400px; overflow: auto;">
           <q-option-group v-model="$root.profile.autoDetachFeatures" type="checkbox" :options="activateFeatures">
@@ -330,7 +331,7 @@
           <q-btn color="primary" label="确定" @click="changeAutoDetachFeatures" />
         </q-card-actions>
       </q-card>
-    </q-dialog>
+    </q-dialog> -->
   </q-menu>
 </template>
 
