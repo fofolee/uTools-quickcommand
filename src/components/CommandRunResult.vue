@@ -1,62 +1,31 @@
 <template>
   <div>
-    <q-dialog
-      v-model="isResultShow"
-      :position="fromUtools ? 'top' : 'bottom'"
-      @hide="stopRun"
-      :maximized="fromUtools"
-      :transition-duration="fromUtools ? 0 : 200"
-    >
-      <q-card
-        :style="{
-          maxWidth: fromUtools ? '100%' : '700px',
-          width: fromUtools ? '100%' : '700px',
-          overflow: 'hidden',
-        }"
-      >
-        <div
-          v-if="!(enableHtml && fromUtools)"
-          :style="{
-            height: headerHeight + 'px',
-          }"
-          class="flex items-center justify-between"
-        >
+    <q-dialog v-model="isResultShow" :position="fromUtools ? 'top' : 'bottom'" @hide="stopRun" :maximized="fromUtools"
+      :transition-duration="fromUtools ? 0 : 200">
+      <q-card :style="{
+        maxWidth: fromUtools ? '100%' : '700px',
+        width: fromUtools ? '100%' : '700px',
+        overflow: 'hidden',
+      }">
+        <div v-if="!(enableHtml && fromUtools)" :style="{
+          height: headerHeight + 'px',
+        }" class="flex items-center justify-between">
           <div>
             <q-avatar :size="`${headerHeight}`">
-              <q-icon
-                :class="runResultStatus ? 'text-green' : 'text-red'"
-                :name="runResultStatus ? 'task_alt' : 'error'"
-              ></q-icon>
+              <q-icon :class="runResultStatus ? 'text-green' : 'text-red'"
+                :name="runResultStatus ? 'task_alt' : 'error'"></q-icon>
             </q-avatar>
             <span class="text-weight-bold text-h6">运行结果</span>
           </div>
-          <ResultMenu
-            class="no-shadow"
-            :stretch="true"
-            :content="runResult.join('')"
-            :closebtn="!fromUtools"
-            :textbtn="!enableHtml"
-            :imagebtn="!enableHtml && isDataUrl"
-            @showImg="showBase64Img"
-            :style="{
+          <ResultMenu class="no-shadow" :stretch="true" :content="runResult.join('')" :closebtn="!fromUtools"
+            :textbtn="!enableHtml" :imagebtn="!enableHtml && isDataUrl" @showImg="showBase64Img" :style="{
               height: headerHeight + 'px',
-            }"
-          />
+            }" />
         </div>
-        <div
-          :style="{ maxHeight: maxHeight - headerHeight + 'px' }"
-          class="scroll"
-        >
-          <ResultArea
-            v-if="isResultShow"
-            @frameLoad="frameLoad"
-            :frameInitHeight="frameInitHeight"
-            :enableHtml="enableHtml"
-            :runResultStatus="runResultStatus"
-            :runResult="runResult"
-            :key="timeStamp"
-            @mouseup="selectHandler"
-          />
+        <div :style="{ maxHeight: maxHeight - headerHeight + 'px' }" class="scroll">
+          <ResultArea v-if="isResultShow" @frameLoad="frameLoad" :frameInitHeight="frameInitHeight"
+            :enableHtml="enableHtml" :runResultStatus="runResultStatus" :runResult="runResult" :key="timeStamp"
+            @mouseup="selectHandler" />
           <q-resize-observer @resize="autoHeight" debounce="0" />
         </div>
         <q-menu v-if="selectText" touch-position @before-hide="clearSelect">
@@ -187,6 +156,15 @@ export default {
       };
       document.addEventListener("keydown", this.ctrlCListener);
     },
+    // 转义特殊变量里的特殊字符和换行符
+    escapeChars(string) {
+      return string
+        // 转义特殊字符
+        .replace(/`|'|"|\\/g, "\\$&")
+        // 转义换行字符
+        .replace(/\r\n/g, "\\r\\n")
+        .replace(/\n/g, "\\n")
+    },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
       let userData = this.$root.utools.userData.all();
@@ -195,7 +173,7 @@ export default {
         let label = val.label.slice(0, -2);
         if (cmd.includes(label)) {
           let replData = label === "{{usr:" ? userData : this.$root.enterData;
-          cmd = cmd.replace(val.match, (x) => val.repl(x, replData));
+          cmd = cmd.replace(val.match, (x) => this.escapeChars(val.repl(x, replData)));
         }
       });
       return cmd;
