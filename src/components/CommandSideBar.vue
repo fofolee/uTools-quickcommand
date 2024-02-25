@@ -463,7 +463,7 @@ export default {
     },
     insertSpecialVar(text) {
       if (!text) return;
-      this.$parent.$refs.editor.repacleEditorSelection(`'${text}'`);
+      this.$parent.$refs.editor.repacleEditorSelection(`"${text}"`);
     },
     showMainPushHelp() {
       window.showUb.help("#u0e9f1430");
