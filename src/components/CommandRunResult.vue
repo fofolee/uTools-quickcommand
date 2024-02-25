@@ -156,14 +156,13 @@ export default {
       };
       document.addEventListener("keydown", this.ctrlCListener);
     },
-    // 转义特殊变量里的特殊字符和换行符
     escapeChars(string) {
-      return string
-        // 转义特殊字符
-        .replace(/`|'|"|\\/g, "\\$&")
-        // 转义换行字符
-        .replace(/\r\n/g, "\\r\\n")
-        .replace(/\n/g, "\\n")
+      // 通过JSON.stringify，将特殊变量里所有特殊字符转义，输出为一个带双引号的字符串
+      return JSON.stringify(string)
+        // 去掉两边双引号
+        .slice(1, -1)
+        // 单独转义单引号和反引号
+        .replace(/`|'/g, "\\$&")
     },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
