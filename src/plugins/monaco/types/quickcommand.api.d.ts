@@ -156,8 +156,13 @@ interface quickcommandApi {
    * ```
    * @param message 提示的内容
    * @param title 提示的标题
+   * @param html 内容是支持html，默认 false
    */
-  showConfirmBox(message?: string, title?: string): Promise<boolean>;
+  showConfirmBox(
+    message?: string,
+    title?: string,
+    isHtml?: boolean
+  ): Promise<boolean>;
 
   /**
    * 显示等待用户操作的按钮，用户点击后执行相关操作
