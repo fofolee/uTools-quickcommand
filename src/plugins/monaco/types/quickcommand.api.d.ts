@@ -157,11 +157,13 @@ interface quickcommandApi {
    * @param message 提示的内容
    * @param title 提示的标题
    * @param html 内容是支持html，默认 false
+   * @param width 确认框宽度，默认 450
    */
   showConfirmBox(
     message?: string,
     title?: string,
-    isHtml?: boolean
+    isHtml?: boolean,
+    width?: number
   ): Promise<boolean>;
 
   /**
