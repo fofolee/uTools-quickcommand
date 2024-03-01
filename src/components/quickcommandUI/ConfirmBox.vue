@@ -1,11 +1,12 @@
 <template>
-  <q-card class="q-dialog-plugin">
+  <q-card class="q-dialog-plugin" :style="{
+    width: options.width ? options.width + 'px' : '450px'
+  }">
     <q-card-section>
       <div class="text-h5" align="left" v-text="options.title"></div>
     </q-card-section>
-    <q-card-section>
-      {{ options.message }}
-    </q-card-section>
+    <q-card-section v-if="options.isHtml" v-html="options.message" class="content" />
+    <q-card-section v-else v-text="options.message" class="content" />
     <q-card-section class="flex justify-end q-gutter-sm">
       <q-btn flat label="取消" color="grey" @click="hide" />
       <q-btn flat autofocus label="确定" color="primary" @click="clickOK()" />
@@ -29,3 +30,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.content {
+  overflow: auto;
+  max-height: 350px;
+}
+</style>
