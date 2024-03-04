@@ -2,17 +2,11 @@
  * 所有的特殊变量
  */
 
-let escapeItem = item => {
-    if (typeof item === 'number') return item
-    item = typeof item === 'object' ? JSON.stringify(item) : item.replace(/\\/g, '\\\\')
-    return item.replace('$', '$$$')
-}
-
 let handlingJsonVar = (jsonVar, name, payload) => {
     try {
-        return escapeItem(window.evalCodeInSandbox(jsonVar.slice(2, -2), {
+        return window.evalCodeInSandbox(jsonVar.slice(2, -2), {
             [name]: payload
-        }))
+        })
     } catch (e) {
         return utools.showNotification(e)
     }

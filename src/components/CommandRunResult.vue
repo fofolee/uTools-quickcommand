@@ -3,13 +3,13 @@
     <q-dialog v-model="isResultShow" :position="fromUtools ? 'top' : 'bottom'" @hide="stopRun" :maximized="fromUtools"
       :transition-duration="fromUtools ? 0 : 200">
       <q-card :style="{
-        maxWidth: fromUtools ? '100%' : '700px',
-        width: fromUtools ? '100%' : '700px',
-        overflow: 'hidden',
-      }">
+      maxWidth: fromUtools ? '100%' : '700px',
+      width: fromUtools ? '100%' : '700px',
+      overflow: 'hidden',
+    }">
         <div v-if="!(enableHtml && fromUtools)" :style="{
-          height: headerHeight + 'px',
-        }" class="flex items-center justify-between">
+      height: headerHeight + 'px',
+    }" class="flex items-center justify-between">
           <div>
             <q-avatar :size="`${headerHeight}`">
               <q-icon :class="runResultStatus ? 'text-green' : 'text-red'"
@@ -19,8 +19,8 @@
           </div>
           <ResultMenu class="no-shadow" :stretch="true" :content="runResult.join('')" :closebtn="!fromUtools"
             :textbtn="!enableHtml" :imagebtn="!enableHtml && isDataUrl" @showImg="showBase64Img" :style="{
-              height: headerHeight + 'px',
-            }" />
+      height: headerHeight + 'px',
+    }" />
         </div>
         <div :style="{ maxHeight: maxHeight - headerHeight + 'px' }" class="scroll">
           <ResultArea v-if="isResultShow" @frameLoad="frameLoad" :frameInitHeight="frameInitHeight"
@@ -156,13 +156,27 @@ export default {
       };
       document.addEventListener("keydown", this.ctrlCListener);
     },
-    escapeChars(string) {
-      // 通过JSON.stringify，将特殊变量里所有特殊字符转义，输出为一个带双引号的字符串
-      return JSON.stringify(string)
+    escapeItem(item) {
+      // 无论什么类型，先转为String
+      if (typeof item === 'object') {
+        try {
+          item = JSON.stringify(item)
+        } catch (_) {
+          item = item.toString()
+        }
+      } else {
+        item = item.toString()
+      }
+      // 通过JSON.stringify，将所有特殊字符转义，输出为一个带双引号的字符串
+      item = JSON.stringify(item)
         // 去掉两边双引号
         .slice(1, -1)
-        // 单独转义单引号和反引号
+        // 单独转义单引号、反引号
         .replace(/`|'/g, "\\$&")
+        // 转义双括号
+        .replace(/\{\{/g, "\\{\\{")
+      // .replace("$", '$$$')
+      return item
     },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
@@ -172,7 +186,7 @@ export default {
         let label = val.label.slice(0, -2);
         if (cmd.includes(label)) {
           let replData = label === "{{usr:" ? userData : this.$root.enterData;
-          cmd = cmd.replace(val.match, (x) => this.escapeChars(val.repl(x, replData)));
+          cmd = cmd.replace(val.match, (x) => this.escapeItem(val.repl(x, replData)));
         }
       });
       return cmd;
