@@ -487,7 +487,7 @@ export default {
         let el = document.getElementById(code);
         el.scrollIntoViewIfNeeded();
         // 闪一下
-        el.style.filter = "drop-shadow(2px 4px 6px black)";
+        el.style.filter = "drop-shadow(2px 4px 6px gray)";
         el.style.transform = "translateY(-5px)";
         setTimeout(() => {
           el.style.filter = "";

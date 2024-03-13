@@ -1,11 +1,11 @@
 <template>
   <!-- mini 模式下如果命令未启用或者不可直接运行则隐藏卡片面板 -->
   <div
-    class="wrapper"
+    :class="{ wrapper: 1, warpperHover: isWarpperHover }"
     v-show="!cardStyleVars.hideCard"
     :id="commandInfo.features.code"
-    @mouseenter="showCtrlButtons = true"
-    @mouseleave="if (!isCtrlBtnMenuOpen) showCtrlButtons = false;"
+    @mouseenter="isWarpperHover = true"
+    @mouseleave="if (!isCtrlBtnMenuOpen) isWarpperHover = false;"
   >
     <div>
       <!-- mini 模式下不显示各类按钮 -->
@@ -23,7 +23,7 @@
         <div
           class="absolute"
           style="z-index: 1; right: 16px; top: 16px"
-          v-show="showCtrlButtons"
+          v-show="isWarpperHover"
         >
           <q-btn
             flat
@@ -54,7 +54,7 @@
               transition-hide="jump-up"
               @hide="
                 isCtrlBtnMenuOpen = false;
-                showCtrlButtons = false;
+                isWarpperHover = false;
               "
             >
               <q-list style="min-width: 100px">
@@ -118,7 +118,11 @@
         <q-card-section>
           <!-- logo -->
           <div class="row" :class="cardStyleVars.logoPosition">
-            <q-avatar square size="48px">
+            <q-avatar
+              square
+              size="48px"
+              :class="{ featureIco: 1, featureIcoHover: isWarpperHover }"
+            >
               <img :src="commandInfo.features.icon" />
             </q-avatar>
           </div>
@@ -248,6 +252,7 @@
 </template>
 
 <script>
+import { features } from "monaco-editor/esm/metadata.js";
 import commandTypes from "../js/options/commandTypes.js";
 import platformTypes from "../js/options/platformTypes.js";
 import CrontabSetting from "components/popup/CrontabSetting";
@@ -267,7 +272,7 @@ export default {
       showCrontab: false,
       // showShare: false,
       cronJob: null,
-      showCtrlButtons: false,
+      isWarpperHover: false,
       isCtrlBtnMenuOpen: false,
     };
   },
@@ -456,11 +461,17 @@ export default {
   text-align: right;
 }
 .wrapper {
-  transition: 0.2s;
+  transition: 0.5s;
 }
-.wrapper:hover {
-  transition: 0.2s;
+.warpperHover {
+  transition: 0.5s;
   transform: translateY(-3px);
-  /* filter: drop-shadow(1px 1px 5px #0000008e); */
+}
+.featureIco {
+  transition: 0.5s;
+}
+.featureIcoHover {
+  transition: 0.5s;
+  transform: scale(1.1);
 }
 </style>
