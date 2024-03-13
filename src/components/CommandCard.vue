@@ -122,7 +122,7 @@
               :style="{
                 fontSize: cardStyleVars.showBiggerTitle ? '1.25rem' : '1.1rem',
               }"
-              v-html="commandInfo.features.explain"
+              v-html="commandInfo.features.explain.trim() || '<br/>'"
             />
           </div>
           <!-- 匹配模式 -->
