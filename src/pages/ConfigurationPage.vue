@@ -2,19 +2,37 @@
   <div class="relative">
     <!-- 标签栏 -->
     <!-- 面板视图不显示标签栏 -->
-    <q-scroll-area v-show="commandCardStyle !== 'mini'" class="absolute-left" :thumb-style="{
-      width: '2px',
-    }" :style="{
-  width: tabBarWidth,
-  zIndex: 1,
-}">
-      <q-tabs v-model="currentTag" vertical switch-indicator active-class="text-primary text-weight-bolder"
-        content-class="text-blue-grey" :key="$root.profile.denseTagBar" :dense="$root.profile.denseTagBar">
+    <q-scroll-area
+      v-show="commandCardStyle !== 'mini'"
+      class="absolute-left"
+      :thumb-style="{
+        width: '2px',
+      }"
+      :style="{
+        width: tabBarWidth,
+        zIndex: 1,
+      }"
+    >
+      <q-tabs
+        v-model="currentTag"
+        vertical
+        switch-indicator
+        active-class="text-primary text-weight-bolder"
+        content-class="text-blue-grey"
+        :key="$root.profile.denseTagBar"
+        :dense="$root.profile.denseTagBar"
+      >
         <!-- 所有标签 -->
-        <q-tab v-for="tag in allQuickCommandTags" :key="tag" :name="tag" :content-class="tag === '搜索结果' || activatedQuickPanels.includes(tag)
-          ? 'text-blue-7 text-weight-bolder'
-          : ''
-          ">
+        <q-tab
+          v-for="tag in allQuickCommandTags"
+          :key="tag"
+          :name="tag"
+          :content-class="
+            tag === '搜索结果' || activatedQuickPanels.includes(tag)
+              ? 'text-blue-7 text-weight-bolder'
+              : ''
+          "
+        >
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
             所有没有添加标签的命令都会归在未分类 <br />
@@ -24,43 +42,78 @@
       </q-tabs>
     </q-scroll-area>
     <!-- 面板栏 -->
-    <q-tab-panels animated class="absolute-right" :style="{
-      bottom: footerBarHeight,
-      left: tabBarWidth,
-      background:
-        commandCardStyle === 'mini' && $root.profile.backgroundImg
-          ? `url('${$root.profile.backgroundImg}')`
-          : 'none',
-      backgroundSize: 'cover',
-    }" v-model="currentTag" transition-prev="fade" transition-next="fade" swipeable>
-      <q-tab-panel style="padding: 0" v-for="tag in allQuickCommandTags" :key="tag" :name="tag">
-        <q-scroll-area style="height: 100%" :thumb-style="{
-          background: 'grey',
-          width: '6px',
-          opacity: 0.5,
-        }">
+    <q-tab-panels
+      animated
+      class="absolute-right"
+      :style="{
+        bottom: footerBarHeight,
+        left: tabBarWidth,
+        background:
+          commandCardStyle === 'mini' && $root.profile.backgroundImg
+            ? `url('${$root.profile.backgroundImg}')`
+            : 'none',
+        backgroundSize: 'cover',
+      }"
+      v-model="currentTag"
+      transition-prev="fade"
+      transition-next="fade"
+      swipeable
+    >
+      <q-tab-panel
+        style="padding: 0"
+        v-for="tag in allQuickCommandTags"
+        :key="tag"
+        :name="tag"
+      >
+        <q-scroll-area
+          style="height: 100%"
+          :thumb-style="{
+            background: 'grey',
+            width: '6px',
+            opacity: 0.5,
+          }"
+        >
           <div class="row center q-pa-xs">
-            <CommandCard v-for="commandInfo in currentTagQuickCommands" :key="commandInfo.features.code"
-              :commandInfo="commandInfo" :isCommandActivated="activatedQuickCommandFeatureCodes.includes(
-                commandInfo.features.code
-              )
-                " :cardStyle="commandCardStyleSheet[commandCardStyle]" @commandChanged="commandChanged" :style="{
-    width: commandCardStyleSheet[commandCardStyle].width,
-  }" class="relative-position q-pa-sm"></CommandCard>
+            <CommandCard
+              v-for="commandInfo in currentTagQuickCommands"
+              :key="commandInfo.features.code"
+              :commandInfo="commandInfo"
+              :isCommandActivated="
+                activatedQuickCommandFeatureCodes.includes(
+                  commandInfo.features.code
+                )
+              "
+              :cardStyle="commandCardStyleSheet[commandCardStyle]"
+              @commandChanged="commandChanged"
+              :style="{
+                width: commandCardStyleSheet[commandCardStyle].width,
+              }"
+              class="relative-position q-pa-sm"
+            ></CommandCard>
           </div>
         </q-scroll-area>
       </q-tab-panel>
     </q-tab-panels>
     <!-- 底栏 -->
-    <div class="absolute-bottom" :style="{
-      height: footerBarHeight,
-      left: tabBarWidth,
-    }">
+    <div
+      class="absolute-bottom"
+      :style="{
+        height: footerBarHeight,
+        left: tabBarWidth,
+      }"
+    >
       <div class="row">
         <!-- 搜索栏 -->
         <div class="col">
-          <q-input v-model="commandSearchKeyword" debounce="200" filled dense :autofocus="$root.profile.autofocusSearch"
-            @update:model-value="updateSearch" placeholder="搜索，支持拼音首字母">
+          <q-input
+            v-model="commandSearchKeyword"
+            debounce="200"
+            filled
+            dense
+            :autofocus="$root.profile.autofocusSearch"
+            @update:model-value="updateSearch"
+            placeholder="搜索，支持拼音首字母"
+          >
             <template v-slot:prepend>
               <q-icon name="search" />
             </template>
@@ -70,39 +123,65 @@
         <div class="col-auto justify-end flex">
           <q-btn-group>
             <!-- 切换视图 -->
-            <q-btn-toggle v-model="commandCardStyle" @click="$root.profile.commandCardStyle = commandCardStyle"
-              toggle-color="primary" flat :options="[
+            <q-btn-toggle
+              v-model="commandCardStyle"
+              @click="$root.profile.commandCardStyle = commandCardStyle"
+              toggle-color="primary"
+              flat
+              :options="[
                 { slot: 'normal', value: 'normal' },
                 { slot: 'dense', value: 'dense' },
                 { slot: 'mini', value: 'mini' },
-              ]">
+              ]"
+            >
               <template v-slot:normal>
                 <q-icon name="dashboard" />普通
                 <q-tooltip>按两列排列的基础视图</q-tooltip>
               </template>
               <template v-slot:dense>
                 <q-icon name="apps" />紧凑
-                <q-tooltip>按三列排列的紧凑视图，但不会显示适用的操作系统</q-tooltip>
+                <q-tooltip
+                  >按三列排列的紧凑视图，但不会显示适用的操作系统</q-tooltip
+                >
               </template>
               <template v-slot:mini>
                 <q-icon name="view_comfy" />面板
-                <q-tooltip>按四列排列的面板视图<br />
+                <q-tooltip
+                  >按四列排列的面板视图<br />
                   老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
                   注意：<br />
                   1.未启用、匹配类型为窗口的命令在此视图下不显示<br />
                   2.只显示图标、描述和匹配类型<br />
-                  3.点击卡片时会直接运行命令而不是编辑命令</q-tooltip>
+                  3.点击卡片时会直接运行命令而不是编辑命令</q-tooltip
+                >
               </template>
             </q-btn-toggle>
             <q-separator vertical />
             <!-- 新建按钮 -->
-            <q-btn split flat @click="addNewCommand" color="primary" label="新建" icon="add" />
+            <q-btn
+              split
+              flat
+              @click="addNewCommand"
+              color="primary"
+              label="新建"
+              icon="add"
+            />
             <q-separator vertical />
-            <q-btn stretch color="primary" flat size="xs" :style="{
-              height: footerBarHeight,
-            }"><q-spinner-bars color="primary" size="1.5em" />
+            <q-btn
+              stretch
+              color="primary"
+              flat
+              size="xs"
+              id="menuBtn"
+              :style="{
+                height: footerBarHeight,
+              }"
+              ><q-spinner-bars color="primary" size="1.5em" />
               <!-- 菜单 -->
-              <ConfigurationMenu :isTagStared="activatedQuickPanels.includes(currentTag)" :currentTag="currentTag">
+              <ConfigurationMenu
+                :isTagStared="activatedQuickPanels.includes(currentTag)"
+                :currentTag="currentTag"
+              >
               </ConfigurationMenu>
             </q-btn>
           </q-btn-group>
@@ -110,11 +189,24 @@
       </div>
     </div>
     <!-- 命令编辑界面 -->
-    <q-dialog v-model="isCommandEditorShow" persistent maximized :transition-show="newCommandDirect ? '' : 'slide-up'"
-      transition-hide="slide-down" style="overflow: hidden">
-      <CommandEditor ref="commandEditor" :action="commandEditorAction" @editorEvent="editorEvent"></CommandEditor>
+    <q-dialog
+      v-model="isCommandEditorShow"
+      persistent
+      maximized
+      :transition-show="newCommandDirect ? '' : 'slide-up'"
+      transition-hide="slide-down"
+      style="overflow: hidden"
+    >
+      <CommandEditor
+        ref="commandEditor"
+        :action="commandEditorAction"
+        @editorEvent="editorEvent"
+      ></CommandEditor>
     </q-dialog>
-    <CommandRunResult :action="{ type: 'config' }" ref="result"></CommandRunResult>
+    <CommandRunResult
+      :action="{ type: 'config' }"
+      ref="result"
+    ></CommandRunResult>
   </div>
 </template>
 
@@ -122,7 +214,7 @@
 import { defineAsyncComponent } from "vue";
 import quickcommandParser from "../js/common/quickcommandParser.js";
 import importAll from "../js/common/importAll.js";
-import changeLog from "../js/options/changeLog.js"
+import changeLog from "../js/options/changeLog.js";
 import pinyinMatch from "pinyin-match";
 import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor";
@@ -517,10 +609,21 @@ export default {
     showChangeLog() {
       let lastNeedLogEvent = changeLog[changeLog.length - 1];
       let loggedVersion =
-        this.$root.utools.whole.dbStorage.getItem("cfg_loggedVersion") || '0.0.0';
+        this.$root.utools.whole.dbStorage.getItem("cfg_loggedVersion") ||
+        "0.0.0";
       if (loggedVersion < lastNeedLogEvent.version) {
-        quickcommand.showConfirmBox('<pre style="white-space: pre-wrap;word-wrap: break-word;">' + lastNeedLogEvent.log + '</pre>', '更新日志', true, 700)
-        this.$root.utools.whole.dbStorage.setItem("cfg_loggedVersion", lastNeedLogEvent.version)
+        quickcommand.showConfirmBox(
+          '<pre style="white-space: pre-wrap;word-wrap: break-word;">' +
+            lastNeedLogEvent.log +
+            "</pre>",
+          "更新日志",
+          true,
+          700
+        );
+        this.$root.utools.whole.dbStorage.setItem(
+          "cfg_loggedVersion",
+          lastNeedLogEvent.version
+        );
       }
     },
   },
