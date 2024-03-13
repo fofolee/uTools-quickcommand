@@ -5,7 +5,7 @@
     v-show="!cardStyleVars.hideCard"
     :id="commandInfo.features.code"
     @mouseenter="showCtrlButtons = true"
-    @mouseleave="showCtrlButtons = false"
+    @mouseleave="if (!isCtrlBtnMenuOpen) showCtrlButtons = false;"
   >
     <div>
       <!-- mini 模式下不显示各类按钮 -->
@@ -22,7 +22,7 @@
         <!-- 选项按钮 -->
         <div
           class="absolute"
-          style="z-index: 1; right: 16px; top: 16px; transition: 0.2s"
+          style="z-index: 1; right: 16px; top: 16px"
           v-show="showCtrlButtons"
         >
           <q-btn
@@ -44,11 +44,19 @@
             round
             :color="!!cronExp ? 'amber' : 'blue-9'"
             :icon="!!cronExp ? 'timer' : 'insights'"
+            @click="isCtrlBtnMenuOpen = true"
           >
             <q-tooltip anchor="top middle" self="center middle">
               设置
             </q-tooltip>
-            <q-menu transition-show="jump-down" transition-hide="jump-up">
+            <q-menu
+              transition-show="jump-down"
+              transition-hide="jump-up"
+              @hide="
+                isCtrlBtnMenuOpen = false;
+                showCtrlButtons = false;
+              "
+            >
               <q-list style="min-width: 100px">
                 <q-item clickable v-close-popup @click="exportCommandFile">
                   <q-item-section side>
@@ -260,6 +268,7 @@ export default {
       // showShare: false,
       cronJob: null,
       showCtrlButtons: false,
+      isCtrlBtnMenuOpen: false,
     };
   },
   computed: {
