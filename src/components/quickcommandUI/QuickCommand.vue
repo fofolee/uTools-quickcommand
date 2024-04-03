@@ -1,13 +1,30 @@
 <template>
-  <q-dialog v-model="showDialog" :maximized="maximized" :transition-show="maximized ? 'fade' : 'scale'"
-    :transition-hide="maximized ? 'fade' : 'scale'">
-    <component ref="ui" :is="currentUI" :options="options" @clickOK="clickOK" @hide="showDialog = false" />
+  <q-dialog
+    v-model="showDialog"
+    :maximized="maximized"
+    :transition-show="maximized ? 'fade' : 'scale'"
+    :transition-hide="maximized ? 'fade' : 'scale'"
+  >
+    <component
+      ref="ui"
+      :is="currentUI"
+      :options="options"
+      @clickOK="clickOK"
+      @hide="showDialog = false"
+    />
   </q-dialog>
   <!-- waitButton 单独一个 -->
-  <q-btn class="fixed-top-right" style="z-index: 9999" v-if="showWb" color="primary" :label="wbLabel" @click="
-    showWb = false;
-  wbEvent();
-  " />
+  <q-btn
+    class="fixed-top-right"
+    style="z-index: 9999"
+    v-if="showWb"
+    color="primary"
+    :label="wbLabel"
+    @click="
+      showWb = false;
+      wbEvent();
+    "
+  />
 </template>
 
 <script>
@@ -64,7 +81,12 @@ export default {
 
       showConfirmBox: (message = "", title = "提示", isHtml = false, width) =>
         new Promise((reslove, reject) => {
-          this.showUI(ConfirmBox, { message, title, isHtml, width }, false, reslove);
+          this.showUI(
+            ConfirmBox,
+            { message, title, isHtml, width },
+            false,
+            reslove
+          );
         }),
 
       showMessageBox: (message, icon = "success", time) => {
@@ -81,11 +103,11 @@ export default {
           actions:
             time === 0
               ? [
-                {
-                  label: "确定",
-                  color: "white",
-                },
-              ]
+                  {
+                    label: "确定",
+                    color: "white",
+                  },
+                ]
               : [],
         });
       },
@@ -140,11 +162,12 @@ export default {
       },
     };
     Object.assign(window.quickcommand, quickcommandUI);
+    window.quickcommand.userData = this.$root.utools.userData;
     Object.freeze(quickcommand);
   },
   methods: {
-    clickOK() { },
-    wbEvent() { },
+    clickOK() {},
+    wbEvent() {},
     showUI(uiComponent, options, maximized, reslove) {
       this.showDialog = true;
       this.options = options;

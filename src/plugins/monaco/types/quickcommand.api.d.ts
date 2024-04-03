@@ -364,13 +364,13 @@ interface quickcommandApi {
   runInTerminal(command: string);
 
   /**
-   * 对应 utools.onPluginEnter 的 code type 和 payload
+   * 对应 utools.onPluginEnter 的 `code` `type` 和 `payload`
    *
-   * code: 唯一标识
+   * `code`: 唯一标识
    *
-   * type: 匹配模式，可以为 text | img | files | regex | over | window
+   * `type`: 匹配模式，可以为 text | img | files | regex | over | window
    *
-   * payload: 当匹配模式为关键字时，返回进入插件的关键字；为正则时，返回匹配的文本；为窗口时，返回匹配的窗口信息；为文件时，返回匹配的文件信息
+   * `payload`: 当匹配模式为关键字时，返回进入插件的关键字；为正则时，返回匹配的文本；为窗口时，返回匹配的窗口信息；为文件时，返回匹配的文件信息
    *
    * ```js
    * if (quickcommand.enterData.type == 'regex'){
@@ -412,6 +412,53 @@ interface quickcommandApi {
    * @param txt 要写入的文本
    */
   writeClipboard(txt: string);
+
+  userData: {
+    /**
+     * 创建/更新用户数据，返回是否成功
+     *
+     * 菜单-环境配置-用户特殊变量中的对应数据也会同步变更
+     *
+     * @param value: 要写入的数据
+     *
+     * @param id: 数据标识
+     *
+     * @param isNative: 是否仅本机有效，默认为 true
+     *
+     *```js
+     * // 仅本机有效时，不同设备可以分别设置 filePath 的值而不冲突
+     * quickcommand.userData.put('D:/xx.json' ,'filePath')
+     *
+     * // 非仅本机有效，则类似设置了一个缺省值，所有未设置仅本机有效的 filePath 值都为 D:/xx.json
+     * quickcommand.userData.put('D:/xx.json' ,'filePath', false)
+     * ```
+     */
+    put(value: string, id: string, isNative?: boolean): boolean;
+    /**
+     * 获取用户数据
+     *
+     * @param id: 数据标识
+     *
+     * ```js
+     * // 等效于特殊变量 {{usr:filePath}}
+     * quickcommand.userData.get('filePath')
+     * ```
+     */
+    get(id: string): string;
+    /**
+     * 删除用户数据，返回是否成功
+     *
+     * @param id: 数据标识
+     *
+     */
+    del(id: string): boolean;
+    /**
+     * 获取所有用户数据
+
+     *
+     */
+    all(): Array<{ id: string; value: string; isNative: boolean }>;
+  };
 }
 
 declare var quickcommand: quickcommandApi;
