@@ -17,7 +17,12 @@
     >
       <div v-for="item in runResult" :key="item">
         <ObjectTree :obj="item" v-if="typeof item === 'object'" />
-        <pre class="result" v-text="item" v-else></pre>
+        <pre
+          class="result undefined"
+          v-else-if="typeof item === 'undefined'"
+          v-text="'undefined'"
+        />
+        <pre class="result" v-text="item" v-else />
       </div>
     </div>
   </div>
@@ -134,6 +139,10 @@ export default {
   word-wrap: break-word;
   max-width: 100%;
   margin: 0;
+}
+.undefined {
+  color: #999;
+  font-style: italic;
 }
 iframe {
   width: 100%;
