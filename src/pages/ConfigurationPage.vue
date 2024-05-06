@@ -619,7 +619,7 @@ export default {
       switch (event.type) {
         case "save":
           this.saveCommand(event.data);
-          this.isCommandEditorShow = false;
+          // this.isCommandEditorShow = false;
         default:
           return;
       }

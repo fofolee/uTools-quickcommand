@@ -89,7 +89,7 @@ export default {
           );
         }),
 
-      showMessageBox: (message, icon = "success", time) => {
+      showMessageBox: (message, icon = "success", time, position = "top") => {
         message = _.truncate(message, { length: 1200 });
         if (icon === "success") icon = "positive";
         if (icon === "error") icon = "negative";
@@ -99,7 +99,7 @@ export default {
           type: icon,
           message: message,
           timeout: time,
-          position: "top",
+          position: position,
           actions:
             time === 0
               ? [
