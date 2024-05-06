@@ -135,17 +135,17 @@
               ]"
             >
               <template v-slot:normal>
-                <q-icon name="dashboard" />普通
+                <q-icon name="dashboard" />
                 <q-tooltip>按两列排列的基础视图</q-tooltip>
               </template>
               <template v-slot:dense>
-                <q-icon name="apps" />紧凑
+                <q-icon name="apps" />
                 <q-tooltip
                   >按三列排列的紧凑视图，但不会显示适用的操作系统</q-tooltip
                 >
               </template>
               <template v-slot:mini>
-                <q-icon name="view_comfy" />面板
+                <q-icon name="view_comfy" />
                 <q-tooltip
                   >按四列排列的面板视图<br />
                   老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
@@ -156,7 +156,16 @@
                 >
               </template>
             </q-btn-toggle>
-            <q-separator vertical />
+            <!-- <q-separator vertical /> -->
+            <q-btn
+              split
+              flat
+              @click="goShareCenter"
+              color="primary"
+              label="分享中心"
+              icon="groups"
+            />
+            <!-- <q-separator vertical /> -->
             <!-- 新建按钮 -->
             <q-btn
               split
@@ -166,7 +175,7 @@
               label="新建"
               icon="add"
             />
-            <q-separator vertical />
+            <!-- <q-separator vertical /> -->
             <q-btn
               stretch
               color="primary"
@@ -634,6 +643,9 @@ export default {
           lastNeedLogEvent.version
         );
       }
+    },
+    goShareCenter() {
+      utools.shellOpenExternal("https://qc.qaz.ink/");
     },
   },
 };

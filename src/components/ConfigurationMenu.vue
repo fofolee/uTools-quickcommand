@@ -403,12 +403,6 @@
             </q-list>
           </q-menu>
         </q-item>
-        <!-- <q-item clickable to="/share">
-              <q-item-section side>
-                <q-icon name="groups" />
-              </q-item-section>
-              <q-item-section>分享中心</q-item-section>
-            </q-item> -->
         <!-- 收藏 -->
         <q-item v-if="isTagStared" clickable v-close-popup @click="unMarkTag">
           <q-item-section side>

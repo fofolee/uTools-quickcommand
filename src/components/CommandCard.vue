@@ -70,13 +70,13 @@
                   </q-item-section>
                   <q-item-section>复制到剪贴板</q-item-section>
                 </q-item>
-                <!-- <q-item clickable @click="showShare = true" v-close-popup>
+                <q-item clickable @click="shareCommand" v-close-popup>
                   <q-item-section side>
                     <q-icon name="share" />
                   </q-item-section>
                   <q-item-section>分享</q-item-section>
                   <q-tooltip>分享到分享中心</q-tooltip>
-                </q-item> -->
+                </q-item>
                 <q-item
                   clickable
                   v-close-popup
@@ -252,7 +252,6 @@
 </template>
 
 <script>
-import { features } from "monaco-editor/esm/metadata.js";
 import commandTypes from "../js/options/commandTypes.js";
 import platformTypes from "../js/options/platformTypes.js";
 import CrontabSetting from "components/popup/CrontabSetting";
@@ -420,7 +419,7 @@ export default {
     // 导出到剪贴板
     exportCommandRaw() {
       utools.copyText(JSON.stringify(this.getRawCommand(), null, 4)) &&
-        quickcommand.showMessageBox("已复制到剪贴板");
+        utools.showNotification(`「${this.commandInfo.features.explain}」已复制到剪贴板`);
     },
     // 导出到文件
     exportCommandFile() {
@@ -431,6 +430,10 @@ export default {
         )}.json`,
         filters: [{ name: "json", extensions: ["json"] }],
       });
+    },
+    shareCommand() {
+      this.exportCommandRaw();
+      utools.shellOpenExternal("https://qc.qaz.ink/submit");
     },
   },
 };
