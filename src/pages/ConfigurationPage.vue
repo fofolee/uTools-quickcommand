@@ -321,8 +321,17 @@ export default {
     initPage() {
       // 如果从 newcommand 进入则直接新建命令
       if (this.newCommandDirect) {
-        if (this.$root.enterData.type === "text") this.addNewCommand();
-        else this.editCommand(JSON.parse(this.$root.enterData.payload));
+        if (this.$root.enterData.type === "text") {
+          this.addNewCommand();
+        } else if (this.$root.enterData.payload.slice(0, 3) === "qc=") {
+          this.editCommand(
+            JSON.parse(
+              window.base64Decode(this.$root.enterData.payload.slice(3))
+            )
+          );
+        } else {
+          this.editCommand(JSON.parse(this.$root.enterData.payload));
+        }
         this.$router.push("/configuration");
       }
       if (this.$route.params.tags) {

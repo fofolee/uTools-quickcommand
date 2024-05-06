@@ -1,59 +1,65 @@
 {
-    "pluginName": "快捷命令",
-    "description": "快速打开软件、网址及运行批处理、shell等脚本，免编写插件使用utools的api及实现UI交互",
-    "main": "index.html",
-    "homepage": "https://github.com/fofolee/uTools-quickcommand",
-    "publishPage": "https://yuanliao.info/d/424",
-    "version": "4.0.3",
-    "development": {
-        "main": "http://127.0.0.1:8080/"
+  "pluginName": "快捷命令",
+  "description": "快速打开软件、网址及运行批处理、shell等脚本，免编写插件使用utools的api及实现UI交互",
+  "main": "index.html",
+  "homepage": "https://github.com/fofolee/uTools-quickcommand",
+  "publishPage": "https://yuanliao.info/d/424",
+  "version": "4.0.3",
+  "development": {
+    "main": "http://127.0.0.1:8080/"
+  },
+  "author": "云之轩",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "pluginSetting": {
+    "single": false
+  },
+  "features": [
+    {
+      "code": "configuration",
+      "explain": "创建或编辑快捷命令",
+      "cmds": [
+        "快捷命令",
+        "QuickCommand"
+      ]
     },
-    "author": "云之轩",
-    "logo": "logo.png",
-    "preload": "preload.js",
-    "pluginSetting": {
-        "single": false
+    {
+      "code": "code",
+      "explain": "运行代码",
+      "cmds": [
+        "运行代码",
+        "RunCode"
+      ],
+      "icon": "features/code.png"
     },
-    "features": [
+    {
+      "code": "newcommand",
+      "explain": "快速新建快捷命令",
+      "cmds": [
+        "新建快捷命令",
+        "NewCommand",
         {
-            "code": "configuration",
-            "explain": "创建或编辑快捷命令",
-            "cmds": [
-                "快捷命令",
-                "QuickCommand"
-            ]
+          "type": "regex",
+          "label": "新建快捷命令",
+          "match": "/^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$/i",
+          "maxNum": 1
         },
         {
-            "code": "code",
-            "explain": "运行代码",
-            "cmds": [
-                "运行代码",
-                "RunCode"
-            ],
-            "icon": "features/code.png"
-        },
-        {
-            "code": "newcommand",
-            "explain": "快速新建快捷命令",
-            "cmds": [
-                "新建快捷命令",
-                "NewCommand",
-                {
-                    "type": "regex",
-                    "label": "新建快捷命令",
-                    "match": "/^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$/i",
-                    "maxNum": 1
-                }
-            ]
-        },
-        {
-            "code": "server",
-            "explain": "配置快捷命令后台服务",
-            "cmds": [
-                "快捷命令服务配置",
-                "quickcommandServer"
-            ],
-            "icon": "features/server.png"
+          "type": "regex",
+          "label": "新建快捷命令",
+          "match": "/^qc=eyJwcm9ncmFtIj/",
+          "maxNum": 1
         }
-    ]
+      ]
+    },
+    {
+      "code": "server",
+      "explain": "配置快捷命令后台服务",
+      "cmds": [
+        "快捷命令服务配置",
+        "quickcommandServer"
+      ],
+      "icon": "features/server.png"
+    }
+  ]
 }
