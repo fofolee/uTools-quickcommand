@@ -202,7 +202,7 @@
       v-model="isCommandEditorShow"
       persistent
       maximized
-      :transition-show="newCommandDirect ? '' : 'slide-up'"
+      :transition-show="fromNewCommand ? '' : 'slide-up'"
       transition-hide="slide-down"
       style="overflow: hidden"
     >
@@ -318,8 +318,11 @@ export default {
     tabBarWidth() {
       return this.commandCardStyle === "mini" ? "0" : "80px";
     },
-    newCommandDirect() {
+    fromNewCommand() {
       return this.$route.name === "newcommand";
+    },
+    fromImportCommand() {
+      return this.$route.name === "importcommand";
     },
   },
   mounted() {
@@ -328,21 +331,12 @@ export default {
   methods: {
     // 初始化
     initPage() {
-      // 如果从 newcommand 进入则直接新建命令
-      if (this.newCommandDirect) {
-        if (this.$root.enterData.type === "text") {
-          this.addNewCommand();
-        } else if (this.$root.enterData.payload.slice(0, 3) === "qc=") {
-          this.editCommand(
-            JSON.parse(
-              window.base64Decode(this.$root.enterData.payload.slice(3))
-            )
-          );
-        } else {
-          this.editCommand(JSON.parse(this.$root.enterData.payload));
-        }
-        this.$router.push("/configuration");
-      }
+      // newcommand 直接新建命令
+      if (this.fromNewCommand) this.addNewCommand();
+      // importcommand 导入命令
+      else if (this.fromImportCommand)
+        this.importCommand(this.$root.enterData.payload);
+      this.$router.push("/configuration");
       if (this.$route.params.tags) {
         this.changeCurrentTag(window.hexDecode(this.$route.params.tags));
         this.commandCardStyle = "mini";
@@ -450,29 +444,12 @@ export default {
       };
       this.isCommandEditorShow = true;
     },
-    // 从文件导入命令
-    importCommandFromFile() {
-      let options = {
-        type: "dialog",
-        argvs: { filters: [{ name: "json", extensions: ["json"] }] },
-        readfile: true,
-      };
-      let fileContent = window.getFileInfo(options);
-      return fileContent ? fileContent.data : false;
-    },
-    // 从剪贴板导入命令
-    importCommandFromClipboard() {
-      return window.clipboardReadText();
-    },
     // 是否为默认命令
     isDefaultCommand(code) {
       return code.slice(0, 8) === "default_";
     },
     // 导入命令
-    importCommand(fromFile = true) {
-      let quickCommandInfo = fromFile
-        ? this.importCommandFromFile()
-        : this.importCommandFromClipboard();
+    importCommand(quickCommandInfo) {
       if (!quickCommandInfo)
         return quickcommand.showMessageBox("导入未完成！", "warning");
       let parsedData = quickcommandParser(quickCommandInfo);
@@ -619,7 +596,7 @@ export default {
       switch (event.type) {
         case "save":
           this.saveCommand(event.data);
-          // this.isCommandEditorShow = false;
+        // this.isCommandEditorShow = false;
         default:
           return;
       }

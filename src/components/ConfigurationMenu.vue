@@ -24,13 +24,21 @@
           <q-menu anchor="top end" self="top start">
             <q-list>
               <!-- 导入 -->
-              <q-item clickable v-close-popup @click="importCommand">
+              <q-item
+                clickable
+                v-close-popup
+                @click="importCommand(importCommandFromFile())"
+              >
                 <q-item-section side>
                   <q-icon name="text_snippet" />
                 </q-item-section>
                 <q-item-section>从文件导入命令</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="importCommand(false)">
+              <q-item
+                clickable
+                v-close-popup
+                @click="importCommand(importCommandFromClipboard())"
+              >
                 <q-item-section side>
                   <q-icon name="content_paste" />
                 </q-item-section>
@@ -515,8 +523,22 @@ export default {
   },
   methods: {
     // 导入命令且定位
-    importCommand(fromFile = true) {
-      this.configurationPage.importCommand(fromFile);
+    importCommand(command) {
+      this.configurationPage.importCommand(command);
+    },
+    // 从文件导入命令
+    importCommandFromFile() {
+      let options = {
+        type: "dialog",
+        argvs: { filters: [{ name: "json", extensions: ["json"] }] },
+        readfile: true,
+      };
+      let fileContent = window.getFileInfo(options);
+      return fileContent ? fileContent.data : false;
+    },
+    // 从剪贴板导入命令
+    importCommandFromClipboard() {
+      return window.clipboardReadText();
     },
     // 全部导出
     exportAllCommands() {

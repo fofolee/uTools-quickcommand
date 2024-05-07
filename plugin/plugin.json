@@ -37,17 +37,17 @@
       "explain": "快速新建快捷命令",
       "cmds": [
         "新建快捷命令",
-        "NewCommand",
+        "NewCommand"
+      ]
+    },
+    {
+      "code": "importcommand",
+      "explain": "导入快捷命令",
+      "cmds": [
         {
           "type": "regex",
-          "label": "新建快捷命令",
-          "match": "/^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$/i",
-          "maxNum": 1
-        },
-        {
-          "type": "regex",
-          "label": "新建快捷命令",
-          "match": "/^qc=eyJwcm9ncmFtIj/",
+          "label": "导入命令",
+          "match": "/(^\\{[\\s\\S]*\"program\" *: *\".*\"[\\s\\S]*\"cmd\" *: *\".*\"[\\s\\S]*\\}$)|(^qc=e)/i",
           "maxNum": 1
         }
       ]
