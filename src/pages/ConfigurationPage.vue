@@ -449,10 +449,10 @@ export default {
       return code.slice(0, 8) === "default_";
     },
     // 导入命令
-    importCommand(quickCommandInfo) {
+    async importCommand(quickCommandInfo) {
       if (!quickCommandInfo)
         return quickcommand.showMessageBox("导入未完成！", "warning");
-      let parsedData = quickcommandParser(quickCommandInfo);
+      let parsedData = await quickcommandParser(quickCommandInfo);
       if (!parsedData) return quickcommand.showMessageBox("格式错误", "error");
       // 单个命令导入
       let dataToPushed = {};
@@ -481,13 +481,10 @@ export default {
       this.$nextTick(() => {
         let el = document.getElementById(code);
         el.scrollIntoViewIfNeeded();
-        // 闪一下
-        el.style.filter = "drop-shadow(2px 4px 6px gray)";
-        el.style.transform = "translateY(-5px)";
+        el.querySelector('.q-card').style.boxShadow = "0px 1px var(--q-primary)";
         setTimeout(() => {
-          el.style.filter = "";
-          el.style.transform = "";
-        }, 800);
+          el.querySelector('.q-card').style.boxShadow = "";
+        }, 5000);
         // 跳转标签
         document
           .querySelector(".q-tab--active")
