@@ -11,11 +11,18 @@ let isJsonQc = (obj, strict = true) => {
   return true;
 };
 
+let payloadParser = async (payload) => {
+  let [, format, value] = payload.split("/");
+  if (format === "base64") return window.base64Decode(value);
+  else if (format === "id") return await window.getSharedQcById(value);
+  else throw new Error("不支持的格式");
+};
+
 // 判断是否为可导入的快捷命令
-let qcparser = (json, strict = true) => {
+let quickcommandParser = async (payload, strict = true) => {
   try {
-    if (json.slice(0, 3) === "qc=") json = window.base64Decode(json.slice(3));
-    var qc = JSON.parse(json);
+    if (payload.slice(0, 3) === "qc/") payload = await payloadParser(payload);
+    var qc = JSON.parse(payload);
   } catch (error) {
     return false;
   }
@@ -25,4 +32,4 @@ let qcparser = (json, strict = true) => {
   else return false;
 };
 
-export default qcparser;
+export default quickcommandParser;

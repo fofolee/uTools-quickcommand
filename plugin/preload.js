@@ -10,18 +10,38 @@ const axios = require('axios');
 const http = require('http');
 const url = require('url')
 const kill = require('tree-kill')
+const crypto = require("crypto");
 require('ses')
+
+const md5 = (input) => {
+  return crypto.createHash("md5").update(input, "utf8").digest("hex");
+};
 
 window._ = require("lodash")
 window.getuToolsLite = require("./lib/utoolsLite")
-window.yuQueClient = axios.create({
-    baseURL: 'https://www.yuque.com/api/v2/',
+// window.yuQueClient = axios.create({
+//     baseURL: 'https://www.yuque.com/api/v2/',
+//     headers: {
+//         'Content-Type': 'application/json',
+//         // 只读权限
+//         'X-Auth-Token': 'WNrd0Z4kfCZLFrGLVAaas93DZ7sbG6PirKq7VxBL'
+//     }
+// });
+
+window.getSharedQcById = async (id) => {
+  const url = "https://qc.qaz.ink/home/quick/script/getScript";
+  const timeStamp = parseInt(new Date().getTime() / 1000);
+  const { data } = await axios.get(url, {
+    params: {
+      id,
+    },
     headers: {
-        'Content-Type': 'application/json',
-        // 只读权限
-        'X-Auth-Token': 'WNrd0Z4kfCZLFrGLVAaas93DZ7sbG6PirKq7VxBL'
-    }
-});
+      "verify-encrypt": md5("quickcommand666" + timeStamp),
+      "verify-time": timeStamp,
+    },
+  });
+  return JSON.stringify(data.data)
+};
 
 // 检测进程是否存在
 let isProcessExits = pid => {
@@ -633,10 +653,7 @@ window.runCodeFile = (cmd, option, terminal, callback, realTime=true) => {
     // }
     let child, cmdline;
     if (bin.slice(-7) == 'csc.exe') {
-        cmdline = `
-            $ { bin }
-            $ { argv }
-            /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}" ${scptarg}`
+        cmdline = `${bin} ${argv} /out:"${script.slice(0, -2) + 'exe'}" "${script}" && "${script.slice(0, -2) + 'exe'}" ${scptarg}`
     } else if (bin == 'gcc') {
         var suffix = utools.isWindows() ? '.exe' : ''
         cmdline = `${bin} ${argv} "${script.slice(0, -2)}" "${script}" && "${script.slice(0, -2) + suffix}" ${scptarg}`

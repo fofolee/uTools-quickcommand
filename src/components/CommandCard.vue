@@ -444,6 +444,7 @@ export default {
   cursor: pointer;
   user-select: none;
   background: #00000008;
+  transition: 0.5s;
 }
 .q-card--dark.command {
   background: #ffffff08;
