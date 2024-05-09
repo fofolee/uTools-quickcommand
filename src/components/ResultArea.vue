@@ -94,7 +94,7 @@ export default {
         clientHeight = clientHeight === 20 ? 0 : clientHeight;
         this.frameHeight = Math.max(
           // 当有绝对定位的元素时只能通过遍历获取高度
-          this.getMaxElHeight(cfw.document),
+          this.getMaxElHeight(cfw.document) || 0,
           clientHeight
         );
         this.$emit("frameLoad", this.frameHeight);
