@@ -81,6 +81,7 @@ export default {
   },
   mounted() {
     this.frameInit();
+    URL.revokeObjectURL(this.src)
   },
   methods: {
     frameInit() {
