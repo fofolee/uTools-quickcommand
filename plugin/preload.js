@@ -226,7 +226,7 @@ window.quickcommand = {
     },
 
     writeClipboard: function(text) {
-        electron.clipboard.writeText(text)
+        electron.clipboard.writeText(text.toString())
     }
 }
 
