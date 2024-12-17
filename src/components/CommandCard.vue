@@ -21,9 +21,9 @@
         </div>
         <!-- 选项按钮 -->
         <div
-          class="absolute"
+          class="absolute control-buttons"
           style="z-index: 1; right: 16px; top: 16px"
-          v-show="isWarpperHover"
+          :class="{ 'buttons-visible': isWarpperHover }"
         >
           <q-btn
             flat
@@ -360,7 +360,7 @@ export default {
     },
     // 命令卡片点击事件
     handleCardClick() {
-      // 视图模式下直接运行命令
+      // 视图模式直接运行命令
       if (this.cardStyle.code === 1) return this.runCommand();
       this.editCommand();
     },
@@ -465,17 +465,29 @@ export default {
   text-align: right;
 }
 .wrapper {
-  transition: 0.5s;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .warpperHover {
-  transition: 0.5s;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(-3px);
 }
 .featureIco {
-  transition: 0.5s;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .featureIcoHover {
-  transition: 0.5s;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(1.1);
+}
+.control-buttons {
+  opacity: 0;
+  transform: translateY(5px);
+  visibility: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-buttons.buttons-visible {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 </style>
