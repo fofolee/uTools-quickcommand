@@ -36,7 +36,7 @@
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
             所有没有添加标签的命令都会归在未分类 <br />
-            可以在新建命令时在标签一栏选择或直接键入标签名来添加标签
+            可以在新建命令时在标签��栏选择或直接键入标签名来添加标签
           </q-tooltip>
         </q-tab>
       </q-tabs>
@@ -122,6 +122,18 @@
         <!-- 按钮组 -->
         <div class="col-auto justify-end flex">
           <q-btn-group>
+            <!-- 添加暗色模式切换按钮 -->
+            <q-btn
+              flat
+              v-if="isDev"
+              :color="$q.dark.isActive ? 'amber' : 'blue-9'"
+              :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
+              @click="$q.dark.toggle()"
+            >
+              <q-tooltip>
+                {{ $q.dark.isActive ? '切换到亮色模式' : '切换到暗色模式' }}
+              </q-tooltip>
+            </q-btn>
             <!-- 切换视图 -->
             <q-btn-toggle
               v-model="commandCardStyle"
@@ -151,7 +163,7 @@
                   老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
                   注意：<br />
                   1.未启用、匹配类型为窗口的命令在此视图下不显示<br />
-                  2.只显示图标、描述和匹配类型<br />
+                  2.只显示图标描述和匹配类型<br />
                   3.点击卡片时会直接运行命令而不是编辑命令</q-tooltip
                 >
               </template>
@@ -258,6 +270,7 @@ export default {
       commandEditorAction: {},
       footerBarHeight: "40px",
       commandCardStyle: this.$root.profile.commandCardStyle,
+      isDev: window.utools.isDev(),
       commandCardStyleSheet: {
         mini: {
           width: "20%",
