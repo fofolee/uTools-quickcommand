@@ -121,7 +121,11 @@
             <q-avatar
               square
               size="48px"
-              :class="{ featureIco: 1, featureIcoHover: isWarpperHover }"
+              :class="{
+                featureIco: 1,
+                featureIcoHover: isWarpperHover,
+                'feature-disabled': !isCommandActivated
+              }"
             >
               <img :src="commandInfo.features.icon" />
             </q-avatar>
@@ -489,5 +493,10 @@ export default {
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
+}
+
+.feature-disabled {
+  opacity: 0.5;
+  filter: grayscale(100%);
 }
 </style>
