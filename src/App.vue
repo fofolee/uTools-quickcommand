@@ -15,7 +15,7 @@ import programmings from "./js/options/programs.js";
 import defaultProfile from "./js/options/defaultProfile.js";
 import Cron from "croner";
 import QuickCommand from "components/quickcommandUI/QuickCommand";
-import autoDetach from "./js/autoDetach.js";
+// import autoDetach from "./js/autoDetach.js";
 
 export default defineComponent({
   components: { QuickCommand },
@@ -122,7 +122,7 @@ export default defineComponent({
       this.enterData = enter;
       // 自动分离目前还没有好的方案
       // if (this.$root.profile.autoDetachFeatures?.includes(enter.code)) {
-        // autoDetach.autoDetach();
+      // autoDetach.autoDetach();
       // }
       this.$router.push(enter.code);
     },
@@ -240,5 +240,16 @@ export default defineComponent({
       this.utools.setStorage("st_v300Inited", true);
     },
   },
+  watch: {
+    // 监听 glassEffect 值变化
+    'profile.glassEffect': {
+      immediate: true,
+      handler(val) {
+        // 给 body 添加 glass-effect-menu 类和强度值
+        document.body.classList.toggle('glass-effect-menu', val > 0);
+        document.body.style.setProperty('--glass-effect-strength', val);
+      }
+    }
+  }
 });
 </script>

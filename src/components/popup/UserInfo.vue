@@ -92,7 +92,7 @@
           </div>
           <div class="row items-center q-mr-lg">
             <q-icon size="sm" name="image" class="q-mr-sm"></q-icon>
-            为面板视图设置背景图片
+            设置背景图片，以及开启毛玻璃效果
           </div>
           <div class="row items-center q-mr-lg">
             <q-icon size="sm" name="label" class="q-mr-sm"></q-icon>

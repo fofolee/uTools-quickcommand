@@ -3,7 +3,8 @@ export default {
     commandCardStyle: "dense",
     primaryColor: "#009688",
     defaultPrimaryColor: "#009688",
-    backgroundImg: null,
+    backgroundImgLight: "",
+    backgroundImgDark: "",
     autofocusSearch: false,
     denseTagBar: false,
     quickFileEnable: false,
@@ -13,6 +14,7 @@ export default {
     pluNickNameEnable: false,
     pluNickNameTag: "别名",
     autoDetachFeatures: [],
+    glassEffect: 0,
   },
   native: {
     crontabs: {},

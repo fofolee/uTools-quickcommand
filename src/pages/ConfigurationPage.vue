@@ -1,5 +1,21 @@
 <template>
-  <div class="relative">
+  <div class="config-page-container">
+    <div
+      class="background-layer"
+      :style="{
+        background: $q.dark.isActive
+          ? $root.profile.backgroundImgDark
+            ? `url('${$root.profile.backgroundImgDark}')`
+            : 'none'
+          : $root.profile.backgroundImgLight
+          ? `url('${$root.profile.backgroundImgLight}')`
+          : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+      }"
+    ></div>
     <!-- 标签栏 -->
     <!-- 面板视图不显示标签栏 -->
     <q-scroll-area
@@ -17,8 +33,6 @@
         v-model="currentTag"
         vertical
         switch-indicator
-        active-class="text-primary text-weight-bolder"
-        content-class="text-blue-grey"
         :key="$root.profile.denseTagBar"
         :dense="$root.profile.denseTagBar"
       >
@@ -27,11 +41,8 @@
           v-for="tag in allQuickCommandTags"
           :key="tag"
           :name="tag"
-          :content-class="
-            tag === '搜索结果' || activatedQuickPanels.includes(tag)
-              ? 'text-blue-7 text-weight-bolder'
-              : ''
-          "
+          :data-search-result="tag === '搜索结果'"
+          :data-active-panel="activatedQuickPanels.includes(tag)"
         >
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
@@ -48,16 +59,10 @@
       :style="{
         bottom: footerBarHeight,
         left: tabBarWidth,
-        background:
-          commandCardStyle === 'mini' && $root.profile.backgroundImg
-            ? `url('${$root.profile.backgroundImg}')`
-            : 'none',
-        backgroundSize: 'cover',
       }"
       v-model="currentTag"
-      transition-prev="fade"
-      transition-next="fade"
-      swipeable
+      transition-prev="slide-down"
+      transition-next="slide-up"
     >
       <q-tab-panel
         style="padding: 0"
@@ -131,7 +136,7 @@
               @click="$q.dark.toggle()"
             >
               <q-tooltip>
-                {{ $q.dark.isActive ? '切换到亮色模式' : '切换到暗色模式' }}
+                {{ $q.dark.isActive ? "切换到亮色模式" : "切换到暗色模式" }}
               </q-tooltip>
             </q-btn>
             <!-- 切换视图 -->
@@ -373,7 +378,7 @@ export default {
       // 启用的面板
       this.activatedQuickPanels = quickpanels;
     },
-    // 获取所有的快捷命令（导出的格式）
+    // 获取所有的命令（导出的格式）
     getAllQuickCommands() {
       this.allQuickCommands = _.cloneDeep(defaultCommands);
       this.$root.utools.getAll("qc_").forEach((x) => {
@@ -392,7 +397,7 @@ export default {
         ])
         .filter((x) => x);
     },
-    // 监听命令变更事件
+    // 监听命令变更件
     commandChanged(event) {
       switch (event.type) {
         case "remove":
@@ -457,7 +462,7 @@ export default {
       };
       this.isCommandEditorShow = true;
     },
-    // 是否为默认命令
+    // 是否为认命令
     isDefaultCommand(code) {
       return code.slice(0, 8) === "default_";
     },
@@ -494,9 +499,10 @@ export default {
       this.$nextTick(() => {
         let el = document.getElementById(code);
         el.scrollIntoViewIfNeeded();
-        el.querySelector('.q-card').style.boxShadow = "0px 1px var(--q-primary)";
+        el.querySelector(".q-card").style.boxShadow =
+          "0px 1px var(--q-primary)";
         setTimeout(() => {
-          el.querySelector('.q-card').style.boxShadow = "";
+          el.querySelector(".q-card").style.boxShadow = "";
         }, 5000);
         // 跳转标签
         document
@@ -504,7 +510,7 @@ export default {
           .scrollIntoView({ behavior: "smooth" });
       });
     },
-    // 修改并定位当前标签
+    // 修改并定位当前标签事件
     changeCurrentTag(tagName) {
       this.currentTag = tagName;
       this.$nextTick(() => {
@@ -575,7 +581,7 @@ export default {
         // 搜索时跳转到搜索结果标签
         this.changeCurrentTag(searchTagName);
       } else {
-        // 清空搜索回跳到之前标签
+        // 清空搜索回跳到前标签
         if (this.allQuickCommandTags.slice(-1)[0] === searchTagName)
           this.allQuickCommandTags.pop();
         if (this.currentTag !== this.lastTag)
@@ -639,20 +645,42 @@ export default {
 </script>
 
 <style scoped>
+/* 标签栏容器样式 */
+.q-tabs {
+  height: 100vh !important;
+  background: transparent !important;
+}
+
+/* 标签栏和底栏内的按钮悬浮效果 */
+.q-tabs .q-tab:hover,
+.absolute-bottom .q-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.body--dark .q-tabs .q-tab:hover,
+.body--dark .absolute-bottom .q-btn:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
 .q-tab {
   word-break: break-all;
   white-space: normal;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--q-blue-grey) !important;
+  opacity: 0.7;
+  transition: all 0.3s ease;
 }
 
-/* 标签悬浮效果 */
-.q-tab:hover {
-  transform: translateX(4px);
+/* 激活标签样式 */
+.q-tab--active {
+  color: var(--q-primary) !important;
+  font-weight: 600 !important;
+  opacity: 1;
 }
 
 .q-tab:hover::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: 0;
@@ -664,6 +692,19 @@ export default {
   transition: opacity 0.3s;
 }
 
+/* 特殊标签样式（搜索结果和激活面板） */
+.q-tab[data-search-result="true"],
+.q-tab[data-active-panel="true"] {
+  color: #4286de !important;
+  font-weight: 600 !important;
+}
+
+/* 标签悬浮效果 */
+.q-tab:hover {
+  opacity: 0.9;
+  transform: translateX(4px);
+}
+
 /* 标签内容过渡效果 */
 .q-tab__content {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -672,11 +713,12 @@ export default {
 /* 面板过渡效果 */
 .q-tab-panels {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: none !important;
 }
 
 .q-tab-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 暗色模式适配 */
@@ -686,10 +728,53 @@ export default {
 
 /* 标签滚动区域样式 */
 .q-scroll-area {
-  background: rgba(0, 0, 0, 0.02);
+  background: transparent;
 }
 
 :deep(.body--dark) .q-scroll-area {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
+}
+
+/* 底栏输入框样式 */
+.absolute-bottom .q-field__control {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+}
+
+.body--dark .absolute-bottom .q-field__control {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 底栏毛玻璃效果 */
+body.glass-effect-menu .absolute-bottom {
+  background: rgba(
+    255,
+    255,
+    255,
+    calc(0.15 + var(--glass-effect-strength) * 0.01)
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
+  -webkit-backdrop-filter: blur(
+    calc(var(--glass-effect-strength) * 1px)
+  ) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.body--dark.glass-effect-menu .absolute-bottom {
+  background: rgba(
+    0,
+    0,
+    0,
+    calc(0.2 + var(--glass-effect-strength) * 0.02)
+  ) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 调整内容层级 */
+.q-scroll-area,
+.q-tab-panels,
+.absolute-bottom {
+  position: absolute;
+  z-index: 1;
 }
 </style>

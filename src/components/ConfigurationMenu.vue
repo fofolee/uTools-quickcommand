@@ -235,7 +235,7 @@
                     />
                   </template>
                   <q-tooltip
-                    >一个可以直接运行代码的代码编辑器<br />
+                    >一个可以代码的代码编辑器<br />
                     也可在主输入框输入关键字「RunCode」进入
                   </q-tooltip>
                 </q-field>
@@ -319,61 +319,104 @@
                   <q-icon name="color_lens" />
                 </q-item-section>
                 <q-item-section>主颜色</q-item-section>
-                <q-tooltip>你可以更改界面的主题色，会员限定</q-tooltip>
+                <q-tooltip>你可以更改界面的主题色，会员限定 😎</q-tooltip>
                 <q-menu
                   v-if="$refs.user.isVIP"
                   nchor="top left"
                   self="bottom end"
+                  style="min-width: 200px; min-height: 200px"
                 >
-                  <q-card>
-                    <q-color
-                      @change="setPrimaryColor"
-                      v-model="$root.profile.primaryColor"
-                    />
-                    <q-btn
-                      color="primary"
-                      label="重置为默认"
-                      class="full-width"
-                      @click="resetPrimary"
-                    />
-                  </q-card>
+                  <q-color
+                    @change="setPrimaryColor"
+                    v-model="$root.profile.primaryColor"
+                  />
+                  <q-btn
+                    color="primary"
+                    label="重置为默认"
+                    class="full-width"
+                    @click="resetPrimary"
+                  />
                 </q-menu>
               </q-item>
               <q-item clickable :disable="!$refs.user.isVIP">
                 <q-item-section side>
                   <q-icon name="image" />
                 </q-item-section>
-                <q-item-section>面板视图背景图片</q-item-section>
-                <q-tooltip
-                  >为面板视图设置一张背景图片，会员限定<br />请不要选择尺寸太大的图片，将影响插件载入速度</q-tooltip
-                >
+                <q-item-section>背景图片设置</q-item-section>
+                <q-tooltip>设置背景图片，会员限定 😎</q-tooltip>
                 <q-menu
                   v-if="$refs.user.isVIP"
-                  nchor="top left"
+                  anchor="top left"
                   self="bottom end"
                 >
                   <q-card>
-                    <q-file
-                      dense
-                      standout="bg-primary text-white"
-                      v-model="selectFile"
-                      autofocus
-                      @update:model-value="changeBackground()"
-                      accept="image/*"
-                      label="请选择一张图片"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon name="attach_file" />
-                      </template>
-                    </q-file>
+                    <q-card-section>
+                      <div class="text-subtitle2">亮色模式背景</div>
+                      <q-file
+                        dense
+                        standout="bg-primary text-white"
+                        v-model="selectFileLight"
+                        autofocus
+                        @update:model-value="setBackgroundImg('light')"
+                        accept="image/*"
+                        label="请选择一张图片"
+                      >
+                        <template v-slot:prepend>
+                          <q-icon name="attach_file" />
+                        </template>
+                      </q-file>
+                    </q-card-section>
+                    <q-card-section>
+                      <div class="text-subtitle2">暗色模式背景</div>
+                      <q-file
+                        dense
+                        standout="bg-primary text-white"
+                        v-model="selectFileDark"
+                        @update:model-value="setBackgroundImg('dark')"
+                        accept="image/*"
+                        label="请选择一张图片"
+                      >
+                        <template v-slot:prepend>
+                          <q-icon name="attach_file" />
+                        </template>
+                      </q-file>
+                    </q-card-section>
                     <q-btn
                       color="negative"
                       label="取消背景"
                       class="full-width"
-                      @click="changeBackground(1)"
+                      @click="removeBackgroundImg()"
                     />
                   </q-card>
                 </q-menu>
+              </q-item>
+              <!-- 毛玻璃效果滑块 -->
+              <q-item>
+                <q-item-section side>
+                  <q-icon name="blur_on" />
+                </q-item-section>
+                <q-item-section class="flex">毛玻璃效果</q-item-section>
+                <q-tooltip
+                  >启用毛玻璃界面，并调节效果强度，会员限定 😎</q-tooltip
+                >
+                <q-item-section side>
+                  <div
+                    class="flex items-center justify-center"
+                    style="width: 56px"
+                  >
+                    <q-knob
+                      v-model="$root.profile.glassEffect"
+                      :min="0"
+                      :max="12"
+                      color="primary"
+                      :thickness="0.6"
+                      size="24px"
+                      track-color="grey-3"
+                      @change="toggleGlassEffect"
+                      class="q-mx-auto"
+                    />
+                  </div>
+                </q-item-section>
               </q-item>
               <q-item clickable :disable="!$refs.user.isVIP">
                 <q-item-section side>
@@ -386,6 +429,7 @@
                     v-model="$root.profile.denseTagBar"
                     :disable="!$refs.user.isVIP"
                     color="primary"
+                    @update:model-value="$root.saveProfile"
                 /></q-item-section>
               </q-item>
               <q-item clickable>
@@ -398,6 +442,7 @@
                   ><q-toggle
                     v-model="$root.profile.autofocusSearch"
                     color="primary"
+                    @update:model-value="$root.saveProfile"
                 /></q-item-section>
               </q-item>
               <!-- 自动分离 -->
@@ -495,7 +540,8 @@ export default {
   data() {
     return {
       setCssVar: setCssVar,
-      selectFile: ref(null),
+      selectFileLight: null,
+      selectFileDark: null,
       showAbout: false,
       showPanelConf: false,
       showUserDara: false,
@@ -565,17 +611,34 @@ export default {
     // 设置主题色
     setPrimaryColor() {
       this.setCssVar("primary", this.$root.profile.primaryColor);
+      this.$root.saveProfile();
     },
     // 重置主题色
     resetPrimary() {
       this.$root.profile.primaryColor = this.$root.profile.defaultPrimaryColor;
       this.setPrimaryColor();
     },
-    // 修改面板视图背景
-    changeBackground(reset = false) {
-      let base64 = window.getBase64Ico(this.selectFile.path);
-      this.$root.profile.backgroundImg = reset ? null : base64;
-      this.configurationPage.$forceUpdate();
+    // 修改背景
+    async setBackgroundImg(mode) {
+      const file =
+        mode === "light" ? this.selectFileLight : this.selectFileDark;
+      if (!file) return;
+
+      // 使用 Node.js 处理图片
+      const processedImage = await window.imageProcessor(file.path);
+
+      // 更新配置
+      if (mode === "light") {
+        this.$root.profile.backgroundImgLight = processedImage;
+      } else {
+        this.$root.profile.backgroundImgDark = processedImage;
+      }
+      this.$root.saveProfile();
+    },
+    removeBackgroundImg() {
+      this.$root.profile.backgroundImgLight = "";
+      this.$root.profile.backgroundImgDark = "";
+      this.$root.saveProfile();
     },
     // 取消收藏
     unMarkTag() {
@@ -628,6 +691,76 @@ export default {
       this.showAutoDetachFeatures = false;
       quickcommand.showMessageBox("设置成功");
     },
+    toggleGlassEffect(val) {
+      this.$root.profile.glassEffect = val;
+      this.$root.saveProfile();
+    },
   },
 };
 </script>
+
+<style>
+/* 基础菜单样式 - 始终保持最小毛玻璃效果 */
+.q-menu {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.07);
+}
+
+.body--dark .q-menu {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 毛玻璃菜单效果 - 叠加用户设置的效果 */
+body.glass-effect-menu .q-menu {
+  background: rgba(
+    255,
+    255,
+    255,
+    calc(0.15 + var(--glass-effect-strength) * 0.01)
+  ) !important;
+  backdrop-filter: blur(
+    calc(5px + var(--glass-effect-strength) * 1px)
+  ) !important;
+  -webkit-backdrop-filter: blur(
+    calc(5px + var(--glass-effect-strength) * 1px)
+  ) !important;
+}
+
+/* 暗色模式菜单 */
+body.body--dark.glass-effect-menu .q-menu {
+  background: rgba(
+    0,
+    0,
+    0,
+    calc(0.2 + var(--glass-effect-strength) * 0.02)
+  ) !important;
+}
+
+/* 菜单列表透明背景 */
+.q-menu .q-list {
+  background: transparent !important;
+}
+
+/* 菜单项浮效果 */
+.q-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.body--dark .q-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 输入框样式 */
+.q-menu .q-field__control {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+}
+
+.body--dark .q-menu .q-field__control {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+</style>

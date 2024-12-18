@@ -124,7 +124,7 @@
               :class="{
                 featureIco: 1,
                 featureIcoHover: isWarpperHover,
-                'feature-disabled': !isCommandActivated
+                'feature-disabled': !isCommandActivated,
               }"
             >
               <img :src="commandInfo.features.icon" />
@@ -141,7 +141,7 @@
               v-html="commandInfo.features.explain.trim() || '<br/>'"
             />
           </div>
-          <!-- 匹配模式 -->
+          <!-- 配模式 -->
           <div class="row">
             <div
               :class="
@@ -170,10 +170,7 @@
                     :color="matchTypeColor(cmd.type)"
                     :class="cardBadgeClass"
                   >
-                    <q-icon
-                      class="q-mr-xs"
-                      :name="commandTypes.window.icon"
-                    />
+                    <q-icon class="q-mr-xs" :name="commandTypes.window.icon" />
                     {{ getShortStrByByte(cmd.match.app[0]) }}
                   </q-badge>
                   <q-tooltip>
@@ -209,10 +206,7 @@
                     :color="matchTypeColor(cmd.type)"
                     :class="cardBadgeClass"
                   >
-                    <q-icon
-                      class="q-mr-xs"
-                      :name="commandTypes.regex.icon"
-                    />
+                    <q-icon class="q-mr-xs" :name="commandTypes.regex.icon" />
                     {{ getShortStrByByte(cmd.match) }}
                   </q-badge>
                   <q-tooltip>
@@ -351,7 +345,7 @@ export default {
     matchTypeColor() {
       return (cmdType = "key") => {
         if (!this.canCommandRunAtCurrentOS || !this.isCommandActivated) {
-          return this.$q.dark.isActive ? 'grey-9' : this.disabledColor;
+          return this.$q.dark.isActive ? "grey-9" : this.disabledColor;
         }
         return this.commandTypes[cmdType].color;
       };
@@ -371,9 +365,10 @@ export default {
       return this.$root.nativeProfile.crontabs[this.featureCode];
     },
     cardBadgeClass() {
-      return (!this.canCommandRunAtCurrentOS || !this.isCommandActivated) && this.$q.dark.isActive
-        ? 'text-grey-6'
-        : '';
+      return (!this.canCommandRunAtCurrentOS || !this.isCommandActivated) &&
+        this.$q.dark.isActive
+        ? "text-grey-6"
+        : "";
     },
   },
   props: {
@@ -454,7 +449,9 @@ export default {
     // 导出到剪贴板
     exportCommandRaw() {
       utools.copyText(JSON.stringify(this.getRawCommand(), null, 4)) &&
-        utools.showNotification(`「${this.commandInfo.features.explain}」已复制到剪贴板`);
+        utools.showNotification(
+          `「${this.commandInfo.features.explain}」已复制到剪贴板`
+        );
     },
     // 导出到文件
     exportCommandFile() {
@@ -478,8 +475,21 @@ export default {
 .q-card.command {
   cursor: pointer;
   user-select: none;
-  background: #ffffff08;
-  transition: 0.5s;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
+  -webkit-backdrop-filter: blur(
+    calc(var(--glass-effect-strength) * 1px)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.07);
+}
+
+.body--dark .q-card.command {
+  background: rgba(57, 57, 57, 0.09) !important;
+  border: 1px solid rgb(59 58 58 / 5%);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%),
+    0 3px 1px -2px rgb(69 67 67 / 12%);
 }
 
 .q-badge {

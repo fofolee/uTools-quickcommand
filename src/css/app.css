@@ -160,3 +160,46 @@ body {
 .q-tooltip[data-v-anchor="center right"] {
   transform-origin: center left;
 }
+
+
+.full-height {
+  height: 100vh;
+}
+
+.config-page-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.background-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+/* 毛玻璃效果叠加 */
+body.glass-effect-menu .q-card.command {
+  background: rgba(255, 255, 255, calc(0.3 + var(--glass-effect-strength) * 0.01)) !important;
+}
+
+body.body--dark.glass-effect-menu .q-card.command {
+  background: rgba(30, 30, 30, calc(0.3 + var(--glass-effect-strength) * 0.02)) !important;
+}
+
+/* 标签栏毛玻璃效果 */
+body.glass-effect-menu .q-tabs {
+  background: rgba(255, 255, 255, calc(0.15 + var(--glass-effect-strength) * 0.01)) !important;
+  backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.body--dark.glass-effect-menu .q-tabs {
+  background: rgba(0, 0, 0, calc(0.2 + var(--glass-effect-strength) * 0.02)) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
