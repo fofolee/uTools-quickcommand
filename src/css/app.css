@@ -25,3 +25,61 @@
 .icon-windows1:before {
   content: "\e6bb";
 }
+
+/* 优化 Tooltip 样式 */
+.q-tooltip {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  color: rgba(35, 35, 35, 0.98) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform-origin: center;
+  animation: tooltip-appear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 暗色模式适配 */
+.body--dark .q-tooltip {
+  background: rgba(35, 35, 35, 0.18) !important;
+  color: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Tooltip 动画 */
+@keyframes tooltip-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 多行文本的 Tooltip */
+.q-tooltip.multiline {
+  max-width: 280px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* Tooltip 位置微调 */
+.q-tooltip[data-v-anchor="top middle"] {
+  transform-origin: bottom center;
+}
+
+.q-tooltip[data-v-anchor="bottom middle"] {
+  transform-origin: top center;
+}
+
+.q-tooltip[data-v-anchor="center left"] {
+  transform-origin: center right;
+}
+
+.q-tooltip[data-v-anchor="center right"] {
+  transform-origin: center left;
+}

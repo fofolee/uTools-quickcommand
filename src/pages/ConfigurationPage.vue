@@ -36,7 +36,7 @@
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
             所有没有添加标签的命令都会归在未分类 <br />
-            可以在新建命令时在标签��栏选择或直接键入标签名来添加标签
+            可以在新建命令时在标签选择或直接键入标签名来添加标签
           </q-tooltip>
         </q-tab>
       </q-tabs>
@@ -159,7 +159,7 @@
               <template v-slot:mini>
                 <q-icon name="view_comfy" />
                 <q-tooltip
-                  >按四列排列的面板视图<br />
+                  >按四列的面板视图<br />
                   老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
                   注意：<br />
                   1.未启用、匹配类型为窗口的命令在此视图下不显示<br />
@@ -370,7 +370,7 @@ export default {
           : currentFts.push(x)
       );
       this.activatedQuickCommandFeatureCodes = currentFts.map((f) => f.code);
-      // 已启用的面板
+      // 启用的面板
       this.activatedQuickPanels = quickpanels;
     },
     // 获取所有的快捷命令（导出的格式）
@@ -642,5 +642,54 @@ export default {
 .q-tab {
   word-break: break-all;
   white-space: normal;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 标签悬浮效果 */
+.q-tab:hover {
+  transform: translateX(4px);
+}
+
+.q-tab:hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--q-primary);
+  opacity: 0.1;
+  border-radius: 4px;
+  transition: opacity 0.3s;
+}
+
+/* 标签内容过渡效果 */
+.q-tab__content {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 面板过渡效果 */
+.q-tab-panels {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-tab-panel {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 暗色模式适配 */
+:deep(.body--dark) .q-tab:hover::after {
+  opacity: 0.15;
+}
+
+/* 标签滚动区域样式 */
+.q-scroll-area {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+:deep(.body--dark) .q-scroll-area {
+  background: rgba(255, 255, 255, 0.03);
 }
 </style>

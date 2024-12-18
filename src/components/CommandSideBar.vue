@@ -24,45 +24,6 @@
       </q-avatar>
       <div class="row">
         <div>
-          <!-- 搜索面板推送 -->
-          <q-field
-            :disable="!canCommandSave"
-            stack-label
-            label-color="primary"
-            borderless
-            square
-            type="text"
-            label="搜索面板推送"
-          >
-            <template v-slot:control>
-              <div class="self-center full-width no-outline" tabindex="0">
-                {{
-                  currentCommand.features.mainPush
-                    ? "主搜索框执行"
-                    : "进插件后执行"
-                }}
-                <q-btn
-                  flat
-                  round
-                  icon="help_outline"
-                  size="sm"
-                  dense
-                  @click="showMainPushHelp"
-                ></q-btn>
-              </div>
-            </template>
-            <template v-slot:prepend>
-              <q-icon color="primary" name="troubleshoot" />
-            </template>
-            <template v-slot:append>
-              <q-toggle
-                v-model="currentCommand.features.mainPush"
-                color="primary"
-                size="md"
-                dense
-              />
-            </template>
-          </q-field>
           <!-- 说明 -->
           <q-input
             :disable="!canCommandSave"
@@ -260,6 +221,45 @@
               </q-item>
             </template>
           </q-select>
+          <!-- 搜索面板推送 -->
+          <q-field
+            :disable="!canCommandSave"
+            stack-label
+            label-color="primary"
+            borderless
+            square
+            type="text"
+            label="搜索面板推送"
+          >
+            <template v-slot:control>
+              <div class="self-center full-width no-outline" tabindex="0">
+                {{
+                  currentCommand.features.mainPush
+                    ? "主搜索框执行"
+                    : "进插件后执行"
+                }}
+                <q-btn
+                  flat
+                  round
+                  icon="help_outline"
+                  size="xs"
+                  dense
+                  @click="showMainPushHelp"
+                ></q-btn>
+              </div>
+            </template>
+            <template v-slot:prepend>
+              <q-icon color="primary" name="search" />
+            </template>
+            <template v-slot:append>
+              <q-toggle
+                v-model="currentCommand.features.mainPush"
+                color="primary"
+                size="md"
+                dense
+              />
+            </template>
+          </q-field>
           <!-- 平台 -->
           <q-select
             :disable="!canCommandSave"
