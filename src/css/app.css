@@ -26,6 +26,82 @@
   content: "\e6bb";
 }
 
+:root {
+  --q-dark: #464646;
+  --q-dark-page: #303133;
+}
+
+.q-card--dark {
+  background: var(--q-dark-page);
+}
+
+.container {
+  color: black;
+  background: white;
+}
+
+body {
+  background: #f4f4f4;
+  color: #333;
+}
+
+.body--dark .container {
+  color: white;
+  background: var(--q-dark-page);
+}
+
+.q-tooltip {
+  font-size: 11px;
+}
+
+.q-chip {
+  background: #e3e3e39a;
+}
+
+.q-chip--dark {
+  background: #676666;
+}
+
+.commandLogo {
+  cursor: pointer;
+  transition: 0.2s;
+  filter: drop-shadow(2px 1px 1px grey);
+}
+
+.commandLogo:hover {
+  transition: 0.5s;
+  transform: translateY(-5px);
+  filter: drop-shadow(2px 1px 5px grey);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: rgba(194, 194, 194, 0.4);
+  border: rgba(194, 194, 194, 0.4);
+}
+
+::-webkit-scrollbar-track-piece {
+  background: rgba(194, 194, 194, 0.1);
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-enter-to {
+  opacity: 1;
+}
+
+.fade-enter-active {
+  transition: opacity 0.3s ease;
+}
+
 /* 优化 Tooltip 样式 */
 .q-tooltip {
   background: rgba(255, 255, 255, 0.18) !important;
@@ -54,6 +130,7 @@
     opacity: 0;
     transform: scale(0.95) translateY(5px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);

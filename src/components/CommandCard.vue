@@ -478,12 +478,10 @@ export default {
 .q-card.command {
   cursor: pointer;
   user-select: none;
-  background: #00000008;
+  background: #ffffff08;
   transition: 0.5s;
 }
-.q-card--dark.command {
-  background: #ffffff08;
-}
+
 .q-badge {
   font-size: 15px;
   margin: 0 1px;
