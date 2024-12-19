@@ -12,6 +12,7 @@
         transform: isFullscreen ? 'translateX(-100%)' : 'translateX(0)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }"
+      :sideBarWidth="sideBarWidth"
       v-if="showSidebar"
     ></CommandSideBar>
 
@@ -224,13 +225,14 @@
       }"
     />
 
-    <!-- 添加全屏按钮 -->
+    <!-- 全屏按钮 -->
     <q-btn
       class="fullscreen-btn"
       round
       flat
       :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
       @click="toggleFullscreen"
+      :class="{ 'btn-fullscreen': isFullscreen }"
     >
       <q-tooltip>{{
         isFullscreen ? "退出全屏 (F11)" : "全屏编辑 (F11)"
@@ -252,7 +254,7 @@ const MonacoEditor = defineAsyncComponent(() =>
   import("components/MonacoEditor")
 );
 
-const defaultSideBarWidth = 250;
+const defaultSideBarWidth = 200;
 const defaultlanguageBarHeight = 40;
 
 export default {
@@ -324,7 +326,7 @@ export default {
           : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
-      // 默认命令��编辑
+      // 默认命令编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
@@ -466,26 +468,47 @@ export default {
 
 .fullscreen-btn {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 24px;
+  bottom: 24px;
   z-index: 1000;
-  background: rgba(var(--q-primary-rgb), 0.1);
+  background: rgba(var(--q-primary-rgb), 0.08);
   color: var(--q-primary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .fullscreen-btn:hover {
-  background: rgba(var(--q-primary-rgb), 0.2);
-  transform: scale(1.1);
+  background: rgba(var(--q-primary-rgb), 0.15);
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--q-primary-rgb), 0.2);
+}
+
+.fullscreen-btn:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.btn-fullscreen {
+  right: 32px;
+  bottom: 32px;
+  transform: rotate(180deg);
+}
+
+.btn-fullscreen:hover {
+  transform: rotate(180deg) scale(1.1) translateY(-2px);
 }
 
 .body--dark .fullscreen-btn {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .body--dark .fullscreen-btn:hover {
   background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* 统一过渡效果 */
@@ -520,6 +543,7 @@ export default {
 }
 
 .editor-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, left, top, opacity;
 }
 </style>
