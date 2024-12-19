@@ -225,21 +225,43 @@
       }"
     />
 
-    <!-- 全屏按钮 -->
-    <q-btn
-      class="fullscreen-btn"
-      round
-      flat
-      :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
-      @click="toggleFullscreen"
-      :class="{ 'btn-fullscreen': isFullscreen }"
-    >
-      <q-tooltip>{{
-        isFullscreen ? "退出全屏 (F11)" : "全屏编辑 (F11)"
-      }}</q-tooltip>
-    </q-btn>
+    <!-- 编辑器工具按钮组 -->
+    <div class="editor-tools">
+      <!-- 历史按钮 -->
+      <q-btn
+        class="history-btn"
+        round
+        flat
+        icon="history"
+        @click="showHistory"
+      >
+        <q-tooltip>历史记录</q-tooltip>
+      </q-btn>
+
+      <!-- 全屏按钮 -->
+      <q-btn
+        class="fullscreen-btn"
+        round
+        flat
+        :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+        @click="toggleFullscreen"
+        :class="{ 'btn-fullscreen': isFullscreen }"
+      >
+        <q-tooltip>{{
+          isFullscreen ? "退出全屏 (F11)" : "全屏编辑 (F11)"
+        }}</q-tooltip>
+      </q-btn>
+    </div>
+
     <!-- 运行结果 -->
     <CommandRunResult :action="action" ref="result"></CommandRunResult>
+
+    <!-- 历史记录组件 -->
+    <EditorHistory
+      ref="history"
+      @restore="restoreHistory"
+      :commandCode="quickcommandInfo.features?.code || 'temp'"
+    />
   </div>
 </template>
 
@@ -249,6 +271,7 @@ import CommandSideBar from "components/CommandSideBar";
 import CommandRunResult from "components/CommandRunResult";
 import QuickAction from "components/popup/QuickAction";
 import KeyRecorder from "components/popup/KeyRecorder";
+import EditorHistory from 'components/popup/EditorHistory.vue'
 // Performance Scripting > 500ms
 const MonacoEditor = defineAsyncComponent(() =>
   import("components/MonacoEditor")
@@ -264,6 +287,7 @@ export default {
     CommandRunResult,
     QuickAction,
     KeyRecorder,
+    EditorHistory
   },
   data() {
     return {
@@ -340,6 +364,11 @@ export default {
       this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
       this.setLanguage(this.quickcommandInfo.program);
       this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition);
+
+      // 等待编辑器内容加载完成后再保存
+      setTimeout(() => {
+        this.saveToHistory('初始化保存');
+      }, 1000); // 给予足够的时间让编辑器加载完成
     },
     programChanged(value) {
       this.setLanguage(value);
@@ -386,17 +415,13 @@ export default {
         type: "save",
         data: newQuickcommandInfo,
       });
-      if (!config.silent)
-        quickcommand.showMessageBox(
-          "保存成功！",
-          "success",
-          1000,
-          "bottom-right"
-        );
+      if (!config.silent) {
+        this.saveToHistory(); // 保存时记录历史
+      }
     },
     // 运行
     runCurrentCommand(cmd) {
-      this.saveCurrentCommand({ silent: true });
+      this.saveToHistory('运行时自动保存'); // 运行时保存
       let command = _.cloneDeep(this.quickcommandInfo);
       if (cmd) command.cmd = cmd;
       command.output =
@@ -452,6 +477,47 @@ export default {
         this.$refs.editor.resizeEditor();
       }, 300);
     },
+    showHistory() {
+      this.$refs.history.open();
+    },
+    saveToHistory(message = '已保存') {
+      // 确保编辑器已经初始化
+      if (!this.$refs.editor) {
+        return;
+      }
+
+      const content = this.$refs.editor.getEditorValue();
+      // 检查内容是否为空或未定义
+      if (!content || !content.trim()) {
+        return;
+      }
+
+      this.$refs.history.saveHistory(
+        content,
+        this.quickcommandInfo.program
+      );
+
+      // 显示提示
+      quickcommand.showMessageBox(
+        message,
+        'success',
+        1000,
+        'bottom-right'
+      );
+    },
+    restoreHistory(item) {
+      // 保存当前内容
+      this.saveToHistory('已保存当前内容');
+
+      // 恢复历史内容
+      this.$refs.editor.setEditorValue(item.content);
+      quickcommand.showMessageBox(
+        '已恢复历史内容',
+        'success',
+        1000,
+        'bottom-right'
+      );
+    },
   },
 };
 </script>
@@ -467,9 +533,6 @@ export default {
 }
 
 .fullscreen-btn {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
   z-index: 1000;
   background: rgba(var(--q-primary-rgb), 0.08);
   color: var(--q-primary);
@@ -491,8 +554,6 @@ export default {
 }
 
 .btn-fullscreen {
-  right: 32px;
-  bottom: 32px;
   transform: rotate(180deg);
 }
 
@@ -545,5 +606,47 @@ export default {
 .editor-transition {
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, left, top, opacity;
+}
+
+.editor-tools {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.isFullscreen .editor-tools {
+  right: 32px;
+  bottom: 32px;
+}
+
+.history-btn {
+  background: rgba(var(--q-primary-rgb), 0.08);
+  color: var(--q-primary);
+  transform-origin: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.history-btn:hover {
+  background: rgba(var(--q-primary-rgb), 0.15);
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--q-primary-rgb), 0.2);
+}
+
+.body--dark .history-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.body--dark .history-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 </style>
