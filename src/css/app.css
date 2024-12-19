@@ -62,18 +62,6 @@ body {
   background: #676666;
 }
 
-.commandLogo {
-  cursor: pointer;
-  transition: 0.2s;
-  filter: drop-shadow(2px 1px 1px grey);
-}
-
-.commandLogo:hover {
-  transition: 0.5s;
-  transform: translateY(-5px);
-  filter: drop-shadow(2px 1px 5px grey);
-}
-
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

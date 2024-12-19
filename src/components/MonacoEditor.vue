@@ -1,11 +1,12 @@
 <template>
-  <div>
-    <div id="monacoEditor" style="width: 100%; height: 100%"></div>
+  <div class="monaco-container">
+    <div id="monacoEditor" class="monaco-editor-instance"></div>
     <div class="absolute-center flex" v-show="!value && placeholder">
       <div class="placeholder text-center q-gutter-md">
         <div v-for="shortCut in shortCuts" :key="shortCut">
-          <span>{{ shortCut[0] }}</span><span class="shortcut-key">{{ shortCut[1] }}</span><span class="shortcut-key">{{
-            shortCut[2] }}</span>
+          <span>{{ shortCut[0] }}</span
+          ><span class="shortcut-key">{{ shortCut[1] }}</span
+          ><span class="shortcut-key">{{ shortCut[2] }}</span>
         </div>
       </div>
     </div>
@@ -48,7 +49,7 @@ export default {
   mounted() {
     this.initEditor();
     // 手动监听窗口大小变化，解决Monaco自动调整大小时导致ResizeObserver loop limit exceeded错误
-    window.addEventListener('resize', this.resizeEditor);
+    window.addEventListener("resize", this.resizeEditor);
     this.$emit("loaded");
   },
   props: {
@@ -58,8 +59,7 @@ export default {
     initEditor() {
       let monacoEditorPreferences = {
         value: "",
-        // 取消自动布局
-        automaticLayout: false,
+        automaticLayout: true,
         foldingStrategy: "indentation",
         autoClosingBrackets: true,
         tabSize: 2,
@@ -78,7 +78,12 @@ export default {
       this.bindKeys();
     },
     resizeEditor() {
-      this.rawEditor().layout();
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+      }
+      this.resizeTimeout = setTimeout(() => {
+        this.rawEditor().layout();
+      }, 50);
     },
     loadTypes() {
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -115,7 +120,7 @@ export default {
         let keys = [];
         // fix getValue of undefined
         let tokens = getTokens(toRaw(editor).getModel()?.getValue());
-        // 自定义变量、字符串
+        // 自定义量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
             keys.push({
@@ -127,7 +132,7 @@ export default {
             });
           }
         }
-        // 关键字、函数
+        // 关键字、��数
         Object.keys(keyWords).forEach((ItemKind) => {
           keyWords[ItemKind].forEach((item) => {
             keys.push({
@@ -168,7 +173,7 @@ export default {
             };
           },
         });
-        monacoCompletionProviders[language] = true
+        monacoCompletionProviders[language] = true;
       });
     },
     setEditorTheme() {
@@ -245,6 +250,13 @@ export default {
           that.$emit("keyStroke", "log", that.getSelectionOrLineContent());
         }
       );
+      // F11 全屏
+      this.rawEditor().addCommand(
+        monaco.KeyCode.F11,
+        () => {
+          this.$emit("keyStroke", "fullscreen");
+        }
+      );
     },
     getSelectionOrLineContent() {
       let selection = this.rawEditor().getSelection();
@@ -265,13 +277,26 @@ export default {
     },
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.resizeEditor);
+    window.removeEventListener("resize", this.resizeEditor);
     this.rawEditor().dispose();
   },
 };
 </script>
 
 <style scoped>
+.monaco-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.monaco-editor-instance {
+  width: 100%;
+  height: 100%;
+}
+
 .placeholder {
   font-size: 14px;
   font-family: sans-serif;

@@ -6,6 +6,7 @@
     :horizontal-thumb-style="{
       height: '5px',
     }"
+    class="command-side-bar"
   >
     <div class="row q-pa-md q-gutter-md">
       <q-btn
@@ -23,7 +24,7 @@
         />
       </q-avatar>
       <div class="row">
-        <div>
+        <div class="command-side-bar-content">
           <!-- 说明 -->
           <q-input
             :disable="!canCommandSave"
@@ -37,7 +38,10 @@
             label="说明"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" name="drive_file_rename_outline" />
+              <q-icon
+                class="command-side-bar-icon"
+                name="drive_file_rename_outline"
+              />
             </template>
           </q-input>
           <!-- 匹配类型 -->
@@ -63,7 +67,7 @@
             label="匹配类型"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" :name="cmdType.icon" />
+              <q-icon class="command-side-bar-icon" :name="cmdType.icon" />
             </template>
             <template v-slot:option="scope">
               <q-item v-bind="scope.itemProps">
@@ -102,7 +106,7 @@
             @blur="(e) => autoAddInputVal(e, $refs.cmdMatchRef)"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" name="square_foot" />
+              <q-icon class="command-side-bar-icon" name="square_foot" />
             </template>
           </q-select>
           <q-input
@@ -119,7 +123,7 @@
             :label="cmdType.matchLabel"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" name="square_foot" />
+              <q-icon class="command-side-bar-icon" name="square_foot" />
             </template>
           </q-input>
           <!-- 标签 -->
@@ -148,7 +152,7 @@
             @blur="(e) => autoAddInputVal(e, $refs.commandTagRef)"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" name="label" />
+              <q-icon class="command-side-bar-icon" name="label" />
             </template>
           </q-select>
           <!-- 特殊变量 -->
@@ -174,7 +178,7 @@
             label="特殊变量"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" name="attach_money" />
+              <q-icon class="command-side-bar-icon" name="attach_money" />
             </template>
             <template v-slot:option="scope">
               <q-item v-bind="scope.itemProps">
@@ -206,7 +210,7 @@
           >
             <template v-slot:prepend>
               <q-icon
-                color="primary"
+                class="command-side-bar-icon"
                 :name="outputTypes[currentCommand.output].icon"
               />
             </template>
@@ -249,7 +253,7 @@
               </div>
             </template>
             <template v-slot:prepend>
-              <q-icon color="primary" name="search" />
+              <q-icon class="command-side-bar-icon" name="search" />
             </template>
             <template v-slot:append>
               <q-toggle
@@ -278,7 +282,7 @@
             label="平台"
           >
             <template v-slot:prepend>
-              <q-icon color="primary" name="window" />
+              <q-icon class="command-side-bar-icon" name="window" />
             </template>
             <template v-slot:selected-item="scope">
               <q-chip
@@ -517,3 +521,61 @@ export default {
   },
 };
 </script>
+<style scoped>
+.command-side-bar {
+  height: 100%;
+  background: #f4f4f4;
+}
+
+.body--dark .command-side-bar {
+  background: #303133;
+}
+
+.commandLogo {
+  cursor: pointer;
+  transition: 0.2s;
+  filter: drop-shadow(2px 1px 1px grey);
+}
+
+.commandLogo:hover {
+  transition: 0.5s;
+  transform: translateY(-1px);
+  filter: drop-shadow(2px 1px 5px grey);
+}
+
+/* 输入框图标基础样式 */
+.command-side-bar-icon {
+  background: var(--q-primary);
+  border-radius: 8px;
+  padding: 4px;
+  color: #f4f4f4;
+  font-size: 16px;
+  /* 分开设置不同属性的过渡效果 */
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+  -webkit-font-smoothing: subpixel-antialiased;
+  /* 添加初始transform状态 */
+  transform: translateZ(0);
+}
+
+/* 输入框容器悬浮效果 */
+.q-field:hover .command-side-bar-icon {
+  transform: scale(1.05) translateY(-1px) translateZ(0);
+  box-shadow: 0 2px 8px rgba(var(--q-primary-rgb), 0.25);
+  background: var(--q-primary);
+  opacity: 0.9;
+  /* 移除font-size变化 */
+}
+
+/* 输入框获得焦点时的图标效果 */
+.q-field--focused .command-side-bar-icon {
+  transform: scale(1.1) translateY(-1px) translateZ(0);
+  box-shadow: 0 3px 12px rgba(var(--q-primary-rgb), 0.3);
+  background: var(--q-primary);
+  opacity: 0.85;
+}
+</style>

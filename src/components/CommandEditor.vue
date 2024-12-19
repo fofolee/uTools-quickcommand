@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute-full container" style="overflow: 'hidden'">
+  <div class="absolute-full container" style="overflow: hidden">
     <!-- 命令设置栏 -->
     <CommandSideBar
       ref="sidebar"
@@ -9,17 +9,21 @@
       :style="{
         width: sideBarWidth + 'px',
         zIndex: 1,
-        // transition: '0.3s',
+        transform: isFullscreen ? 'translateX(-100%)' : 'translateX(0)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }"
       v-if="showSidebar"
     ></CommandSideBar>
+
     <!-- 编程语言栏 -->
     <div
       class="absolute-top"
       :style="{
         left: showSidebar ? sideBarWidth + 'px' : 65,
         zIndex: 1,
-        // transition: '0.3s',
+        transform: isFullscreen ? 'translateY(-100%)' : 'translateY(0)',
+        opacity: isFullscreen ? 0 : 1,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }"
     >
       <div class="row" v-show="!!languageBarHeight">
@@ -198,19 +202,40 @@
         </q-dialog>
       </div>
     </div>
+
+    <!-- 编辑器 -->
     <MonacoEditor
-      class="absolute-bottom"
+      class="editor-transition"
       :placeholder="true"
       ref="editor"
       @loaded="monacoInit"
       @typing="(val) => monacoTyping(val)"
       @keyStroke="monacoKeyStroke"
       :style="{
-        top: languageBarHeight + 'px',
-        left: action.type === 'run' ? 0 : sideBarWidth + 'px',
-        // transition: '0.3s',
+        position: 'absolute',
+        top: isFullscreen ? 0 : languageBarHeight + 'px',
+        left: isFullscreen
+          ? 0
+          : action.type === 'run'
+          ? 0
+          : sideBarWidth + 'px',
+        right: 0,
+        bottom: 0,
       }"
     />
+
+    <!-- 添加全屏按钮 -->
+    <q-btn
+      class="fullscreen-btn"
+      round
+      flat
+      :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+      @click="toggleFullscreen"
+    >
+      <q-tooltip>{{
+        isFullscreen ? "退出全屏 (F11)" : "全屏编辑 (F11)"
+      }}</q-tooltip>
+    </q-btn>
     <!-- 运行结果 -->
     <CommandRunResult :action="action" ref="result"></CommandRunResult>
   </div>
@@ -264,6 +289,7 @@ export default {
       showSidebar: this.action.type !== "run",
       isRunCodePage: this.action.type === "run",
       listener: null,
+      isFullscreen: false,
     };
   },
   props: {
@@ -298,7 +324,7 @@ export default {
           : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
-      // 默认命令不可编辑
+      // 默认命令��编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
@@ -340,7 +366,7 @@ export default {
     showHelp() {
       window.showUb.docs();
     },
-    // 展开收起侧栏
+    // 展开收起栏
     toggleSideBarWidth() {
       this.sideBarWidth = !!this.sideBarWidth ? 0 : defaultSideBarWidth;
     },
@@ -398,9 +424,31 @@ export default {
           if (this.quickcommandInfo.program !== "quickcommand") return;
           this.runCurrentCommand(`console.log(${data})`);
           break;
+        case "fullscreen":
+          this.toggleFullscreen();
+          break;
         default:
           break;
       }
+    },
+    getFullscreenScale() {
+      const currentWidth = window.innerWidth - this.sideBarWidth;
+      const currentHeight = window.innerHeight - this.languageBarHeight;
+      const fullWidth = window.innerWidth;
+      const fullHeight = window.innerHeight;
+
+      const scaleX = fullWidth / currentWidth;
+      const scaleY = fullHeight / currentHeight;
+
+      return Math.max(scaleX, scaleY);
+    },
+    toggleFullscreen() {
+      this.isFullscreen = !this.isFullscreen;
+
+      // 重新布局编辑器
+      setTimeout(() => {
+        this.$refs.editor.resizeEditor();
+      }, 300);
     },
   },
 };
@@ -414,5 +462,64 @@ export default {
 
 .body--dark .menuBtn {
   background: rgba(255, 255, 255, 0.07);
+}
+
+.fullscreen-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  background: rgba(var(--q-primary-rgb), 0.1);
+  color: var(--q-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fullscreen-btn:hover {
+  background: rgba(var(--q-primary-rgb), 0.2);
+  transform: scale(1.1);
+}
+
+.body--dark .fullscreen-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.body--dark .fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 统一过渡效果 */
+.sidebar-transition,
+.language-bar-transition,
+.editor-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, left, top, opacity;
+}
+
+.editor-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-wrapper {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: auto;
+}
+
+.monaco-editor {
+  width: 100%;
+  height: 100%;
+}
+
+.editor-fullscreen {
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 2;
+}
+
+.editor-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>
