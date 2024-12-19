@@ -578,7 +578,6 @@ export default {
 /* 输入框容器悬浮效果 */
 .q-field:hover .command-side-bar-icon {
   transform: scale(1.05) translateY(-1px) translateZ(0);
-  box-shadow: 0 2px 8px rgba(var(--q-primary-rgb), 0.25);
   background: var(--q-primary);
   opacity: 0.9;
   /* 移除font-size变化 */
@@ -587,7 +586,6 @@ export default {
 /* 输入框获得焦点时的图标效果 */
 .q-field--focused .command-side-bar-icon {
   transform: scale(1.1) translateY(-1px) translateZ(0);
-  box-shadow: 0 3px 12px rgba(var(--q-primary-rgb), 0.3);
   background: var(--q-primary);
   opacity: 0.85;
 }

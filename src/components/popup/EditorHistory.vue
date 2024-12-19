@@ -1,84 +1,123 @@
 <template>
-  <q-dialog
-    v-model="show"
-    position="right"
-    @hide="$emit('hide')"
-    transition-show="slide-left"
-    transition-hide="slide-right"
-  >
-    <q-card class="history-card">
-      <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">编辑历史</div>
-        <q-space />
-        <q-btn
-          flat
-          round
-          dense
-          icon="delete_sweep"
-          @click="clearHistory"
-        >
-          <q-tooltip>清空历史</q-tooltip>
-        </q-btn>
-        <q-btn icon="close" flat round dense v-close-popup />
-      </q-card-section>
+  <div class="editor-history-container">
+    <!-- 渲染默认插槽内容(历史按钮) -->
+    <q-btn
+      round
+      dense
+      class="history-btn"
+      :class="{ saving: isSaving }"
+      icon="history"
+      @click="showHistory"
+    >
+      <div class="save-overlay">
+        <q-icon name="check" />
+      </div>
+      <q-tooltip>历史记录</q-tooltip>
+    </q-btn>
 
-      <q-card-section class="q-pt-sm">
-        <div class="history-list">
-          <q-list separator>
-            <q-item
-              v-for="(item, index) in historyList"
-              :key="index"
-              clickable
-              v-ripple
-              @click="restoreHistory(item)"
-              class="history-item"
-            >
-              <q-item-section>
-                <q-item-label>{{ formatDate(item.timestamp) }}</q-item-label>
-                <q-item-label caption>
-                  {{ item.program }} · {{ truncateContent(item.content) }}
-                </q-item-label>
-              </q-item-section>
+    <q-dialog
+      v-model="show"
+      position="right"
+      @hide="$emit('hide')"
+      transition-show="slide-left"
+      transition-hide="slide-right"
+      seamless
+    >
+      <q-card class="history-card q-pa-none">
+        <div class="history-layout">
+          <!-- 左侧预览区域 -->
+          <div class="preview-container">
+            <div v-if="selectedIndex !== null" class="preview-content">
+              <div class="preview-header text-h6">
+                <q-icon name="code" size="16px" />
+                <span class="q-ml-sm">代码预览</span>
+              </div>
+              <pre>{{ historyList[selectedIndex]?.content || "" }}</pre>
+            </div>
+            <div v-else class="preview-placeholder">
+              <q-icon name="code" size="48px" color="grey-7" />
+              <div class="text-grey-7 q-mt-sm text-subtitle1">
+                鼠标悬停查看代码预览
+              </div>
+            </div>
+          </div>
 
-              <q-item-section side>
-                <q-btn
-                  flat
-                  round
-                  dense
-                  icon="delete_outline"
-                  @click.stop="deleteHistory(index)"
+          <!-- 右侧历史列表 -->
+          <div class="history-list-container">
+            <q-card-section class="header-section row items-center q-pb-none">
+              <div class="text-h6">历史记录</div>
+              <q-space />
+              <q-btn flat round dense icon="delete_sweep" @click="confirmClear">
+                <q-tooltip>清空历史</q-tooltip>
+              </q-btn>
+              <q-btn icon="close" flat round dense v-close-popup />
+            </q-card-section>
+
+            <q-card-section class="q-pt-sm history-list">
+              <q-list separator>
+                <q-item
+                  v-for="(item, index) in historyList"
+                  :key="index"
+                  clickable
+                  v-ripple
+                  @click="restoreHistory(item)"
+                  class="history-item"
+                  :class="{ selected: selectedIndex === index }"
+                  @mouseenter="selectedIndex = index"
                 >
-                  <q-tooltip>删除</q-tooltip>
-                </q-btn>
-              </q-item-section>
+                  <q-item-section>
+                    <div class="row items-center">
+                      <q-item-label class="text-weight-medium">{{
+                        formatDate(item.timestamp)
+                      }}</q-item-label>
+                      <q-badge
+                        class="q-ml-sm"
+                        :color="
+                          item.program === 'JavaScript' ? 'yellow-8' : 'blue-6'
+                        "
+                        text-color="white"
+                      >
+                        {{ item.program }}
+                      </q-badge>
+                    </div>
+                    <q-item-label caption class="q-mt-xs text-grey-7">
+                      {{ truncateContent(item.content) }}
+                    </q-item-label>
+                  </q-item-section>
 
-              <!-- 预览弹窗 -->
-              <q-tooltip
-                anchor="center right"
-                self="center left"
-                :offset="[10, 0]"
-                class="history-preview bg-dark"
-                :delay="500"
-              >
-                <pre class="preview-content">{{ item.content }}</pre>
-              </q-tooltip>
-            </q-item>
-          </q-list>
+                  <q-item-section side>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      icon="delete_outline"
+                      class="delete-btn"
+                      @click.stop="deleteHistory(index)"
+                    >
+                      <q-tooltip>删除</q-tooltip>
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-card-section>
+          </div>
         </div>
-      </q-card-section>
-    </q-card>
-  </q-dialog>
+      </q-card>
+    </q-dialog>
+  </div>
 </template>
 
 <script>
+import { ref, reactive } from "vue";
+
 export default {
-  name: 'EditorHistory',
+  name: "EditorHistory",
 
   props: {
     commandCode: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
 
   data() {
@@ -86,8 +125,19 @@ export default {
       show: false,
       historyList: [],
       maxHistoryItems: 50,
-      storagePrefix: 'editor_history_'
-    }
+      storagePrefix: "editor_history_",
+      isSaving: false,
+      saveTimer: null,
+      selectedIndex: null,
+      showClearConfirm: false,
+    };
+  },
+
+  setup() {
+    const previewStates = reactive({});
+    return {
+      previewStates,
+    };
   },
 
   methods: {
@@ -98,6 +148,36 @@ export default {
     open() {
       this.loadHistory();
       this.show = true;
+    },
+
+    tryToSave(content, program) {
+      if (!content || !content.trim()) {
+        return false;
+      }
+
+      if (new Blob([content]).size > 5120) {
+        return false;
+      }
+
+      const saved = this.saveHistory(content, program);
+      if (saved) {
+        this.showSaveAnimation();
+      }
+      return true;
+    },
+
+    showSaveAnimation() {
+      if (this.saveTimer) {
+        clearTimeout(this.saveTimer);
+      }
+      this.isSaving = true;
+      this.saveTimer = setTimeout(() => {
+        this.isSaving = false;
+      }, 1500);
+    },
+
+    showHistory() {
+      this.open();
     },
 
     loadHistory() {
@@ -111,7 +191,7 @@ export default {
             const item = JSON.parse(localStorage.getItem(key));
             this.historyList.push(item);
           } catch (e) {
-            console.error('Failed to parse history item:', e);
+            console.error("Failed to parse history item:", e);
           }
         }
       }
@@ -120,7 +200,7 @@ export default {
 
       if (this.historyList.length > this.maxHistoryItems) {
         const toDelete = this.historyList.slice(this.maxHistoryItems);
-        toDelete.forEach(item => {
+        toDelete.forEach((item) => {
           localStorage.removeItem(this.getStorageKey(item.timestamp));
         });
         this.historyList = this.historyList.slice(0, this.maxHistoryItems);
@@ -128,11 +208,25 @@ export default {
     },
 
     saveHistory(content, program) {
+      // 先加载最新的历史记录
+      this.loadHistory();
+
+      // 检查是否与最新的历史记录相同
+      if (this.historyList.length > 0) {
+        const latestHistory = this.historyList[0];
+        if (
+          latestHistory.content === content &&
+          latestHistory.program === program
+        ) {
+          return false; // 如果内容程序类型都相同，则不保存
+        }
+      }
+
       const timestamp = Date.now();
       const historyItem = {
         content,
         program,
-        timestamp
+        timestamp,
       };
 
       try {
@@ -141,15 +235,18 @@ export default {
           JSON.stringify(historyItem)
         );
 
-        this.loadHistory();
+        // 直接将新记录添加到列表开头
+        this.historyList.unshift(historyItem);
+        return true; // 表示成功保存
       } catch (e) {
-        if (e.name === 'QuotaExceededError') {
+        if (e.name === "QuotaExceededError") {
           if (this.historyList.length > 0) {
             const oldestItem = this.historyList[this.historyList.length - 1];
             localStorage.removeItem(this.getStorageKey(oldestItem.timestamp));
-            this.saveHistory(content, program);
+            return this.saveHistory(content, program);
           }
         }
+        return false;
       }
     },
 
@@ -159,7 +256,15 @@ export default {
       this.historyList.splice(index, 1);
     },
 
-    clearHistory() {
+    confirmClear() {
+      quickcommand.showConfirmBox("确定要清空所有历史记录吗？").then((res) => {
+        if (res) {
+          this.doClearHistory();
+        }
+      });
+    },
+
+    doClearHistory() {
       const prefix = `${this.storagePrefix}${this.commandCode}_`;
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
@@ -168,10 +273,11 @@ export default {
         }
       }
       this.historyList = [];
+      this.selectedIndex = null;
     },
 
     restoreHistory(item) {
-      this.$emit('restore', item);
+      this.$emit("restore", item);
       this.show = false;
     },
 
@@ -182,57 +288,252 @@ export default {
 
       // 24小时内显示相对时间
       if (diff < 24 * 60 * 60 * 1000) {
-        if (diff < 60 * 1000) return '刚刚';
+        if (diff < 60 * 1000) return "刚刚";
         if (diff < 60 * 60 * 1000) return `${Math.floor(diff / 60000)}分钟前`;
         return `${Math.floor(diff / 3600000)}小时前`;
       }
 
       // 超过24小时显示具体日期时间
-      return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+      return `${
+        date.getMonth() + 1
+      }月${date.getDate()}日 ${date.getHours()}:${String(
+        date.getMinutes()
+      ).padStart(2, "0")}`;
     },
 
     truncateContent(content) {
-      return content.length > 50 ? content.slice(0, 50) + '...' : content;
-    }
-  }
-}
+      return content.length > 50 ? content.slice(0, 50) + "..." : content;
+    },
+
+    showPreview(index) {
+      this.previewStates[index] = true;
+    },
+
+    hidePreview(index) {
+      this.previewStates[index] = false;
+    },
+  },
+};
 </script>
 
 <style scoped>
 .history-card {
-  width: 400px;
+  width: 800px;
   max-width: 90vw;
   height: 100vh;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+.history-layout {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.history-list-container {
+  width: 400px;
+  border-left: 1px solid var(--q-separator-color);
+  border-right: 1px solid var(--q-separator-color);
+  display: flex;
+  flex-direction: column;
+  background: var(--q-card-background);
+  position: relative;
+  z-index: 1;
+}
+
+.header-section {
+  padding: 16px 16px 8px;
+  position: relative;
+  background: #f4f4f4;
+}
+
+.preview-container {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+  background: #f4f4f4;
+  transition: all 0.3s ease;
+}
+
+.preview-header {
+  padding: 16px 16px 8px;
+  /* font-size: 13px; */
+  display: flex;
+  align-items: center;
 }
 
 .history-list {
-  height: calc(100vh - 60px);
-  overflow-y: auto;
+  flex: 1;
+  padding: 0;
+  background: #f4f4f4;
 }
 
 .history-item {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 12px 16px;
+  border-left: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
 }
 
-.history-item:hover {
-  background: rgba(var(--q-primary-rgb), 0.05);
+.history-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.history-preview {
-  max-width: 400px;
-  padding: 12px;
+.history-item:hover::before,
+.history-item.selected::before {
+  opacity: 1;
+}
+
+.history-item:hover,
+.history-item.selected {
+  border-left-color: var(--q-primary);
+  transform: translateX(2px);
 }
 
 .preview-content {
+  width: 100%;
+  height: 100%;
   margin: 0;
-  white-space: pre-wrap;
   font-size: 12px;
-  max-height: 200px;
+  overflow: hidden;
+  line-height: 1.5;
+  font-family: monospace;
+  flex-direction: column;
+  display: flex;
+}
+
+.preview-content pre {
+  margin: 0;
+  padding: 16px;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-all;
   overflow-y: auto;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.6;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.preview-placeholder {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  padding: 20px;
+}
+
+.preview-placeholder .q-icon {
+  margin-bottom: 12px;
+}
+
+.preview-placeholder .text-subtitle1 {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* 自定义滚动条 */
+.preview-content pre::-webkit-scrollbar,
+.history-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.preview-content pre::-webkit-scrollbar-track,
+.history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preview-content pre::-webkit-scrollbar-thumb,
+.history-list::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+}
+
+.preview-content pre::-webkit-scrollbar-thumb:hover,
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: var(--q-primary);
+  opacity: 0.3;
 }
 
 /* 暗色模式适配 */
-.body--dark .history-item:hover {
+.body--dark .history-card,
+.body--dark .history-list-container,
+.body--dark .header-section,
+.body--dark .history-list,
+.body--dark .preview-container {
+  background: #303133;
+}
+
+.history-btn {
+  color: #666;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 3px 3px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.history-btn:hover {
+  transform: translateY(-1px);
+}
+
+.save-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--q-positive);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.save-overlay i {
+  color: white;
+  font-size: 1.2em;
+}
+
+.history-btn.saving {
+  pointer-events: none;
+}
+
+.history-btn.saving .save-overlay {
+  transform: translateY(0);
+}
+
+/* 暗色模式适配 */
+.body--dark .history-btn {
+  color: #bbb;
   background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.body--dark .history-btn:hover {
+  background: #505050;
+}
+
+/* 确认对话框样式 */
+.confirm-dialog {
+  min-width: 300px;
+  padding: 8px;
 }
 </style>
