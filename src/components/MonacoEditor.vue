@@ -120,7 +120,7 @@ export default {
         let keys = [];
         // fix getValue of undefined
         let tokens = getTokens(toRaw(editor).getModel()?.getValue());
-        // 自定义量、字符串
+        // 自定义变量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
             keys.push({
@@ -132,7 +132,7 @@ export default {
             });
           }
         }
-        // 关键字、��数
+        // 关键字、函数
         Object.keys(keyWords).forEach((ItemKind) => {
           keyWords[ItemKind].forEach((item) => {
             keys.push({

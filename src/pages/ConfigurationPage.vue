@@ -47,7 +47,7 @@
           {{ tag }}
           <q-tooltip v-if="tag === '未分类'">
             所有没有添加标签的命令都会归在未分类 <br />
-            可以在新建命令时在标签选择或直接键入标签名来添加标签
+            可以在新建命令时在标签一栏选择或直接键入标签名来添加标签
           </q-tooltip>
         </q-tab>
       </q-tabs>
@@ -164,7 +164,7 @@
               <template v-slot:mini>
                 <q-icon name="view_comfy" />
                 <q-tooltip
-                  >按四列的面板视图<br />
+                  >按四列排列的面板视图<br />
                   老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
                   注意：<br />
                   1.未启用、匹配类型为窗口的命令在此视图下不显示<br />
@@ -375,7 +375,7 @@ export default {
           : currentFts.push(x)
       );
       this.activatedQuickCommandFeatureCodes = currentFts.map((f) => f.code);
-      // 启用的面板
+      // 已启用的面板
       this.activatedQuickPanels = quickpanels;
     },
     // 获取所有的命令（导出的格式）
@@ -397,7 +397,7 @@ export default {
         ])
         .filter((x) => x);
     },
-    // 监听命令变更件
+    // 监听命令变更事件
     commandChanged(event) {
       switch (event.type) {
         case "remove":
@@ -462,7 +462,7 @@ export default {
       };
       this.isCommandEditorShow = true;
     },
-    // 是否为认命令
+    // 是否为默认命令
     isDefaultCommand(code) {
       return code.slice(0, 8) === "default_";
     },
@@ -581,7 +581,7 @@ export default {
         // 搜索时跳转到搜索结果标签
         this.changeCurrentTag(searchTagName);
       } else {
-        // 清空搜索回跳到前标签
+        // 清空搜索回跳到之前标签
         if (this.allQuickCommandTags.slice(-1)[0] === searchTagName)
           this.allQuickCommandTags.pop();
         if (this.currentTag !== this.lastTag)

@@ -141,7 +141,7 @@
               v-html="commandInfo.features.explain.trim() || '<br/>'"
             />
           </div>
-          <!-- 配模式 -->
+          <!-- 匹配模式 -->
           <div class="row">
             <div
               :class="

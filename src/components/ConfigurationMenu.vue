@@ -235,7 +235,7 @@
                     />
                   </template>
                   <q-tooltip
-                    >一个可以代码的代码编辑器<br />
+                    >一个可以直接运行代码的代码编辑器<br />
                     也可在主输入框输入关键字「RunCode」进入
                   </q-tooltip>
                 </q-field>

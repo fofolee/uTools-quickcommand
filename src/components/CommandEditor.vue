@@ -339,7 +339,7 @@ export default {
           : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
-      // 默认命令编辑
+      // 默认命令不可编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
       }
@@ -357,7 +357,7 @@ export default {
       // 等待编辑器内容加载完成后再保存
       setTimeout(() => {
         this.saveToHistory();
-      }, 1000); // 给予足够的时间让编辑器载完成
+      }, 1000); // 给予足够的时间让编辑器加载完成
     },
     programChanged(value) {
       this.setLanguage(value);
@@ -386,12 +386,12 @@ export default {
     showHelp() {
       window.showUb.docs();
     },
-    // 展开收起栏
+    // 展开收起侧栏
     toggleSideBarWidth() {
       this.sideBarWidth = !!this.sideBarWidth ? 0 : defaultSideBarWidth;
     },
     // 保存
-    saveCurrentCommand(config = { silent: false }) {
+    saveCurrentCommand(message = "保存成功") {
       let updatedData = this.$refs.sidebar?.SaveMenuData();
       if (!updatedData) return;
       Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
@@ -404,13 +404,13 @@ export default {
         type: "save",
         data: newQuickcommandInfo,
       });
-      if (!config.silent) {
-        this.saveToHistory(); // 保存时记录历史
-      }
+      this.saveToHistory(); // 保存时记录历史
+      if (!message) return;
+      quickcommand.showMessageBox(message, "success", 1000, "bottom-right");
     },
     // 运行
     runCurrentCommand(cmd) {
-      this.saveToHistory(); // 运行时保存
+      this.saveCurrentCommand(null);
       let command = _.cloneDeep(this.quickcommandInfo);
       if (cmd) command.cmd = cmd;
       command.output =

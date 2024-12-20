@@ -46,6 +46,16 @@
           <div class="history-list-container">
             <q-card-section class="header-section row items-center q-pb-none">
               <div class="text-h6">历史记录</div>
+              <q-icon name="help_outline" class="q-ml-sm">
+                <q-tooltip>
+                  在初次进入编辑器、点击运行、保存按钮以及在此处进行恢复操作后，会自动保存当时的命令，方便进行回溯。<br />
+                  注意：<br />
+                  1.超过5k的内容不会保存；<br />
+                  2.数据是临时保存的，且不会多端同步；<br />
+                  3.数据会在uTools重启后清除；<br />
+                  4.不要依赖此功能保存重要数据或者进行版本管理。
+                </q-tooltip>
+              </q-icon>
               <q-space />
               <q-btn flat round dense icon="delete_sweep" @click="confirmClear">
                 <q-tooltip>清空历史</q-tooltip>
