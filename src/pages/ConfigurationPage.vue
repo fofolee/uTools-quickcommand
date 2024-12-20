@@ -244,13 +244,11 @@ import changeLog from "js/options/changeLog.js";
 import pinyinMatch from "pinyin-match";
 import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor";
+import ConfigurationMenu from "components/menu";
 const CommandRunResult = defineAsyncComponent(() =>
   import("components/CommandRunResult.vue")
 );
 // Performance Rendering > 300ms
-const ConfigurationMenu = defineAsyncComponent(() =>
-  import("components/ConfigurationMenu.vue")
-);
 
 // 默认命令
 let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
@@ -568,7 +566,10 @@ export default {
           this.getAllQuickCommandTags();
           this.changeCurrentTag("默认");
           quickcommand.showMessageBox(
-            "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复"
+            "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复",
+            "success",
+            2000,
+            "bottom-right"
           );
         });
     },
@@ -655,6 +656,22 @@ export default {
 </script>
 
 <style scoped>
+.config-page-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.background-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
 /* 标签栏容器样式 */
 .q-tabs {
   height: 100vh !important;

@@ -41,7 +41,7 @@
           <span v-for="cmd in commandInfo.features.cmds" :key="cmd">
             <CommandTypeTag
               :cmd="cmd"
-              :isGrayColor="!canRunAtCurrentOS || !isActivated"
+              :isGrayColor="!isPlatformSupported || !isActivated"
             />
           </span>
         </div>
@@ -81,7 +81,7 @@ export default {
     commandInfo: Object,
     isActivated: Boolean,
     cardStyleVars: Object,
-    canRunAtCurrentOS: Boolean,
+    isPlatformSupported: Boolean,
     isHovered: Boolean,
   },
   emits: ["click"],

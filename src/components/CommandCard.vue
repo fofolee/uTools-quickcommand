@@ -16,15 +16,15 @@
       v-model:isVisible="isWarpperHover"
       v-show="cardStyleVars.showButtons"
       :isActivated="isCommandActivated"
+      :isRunButtonVisible="canRunInConfigurationPage"
       :commandInfo="commandInfo"
-      :canRunAtCurrentOS="canRunAtCurrentOS"
       @commandChanged="$emit('commandChanged', $event)"
     />
     <CommandCardContent
       :commandInfo="commandInfo"
       :isActivated="isCommandActivated"
+      :isPlatformSupported="isPlatformSupported"
       :cardStyleVars="cardStyleVars"
-      :canRunAtCurrentOS="canRunAtCurrentOS"
       :isHovered="isWarpperHover"
       @click="handleCardClick"
     />
@@ -57,16 +57,24 @@ export default {
           this.cardStyle.code > 1 ? "justify-start" : "justify-center",
         fontPosition:
           this.cardStyle.code > 1 ? "justify-end" : "justify-center",
-        hideCard:
-          this.cardStyle.code === 1 &&
-          (!this.isCommandActivated || !this.$refs.controlButtons?.canRun),
+        hideCard: this.cardStyle.code === 1 && !this.canRunInConfigurationPage,
       };
     },
-    canRunAtCurrentOS() {
+    isPlatformSupported() {
       let { platform } = this.commandInfo.features;
       return !_.isEmpty(platform) && !platform.includes(window.processPlatform)
         ? false
         : true;
+    },
+    canRunInConfigurationPage() {
+      // 未启用
+      if (!this.isCommandActivated) return false;
+      // 平台不支持
+      if (!this.isPlatformSupported) return false;
+      let { cmds } = this.commandInfo.features;
+      // 窗口模式
+      if (cmds[0].type && cmds[0].type === "window") return false;
+      return true;
     },
   },
   props: {

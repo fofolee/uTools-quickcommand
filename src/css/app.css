@@ -144,22 +144,6 @@ body {
   height: 100vh;
 }
 
-.config-page-container {
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
-}
-
-.background-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
-}
-
 /* 毛玻璃效果叠加 */
 body.glass-effect-menu .q-card.command {
   background: rgba(255, 255, 255, calc(0.3 + var(--glass-effect-strength) * 0.01)) !important;
@@ -180,4 +164,60 @@ body.glass-effect-menu .q-tabs {
 body.body--dark.glass-effect-menu .q-tabs {
   background: rgba(0, 0, 0, calc(0.2 + var(--glass-effect-strength) * 0.02)) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 基础菜单样式 - 始终保持最小毛玻璃效果 */
+.q-menu {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.07);
+}
+
+.body--dark .q-menu {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 毛玻璃菜单效果 - 叠加用户设置的效果 */
+body.glass-effect-menu .q-menu {
+  background: rgba(255,
+      255,
+      255,
+      calc(0.15 + var(--glass-effect-strength) * 0.01)) !important;
+  backdrop-filter: blur(calc(5px + var(--glass-effect-strength) * 1px)) !important;
+  -webkit-backdrop-filter: blur(calc(5px + var(--glass-effect-strength) * 1px)) !important;
+}
+
+/* 暗色模式菜单 */
+body.body--dark.glass-effect-menu .q-menu {
+  background: rgba(0,
+      0,
+      0,
+      calc(0.2 + var(--glass-effect-strength) * 0.02)) !important;
+}
+
+/* 菜单列表透明背景 */
+.q-menu .q-list {
+  background: transparent !important;
+}
+
+/* 菜单项浮效果 */
+.q-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.body--dark .q-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 输入框样式 */
+.q-menu .q-field__control {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+}
+
+.body--dark .q-menu .q-field__control {
+  background: rgba(0, 0, 0, 0.3) !important;
 }

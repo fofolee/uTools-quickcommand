@@ -22,7 +22,7 @@
         dense
         color="green"
         icon="play_arrow"
-        v-show="canRun"
+        v-show="isRunButtonVisible"
         @click="runCommand"
       >
         <q-tooltip anchor="top middle" self="center middle">运行</q-tooltip>
@@ -120,7 +120,7 @@ export default {
     isVisible: Boolean,
     isActivated: Boolean,
     commandInfo: Object,
-    canRunAtCurrentOS: Boolean,
+    isRunButtonVisible: Boolean,
   },
   emits: ["update:isVisible", "commandChanged"],
   data() {
@@ -133,16 +133,6 @@ export default {
     // 获取定时任务表达式
     cronExp() {
       return this.$root.nativeProfile.crontabs[this.featureCode];
-    },
-    // 命令是否可直接运行
-    canRun() {
-      // 未启用
-      if (!this.isActivated) return false;
-      if (!this.canRunAtCurrentOS) return false;
-      let { cmds } = this.commandInfo.features;
-      // 窗口模式
-      if (cmds[0].type && cmds[0].type === "window") return false;
-      return true;
     },
     // 命令未启用可以添加计划任务
     canAddCron() {
