@@ -27,19 +27,25 @@
         <div class="history-layout">
           <!-- 左侧预览区域 -->
           <div class="preview-container">
-            <div v-if="selectedIndex !== null" class="preview-content">
-              <div class="preview-header text-h6">
-                <q-icon name="code" size="16px" />
-                <span class="q-ml-sm">代码预览</span>
-              </div>
-              <pre>{{ historyList[selectedIndex]?.content || "" }}</pre>
+            <div class="preview-header text-h6">
+              <q-icon name="code" size="16px" />
+              <span class="q-ml-sm">代码预览</span>
             </div>
-            <div v-else class="preview-placeholder">
-              <q-icon name="code" size="48px" color="grey-7" />
-              <div class="text-grey-7 q-mt-sm text-subtitle1">
-                鼠标悬停查看代码预览
+            <transition
+              mode="out-in"
+              enter-active-class="fade-in"
+              leave-active-class="fade-out"
+            >
+              <div v-if="selectedIndex !== null" class="preview-content" :key="selectedIndex">
+                <pre>{{ historyList[selectedIndex]?.content || "" }}</pre>
               </div>
-            </div>
+              <div v-else class="preview-placeholder" key="placeholder">
+                <q-icon name="code" size="48px" color="grey-7" />
+                <div class="text-grey-7 q-mt-sm text-subtitle1">
+                  鼠标悬停查看代码预览
+                </div>
+              </div>
+            </transition>
           </div>
 
           <!-- 右侧历史列表 -->
@@ -118,7 +124,7 @@
 </template>
 
 <script>
-import { ref, reactive } from "vue";
+import { reactive } from "vue";
 
 export default {
   name: "EditorHistory",
@@ -361,18 +367,20 @@ export default {
 .preview-container {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
   background: #f4f4f4;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .preview-header {
   padding: 16px 16px 8px;
-  /* font-size: 13px; */
   display: flex;
   align-items: center;
+  z-index: 1;
 }
 
 .history-list {
@@ -411,9 +419,13 @@ export default {
   transform: translateX(2px);
 }
 
-.preview-content {
-  width: 100%;
-  height: 100%;
+.preview-content,
+.preview-placeholder {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 48px;
+  bottom: 0;
   margin: 0;
   font-size: 12px;
   overflow: hidden;
@@ -545,5 +557,32 @@ export default {
 .confirm-dialog {
   min-width: 300px;
   padding: 8px;
+}
+
+/* 自定义淡入淡出动画 */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 </style>

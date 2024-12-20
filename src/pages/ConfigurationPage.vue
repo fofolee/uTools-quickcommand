@@ -61,8 +61,8 @@
         left: tabBarWidth,
       }"
       v-model="currentTag"
-      transition-prev="slide-down"
-      transition-next="slide-up"
+      transition-prev="jump-down"
+      transition-next="jump-up"
     >
       <q-tab-panel
         style="padding: 0"
