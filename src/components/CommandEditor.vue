@@ -212,7 +212,7 @@ export default {
     },
     // 运行
     runCurrentCommand(cmd) {
-      this.saveCurrentCommand(null);
+      this.saveToHistory(); // 运行时不保存但记录历史
       let command = _.cloneDeep(this.quickcommandInfo);
       if (cmd) command.cmd = cmd;
       command.output =
@@ -291,7 +291,7 @@ export default {
 .command-editor-container {
   color: black;
   background: white;
-  overflow: hidden
+  overflow: hidden;
 }
 
 .body--dark .command-editor-container {
