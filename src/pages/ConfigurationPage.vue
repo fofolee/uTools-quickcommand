@@ -442,6 +442,7 @@ export default {
       utools.copyText(JSON.stringify(this.allQuickCommands[code], null, 4));
       delete this.allQuickCommands[code];
       this.$root.utools.delDB("qc_" + code);
+      this.removeCommandFromHistory(code);
       this.disableCommand(code);
       this.getAllQuickCommandTags();
       if (!this.allQuickCommandTags.includes(this.currentTag))
@@ -449,8 +450,17 @@ export default {
       quickcommand.showMessageBox(
         "删除成功，为防止误操作，已将删除的命令复制到剪贴板",
         "success",
-        1000
+        1000,
+        "bottom-right"
       );
+    },
+    removeCommandFromHistory(code) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("editor_history_" + code)) {
+          localStorage.removeItem(key);
+        }
+      }
     },
     // 编辑命令
     editCommand(command) {
