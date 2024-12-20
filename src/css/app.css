@@ -35,19 +35,9 @@
   background: var(--q-dark-page);
 }
 
-.container {
-  color: black;
-  background: white;
-}
-
 body {
   background: #f4f4f4;
   color: #333;
-}
-
-.body--dark .container {
-  color: white;
-  background: var(--q-dark-page);
 }
 
 .q-tooltip {
