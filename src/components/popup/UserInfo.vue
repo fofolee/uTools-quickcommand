@@ -129,7 +129,7 @@
 </template>
 
 <script>
-import levelDetail from "../../js/options/levelDetail.js";
+import levelDetail from "js/options/levelDetail.js";
 
 export default {
   data() {

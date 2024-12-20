@@ -523,11 +523,10 @@
 
 <script>
 import { setCssVar } from "quasar";
-import { ref } from "vue";
 import AboutThis from "components/popup/AboutThis";
 import PanelSetting from "components/popup/PanelSetting";
 import UserInfo from "components/popup/UserInfo";
-import features from "../js/options/quickFeatures.js";
+import features from "js/options/quickFeatures.js";
 import UserData from "components/popup/UserData";
 
 export default {

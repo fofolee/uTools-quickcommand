@@ -275,8 +275,8 @@
 </template>
 
 <script>
-import commandTypes from "../js/options/commandTypes.js";
-import platformTypes from "../js/options/platformTypes.js";
+import commandTypes from "js/options/commandTypes.js";
+import platformTypes from "js/options/platformTypes.js";
 import CrontabSetting from "components/popup/CrontabSetting";
 // import ShareDialog from "components/popup/ShareDialog";
 

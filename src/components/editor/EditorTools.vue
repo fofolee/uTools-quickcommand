@@ -27,30 +27,30 @@
 import EditorHistory from "components/popup/EditorHistory.vue";
 
 export default {
-  name: 'EditorTools',
+  name: "EditorTools",
   components: {
-    EditorHistory
+    EditorHistory,
   },
   props: {
     commandCode: {
       type: String,
-      default: 'temp'
+      default: "temp",
     },
     isFullscreen: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
-  emits: ['restore', 'toggle-fullscreen'],
+  emits: ["restore", "toggle-fullscreen"],
   methods: {
     showHistory() {
       this.$refs.history.open();
     },
     tryToSave(content, program) {
       this.$refs.history.tryToSave(content, program);
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

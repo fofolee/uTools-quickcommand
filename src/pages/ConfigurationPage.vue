@@ -238,9 +238,9 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import quickcommandParser from "../js/common/quickcommandParser.js";
-import importAll from "../js/common/importAll.js";
-import changeLog from "../js/options/changeLog.js";
+import quickcommandParser from "js/common/quickcommandParser.js";
+import importAll from "js/common/importAll.js";
+import changeLog from "js/options/changeLog.js";
 import pinyinMatch from "pinyin-match";
 import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor";

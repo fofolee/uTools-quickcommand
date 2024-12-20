@@ -16,16 +16,16 @@
 <script>
 import * as monaco from "monaco-editor";
 import { toRaw } from "vue";
-import importAll from "../js/common/importAll.js";
+import importAll from "js/common/importAll.js";
 
 // 批量导入声明文件
 let apis = importAll(
-  require.context("!raw-loader!../plugins/monaco/types/", false, /\.ts$/)
+  require.context("!raw-loader!plugins/monaco/types/", false, /\.ts$/)
 );
 
 // 批量导入关键字补全
 let languageCompletions = importAll(
-  require.context("../plugins/monaco/completions/", false, /\.js$/)
+  require.context("plugins/monaco/completions/", false, /\.js$/)
 );
 
 let monacoCompletionProviders = {};

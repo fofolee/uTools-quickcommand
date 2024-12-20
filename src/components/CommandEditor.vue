@@ -73,13 +73,13 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import CommandSideBar from "components/CommandSideBar";
+import CommandSideBar from "components/editor/CommandSideBar";
+import CommandLanguageBar from "components/editor/CommandLanguageBar";
+import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
-import CommandLanguageBar from "components/CommandLanguageBar";
-import EditorTools from "components/EditorTools";
 // Performance Scripting > 500ms
 const MonacoEditor = defineAsyncComponent(() =>
-  import("components/MonacoEditor")
+  import("components/editor/MonacoEditor")
 );
 
 export default {

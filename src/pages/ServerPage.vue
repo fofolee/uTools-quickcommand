@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import MonacoEditor from "components/MonacoEditor";
+import MonacoEditor from "components/editor/MonacoEditor";
 
 export default {
   components: { MonacoEditor },

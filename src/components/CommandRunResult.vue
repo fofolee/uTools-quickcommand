@@ -38,9 +38,9 @@
 
 
 <script>
-import outputTypes from "../js/options/outputTypes.js";
-import specialVars from "../js/options/specialVars.js";
-import commandTypes from "../js/options/commandTypes.js";
+import outputTypes from "js/options/outputTypes.js";
+import specialVars from "js/options/specialVars.js";
+import commandTypes from "js/options/commandTypes.js";
 import ResultArea from "components/ResultArea.vue";
 import ResultMenu from "components/popup/ResultMenu.vue";
 
