@@ -57,6 +57,7 @@
             <!-- 匹配类型 -->
             <q-select
               :disable="!canCommandSave"
+              popup-content-class="side-bar-popup-content"
               hide-dropdown-icon
               stack-label
               label-color="primary"
@@ -74,14 +75,12 @@
                 <q-icon class="command-side-bar-icon" :name="cmdType.icon" />
               </template>
               <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section avatar>
-                    <q-icon :name="scope.opt.icon" />
-                  </q-item-section>
-                  <q-item-section>
+                <q-item v-bind="scope.itemProps" class="row items-center">
+                  <q-icon :name="scope.opt.icon" class="q-mr-md" />
+                  <div>
                     <q-item-label v-html="scope.opt.name" />
                     <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                  </q-item-section>
+                  </div>
                 </q-item>
               </template>
             </q-select>
@@ -89,6 +88,7 @@
             <q-select
               v-if="cmdType.valueType === 'array'"
               :disable="!canCommandSave"
+              popup-content-class="side-bar-popup-content"
               hide-dropdown-icon
               stack-label
               label-color="primary"
@@ -151,6 +151,7 @@
               :disable="!canCommandSave"
               hide-dropdown-icon
               stack-label
+              popup-content-class="side-bar-popup-content"
               label-color="primary"
               transition-show="jump-down"
               transition-hide="jump-up"
@@ -179,6 +180,7 @@
             <q-select
               :disable="!canCommandSave"
               hide-dropdown-icon
+              popup-content-class="side-bar-popup-content"
               stack-label
               label-color="primary"
               transition-show="jump-down"
@@ -218,6 +220,7 @@
               hide-dropdown-icon
               stack-label
               label-color="primary"
+              popup-content-class="side-bar-popup-content"
               transition-show="jump-down"
               transition-hide="jump-up"
               borderless
@@ -235,13 +238,11 @@
                 />
               </template>
               <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section avatar>
-                    <q-icon :name="outputTypes[scope.opt].icon" />
-                  </q-item-section>
-                  <q-item-section>
+                <q-item v-bind="scope.itemProps" class="row items-center">
+                  <q-icon :name="outputTypes[scope.opt].icon" class="q-mr-md" />
+                  <div>
                     <q-item-label v-html="outputTypes[scope.opt].label" />
-                  </q-item-section>
+                  </div>
                 </q-item>
               </template>
             </q-select>
@@ -251,6 +252,7 @@
               hide-dropdown-icon
               stack-label
               label-color="primary"
+              popup-content-class="side-bar-popup-content"
               transition-show="jump-down"
               transition-hide="jump-up"
               borderless
@@ -287,6 +289,7 @@
               hide-dropdown-icon
               stack-label
               label-color="primary"
+              popup-content-class="side-bar-popup-content"
               transition-show="jump-down"
               transition-hide="jump-up"
               borderless
@@ -312,15 +315,16 @@
                 </q-chip>
               </template>
               <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section avatar>
-                    <span
-                      :class="`iconfont icon-${platformTypes[scope.opt].icon}`"
-                    ></span>
-                  </q-item-section>
-                  <q-item-section>
+                <q-item v-bind="scope.itemProps" class="row items-center">
+                  <q-img
+                    :src="platformTypes[scope.opt].icon"
+                    width="24px"
+                    class="q-mr-md"
+                  />
+                  <div>
                     <q-item-label v-html="platformTypes[scope.opt].label" />
-                  </q-item-section>
+                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                  </div>
                 </q-item>
               </template>
             </q-select>
@@ -630,5 +634,18 @@ export default {
   transform: scale(1.1) translateY(-1px) translateZ(0);
   background: var(--q-primary);
   opacity: 0.85;
+}
+
+.side-bar-popup-content .q-item .q-icon {
+  font-size: 20px;
+}
+
+.command-side-bar-content *,
+.side-bar-popup-content .q-item__label {
+  font-size: 13px;
+}
+
+.side-bar-popup-content .q-item__label--caption {
+  font-size: 12px;
 }
 </style>

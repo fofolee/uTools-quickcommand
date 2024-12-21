@@ -175,6 +175,7 @@
               color="primary"
               label="分享中心"
               icon="groups"
+              class="share-btn"
             />
             <!-- <q-separator vertical /> -->
             <!-- 新建按钮 -->
@@ -185,6 +186,7 @@
               color="primary"
               label="新建"
               icon="add"
+              class="new-btn"
             />
             <!-- <q-separator vertical /> -->
             <q-btn
@@ -834,5 +836,33 @@ body.body--dark.glass-effect-menu .absolute-bottom {
   background: none !important;
 }
 
-/* ... 其他样式保持不变 ... */
+/* 基础按钮动画 */
+.share-btn,
+.new-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.share-btn:hover,
+.new-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(var(--q-primary-rgb), 0.1) !important;
+}
+
+/* 搜索框动画 */
+@keyframes searchIconShake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+.q-field--focused .q-field__prepend .q-icon {
+  animation: searchIconShake 0.8s ease;
+  color: var(--q-primary);
+}
 </style>
