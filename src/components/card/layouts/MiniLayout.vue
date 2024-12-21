@@ -24,7 +24,10 @@
 
     <!-- 匹配模式 -->
     <div class="row justify-center w-100">
-      <CommandTypeTag :cmds="commandInfo.features.cmds" />
+      <CommandTypeTag
+        :cmds="commandInfo.features.cmds"
+        :cardStyleCode="cardStyleCode"
+      />
     </div>
   </div>
 </template>
@@ -32,7 +35,6 @@
 <script>
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
-import { computed } from "vue";
 
 export default {
   name: "MiniLayout",
@@ -40,6 +42,7 @@ export default {
   props: {
     commandInfo: Object,
     isHovered: Boolean,
+    cardStyleCode: Number,
   },
   setup() {
     return {
@@ -55,7 +58,7 @@ export default {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: 16px;
+  padding: 16px 8px;
 }
 
 .w-100 {
@@ -66,9 +69,9 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 90%;
+  /* max-width: 90%; */
   margin: 0 auto;
-  padding: 0 8px;
+  /* padding: 0 8px; */
   font-size: 14px;
 }
 </style>

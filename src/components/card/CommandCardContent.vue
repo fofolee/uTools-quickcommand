@@ -11,6 +11,7 @@
       :isPlatformSupported="isPlatformSupported"
       :isHovered="isHovered"
       :style="iconHaloStyle"
+      :cardStyleCode="cardStyleCode"
     />
   </q-card>
 </template>

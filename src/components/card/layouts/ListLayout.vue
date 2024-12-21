@@ -23,6 +23,7 @@
         <CommandTypeTag
           :cmds="commandInfo.features.cmds"
           :isGrayColor="!isPlatformSupported || !isActivated"
+          :cardStyleCode="cardStyleCode"
         />
       </div>
     </div>
@@ -58,6 +59,7 @@ export default {
     isActivated: Boolean,
     isPlatformSupported: Boolean,
     isHovered: Boolean,
+    cardStyleCode: Number,
   },
   data() {
     return {
