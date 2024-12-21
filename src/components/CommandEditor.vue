@@ -1,7 +1,7 @@
 <template>
   <div
     class="command-editor-container"
-    :class="{ 'leaving': isLeaving }"
+    :class="{ 'leaving': isLeaving, 'run-code': isRunCodePage }"
     @animationend="$emit('animationend')"
   >
     <!-- 命令设置栏 -->
@@ -310,15 +310,23 @@ export default {
   bottom: 0;
   z-index: 5000;
   background: var(--q-page-background);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUpDefault 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.command-editor-container.run-code {
+  animation: slideDownIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .command-editor-container.leaving {
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideDownOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
 }
 
-@keyframes slideUp {
+.command-editor-container.leaving.run-code {
+  animation: slideUpOut 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUpDefault {
   from {
     transform: translateY(100%);
   }
@@ -327,12 +335,30 @@ export default {
   }
 }
 
-@keyframes slideDown {
+@keyframes slideDownIn {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDownOut {
   from {
     transform: translateY(0);
   }
   to {
     transform: translateY(100%);
+  }
+}
+
+@keyframes slideUpOut {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
   }
 }
 
