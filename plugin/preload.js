@@ -94,8 +94,7 @@ const shortCodes = [
     electron.clipboard.writeText(text);
   }),
   (send = (text) => {
-    copyTo(text);
-    quickcommand.simulatePaste();
+    utools.hideMainWindowTypeString(text);
   }),
 ];
 
