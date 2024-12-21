@@ -1,5 +1,9 @@
 <template>
-  <div class="absolute-full command-editor-container">
+  <div
+    class="command-editor-container"
+    :class="{ 'leaving': isLeaving }"
+    @animationend="$emit('animationend')"
+  >
     <!-- 命令设置栏 -->
     <CommandSideBar
       ref="sidebar"
@@ -14,6 +18,7 @@
       }"
       :sideBarWidth="sideBarWidth"
       v-if="showSidebar"
+      @back="handleBack"
     ></CommandSideBar>
 
     <!-- 编程语言栏 -->
@@ -118,7 +123,18 @@ export default {
     };
   },
   props: {
-    action: Object,
+    action: {
+      type: Object,
+      required: true
+    },
+    allQuickCommandTags: {
+      type: Array,
+      required: true
+    },
+    isLeaving: {
+      type: Boolean,
+      default: false
+    }
   },
   created() {
     this.commandInit();
@@ -129,15 +145,6 @@ export default {
   computed: {
     configurationPage() {
       return this.$root.$refs.view;
-    },
-    allQuickCommandTags() {
-      return _.without(
-        this.configurationPage.allQuickCommandTags,
-        "默认",
-        "未分类",
-        "搜索结果"
-        // "来自分享"
-      );
     },
   },
   methods: {
@@ -270,6 +277,10 @@ export default {
       // 恢复历史内容
       this.$refs.editor.setEditorValue(item.content);
     },
+    handleBack() {
+      // 触发返回事件
+      this.$emit('editorEvent', { type: 'back' });
+    }
   },
 };
 </script>
@@ -292,6 +303,37 @@ export default {
   color: black;
   background: white;
   overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5000;
+  background: var(--q-page-background);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.command-editor-container.leaving {
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 
 .body--dark .command-editor-container {

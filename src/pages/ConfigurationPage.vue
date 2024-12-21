@@ -1,230 +1,53 @@
 <template>
   <div class="config-page-container">
+    <!-- 主界面内容 -->
     <div
-      class="background-layer"
-      :style="{
-        background: $q.dark.isActive
-          ? $root.profile.backgroundImgDark
-            ? `url('${$root.profile.backgroundImgDark}')`
-            : 'none'
-          : $root.profile.backgroundImgLight
-          ? `url('${$root.profile.backgroundImgLight}')`
-          : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-      }"
-    ></div>
-    <!-- 标签栏 -->
-    <!-- 面板视图不显示标签栏 -->
-    <q-scroll-area
-      v-show="commandCardStyle !== 'mini'"
-      class="absolute-left tag-bar"
-      :thumb-style="{
-        width: '2px',
-      }"
-      :style="{
-        width: tabBarWidth,
-        zIndex: 1,
-      }"
+      class="main-content"
+      :class="{ hide: isCommandEditorShow && !isEditorLeaving }"
     >
-      <q-tabs
+      <BackgroundLayer />
+      <!-- 标签栏 -->
+      <TagBar
         v-model="currentTag"
-        vertical
-        switch-indicator
-        :key="$root.profile.denseTagBar"
-        :dense="$root.profile.denseTagBar"
-      >
-        <!-- 所有标签 -->
-        <q-tab
-          v-for="tag in allQuickCommandTags"
-          :key="tag"
-          :name="tag"
-          :data-search-result="tag === '搜索结果'"
-          :data-active-panel="activatedQuickPanels.includes(tag)"
-        >
-          {{ tag }}
-          <q-tooltip v-if="tag === '未分类'">
-            所有没有添加标签的命令都会归在未分类 <br />
-            可以在新建命令时在标签一栏选择或直接键入标签名来添加标签
-          </q-tooltip>
-        </q-tab>
-      </q-tabs>
-    </q-scroll-area>
-    <!-- 面板栏 -->
-    <q-tab-panels
-      animated
-      class="absolute-right"
-      :style="{
-        bottom: footerBarHeight,
-        left: tabBarWidth,
-      }"
-      v-model="currentTag"
-      transition-prev="jump-down"
-      transition-next="jump-up"
-    >
-      <q-tab-panel
-        style="padding: 0"
-        v-for="tag in allQuickCommandTags"
-        :key="tag"
-        :name="tag"
-      >
-        <q-scroll-area
-          style="height: 100%"
-          :thumb-style="{
-            background: 'grey',
-            width: '6px',
-            opacity: 0.5,
-          }"
-        >
-          <div class="row center q-pa-xs">
-            <CommandCard
-              v-for="commandInfo in currentTagQuickCommands"
-              :key="commandInfo.features.code"
-              :commandInfo="commandInfo"
-              :isCommandActivated="
-                activatedQuickCommandFeatureCodes.includes(
-                  commandInfo.features.code
-                )
-              "
-              :cardStyle="commandCardStyleSheet[commandCardStyle]"
-              @commandChanged="commandChanged"
-              :style="{
-                width: commandCardStyleSheet[commandCardStyle].width,
-              }"
-              class="relative-position q-pa-sm"
-            ></CommandCard>
-          </div>
-        </q-scroll-area>
-      </q-tab-panel>
-    </q-tab-panels>
-    <!-- 底栏 -->
-    <div
-      class="absolute-bottom footer-bar"
-      :style="{
-        height: footerBarHeight,
-        left: tabBarWidth,
-      }"
-    >
-      <div class="row">
-        <!-- 搜索栏 -->
-        <div class="col">
-          <q-input
-            v-model="commandSearchKeyword"
-            debounce="200"
-            filled
-            dense
-            :autofocus="$root.profile.autofocusSearch"
-            @update:model-value="updateSearch"
-            placeholder="搜索，支持拼音首字母"
-          >
-            <template v-slot:prepend>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </div>
-        <!-- 按钮组 -->
-        <div class="col-auto justify-end flex">
-          <q-btn-group>
-            <!-- 添加暗色模式切换按钮 -->
-            <q-btn
-              flat
-              v-if="isDev"
-              :color="$q.dark.isActive ? 'amber' : 'blue-9'"
-              :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
-              @click="$q.dark.toggle()"
-            >
-              <q-tooltip>
-                {{ $q.dark.isActive ? "切换到亮色模式" : "切换到暗色模式" }}
-              </q-tooltip>
-            </q-btn>
-            <!-- 切换视图 -->
-            <q-btn-toggle
-              v-model="commandCardStyle"
-              @click="$root.profile.commandCardStyle = commandCardStyle"
-              toggle-color="primary"
-              flat
-              :options="[
-                { slot: 'normal', value: 'normal' },
-                { slot: 'dense', value: 'dense' },
-                { slot: 'mini', value: 'mini' },
-              ]"
-            >
-              <template v-slot:normal>
-                <q-icon name="dashboard" />
-                <q-tooltip>双列视图</q-tooltip>
-              </template>
-              <template v-slot:dense>
-                <q-icon name="apps" />
-                <q-tooltip>三列视图</q-tooltip>
-              </template>
-              <template v-slot:mini>
-                <q-icon name="view_comfy" />
-                <q-tooltip
-                  >五列面板视图<br />
-                  未启用、匹配类型为窗口的命令在此视图下不显示</q-tooltip
-                >
-              </template>
-            </q-btn-toggle>
-            <!-- <q-separator vertical /> -->
-            <q-btn
-              split
-              flat
-              @click="goShareCenter"
-              color="primary"
-              label="分享中心"
-              icon="groups"
-              class="share-btn"
-            />
-            <!-- <q-separator vertical /> -->
-            <!-- 新建按钮 -->
-            <q-btn
-              split
-              flat
-              @click="addNewCommand"
-              color="primary"
-              label="新建"
-              icon="add"
-              class="new-btn"
-            />
-            <!-- <q-separator vertical /> -->
-            <q-btn
-              stretch
-              color="primary"
-              flat
-              size="xs"
-              id="menuBtn"
-              :style="{
-                height: footerBarHeight,
-              }"
-              ><q-spinner-bars color="primary" size="1.5em" />
-              <!-- 菜单 -->
-              <ConfigurationMenu
-                :isTagStared="activatedQuickPanels.includes(currentTag)"
-                :currentTag="currentTag"
-              >
-              </ConfigurationMenu>
-            </q-btn>
-          </q-btn-group>
-        </div>
-      </div>
+        :tab-bar-width="tabBarWidth"
+        :all-quick-command-tags="allQuickCommandTags"
+        :activated-quick-panels="activatedQuickPanels"
+        :dense-tag-bar="$root.profile.denseTagBar"
+      />
+      <CommandPanels
+        v-model="currentTag"
+        :footer-bar-height="footerBarHeight"
+        :tab-bar-width="tabBarWidth"
+        :all-quick-command-tags="allQuickCommandTags"
+        :current-tag-quick-commands="currentTagQuickCommands"
+        :activated-quick-command-feature-codes="
+          activatedQuickCommandFeatureCodes
+        "
+        @command-changed="commandChanged"
+      />
+      <!-- 底栏 -->
+      <FooterBar
+        :height="footerBarHeight"
+        :left="tabBarWidth"
+        :is-tag-stared="activatedQuickPanels.includes(currentTag)"
+        :current-tag="currentTag"
+        :search-keyword="commandSearchKeyword"
+        @update:search="updateSearch"
+        @add-new="addNewCommand"
+      />
     </div>
+
     <!-- 命令编辑界面 -->
-    <q-dialog
-      v-model="isCommandEditorShow"
-      persistent
-      maximized
-      :transition-show="fromNewCommand ? '' : 'slide-up'"
-      transition-hide="slide-down"
-      style="overflow: hidden"
-    >
-      <CommandEditor
-        ref="commandEditor"
-        :action="commandEditorAction"
-        @editorEvent="editorEvent"
-      ></CommandEditor>
-    </q-dialog>
+    <CommandEditor
+      v-show="isCommandEditorShow"
+      ref="commandEditor"
+      :action="commandEditorAction"
+      @editorEvent="editorEvent"
+      :allQuickCommandTags="allQuickCommandTags"
+      :isLeaving="isEditorLeaving"
+      @animationend="handleAnimationEnd"
+    ></CommandEditor>
+
     <CommandRunResult
       :action="{ type: 'config' }"
       ref="result"
@@ -238,9 +61,11 @@ import quickcommandParser from "js/common/quickcommandParser.js";
 import importAll from "js/common/importAll.js";
 import changeLog from "js/options/changeLog.js";
 import pinyinMatch from "pinyin-match";
-import CommandCard from "components/CommandCard";
 import CommandEditor from "components/CommandEditor";
-import ConfigurationMenu from "components/menu";
+import FooterBar from "src/components/config/FooterBar.vue";
+import TagBar from "src/components/config/TagBar.vue";
+import BackgroundLayer from "src/components/config/BackgroundLayer.vue";
+import CommandPanels from "src/components/config/CommandPanels.vue";
 const CommandRunResult = defineAsyncComponent(() =>
   import("components/CommandRunResult.vue")
 );
@@ -251,10 +76,12 @@ let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
 
 export default {
   components: {
-    CommandCard,
     CommandEditor,
-    ConfigurationMenu,
     CommandRunResult,
+    FooterBar,
+    TagBar,
+    BackgroundLayer,
+    CommandPanels,
   },
   data() {
     return {
@@ -268,26 +95,7 @@ export default {
       isCommandEditorShow: false,
       commandEditorAction: {},
       footerBarHeight: "40px",
-      commandCardStyle: this.$root.profile.commandCardStyle,
-      isDev: window.utools.isDev(),
-      commandCardStyleSheet: {
-        mini: {
-          width: "20%",
-          code: 1,
-        },
-        dense: {
-          width: "33%",
-          code: 2,
-        },
-        normal: {
-          width: "50%",
-          code: 3,
-        },
-        large: {
-          width: "100%",
-          code: 4,
-        },
-      },
+      isEditorLeaving: false,
     };
   },
   computed: {
@@ -328,7 +136,7 @@ export default {
     },
     // 标签栏宽度
     tabBarWidth() {
-      return this.commandCardStyle === "mini" ? "0" : "80px";
+      return this.$root.profile.commandCardStyle === "mini" ? "0" : "80px";
     },
     fromNewCommand() {
       return this.$route.name === "newcommand";
@@ -351,7 +159,7 @@ export default {
       this.$router.push("/configuration");
       if (this.$route.params.tags) {
         this.changeCurrentTag(window.hexDecode(this.$route.params.tags));
-        this.commandCardStyle = "mini";
+        this.$root.profile.commandCardStyle = "mini";
       }
       this.showChangeLog();
       // 异步读取
@@ -577,8 +385,9 @@ export default {
       }
       this.activatedQuickCommandFeatureCodes = [];
     },
-    // 搜索
-    updateSearch() {
+    // 搜索方法
+    updateSearch(value) {
+      this.commandSearchKeyword = value;
       // 记录当前标签页
       let searchTagName = "搜索结果";
       if (this.currentTag !== searchTagName) this.lastTag = this.currentTag;
@@ -619,7 +428,10 @@ export default {
       switch (event.type) {
         case "save":
           this.saveCommand(event.data);
-        // this.isCommandEditorShow = false;
+          break;
+        case "back":
+          this.isEditorLeaving = true;
+          break;
         default:
           return;
       }
@@ -644,8 +456,11 @@ export default {
         );
       }
     },
-    goShareCenter() {
-      utools.shellOpenExternal("https://qc.qaz.ink/");
+    handleAnimationEnd(e) {
+      if (this.isEditorLeaving) {
+        this.isEditorLeaving = false;
+        this.isCommandEditorShow = false;
+      }
     },
   },
 };
@@ -659,210 +474,15 @@ export default {
   overflow: hidden;
 }
 
-.background-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
-}
-
-/* 标签栏容器样式 */
-.q-tabs {
-  height: 100vh !important;
-  background: transparent !important;
-}
-
-/* 标签栏和底栏内的按钮悬浮效果 */
-.q-tabs .q-tab:hover,
-.absolute-bottom .q-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-.body--dark .q-tabs .q-tab:hover,
-.body--dark .absolute-bottom .q-btn:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
-}
-
-.q-tab {
-  word-break: break-all;
-  white-space: normal;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--q-blue-grey) !important;
-  opacity: 0.7;
-  transition: all 0.3s ease;
-}
-
-/* 激活标签样式 */
-.q-tab--active {
-  color: var(--q-primary) !important;
-  font-weight: 600 !important;
-  opacity: 1;
-}
-
-.q-tab:hover::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--q-primary);
-  opacity: 0.1;
-  border-radius: 4px;
-  transition: opacity 0.3s;
-}
-
-/* 特殊标签样式（搜索结果和激活面板） */
-.q-tab[data-search-result="true"],
-.q-tab[data-active-panel="true"] {
-  color: #4286de !important;
-  font-weight: 600 !important;
-}
-
-/* 标签悬浮效果 */
-.q-tab:hover {
-  opacity: 0.9;
-  transform: translateX(4px);
-}
-
-/* 标签内容过渡效果 */
-.q-tab__content {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 面板过渡效果 */
 .q-tab-panels {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  background: none !important;
-}
-
-.q-tab-panel {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 暗色模式适配 */
-:deep(.body--dark) .q-tab:hover::after {
-  opacity: 0.15;
-}
-
-/* 标签滚动区域样式 */
-.q-scroll-area {
   background: transparent;
 }
 
-:deep(.body--dark) .q-scroll-area {
-  background: transparent;
+.main-content {
+  transition: opacity 0.3s ease;
 }
 
-/* 底栏输入框样式 */
-.absolute-bottom .q-field__control {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px;
-}
-
-.body--dark .absolute-bottom .q-field__control {
-  background: rgba(0, 0, 0, 0.2) !important;
-}
-
-/* 底栏毛玻璃效果 */
-body.glass-effect-menu .absolute-bottom {
-  background: rgba(
-    255,
-    255,
-    255,
-    calc(0.15 + var(--glass-effect-strength) * 0.01)
-  ) !important;
-  backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
-  -webkit-backdrop-filter: blur(
-    calc(var(--glass-effect-strength) * 1px)
-  ) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-body.body--dark.glass-effect-menu .absolute-bottom {
-  background: rgba(
-    0,
-    0,
-    0,
-    calc(0.2 + var(--glass-effect-strength) * 0.02)
-  ) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* 调整内容层级 */
-.q-scroll-area,
-.q-tab-panels,
-.absolute-bottom {
-  position: absolute;
-  z-index: 1;
-}
-
-/* 底栏过渡动画 */
-.footer-bar {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: left;
-}
-
-/* 底栏输入框样式 */
-.absolute-bottom .q-field__control {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px;
-}
-
-.body--dark .absolute-bottom .q-field__control {
-  background: rgba(0, 0, 0, 0.2) !important;
-}
-
-/* 标签栏过渡动画 */
-.tag-bar {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: width, opacity;
-  opacity: 1;
-}
-
-/* 标签栏隐藏时的样式 */
-.tag-bar[style*="display: none"] {
+.main-content.hide {
   opacity: 0;
-  width: 0 !important;
-}
-
-/* 面板过渡效果 */
-.q-tab-panels {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  background: none !important;
-}
-
-/* 基础按钮动画 */
-.share-btn,
-.new-btn {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.share-btn:hover,
-.new-btn:hover {
-  transform: translateY(-2px);
-  background: rgba(var(--q-primary-rgb), 0.1) !important;
-}
-
-/* 搜索框动画 */
-@keyframes searchIconShake {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-10deg);
-  }
-  75% {
-    transform: rotate(10deg);
-  }
-}
-
-.q-field--focused .q-field__prepend .q-icon {
-  animation: searchIconShake 0.8s ease;
-  color: var(--q-primary);
 }
 </style>

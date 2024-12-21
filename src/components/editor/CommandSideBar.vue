@@ -1,337 +1,355 @@
 <template>
-  <q-scroll-area
-    :thumb-style="{
-      width: '3px',
-    }"
-    :horizontal-thumb-style="{
-      height: '5px',
-    }"
-    class="command-side-bar"
-  >
-    <div class="row" :style="{ padding: sideBarPadding + 'px' }">
-      <div class="col-12">
-        <div class="row items-center relative-position q-pb-md">
-          <q-btn
-            dense
-            flat
-            color="grey"
-            icon="arrow_back_ios_new"
-            v-close-popup
-            class="absolute-left"
-            style="height: 48px; width: 22px"
-          />
-          <div class="col-12 flex justify-center">
-            <q-avatar size="64" square class="commandLogo">
-              <q-img
-                @click="showIconPicker = true"
-                :src="currentCommand.features.icon"
-              />
-            </q-avatar>
-          </div>
-        </div>
-
-        <div class="row">
-          <div
-            class="command-side-bar-content"
-            :style="{ width: sideBarWidth - sideBarPadding * 2 + 'px' }"
-          >
-            <!-- 说明 -->
-            <q-input
-              :disable="!canCommandSave"
-              stack-label
-              label-color="primary"
-              borderless
-              square
-              v-model="currentCommand.features.explain"
-              type="text"
-              placeholder="请输入说明"
-              label="说明"
-            >
-              <template v-slot:prepend>
-                <q-icon
-                  class="command-side-bar-icon"
-                  name="drive_file_rename_outline"
-                />
-              </template>
-            </q-input>
-            <!-- 匹配类型 -->
-            <q-select
-              :disable="!canCommandSave"
-              popup-content-class="side-bar-popup-content"
-              hide-dropdown-icon
-              stack-label
-              label-color="primary"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              square
-              @update:model-value="(val) => handleCmdTypeChange(val)"
-              :options="commandTypesOptions"
-              v-model="cmdType"
-              type="text"
-              label="匹配类型"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" :name="cmdType.icon" />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps" class="row items-center">
-                  <q-icon :name="scope.opt.icon" class="q-mr-md" />
-                  <div>
-                    <q-item-label v-html="scope.opt.name" />
-                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                  </div>
-                </q-item>
-              </template>
-            </q-select>
-            <!-- 匹配规则 -->
-            <q-select
-              v-if="cmdType.valueType === 'array'"
-              :disable="!canCommandSave"
-              popup-content-class="side-bar-popup-content"
-              hide-dropdown-icon
-              stack-label
-              label-color="primary"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              square
-              v-model="cmdMatch"
-              max-values="3"
-              type="text"
-              placeholder="回车添加"
-              use-input
-              use-chips
-              multiple
-              new-value-mode="add-unique"
-              input-debounce="0"
-              :label="cmdType.matchLabel"
-              ref="cmdMatchRef"
-              @blur="(e) => autoAddInputVal(e, $refs.cmdMatchRef)"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" name="square_foot" />
-              </template>
-            </q-select>
-            <q-input
-              v-else
-              :disable="!canCommandSave"
-              autogrow
-              borderless
-              square
-              v-model="cmdMatch"
-              hide-bottom-space
-              @blur="regexVerify"
-              :readonly="!cmdType.valueType"
-              type="text"
-              :label="cmdType.matchLabel"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" name="square_foot" />
-              </template>
-              <template v-slot:append>
-                <q-icon
-                  v-if="cmdType.name === 'files'"
-                  name="folder"
-                  size="xs"
-                  :color="isFileTypeDirectory ? 'primary' : ''"
-                  @click="isFileTypeDirectory = !isFileTypeDirectory"
-                  style="cursor: pointer"
-                >
-                  <q-tooltip>
-                    切换匹配类型，当前：{{
-                      isFileTypeDirectory ? "文件夹" : "文件"
-                    }}
-                  </q-tooltip>
-                </q-icon>
-              </template>
-            </q-input>
-            <!-- 标签 -->
-            <q-select
-              :disable="!canCommandSave"
-              hide-dropdown-icon
-              stack-label
-              popup-content-class="side-bar-popup-content"
-              label-color="primary"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              square
-              v-model="currentCommand.tags"
-              max-values="3"
-              type="text"
-              label="标签"
-              placeholder="回车添加"
-              use-input
-              use-chips
-              multiple
-              new-value-mode="add-unique"
-              @new-value="tagVerify"
-              input-debounce="0"
-              :options="allQuickCommandTags"
-              ref="commandTagRef"
-              @blur="(e) => autoAddInputVal(e, $refs.commandTagRef)"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" name="label" />
-              </template>
-            </q-select>
-            <!-- 特殊变量 -->
-            <q-select
-              :disable="!canCommandSave"
-              hide-dropdown-icon
-              popup-content-class="side-bar-popup-content"
-              stack-label
-              label-color="primary"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              @popup-hide="
-                () => {
-                  if (specialVar.label === '{{usr:}}') showUserData = true;
-                  else insertSpecialVar(specialVar.label);
-                }
-              "
-              square
-              :options="specialVarsOptions"
-              v-model="specialVar"
-              input-debounce="0"
-              type="text"
-              label="特殊变量"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" name="attach_money" />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    <q-item-label v-html="scope.opt.label" />
-                    <q-tooltip v-if="scope.opt.tooltip">
-                      {{ scope.opt.tooltip }}
-                    </q-tooltip>
-                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template></q-select
-            >
-            <!-- 输出 -->
-            <q-select
-              :disable="!canCommandSave"
-              hide-dropdown-icon
-              stack-label
-              label-color="primary"
-              popup-content-class="side-bar-popup-content"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              square
-              color="primary"
-              v-model="currentCommand.output"
-              :display-value="outputTypes[currentCommand.output].label"
-              :options="outputTypesOptionsDy"
-              label="输出"
-            >
-              <template v-slot:prepend>
-                <q-icon
-                  class="command-side-bar-icon"
-                  :name="outputTypes[currentCommand.output].icon"
-                />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps" class="row items-center">
-                  <q-icon :name="outputTypes[scope.opt].icon" class="q-mr-md" />
-                  <div>
-                    <q-item-label v-html="outputTypes[scope.opt].label" />
-                  </div>
-                </q-item>
-              </template>
-            </q-select>
-            <!-- 搜索面板推送 -->
-            <q-select
-              :disable="!canCommandSave"
-              hide-dropdown-icon
-              stack-label
-              label-color="primary"
-              popup-content-class="side-bar-popup-content"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              square
-              v-model="searchPushValue"
-              :options="searchPushOptions"
-              label="搜索面板推送"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" name="search" />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.label }}</q-item-label>
-                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                  </q-item-section>
-                  <q-item-section side v-if="scope.opt.value">
-                    <q-btn
-                      flat
-                      round
-                      icon="help_outline"
-                      size="xs"
-                      dense
-                      @click.stop="showMainPushHelp"
-                    />
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
-            <!-- 平台 -->
-            <q-select
-              :disable="!canCommandSave"
-              hide-dropdown-icon
-              stack-label
-              label-color="primary"
-              popup-content-class="side-bar-popup-content"
-              transition-show="jump-down"
-              transition-hide="jump-up"
-              borderless
-              square
-              :options="Object.keys(platformTypes)"
-              use-chips
-              @blur="platformVerify()"
-              v-model="currentCommand.features.platform"
-              multiple
-              label="平台"
-            >
-              <template v-slot:prepend>
-                <q-icon class="command-side-bar-icon" name="window" />
-              </template>
-              <template v-slot:selected-item="scope">
-                <q-chip
-                  removable
-                  dense
-                  @remove="scope.removeAtIndex(scope.index)"
-                  :tabindex="scope.tabindex"
-                >
-                  {{ platformTypes[scope.opt].label }}
-                </q-chip>
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps" class="row items-center">
-                  <q-img
-                    :src="platformTypes[scope.opt].icon"
-                    width="24px"
-                    class="q-mr-md"
-                  />
-                  <div>
-                    <q-item-label v-html="platformTypes[scope.opt].label" />
-                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                  </div>
-                </q-item>
-              </template>
-            </q-select>
-          </div>
+  <div class="command-side-bar" :style="{ width: sideBarWidth + 'px' }">
+    <!-- 头部区域 -->
+    <div class="header-section">
+      <div class="header-content">
+        <q-btn
+          dense
+          flat
+          color="grey"
+          icon="arrow_back_ios_new"
+          v-close-popup
+          class="back-btn"
+          @click="$emit('back')"
+        />
+        <div class="logo-container">
+          <q-avatar size="64" square class="commandLogo">
+            <q-img
+              @click="showIconPicker = true"
+              :src="currentCommand.features.icon"
+            />
+          </q-avatar>
         </div>
       </div>
     </div>
+
+    <!-- 可滚动的内容区域 -->
+    <q-scroll-area
+      :thumb-style="{
+        width: '3px',
+      }"
+      :horizontal-thumb-style="{
+        height: '5px',
+      }"
+      class="scroll-area"
+    >
+      <div
+        class="row"
+        :style="{
+          paddingLeft: sideBarPadding + 'px',
+          paddingRight: sideBarPadding + 'px',
+          paddingBottom: sideBarPadding + 'px',
+        }"
+      >
+        <div class="col-12">
+          <div class="row">
+            <div
+              class="command-side-bar-content"
+              :style="{ width: sideBarWidth - sideBarPadding * 2 + 'px' }"
+            >
+              <!-- 说明 -->
+              <q-input
+                :disable="!canCommandSave"
+                stack-label
+                label-color="primary"
+                borderless
+                square
+                v-model="currentCommand.features.explain"
+                type="text"
+                placeholder="请输入说明"
+                label="说明"
+              >
+                <template v-slot:prepend>
+                  <q-icon
+                    class="command-side-bar-icon"
+                    name="drive_file_rename_outline"
+                  />
+                </template>
+              </q-input>
+              <!-- 匹配类型 -->
+              <q-select
+                :disable="!canCommandSave"
+                popup-content-class="side-bar-popup-content"
+                hide-dropdown-icon
+                stack-label
+                label-color="primary"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                square
+                @update:model-value="(val) => handleCmdTypeChange(val)"
+                :options="commandTypesOptions"
+                v-model="cmdType"
+                type="text"
+                label="匹配类型"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" :name="cmdType.icon" />
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps" class="row items-center">
+                    <q-icon :name="scope.opt.icon" class="q-mr-md" />
+                    <div>
+                      <q-item-label v-html="scope.opt.name" />
+                      <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                    </div>
+                  </q-item>
+                </template>
+              </q-select>
+              <!-- 匹配规则 -->
+              <q-select
+                v-if="cmdType.valueType === 'array'"
+                :disable="!canCommandSave"
+                popup-content-class="side-bar-popup-content"
+                hide-dropdown-icon
+                stack-label
+                label-color="primary"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                square
+                v-model="cmdMatch"
+                max-values="3"
+                type="text"
+                placeholder="回车添加"
+                use-input
+                use-chips
+                multiple
+                new-value-mode="add-unique"
+                input-debounce="0"
+                :label="cmdType.matchLabel"
+                ref="cmdMatchRef"
+                @blur="(e) => autoAddInputVal(e, $refs.cmdMatchRef)"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" name="square_foot" />
+                </template>
+              </q-select>
+              <q-input
+                v-else
+                :disable="!canCommandSave"
+                autogrow
+                borderless
+                square
+                v-model="cmdMatch"
+                hide-bottom-space
+                @blur="regexVerify"
+                :readonly="!cmdType.valueType"
+                type="text"
+                :label="cmdType.matchLabel"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" name="square_foot" />
+                </template>
+                <template v-slot:append>
+                  <q-icon
+                    v-if="cmdType.name === 'files'"
+                    name="folder"
+                    size="xs"
+                    :color="isFileTypeDirectory ? 'primary' : ''"
+                    @click="isFileTypeDirectory = !isFileTypeDirectory"
+                    style="cursor: pointer"
+                  >
+                    <q-tooltip>
+                      切换匹配类型，当前：{{
+                        isFileTypeDirectory ? "文件夹" : "文件"
+                      }}
+                    </q-tooltip>
+                  </q-icon>
+                </template>
+              </q-input>
+              <!-- 标签 -->
+              <q-select
+                :disable="!canCommandSave"
+                hide-dropdown-icon
+                stack-label
+                popup-content-class="side-bar-popup-content"
+                label-color="primary"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                square
+                v-model="currentCommand.tags"
+                max-values="3"
+                type="text"
+                label="标签"
+                placeholder="回车添加"
+                use-input
+                use-chips
+                multiple
+                new-value-mode="add-unique"
+                @new-value="tagVerify"
+                input-debounce="0"
+                :options="allQuickCommandTags"
+                ref="commandTagRef"
+                @blur="(e) => autoAddInputVal(e, $refs.commandTagRef)"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" name="label" />
+                </template>
+              </q-select>
+              <!-- 特殊变量 -->
+              <q-select
+                :disable="!canCommandSave"
+                hide-dropdown-icon
+                popup-content-class="side-bar-popup-content"
+                stack-label
+                label-color="primary"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                @popup-hide="
+                  () => {
+                    if (specialVar.label === '{{usr:}}') showUserData = true;
+                    else insertSpecialVar(specialVar.label);
+                  }
+                "
+                square
+                :options="specialVarsOptions"
+                v-model="specialVar"
+                input-debounce="0"
+                type="text"
+                label="特殊变量"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" name="attach_money" />
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label v-html="scope.opt.label" />
+                      <q-tooltip v-if="scope.opt.tooltip">
+                        {{ scope.opt.tooltip }}
+                      </q-tooltip>
+                      <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template></q-select
+              >
+              <!-- 输出 -->
+              <q-select
+                :disable="!canCommandSave"
+                hide-dropdown-icon
+                stack-label
+                label-color="primary"
+                popup-content-class="side-bar-popup-content"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                square
+                color="primary"
+                v-model="currentCommand.output"
+                :display-value="outputTypes[currentCommand.output].label"
+                :options="outputTypesOptionsDy"
+                label="输出"
+              >
+                <template v-slot:prepend>
+                  <q-icon
+                    class="command-side-bar-icon"
+                    :name="outputTypes[currentCommand.output].icon"
+                  />
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps" class="row items-center">
+                    <q-icon
+                      :name="outputTypes[scope.opt].icon"
+                      class="q-mr-md"
+                    />
+                    <div>
+                      <q-item-label v-html="outputTypes[scope.opt].label" />
+                    </div>
+                  </q-item>
+                </template>
+              </q-select>
+              <!-- 搜索面板推送 -->
+              <q-select
+                :disable="!canCommandSave"
+                hide-dropdown-icon
+                stack-label
+                label-color="primary"
+                popup-content-class="side-bar-popup-content"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                square
+                v-model="searchPushValue"
+                :options="searchPushOptions"
+                label="搜索面板推送"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" name="search" />
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.label }}</q-item-label>
+                      <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side v-if="scope.opt.value">
+                      <q-btn
+                        flat
+                        round
+                        icon="help_outline"
+                        size="xs"
+                        dense
+                        @click.stop="showMainPushHelp"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+              <!-- 平台 -->
+              <q-select
+                :disable="!canCommandSave"
+                hide-dropdown-icon
+                stack-label
+                label-color="primary"
+                popup-content-class="side-bar-popup-content"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                borderless
+                square
+                :options="Object.keys(platformTypes)"
+                use-chips
+                @blur="platformVerify()"
+                v-model="currentCommand.features.platform"
+                multiple
+                label="平台"
+              >
+                <template v-slot:prepend>
+                  <q-icon class="command-side-bar-icon" name="window" />
+                </template>
+                <template v-slot:selected-item="scope">
+                  <q-chip
+                    removable
+                    dense
+                    @remove="scope.removeAtIndex(scope.index)"
+                    :tabindex="scope.tabindex"
+                  >
+                    {{ platformTypes[scope.opt].label }}
+                  </q-chip>
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps" class="row items-center">
+                    <q-img
+                      :src="platformTypes[scope.opt].icon"
+                      width="24px"
+                      class="q-mr-md"
+                    />
+                    <div>
+                      <q-item-label v-html="platformTypes[scope.opt].label" />
+                      <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                    </div>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </q-scroll-area>
+
+    <!-- 对话框部分保持不变 -->
     <q-dialog v-model="showIconPicker" position="left">
       <iconPicker
         @iconChanged="(dataUrl) => (currentCommand.features.icon = dataUrl)"
@@ -341,7 +359,7 @@
     <q-dialog v-model="showUserData">
       <UserData @insertText="insertSpecialVar" :showInsertBtn="true" />
     </q-dialog>
-  </q-scroll-area>
+  </div>
 </template>
 
 <script>
@@ -579,12 +597,50 @@ export default {
       return updateData;
     },
   },
+  emits: ["back"],
 };
 </script>
 <style scoped>
 .command-side-bar {
   height: 100%;
   background: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-section {
+  height: 60px;
+  min-height: 60px;
+  background: inherit;
+  position: relative;
+}
+
+.header-content {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.back-btn {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 48px;
+  width: 22px;
+  z-index: 1;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.scroll-area {
+  flex: 1;
+  background: inherit;
 }
 
 .body--dark .command-side-bar {
