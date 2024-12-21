@@ -387,6 +387,9 @@ export default {
   flex: 1;
   padding: 0;
   background: #f4f4f4;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100vh - 64px); /* Subtract header height */
 }
 
 .history-item {
@@ -395,6 +398,8 @@ export default {
   border-left: 3px solid transparent;
   position: relative;
   overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .history-item::before {
@@ -584,5 +589,11 @@ export default {
   to {
     opacity: 0;
   }
+}
+
+.history-item q-item-label {
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 </style>
