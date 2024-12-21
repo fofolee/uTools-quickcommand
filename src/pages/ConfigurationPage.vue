@@ -24,6 +24,7 @@
           activatedQuickCommandFeatureCodes
         "
         @command-changed="commandChanged"
+        @commands-reordered="handleCommandsReorder"
       />
       <!-- 底栏 -->
       <FooterBar
@@ -102,11 +103,19 @@ export default {
     // 当前标签下的所有快捷命令
     currentTagQuickCommands() {
       let commands = Object.values(_.cloneDeep(this.allQuickCommands));
+
+      // 根据 order 排序
+      const sortByOrder = (cmds) => {
+        return cmds.sort((a, b) => {
+          const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
+      };
+
       switch (this.currentTag) {
         case "未分类":
-          return commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0);
-        // case "来自分享":
-        //   return commands.filter((cmd) => cmd.fromShare);
+          return sortByOrder(commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0));
         case "搜索结果":
           if (this.commandSearchKeyword?.length < 2) return;
           let searchResult = [];
@@ -130,8 +139,10 @@ export default {
             searchResult.push(cmd);
           });
           return searchResult;
-        default:
+        case "默认":
           return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
+        default:
+          return sortByOrder(commands.filter((cmd) => cmd.tags?.includes(this.currentTag)));
       }
     },
     // 标签栏宽度
@@ -461,6 +472,33 @@ export default {
         this.isEditorLeaving = false;
         this.isCommandEditorShow = false;
       }
+    },
+    handleCommandsReorder({ tag, commands }) {
+      // 更新当前tag下的命令顺序
+      const tagCommands = {};
+      commands.forEach((command, index) => {
+        tagCommands[command.features.code] = {
+          ...command,
+          order: index // 添加排序信息
+        };
+      });
+
+      // 更新存储
+      this.allQuickCommands = {
+        ...this.allQuickCommands,
+        ...tagCommands
+      };
+
+      // 只保存被修改的命令
+      this.saveCurrentTagOrderedCommand(tagCommands);
+    },
+    saveCurrentTagOrderedCommand(tagCommands) {
+      // 只保存被修改的命令
+      Object.entries(tagCommands).forEach(([code, command]) => {
+        if (!this.isDefaultCommand(code)) {
+          this.$root.utools.putDB(_.cloneDeep(command), "qc_" + code);
+        }
+      });
     },
   },
 };

@@ -5,7 +5,7 @@
       'card-wrapper': 1,
       'card-wrapper-hover': isWarpperHover,
     }"
-    v-show="canRunInConfigurationPage || cardStyle.code > 1"
+    v-if="canRunInConfigurationPage || cardStyle.code > 1"
     :id="commandInfo.features.code"
     @mouseenter="isWarpperHover = true"
     @mouseleave="if (!$refs.controlButtons?.isMenuOpen) isWarpperHover = false;"

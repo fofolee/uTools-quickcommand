@@ -24,24 +24,35 @@
           opacity: 0.5,
         }"
       >
-        <div class="row center q-pa-xs">
-          <CommandCard
-            v-for="commandInfo in currentTagQuickCommands"
-            :key="commandInfo.features.code"
-            :commandInfo="commandInfo"
-            :isCommandActivated="
-              activatedQuickCommandFeatureCodes.includes(
-                commandInfo.features.code
-              )
-            "
-            :cardStyle="cardStyleSheet[$root.profile.commandCardStyle]"
-            @commandChanged="$emit('command-changed', $event)"
-            :style="{
+        <draggable
+          v-model="sortedCommands"
+          :component-data="{
+            type: 'div',
+            class: 'row center q-pa-xs'
+          }"
+          item-key="features.code"
+          @start="drag=true"
+          @end="onDragEnd"
+          handle=".q-card"
+          :disabled="currentTag === '默认' || currentTag === '搜索结果'"
+        >
+          <template #item="{element: commandInfo}">
+            <div :key="commandInfo.features.code" :style="{
               width: cardStyleSheet[$root.profile.commandCardStyle].width,
-            }"
-            class="relative-position q-pa-sm"
-          ></CommandCard>
-        </div>
+            }" class="relative-position q-pa-sm command-item">
+              <CommandCard
+                :commandInfo="commandInfo"
+                :isCommandActivated="
+                  activatedQuickCommandFeatureCodes.includes(
+                    commandInfo.features.code
+                  )
+                "
+                :cardStyle="cardStyleSheet[$root.profile.commandCardStyle]"
+                @commandChanged="$emit('command-changed', $event)"
+              ></CommandCard>
+            </div>
+          </template>
+        </draggable>
       </q-scroll-area>
     </q-tab-panel>
   </q-tab-panels>
@@ -49,11 +60,13 @@
 
 <script>
 import CommandCard from "components/CommandCard.vue";
+import draggable from 'vuedraggable';
 
 export default {
   name: "CommandPanels",
   components: {
     CommandCard,
+    draggable
   },
   data() {
     return {
@@ -75,6 +88,8 @@ export default {
           code: 4,
         },
       },
+      sortedCommands: [],
+      drag: false
     };
   },
   props: {
@@ -113,7 +128,28 @@ export default {
       },
     },
   },
-  emits: ["update:modelValue", "command-changed"],
+  watch: {
+    currentTagQuickCommands: {
+      immediate: true,
+      handler(newCommands) {
+        this.sortedCommands = [...newCommands];
+      }
+    }
+  },
+  methods: {
+    onDragEnd() {
+      this.drag = false;
+      this.$emit('commands-reordered', {
+        tag: this.currentTag,
+        commands: this.sortedCommands
+      });
+    }
+  },
+  emits: [
+    "update:modelValue",
+    "command-changed",
+    "commands-reordered"
+  ],
 };
 </script>
 
@@ -126,5 +162,9 @@ export default {
 .q-tab-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.command-item {
+  transition: all 0.5s;
 }
 </style>

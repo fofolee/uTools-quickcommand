@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 开关按钮 -->
-    <div class="absolute" style="z-index: 1; left: 19px; bottom: 16px">
+    <div class="absolute" style="z-index: 1; left: 12px; bottom: 10px">
       <q-toggle
         :model-value="isActivated"
         checked-icon="flash_on"
@@ -14,7 +14,7 @@
     <!-- 控制按钮组 -->
     <div
       class="absolute control-buttons"
-      style="z-index: 1; right: 16px; top: 16px"
+      style="z-index: 1; right: 16px; top: 10px"
       :class="{ 'buttons-visible': isVisible }"
     >
       <q-btn
