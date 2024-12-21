@@ -159,8 +159,9 @@ const commandTypes = {
         matchToCmds: (rules, desc) => [{
             type: "files",
             label: desc,
-            match: rules,
-            "minLength": 1,
+            match: rules.match,
+            fileType: rules.fileType,
+            minLength: 1,
         }, ],
         verify: rules => !!rules > 0 || "正则不能为空",
         tempPayload: () => window.convertFilePathToUtoolsPayload(utools.showOpenDialog({

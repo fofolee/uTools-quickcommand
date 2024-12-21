@@ -18,7 +18,7 @@
             icon="arrow_back_ios_new"
             v-close-popup
             class="absolute-left"
-            style="height: 48px"
+            style="height: 48px; width: 22px"
           />
           <div class="col-12 flex justify-center">
             <q-avatar size="64" square class="commandLogo">
@@ -64,13 +64,7 @@
               transition-hide="jump-up"
               borderless
               square
-              @update:model-value="
-                (val) =>
-                  (cmdMatch =
-                    val.name === 'professional'
-                      ? JSON.stringify(val.jsonSample, null, 4)
-                      : null)
-              "
+              @update:model-value="(val) => handleCmdTypeChange(val)"
               :options="commandTypesOptions"
               v-model="cmdType"
               type="text"
@@ -93,13 +87,13 @@
             </q-select>
             <!-- 匹配规则 -->
             <q-select
+              v-if="cmdType.valueType === 'array'"
               :disable="!canCommandSave"
               hide-dropdown-icon
               stack-label
               label-color="primary"
               transition-show="jump-down"
               transition-hide="jump-up"
-              v-if="cmdType.valueType === 'array'"
               borderless
               square
               v-model="cmdMatch"
@@ -120,8 +114,8 @@
               </template>
             </q-select>
             <q-input
-              :disable="!canCommandSave"
               v-else
+              :disable="!canCommandSave"
               autogrow
               borderless
               square
@@ -134,6 +128,22 @@
             >
               <template v-slot:prepend>
                 <q-icon class="command-side-bar-icon" name="square_foot" />
+              </template>
+              <template v-slot:append>
+                <q-icon
+                  v-if="cmdType.name === 'files'"
+                  name="folder"
+                  size="xs"
+                  :color="isFileTypeDirectory ? 'primary' : ''"
+                  @click="isFileTypeDirectory = !isFileTypeDirectory"
+                  style="cursor: pointer"
+                >
+                  <q-tooltip>
+                    切换匹配类型，当前：{{
+                      isFileTypeDirectory ? "文件夹" : "文件"
+                    }}
+                  </q-tooltip>
+                </q-icon>
               </template>
             </q-input>
             <!-- 标签 -->
@@ -236,44 +246,41 @@
               </template>
             </q-select>
             <!-- 搜索面板推送 -->
-            <q-field
+            <q-select
               :disable="!canCommandSave"
+              hide-dropdown-icon
               stack-label
               label-color="primary"
+              transition-show="jump-down"
+              transition-hide="jump-up"
               borderless
               square
-              type="text"
+              v-model="searchPushValue"
+              :options="searchPushOptions"
               label="搜索面板推送"
             >
-              <template v-slot:control>
-                <div class="self-center full-width no-outline" tabindex="0">
-                  {{
-                    currentCommand.features.mainPush
-                      ? "主搜索执行"
-                      : "进插件执行"
-                  }}
-                  <q-btn
-                    flat
-                    round
-                    icon="help_outline"
-                    size="xs"
-                    dense
-                    @click="showMainPushHelp"
-                  ></q-btn>
-                </div>
-              </template>
               <template v-slot:prepend>
                 <q-icon class="command-side-bar-icon" name="search" />
               </template>
-              <template v-slot:append>
-                <q-toggle
-                  v-model="currentCommand.features.mainPush"
-                  color="primary"
-                  size="md"
-                  dense
-                />
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.label }}</q-item-label>
+                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="scope.opt.value">
+                    <q-btn
+                      flat
+                      round
+                      icon="help_outline"
+                      size="xs"
+                      dense
+                      @click.stop="showMainPushHelp"
+                    />
+                  </q-item-section>
+                </q-item>
               </template>
-            </q-field>
+            </q-select>
             <!-- 平台 -->
             <q-select
               :disable="!canCommandSave"
@@ -355,6 +362,14 @@ export default {
           mainPush: false,
         },
       },
+      searchPushOptions: [
+        { value: false, label: "禁用", desc: "需要进入插件才能执行命令" },
+        {
+          value: true,
+          label: "启用",
+          desc: "可以在uTools主搜索框直接执行命令",
+        },
+      ],
       commandTypes: commandTypes,
       platformTypes: platformTypes,
       currentMatchType: "关键字",
@@ -366,7 +381,8 @@ export default {
       allQuickCommandTags: this.$parent.allQuickCommandTags,
       showIconPicker: false,
       showUserData: false,
-      sideBarPadding: 12,
+      sideBarPadding: 20,
+      isFileTypeDirectory: false,
     };
   },
   props: {
@@ -399,6 +415,18 @@ export default {
         default:
           return this.outputTypesOptions;
       }
+    },
+    searchPushValue: {
+      get() {
+        return (
+          this.searchPushOptions.find(
+            (opt) => opt.value === this.currentCommand.features.mainPush
+          ) || this.searchPushOptions[0]
+        );
+      },
+      set(option) {
+        this.currentCommand.features.mainPush = option.value;
+      },
     },
   },
   watch: {
@@ -435,10 +463,11 @@ export default {
       let cmds = this.quickcommandInfo.features?.cmds;
       if (!cmds) return data;
       if (cmds.length === 1) {
-        let { type, match } = cmds[0];
+        let { type, match, fileType } = cmds[0];
         data.type = type ? type : "key";
         data.match =
           data.type === "key" ? cmds : match?.app ? match.app : match;
+        this.isFileTypeDirectory = fileType === "directory";
       } else {
         data.type = cmds.filter((x) => !x.length).length
           ? "professional"
@@ -446,6 +475,12 @@ export default {
         data.match = data.type === "key" ? cmds : JSON.stringify(cmds, null, 4);
       }
       return data;
+    },
+    handleCmdTypeChange(val) {
+      this.cmdMatch =
+        val.name === "professional"
+          ? JSON.stringify(val.jsonSample, null, 4)
+          : null;
     },
     tagVerify(val, done) {
       if (
@@ -508,8 +543,16 @@ export default {
       if (verify !== true) {
         return quickcommand.showMessageBox(verify, "error");
       }
+      // 匹配文件时，额外添加文件类型
+      let rules = this.cmdMatch;
+      if (this.cmdType.name === "files") {
+        rules = {
+          fileType: this.isFileTypeDirectory ? "directory" : "file",
+          match: this.cmdMatch,
+        };
+      }
       updateData.features.cmds = this.cmdType.matchToCmds(
-        this.cmdMatch,
+        rules,
         updateData.features.explain
       );
 
@@ -562,7 +605,7 @@ export default {
   border-radius: 8px;
   padding: 4px;
   color: #f4f4f4;
-  font-size: 16px;
+  font-size: 14px;
   /* 分开设置不同属性的过渡效果 */
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -580,17 +623,12 @@ export default {
   transform: scale(1.05) translateY(-1px) translateZ(0);
   background: var(--q-primary);
   opacity: 0.9;
-  /* 移除font-size变化 */
 }
 
-/* 输入框获得焦点时的图标效果 */
+/* 输入框得焦点时的图标效果 */
 .q-field--focused .command-side-bar-icon {
   transform: scale(1.1) translateY(-1px) translateZ(0);
   background: var(--q-primary);
   opacity: 0.85;
 }
-
-/* .command-side-bar-content  {
-  width: 171px;
-} */
 </style>
