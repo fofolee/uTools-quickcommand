@@ -2,17 +2,17 @@ const platformTypes = {
     win32: {
         name: "win32",
         label: "Windows",
-        icon: "windows1"
+        icon: "platform/windows.png"
     },
     darwin: {
         name: "darwin",
         label: "MacOS",
-        icon: "macos1"
+        icon: "platform/macos.png"
     },
     linux: {
         name: "linux",
         label: "Linux",
-        icon: "linux"
+        icon: "platform/linux.png"
     }
 }
 

@@ -20,7 +20,7 @@
     <!-- 面板视图不显示标签栏 -->
     <q-scroll-area
       v-show="commandCardStyle !== 'mini'"
-      class="absolute-left"
+      class="absolute-left tag-bar"
       :thumb-style="{
         width: '2px',
       }"
@@ -101,7 +101,7 @@
     </q-tab-panels>
     <!-- 底栏 -->
     <div
-      class="absolute-bottom"
+      class="absolute-bottom footer-bar"
       :style="{
         height: footerBarHeight,
         left: tabBarWidth,
@@ -153,23 +153,17 @@
             >
               <template v-slot:normal>
                 <q-icon name="dashboard" />
-                <q-tooltip>按两列排列的基础视图</q-tooltip>
+                <q-tooltip>双列视图</q-tooltip>
               </template>
               <template v-slot:dense>
                 <q-icon name="apps" />
-                <q-tooltip
-                  >按三列排列的紧凑视图，但不会显示适用的操作系统</q-tooltip
-                >
+                <q-tooltip>三列视图</q-tooltip>
               </template>
               <template v-slot:mini>
                 <q-icon name="view_comfy" />
                 <q-tooltip
-                  >按四列排列的面板视图<br />
-                  老版本的「快捷面板」已被弃用，取而代之的是新版的「面板视图」<br />
-                  注意：<br />
-                  1.未启用、匹配类型为窗口的命令在此视图下不显示<br />
-                  2.只显示图标描述和匹配类型<br />
-                  3.点击卡片时会直接运行命令而不是编辑命令</q-tooltip
+                  >五列面板视图<br />
+                  未启用、匹配类型为窗口的命令在此视图下不显示</q-tooltip
                 >
               </template>
             </q-btn-toggle>
@@ -739,7 +733,7 @@ export default {
 
 /* 面板过渡效果 */
 .q-tab-panels {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   background: none !important;
 }
 
@@ -804,4 +798,41 @@ body.body--dark.glass-effect-menu .absolute-bottom {
   position: absolute;
   z-index: 1;
 }
+
+/* 底栏过渡动画 */
+.footer-bar {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: left;
+}
+
+/* 底栏输入框样式 */
+.absolute-bottom .q-field__control {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+}
+
+.body--dark .absolute-bottom .q-field__control {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 标签栏过渡动画 */
+.tag-bar {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width, opacity;
+  opacity: 1;
+}
+
+/* 标签栏隐藏时的样式 */
+.tag-bar[style*="display: none"] {
+  opacity: 0;
+  width: 0 !important;
+}
+
+/* 面板过渡效果 */
+.q-tab-panels {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: none !important;
+}
+
+/* ... 其他样式保持不变 ... */
 </style>

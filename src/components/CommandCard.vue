@@ -5,7 +5,7 @@
       'card-wrapper': 1,
       'card-wrapper-hover': isWarpperHover,
     }"
-    v-show="!cardStyleVars.hideCard"
+    v-show="canRunInConfigurationPage || cardStyle.code > 1"
     :id="commandInfo.features.code"
     @mouseenter="isWarpperHover = true"
     @mouseleave="if (!$refs.controlButtons?.isMenuOpen) isWarpperHover = false;"
@@ -14,7 +14,8 @@
     <ControlButtons
       ref="controlButtons"
       v-model:isVisible="isWarpperHover"
-      v-show="cardStyleVars.showButtons"
+      v-show="cardStyle.code > 1"
+      :toggleBtnSize="cardStyle.code === 3 ? 'xs' : 'sm'"
       :isActivated="isCommandActivated"
       :isRunButtonVisible="canRunInConfigurationPage"
       :commandInfo="commandInfo"
@@ -24,8 +25,8 @@
       :commandInfo="commandInfo"
       :isActivated="isCommandActivated"
       :isPlatformSupported="isPlatformSupported"
-      :cardStyleVars="cardStyleVars"
       :isHovered="isWarpperHover"
+      :cardStyleCode="cardStyle.code"
       @click="handleCardClick"
     />
   </div>
@@ -46,20 +47,6 @@ export default {
     };
   },
   computed: {
-    // 控制卡片样式的具体参数
-    cardStyleVars() {
-      return {
-        showButtons: this.cardStyle.code > 1,
-        showPlatforms: this.cardStyle.code > 2,
-        showLanguages: this.cardStyle.code > 1,
-        showBiggerTitle: this.cardStyle.code > 2,
-        logoPosition:
-          this.cardStyle.code > 1 ? "justify-start" : "justify-center",
-        fontPosition:
-          this.cardStyle.code > 1 ? "justify-end" : "justify-center",
-        hideCard: this.cardStyle.code === 1 && !this.canRunInConfigurationPage,
-      };
-    },
     isPlatformSupported() {
       let { platform } = this.commandInfo.features;
       return !_.isEmpty(platform) && !platform.includes(window.processPlatform)
@@ -85,7 +72,7 @@ export default {
   methods: {
     // 命令卡片点击事件
     handleCardClick() {
-      // 视图模式直接运行命令
+      // mini视图模式直接运行命令
       if (this.cardStyle.code === 1) {
         return this.$refs.controlButtons.runCommand();
       }
@@ -125,8 +112,9 @@ export default {
 }
 
 .card-wrapper {
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, width;
+  transform-origin: center center;
 }
 
 .card-wrapper-hover {

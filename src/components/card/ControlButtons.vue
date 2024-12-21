@@ -1,12 +1,13 @@
 <template>
   <div>
     <!-- 开关按钮 -->
-    <div class="absolute" style="z-index: 1; left: 20px; bottom: 16px">
+    <div class="absolute" style="z-index: 1; left: 19px; bottom: 16px">
       <q-toggle
         :model-value="isActivated"
         checked-icon="flash_on"
         color="orange-6"
         @click="toggleCommandActivated"
+        :size="toggleBtnSize"
       />
     </div>
 
@@ -24,8 +25,8 @@
         icon="play_arrow"
         v-show="isRunButtonVisible"
         @click="runCommand"
+        size="12px"
       >
-        <q-tooltip anchor="top middle" self="center middle">运行</q-tooltip>
       </q-btn>
 
       <q-btn
@@ -36,8 +37,8 @@
         :color="!!cronExp ? 'amber' : 'blue-9'"
         :icon="!!cronExp ? 'timer' : 'insights'"
         @click="isMenuOpen = true"
+        size="12px"
       >
-        <q-tooltip anchor="top middle" self="center middle">设置</q-tooltip>
         <q-menu
           transition-show="jump-down"
           transition-hide="jump-up"
@@ -93,8 +94,8 @@
         color="red"
         icon="close"
         @click="removeCommand"
+        size="12px"
       >
-        <q-tooltip anchor="top middle" self="center middle">删除</q-tooltip>
       </q-btn>
     </div>
 
@@ -121,6 +122,7 @@ export default {
     isActivated: Boolean,
     commandInfo: Object,
     isRunButtonVisible: Boolean,
+    toggleBtnSize: String,
   },
   emits: ["update:isVisible", "commandChanged"],
   data() {
