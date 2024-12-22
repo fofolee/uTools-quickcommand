@@ -169,16 +169,12 @@
       <KeyRecorder @sendKeys="addAction" />
     </q-dialog>
     <q-dialog v-model="showComposer" maximized>
-      <q-card class="full-height">
-        <q-card-section class="q-pa-md full-height">
-          <CommandComposer
-            ref="composer"
-            @run="handleComposerRun"
-            @apply="handleComposerApply"
-            @update:model-value="showComposer = false"
-          />
-        </q-card-section>
-      </q-card>
+      <CommandComposer
+        ref="composer"
+        @run="handleComposerRun"
+        @apply="handleComposerApply"
+        @update:model-value="showComposer = false"
+      />
     </q-dialog>
   </div>
 </template>
@@ -298,19 +294,19 @@ export default {
       window.showUb.docs();
     },
     handleComposerRun(code) {
-      this.$emit('add-action', code);
+      this.$emit("add-action", code);
     },
     handleComposerApply(code) {
-      this.$emit('add-action', code);
+      this.$emit("add-action", code);
       this.showComposer = false;
     },
     applyComposerCommands() {
       if (this.$refs.composer) {
         const code = this.$refs.composer.generateCode();
-        this.$emit('add-action', code);
+        this.$emit("add-action", code);
       }
       this.showComposer = false;
-    }
+    },
   },
 };
 </script>

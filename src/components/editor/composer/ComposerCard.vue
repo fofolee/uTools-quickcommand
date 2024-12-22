@@ -1,15 +1,18 @@
 <template>
-  <div class="composer-card q-mb-sm">
-    <q-card flat bordered>
-      <q-card-section horizontal class="q-pa-sm">
-        <!-- 拖拽手柄 -->
-        <div class="drag-handle cursor-move q-mr-sm">
-          <q-icon name="drag_indicator" size="24px" class="text-grey-6" />
-        </div>
-
+  <div
+    class="composer-card q-pa-xs"
+    :class="{ 'can-drop': canDrop }"
+    v-bind="$attrs"
+  >
+    <q-card class="command-item">
+      <q-card-section class="q-pa-sm">
         <div class="col">
           <!-- 命令标题和描述 -->
           <div class="row items-center q-mb-sm">
+            <!-- 拖拽手柄 -->
+            <div class="drag-handle cursor-move q-mr-sm">
+              <q-icon name="drag_indicator" size="18px" class="text-grey-6" />
+            </div>
             <div class="text-subtitle1">{{ command.label }}</div>
             <q-space />
             <!-- 输出开关 -->
@@ -25,6 +28,7 @@
               dense
               icon="close"
               @click="$emit('remove')"
+              size="sm"
             />
           </div>
 
@@ -49,7 +53,12 @@
                 </template>
                 <template v-slot:selected-item="scope">
                   <div class="row items-center">
-                    <q-icon name="output" color="primary" size="xs" class="q-mr-xs" />
+                    <q-icon
+                      name="output"
+                      color="primary"
+                      size="xs"
+                      class="q-mr-xs"
+                    />
                     {{ scope.opt.label }}
                   </div>
                 </template>
@@ -69,7 +78,7 @@
                 :label="placeholder"
               >
                 <template v-slot:prepend>
-                  <q-icon name="code" />
+                  <q-icon name="text_fields" size="18px" />
                 </template>
               </q-input>
             </template>
@@ -81,87 +90,167 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-import KeyEditor from './KeyEditor.vue'
+import { defineComponent } from "vue";
+import KeyEditor from "./KeyEditor.vue";
 
 export default defineComponent({
-  name: 'ComposerCard',
+  name: "ComposerCard",
   components: {
-    KeyEditor
+    KeyEditor,
   },
   props: {
     command: {
       type: Object,
-      required: true
+      required: true,
     },
     hasOutput: {
       type: Boolean,
-      default: false
+      default: false,
     },
     canUseOutput: {
       type: Boolean,
-      default: false
+      default: false,
     },
     availableOutputs: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     placeholder: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
+    canDrop: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
-      showKeyRecorder: false
-    }
+      showKeyRecorder: false,
+    };
   },
-  emits: ['remove', 'toggle-output', 'update:argv', 'update:use-output'],
+  emits: ["remove", "toggle-output", "update:argv", "update:use-output"],
   computed: {
     saveOutputLocal: {
       get() {
-        return this.command.saveOutput
+        return this.command.saveOutput;
       },
       set(value) {
-        this.$emit('toggle-output')
-      }
+        this.$emit("toggle-output");
+      },
     },
     argvLocal: {
       get() {
-        return this.command.argv
+        return this.command.argv;
       },
       set(value) {
-        this.$emit('update:argv', value)
-      }
+        this.$emit("update:argv", value);
+      },
     },
     useOutputLocal: {
       get() {
-        return this.command.useOutput
+        return this.command.useOutput;
       },
       set(value) {
-        this.$emit('update:use-output', value)
-      }
-    }
+        this.$emit("update:use-output", value);
+      },
+    },
   },
   methods: {
     handleClearOutput() {
-      this.$emit('update:use-output', null)
+      this.$emit("update:use-output", null);
     },
     handleKeyRecord(keys) {
       this.showKeyRecorder = false;
       // 从keyTap("a","control")格式中提取参数
-      const matches = keys.match(/keyTap\((.*)\)/)
+      const matches = keys.match(/keyTap\((.*)\)/);
       if (matches && matches[1]) {
-        this.$emit('update:argv', matches[1]);
+        this.$emit("update:argv", matches[1]);
       }
-    }
-  }
-})
+    },
+  },
+  mounted() {
+    this.$el.classList.add("composer-card-enter-from");
+    requestAnimationFrame(() => {
+      this.$el.classList.remove("composer-card-enter-from");
+    });
+  },
+});
 </script>
 
 <style scoped>
 .composer-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* 进入动画 */
+.composer-card-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.composer-card-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+/* 移除动画 */
+.composer-card-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+}
+
+.composer-card-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+/* 拖拽动画 */
+.composer-card:active {
+  transform: scale(1.02);
+  transition: transform 0.2s;
+}
+
+.command-item {
   transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.command-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.composer-card :deep(.q-field__label) {
+  font-size: 13px;
+}
+
+/* 可放置状态动画 */
+.can-drop {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.can-drop .command-item {
+  border: 2px dashed var(--q-primary);
+  background: rgba(var(--q-primary-rgb), 0.05);
+}
+
+/* 暗色模式适配 */
+.body--dark .command-item {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.body--dark .command-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.body--dark .can-drop {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .drag-handle {

@@ -1,18 +1,11 @@
 <template>
   <div class="command-composer">
-    <!-- 固定头部 -->
-    <div class="composer-header q-pa-sm row items-center bg-white">
-      <div class="text-h6 text-weight-medium">可视化命令编排</div>
-      <q-space />
-      <q-btn flat round dense icon="close" v-close-popup />
-    </div>
-
     <!-- 主体内容 -->
     <div class="composer-body row no-wrap q-pa-sm">
       <!-- 左侧命令列表 -->
-      <div class="col-3">
+      <div class="col-3 command-section">
         <div class="text-subtitle1 q-pb-sm">可用命令</div>
-        <q-scroll-area style="height: calc(100vh - 200px)">
+        <q-scroll-area class="command-scroll">
           <ComposerList
             :commands="availableCommands"
             @add-command="addCommand"
@@ -21,16 +14,16 @@
       </div>
 
       <!-- 右侧命令流程 -->
-      <div class="col q-pl-md">
+      <div class="col q-pl-md command-section">
         <div class="text-subtitle1 q-pb-sm">命令流程</div>
-        <q-scroll-area style="height: calc(100vh - 200px)">
+        <q-scroll-area class="command-scroll">
           <ComposerFlow v-model="commandFlow" @add-command="addCommand" />
         </q-scroll-area>
       </div>
     </div>
 
     <!-- 固定底部 -->
-    <div class="composer-footer q-pa-sm row items-center justify-end bg-white">
+    <div class="composer-footer q-pa-sm row items-center justify-end">
       <q-btn
         outline
         color="primary"
@@ -130,20 +123,35 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   height: 100%;
+  background-color: #f4f4f4;
 }
 
-.composer-header {
-  border-bottom: 1px solid #e0e0e0;
+.body--dark .command-composer {
+  background-color: #303132;
 }
 
 .composer-body {
   flex: 1;
   overflow: hidden;
-  background-color: #f5f5f5;
+}
+
+.command-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.command-scroll {
+  flex: 1;
+  overflow: hidden;
 }
 
 .composer-footer {
   border-top: 1px solid #e0e0e0;
+}
+
+.body--dark .composer-footer {
+  border-top: 1px solid #676666;
 }
 
 /* 滚动美化 */
@@ -155,5 +163,9 @@ export default defineComponent({
 
 :deep(.q-scrollarea__thumb:hover) {
   opacity: 0.8;
+}
+
+:deep(.q-scrollarea__content) {
+  padding-right: 8px;
 }
 </style>
