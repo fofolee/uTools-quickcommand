@@ -1,7 +1,7 @@
 <template>
   <div
     class="command-editor-container"
-    :class="{ 'leaving': isLeaving, 'run-code': isRunCodePage }"
+    :class="{ leaving: isLeaving, 'run-code': isRunCodePage }"
     @animationend="$emit('animationend')"
   >
     <!-- 命令设置栏 -->
@@ -125,16 +125,16 @@ export default {
   props: {
     action: {
       type: Object,
-      required: true
+      required: true,
     },
     allQuickCommandTags: {
       type: Array,
-      required: true
+      required: true,
     },
     isLeaving: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   created() {
     this.commandInit();
@@ -279,8 +279,8 @@ export default {
     },
     handleBack() {
       // 触发返回事件
-      this.$emit('editorEvent', { type: 'back' });
-    }
+      this.$emit("editorEvent", { type: "back" });
+    },
   },
 };
 </script>

@@ -1,5 +1,11 @@
 <template>
-  <div class="command-side-bar" :style="{ width: sideBarWidth + 'px' }">
+  <div
+    class="command-side-bar"
+    :style="{
+      width: sideBarWidth + 'px',
+      '--icon-url': `url(${currentCommand.features.icon})`,
+    }"
+  >
     <!-- 头部区域 -->
     <div class="header-section">
       <div class="header-content">
@@ -13,7 +19,7 @@
           @click="$emit('back')"
         />
         <div class="logo-container">
-          <q-avatar size="64" square class="commandLogo">
+          <q-avatar size="64" square class="featureIco">
             <q-img
               @click="showIconPicker = true"
               :src="currentCommand.features.icon"
@@ -601,6 +607,20 @@ export default {
 };
 </script>
 <style scoped>
+/* 其他样式从app.css中继承 */
+.featureIco {
+  cursor: pointer;
+}
+
+.featureIco:hover {
+  transform: scale(1.02) translateY(-2px);
+}
+
+.featureIco:hover::after {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
 .command-side-bar {
   height: 100%;
   background: #f4f4f4;
@@ -696,12 +716,13 @@ export default {
   font-size: 20px;
 }
 
-.command-side-bar-content *,
+.command-side-bar-content .q-field,
 .side-bar-popup-content .q-item__label {
   font-size: 13px;
 }
 
-.side-bar-popup-content .q-item__label--caption {
+.side-bar-popup-content .q-item__label--caption,
+.command-side-bar-content :deep(.q-chip) {
   font-size: 12px;
 }
 </style>

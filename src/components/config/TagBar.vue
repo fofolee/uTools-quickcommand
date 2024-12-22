@@ -76,8 +76,13 @@ export default {
 <style scoped>
 /* 标签栏容器样式 */
 .q-tabs {
-  height: 100vh !important;
+  height: auto !important;
+  min-height: 100vh !important;
   background: transparent !important;
+}
+
+.q-scroll-area {
+  height: 100vh;
 }
 
 /* 标签栏和底栏内的按钮悬浮效果 */

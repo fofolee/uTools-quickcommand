@@ -40,7 +40,7 @@
 
     <!-- 命令编辑界面 -->
     <CommandEditor
-      v-show="isCommandEditorShow"
+      v-if="isCommandEditorShow"
       ref="commandEditor"
       :action="commandEditorAction"
       @editorEvent="editorEvent"
@@ -115,7 +115,9 @@ export default {
 
       switch (this.currentTag) {
         case "未分类":
-          return sortByOrder(commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0));
+          return sortByOrder(
+            commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0)
+          );
         case "搜索结果":
           if (this.commandSearchKeyword?.length < 2) return;
           let searchResult = [];
@@ -142,7 +144,9 @@ export default {
         case "默认":
           return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
         default:
-          return sortByOrder(commands.filter((cmd) => cmd.tags?.includes(this.currentTag)));
+          return sortByOrder(
+            commands.filter((cmd) => cmd.tags?.includes(this.currentTag))
+          );
       }
     },
     // 标签栏宽度
@@ -479,14 +483,14 @@ export default {
       commands.forEach((command, index) => {
         tagCommands[command.features.code] = {
           ...command,
-          order: index // 添加排序信息
+          order: index, // 添加排序信息
         };
       });
 
       // 更新存储
       this.allQuickCommands = {
         ...this.allQuickCommands,
-        ...tagCommands
+        ...tagCommands,
       };
 
       // 只保存被修改的命令
