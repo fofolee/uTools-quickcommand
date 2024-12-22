@@ -7,7 +7,7 @@ const quickFeatures = {
             type: "files",
             match: "/.*+/i",
         }, ],
-        icon: "features/file.png",
+        icon: "features/fav.png",
         platform: ["win32", "darwin", "linux"],
 
     },
@@ -32,7 +32,7 @@ const quickFeatures = {
                 ],
             },
         }, ],
-        icon: "features/url.png",
+        icon: "features/fav.png",
         platform: ["win32", "darwin", "linux"],
 
     },
