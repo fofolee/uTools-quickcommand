@@ -127,10 +127,7 @@ export default {
       type: Object,
       required: true,
     },
-    allQuickCommandTags: {
-      type: Array,
-      required: true,
-    },
+    allQuickCommandTags: Array,
     isLeaving: {
       type: Boolean,
       default: false,

@@ -73,30 +73,34 @@ if (!utools.isWindows())
 if (utools.isMacOS())
   process.env.PATH = `/opt/homebrew/bin:/opt/homebrew/sbin:${process.env.PATH}`;
 
-const shortCodes = [
-  (open = (path) => {
+const shortCodes = {
+  open: (path) => {
     utools.shellOpenItem(path);
-  }),
-  (locate = (path) => {
+  },
+  locate: (path) => {
     utools.shellShowItemInFolder(path);
-  }),
-  (visit = (url) => {
+  },
+  visit: (url) => {
     utools.shellOpenExternal(url);
-  }),
-  (system = (cmd) => {
-    child_process.exec(cmd);
-  }),
-  (message = (msg) => {
+  },
+  system: (cmd) => {
+    let result = child_process.execSync(cmd, {
+      windowsHide: true,
+      encoding: "buffer",
+    });
+    return iconv.decode(result, utools.isWindows() ? "gbk" : "utf8");
+  },
+  message: (msg) => {
     utools.showNotification(msg);
-  }),
-  (keyTap = (key, ...modifier) => utools.simulateKeyboardTap(key, ...modifier)),
-  (copyTo = (text) => {
+  },
+  keyTap: (key, ...modifier) => utools.simulateKeyboardTap(key, ...modifier),
+  copyTo: (text) => {
     electron.clipboard.writeText(text);
-  }),
-  (send = (text) => {
+  },
+  send: (text) => {
     utools.hideMainWindowTypeString(text);
-  }),
-];
+  },
+};
 
 const ctlKey = utools.isMacOs() ? "command" : "control";
 
@@ -580,8 +584,8 @@ let getSandboxFuns = () => {
     os,
     child_process,
   };
-  shortCodes.forEach((f) => {
-    sandbox[f.name] = f;
+  Object.keys(shortCodes).forEach((f) => {
+    sandbox[f] = shortCodes[f];
   });
   return sandbox;
 };

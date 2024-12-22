@@ -251,12 +251,9 @@ export default {
         }
       );
       // F11 全屏
-      this.rawEditor().addCommand(
-        monaco.KeyCode.F11,
-        () => {
-          this.$emit("keyStroke", "fullscreen");
-        }
-      );
+      this.rawEditor().addCommand(monaco.KeyCode.F11, () => {
+        this.$emit("keyStroke", "fullscreen");
+      });
     },
     getSelectionOrLineContent() {
       let selection = this.rawEditor().getSelection();
