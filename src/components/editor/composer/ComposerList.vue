@@ -1,0 +1,118 @@
+<template>
+  <div class="composer-list">
+    <q-list bordered separator class="rounded-borders">
+      <template v-for="category in commandCategories" :key="category.label">
+        <q-item-label header class="q-py-sm bg-grey-2">
+          <div class="row items-center">
+            <q-icon :name="category.icon" color="primary" size="sm" class="q-mr-sm" />
+            <span class="text-weight-medium">{{ category.label }}</span>
+          </div>
+        </q-item-label>
+
+        <q-item
+          v-for="command in getCategoryCommands(category)"
+          :key="command.value"
+          class="command-item q-py-xs"
+          draggable="true"
+          @dragstart="onDragStart($event, command)"
+        >
+          <q-item-section>
+            <q-item-label class="text-weight-medium">{{ command.label }}</q-item-label>
+            <q-item-label caption>{{ command.desc }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-icon name="drag_indicator" color="grey-6" size="16px" />
+          </q-item-section>
+        </q-item>
+      </template>
+    </q-list>
+  </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import { commandCategories } from './composerConfig'
+
+export default defineComponent({
+  name: 'ComposerList',
+  props: {
+    commands: {
+      type: Array,
+      required: true
+    }
+  },
+  data() {
+    return {
+      commandCategories
+    }
+  },
+  methods: {
+    getCategoryCommands(category) {
+      return this.commands.filter(cmd =>
+        category.commands.some(catCmd => catCmd.value === cmd.value || catCmd.value === cmd.cmd)
+      )
+    },
+    onDragStart(event, command) {
+      event.dataTransfer.setData('action', JSON.stringify({
+        ...command,
+        cmd: command.value || command.cmd
+      }))
+      event.target.classList.add('dragging')
+      event.target.addEventListener('dragend', () => {
+        event.target.classList.remove('dragging')
+      }, { once: true })
+    }
+  }
+})
+</script>
+
+<style scoped>
+.composer-list {
+  background-color: white;
+  border-radius: 8px;
+}
+
+.command-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin: 4px 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  cursor: grab;
+}
+
+.command-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(4px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.command-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+/* 分类标题样式 */
+.q-item-label.header {
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f5f5f5;
+}
+
+/* 暗色模式适配 */
+.body--dark .command-item {
+  border-color: #424242;
+  background: #1d1d1d;
+}
+
+.body--dark .command-item:hover {
+  background-color: #2d2d2d;
+}
+
+.body--dark .q-item-label.header {
+  border-color: #424242;
+  background-color: #2d2d2d;
+}
+</style>

@@ -38,7 +38,12 @@
       <q-btn-group unelevated class="button-group">
         <template v-if="modelValue.program === 'quickcommand'">
           <q-btn
-            v-for="(item, index) in ['keyboard', 'rocket_launch', 'help_center']"
+            v-for="(item, index) in [
+              'keyboard',
+              'rocket_launch',
+              'help_center',
+              'view_timeline',
+            ]"
             :key="index"
             dense
             flat
@@ -48,7 +53,7 @@
             @click="handleQuickCommandAction(index)"
           >
             <q-tooltip>
-              {{ ["录制按键", "快捷动作", "查看文档"][index] }}
+              {{ ["录制按键", "快捷动作", "查看文档", "可视化编排"][index] }}
             </q-tooltip>
           </q-btn>
         </template>
@@ -163,18 +168,32 @@
     <q-dialog v-model="showRecorder" position="bottom">
       <KeyRecorder @sendKeys="addAction" />
     </q-dialog>
+    <q-dialog v-model="showComposer" maximized>
+      <q-card class="full-height">
+        <q-card-section class="q-pa-md full-height">
+          <CommandComposer
+            ref="composer"
+            @run="handleComposerRun"
+            @apply="handleComposerApply"
+            @update:model-value="showComposer = false"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import QuickAction from "components/popup/QuickAction";
 import KeyRecorder from "components/popup/KeyRecorder";
+import CommandComposer from "components/editor/composer/CommandComposer.vue";
 
 export default {
   name: "CommandLanguageBar",
   components: {
     QuickAction,
     KeyRecorder,
+    CommandComposer,
   },
   props: {
     modelValue: {
@@ -198,6 +217,7 @@ export default {
     return {
       showActions: false,
       showRecorder: false,
+      showComposer: false,
     };
   },
   emits: [
@@ -267,6 +287,7 @@ export default {
         () => (this.showRecorder = true),
         () => (this.showActions = true),
         () => this.showHelp(),
+        () => (this.showComposer = true),
       ];
       actions[index]();
     },
@@ -276,6 +297,20 @@ export default {
     showHelp() {
       window.showUb.docs();
     },
+    handleComposerRun(code) {
+      this.$emit('add-action', code);
+    },
+    handleComposerApply(code) {
+      this.$emit('add-action', code);
+      this.showComposer = false;
+    },
+    applyComposerCommands() {
+      if (this.$refs.composer) {
+        const code = this.$refs.composer.generateCode();
+        this.$emit('add-action', code);
+      }
+      this.showComposer = false;
+    }
   },
 };
 </script>
