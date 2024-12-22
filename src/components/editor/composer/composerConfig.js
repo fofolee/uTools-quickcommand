@@ -45,6 +45,12 @@ export const commandCategories = [
         value: "utools.ubrowser.goto",
         label: "用ubrowser打开网址",
         desc: "要访问的网址链接",
+      },
+      {
+        value: "ubrowser",
+        label: "UBrowser浏览器操作",
+        desc: "配置UBrowser浏览器操作",
+        hasUBrowserEditor: true
       }
     ]
   },
@@ -121,6 +127,7 @@ export const commandsWithOutput = {
   'open': true,
   'locate': true,
   'copyTo': true,
+  'ubrowser': true,
 }
 
 // 定义哪些命令可以接收输出

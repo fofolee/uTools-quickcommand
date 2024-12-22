@@ -23,17 +23,10 @@
     </div>
 
     <!-- 固定底部 -->
-    <div class="composer-footer q-pa-sm row items-center justify-end">
-      <q-btn
-        outline
-        color="primary"
-        label="运行"
-        icon="play_arrow"
-        class="q-mr-sm"
-        @click="runCommands"
-      />
-      <q-btn flat label="取消" v-close-popup />
-      <q-btn unelevated color="primary" label="确认" @click="applyCommands" />
+    <div class="composer-footer q-pa-sm q-gutter-sm row justify-end">
+      <q-btn label="取消" v-close-popup />
+      <q-btn color="primary" label="确认" @click="applyCommands" />
+      <q-btn color="positive" label="运行" @click="runCommands" />
     </div>
   </div>
 </template>

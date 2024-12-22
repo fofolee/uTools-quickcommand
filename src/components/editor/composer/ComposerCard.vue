@@ -68,6 +68,13 @@
             <template v-else-if="command.hasKeyRecorder">
               <KeyEditor v-model="argvLocal" class="col" />
             </template>
+            <!-- UBrowser编辑器 -->
+            <template v-else-if="command.hasUBrowserEditor">
+              <UBrowserEditor
+                v-model="argvLocal"
+                class="col"
+              />
+            </template>
             <!-- 普通参数输入 -->
             <template v-else>
               <q-input
@@ -92,11 +99,13 @@
 <script>
 import { defineComponent } from "vue";
 import KeyEditor from "./KeyEditor.vue";
+import UBrowserEditor from './ubrowser/UBrowserEditor.vue';
 
 export default defineComponent({
   name: "ComposerCard",
   components: {
     KeyEditor,
+    UBrowserEditor
   },
   props: {
     command: {
@@ -208,10 +217,10 @@ export default defineComponent({
 }
 
 /* 拖拽动画 */
-.composer-card:active {
-  transform: scale(1.02);
-  transition: transform 0.2s;
-}
+/* .composer-card:active { */
+  /* transform: scale(1.02); */
+  /* transition: transform 0.2s; */
+/* } */
 
 .command-item {
   transition: all 0.3s ease;
