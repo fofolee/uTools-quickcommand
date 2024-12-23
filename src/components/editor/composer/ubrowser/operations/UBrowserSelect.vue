@@ -1,23 +1,25 @@
 <template>
-  <q-input
+  <q-select
     :model-value="modelValue"
     :label="label"
-    :type="inputType"
+    :options="options"
     dense
     outlined
+    emit-value
+    map-options
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <template v-slot:prepend>
       <q-icon :name="icon" />
     </template>
-  </q-input>
+  </q-select>
 </template>
 
 <script>
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "UBrowserInput",
+  name: "UBrowserSelect",
   props: {
     modelValue: {
       type: [String, Number],
@@ -27,13 +29,13 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    options: {
+      type: Array,
+      required: true,
+    },
     icon: {
       type: String,
       default: "",
-    },
-    inputType: {
-      type: String,
-      default: "text",
     },
   },
   emits: ["update:modelValue"],

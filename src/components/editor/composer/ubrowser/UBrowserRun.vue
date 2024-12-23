@@ -198,49 +198,20 @@ export default defineComponent({
   emits: ["update:configs"],
   data() {
     return {
-      localConfigs: {
-        run: {
-          show: true,
-          width: 1280,
-          height: 800,
-          x: undefined,
-          y: undefined,
-          center: true,
-          minWidth: 800,
-          minHeight: 600,
-          maxWidth: undefined,
-          maxHeight: undefined,
-          resizable: true,
-          movable: true,
-          minimizable: true,
-          maximizable: true,
-          alwaysOnTop: false,
-          fullscreen: false,
-          fullscreenable: true,
-          enableLargerThanScreen: false,
-          opacity: 1,
-        },
-      },
+      localConfigs: _.cloneDeep(this.configs),
     };
-  },
-  created() {
-    // 初始化本地配置
-    this.localConfigs = JSON.parse(JSON.stringify(this.configs));
   },
   methods: {
     updateConfig(key, value) {
       this.localConfigs.run[key] = value;
-      this.$emit(
-        "update:configs",
-        JSON.parse(JSON.stringify(this.localConfigs))
-      );
+      this.$emit("update:configs", _.cloneDeep(this.localConfigs));
     },
   },
   watch: {
     configs: {
       deep: true,
       handler(newConfigs) {
-        this.localConfigs = JSON.parse(JSON.stringify(newConfigs));
+        this.localConfigs = _.cloneDeep(newConfigs);
       },
     },
   },

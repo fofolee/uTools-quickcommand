@@ -61,6 +61,7 @@ export default defineComponent({
       availableCommands,
     };
   },
+  emits: ["use-composer", "update:modelValue"],
   methods: {
     addCommand(action) {
       this.commandFlow.push({
@@ -84,8 +85,9 @@ export default defineComponent({
           outputVars.set(index, varName);
           line += `let ${varName} = `;
         }
-
-        if (cmd.useOutput !== null) {
+        if (cmd.value === "ubrowser") {
+          line += cmd.argv;
+        } else if (cmd.useOutput !== null) {
           const inputVar = outputVars.get(cmd.useOutput);
           line += `${cmd.value}(${inputVar})`;
         } else {

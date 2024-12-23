@@ -2,9 +2,10 @@
   <q-input
     :model-value="modelValue"
     :label="label"
-    :type="inputType"
+    type="textarea"
     dense
     outlined
+    autogrow
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <template v-slot:prepend>
@@ -17,10 +18,10 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "UBrowserInput",
+  name: "UBrowserTextarea",
   props: {
     modelValue: {
-      type: [String, Number],
+      type: String,
       default: "",
     },
     label: {
@@ -30,10 +31,6 @@ export default defineComponent({
     icon: {
       type: String,
       default: "",
-    },
-    inputType: {
-      type: String,
-      default: "text",
     },
   },
   emits: ["update:modelValue"],

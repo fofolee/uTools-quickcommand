@@ -66,6 +66,16 @@ export default {
         minimap: {
           enabled: false,
         },
+        formatOnType: true,
+        formatOnPaste: true,
+        autoIndent: "full",
+        // JavaScript 特定的格式化选项
+        "javascript.format.insertSpaceAfterSemicolonInForStatements": true,
+        "javascript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+        "javascript.format.insertSpaceAfterConstructor": true,
+        "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": true,
+        "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": true,
+        "javascript.format.insertSpaceAfterKeywordsInControlFlowStatements": true,
       };
       this.editor = monaco.editor.create(
         document.getElementById("monacoEditor"),
@@ -211,6 +221,9 @@ export default {
         forceMoveMarkers: true,
       };
       this.rawEditor().executeEdits("my-source", [op]);
+    },
+    formatDocument() {
+      this.rawEditor().getAction("editor.action.formatDocument").run();
     },
     listenEditorValue() {
       this.rawEditor().focus();

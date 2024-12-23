@@ -221,10 +221,10 @@ export default {
     "program-changed",
     "run",
     "save",
-    "show-recorder",
-    "show-actions",
+    // "show-recorder",
+    // "show-actions",
     "show-help",
-    "add-action",
+    "use-composer",
   ],
   computed: {
     programLanguages() {

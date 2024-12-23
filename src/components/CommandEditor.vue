@@ -195,6 +195,11 @@ export default {
     },
     insertText(text) {
       this.$refs.editor.repacleEditorSelection(text);
+      this.$refs.editor.formatDocument();
+    },
+    replaceText(text) {
+      this.$refs.editor.setEditorValue(text);
+      this.$refs.editor.formatDocument();
     },
     handleComposer({ type, code }) {
       switch (type) {
@@ -203,7 +208,7 @@ export default {
         case "insert":
           return this.insertText(code);
         case "apply":
-          return this.$refs.editor.setEditorValue(code);
+          return this.replaceText(code);
       }
     },
     // 保存

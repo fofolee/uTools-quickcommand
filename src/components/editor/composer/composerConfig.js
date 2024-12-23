@@ -1,3 +1,9 @@
+export {
+  ubrowserActionIcons,
+  ubrowserOperationConfigs,
+  defaultUBrowserConfigs,
+} from "./ubrowser/ubrowserConfig";
+
 // 定义命令图标映射
 export const commandIcons = {
   open: "folder_open",
@@ -137,58 +143,3 @@ export const commandsAcceptOutput = {
   send: true,
   copyTo: true,
 };
-
-// 添加 ubrowser 操作图标映射
-export const ubrowserActionIcons = {
-  wait: "timer",
-  click: "mouse",
-  css: "style",
-  press: "keyboard",
-  paste: "content_paste",
-  screenshot: "photo_camera",
-  pdf: "picture_as_pdf",
-  device: "devices",
-  cookies: "cookie",
-  evaluate: "code",
-  when: "rule",
-  mousedown: "mouse",
-  mouseup: "mouse",
-  file: "upload_file",
-  value: "edit",
-  check: "check_box",
-  focus: "center_focus_strong",
-  scroll: "swap_vert",
-  download: "download",
-  hide: "visibility_off",
-  show: "visibility",
-  devTools: "developer_board",
-};
-
-// 添加 ubrowser 可用操作列表
-export const ubrowserAvailableActions = [
-  { label: "等待", value: "wait" },
-  { label: "点击", value: "click" },
-  { label: "注入CSS", value: "css" },
-  { label: "按键", value: "press" },
-  { label: "粘贴", value: "paste" },
-  { label: "截图", value: "screenshot" },
-  { label: "导出PDF", value: "pdf" },
-  { label: "模拟设备", value: "device" },
-  { label: "获取Cookie", value: "cookies" },
-  { label: "设置Cookie", value: "setCookies" },
-  { label: "删除Cookie", value: "removeCookies" },
-  { label: "清除Cookie", value: "clearCookies" },
-  { label: "执行脚本", value: "evaluate" },
-  { label: "条件判断", value: "when" },
-  { label: "鼠标按下", value: "mousedown" },
-  { label: "鼠标释放", value: "mouseup" },
-  { label: "上传文件", value: "file" },
-  { label: "设置值", value: "value" },
-  { label: "选中状态", value: "check" },
-  { label: "获取焦点", value: "focus" },
-  { label: "滚动", value: "scroll" },
-  { label: "下载", value: "download" },
-  { label: "隐藏", value: "hide" },
-  { label: "显示", value: "show" },
-  { label: "开发工具", value: "devTools" },
-];

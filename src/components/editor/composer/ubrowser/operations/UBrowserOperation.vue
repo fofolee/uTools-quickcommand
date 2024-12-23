@@ -7,240 +7,119 @@
       >
         <!-- 复选框组 -->
         <template v-if="field.type === 'checkbox-group'">
-          <div class="row items-center">
-            <!-- <div class="text-caption q-mb-sm">{{ field.label }}</div> -->
-            <q-option-group
-              :model-value="fieldValue[field.key] || []"
-              :options="field.options"
-              type="checkbox"
-              inline
-              dense
-              @update:model-value="updateValue(field.key, $event)"
-            />
-          </div>
+          <UBrowserCheckboxGroup
+            v-model="fieldValue[field.key]"
+            :options="field.options"
+            @update:model-value="updateValue(field.key, $event)"
+          />
         </template>
 
         <!-- 单个复选框 -->
         <template v-else-if="field.type === 'checkbox'">
-          <div class="row items-center no-wrap">
-            <q-badge class="q-pa-xs">{{ field.label }}</q-badge>
-            <q-btn-toggle
-              :model-value="fieldValue[field.key] ? 'true' : 'false'"
-              :options="[
-                { label: '是', value: 'true' },
-                { label: '否', value: 'false' },
-              ]"
-              dense
-              flat
-              no-caps
-              spread
-              class="button-group"
-              @update:model-value="updateValue(field.key, $event === 'true')"
-            />
-          </div>
+          <UBrowserCheckbox
+            v-model="fieldValue[field.key]"
+            :label="field.label"
+            @update:model-value="updateValue(field.key, $event)"
+          />
         </template>
 
-        <!-- 文本输入 -->
-        <template v-else-if="field.type === 'input'">
-          <q-input
-            :model-value="fieldValue[field.key]"
-            :label="field.label"
-            :type="field.inputType || 'text'"
-            dense
-            outlined
-            @update:model-value="updateValue(field.key, $event)"
-          >
-            <template v-slot:prepend>
-              <q-icon :name="field.icon" />
-            </template>
-          </q-input>
+        <!-- 基本输入类型的处理 -->
+        <template v-if="field.type === 'input'">
+          <!-- 设备名称特殊处理 -->
+          <template v-if="field.key === 'deviceName'">
+            <UBrowserDeviceName
+              v-model="fieldValue[field.key]"
+              :label="field.label"
+              :icon="field.icon"
+              @update:model-value="updateValue(field.key, $event)"
+            />
+          </template>
+          <!-- 普通输入框 -->
+          <template v-else>
+            <UBrowserInput
+              v-model="fieldValue[field.key]"
+              :label="field.label"
+              :icon="field.icon"
+              :input-type="field.inputType"
+              @update:model-value="updateValue(field.key, $event)"
+            />
+          </template>
         </template>
 
         <!-- 文本区域 -->
         <template v-else-if="field.type === 'textarea'">
-          <q-input
-            :model-value="fieldValue[field.key]"
+          <UBrowserTextarea
+            v-model="fieldValue[field.key]"
             :label="field.label"
-            type="textarea"
-            dense
-            outlined
-            autogrow
+            :icon="field.icon"
             @update:model-value="updateValue(field.key, $event)"
-          >
-            <template v-slot:prepend>
-              <q-icon :name="field.icon" />
-            </template>
-          </q-input>
+          />
         </template>
 
         <!-- 选择框 -->
         <template v-else-if="field.type === 'select'">
-          <q-select
-            :model-value="fieldValue[field.key]"
+          <UBrowserSelect
+            v-model="fieldValue[field.key]"
             :label="field.label"
+            :icon="field.icon"
             :options="field.options"
-            dense
-            outlined
-            emit-value
-            map-options
             @update:model-value="updateValue(field.key, $event)"
-          >
-            <template v-slot:prepend>
-              <q-icon :name="field.icon" />
-            </template>
-          </q-select>
+          />
         </template>
 
         <!-- Cookie列表 -->
         <template v-else-if="field.type === 'cookie-list'">
-          <div class="row q-col-gutter-sm">
-            <div
-              v-for="(cookie, index) in fieldValue[field.key] || [{}]"
-              :key="index"
-              class="col-12"
-            >
-              <div class="row items-center q-gutter-x-sm">
-                <div class="col">
-                  <q-input
-                    v-model="cookie.name"
-                    label="名称"
-                    dense
-                    outlined
-                    @update:model-value="updateCookieList(field.key)"
-                  />
-                </div>
-                <div class="col">
-                  <q-input
-                    v-model="cookie.value"
-                    label="值"
-                    dense
-                    outlined
-                    @update:model-value="updateCookieList(field.key)"
-                  />
-                </div>
-                <div class="col-auto">
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    color="negative"
-                    icon="remove"
-                    @click="removeCookie(field.key, index)"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <q-btn
-            flat
-            dense
-            color="primary"
-            icon="add"
-            label="添加Cookie"
-            @click="addCookie(field.key)"
-            class="q-mt-xs"
+          <UBrowserCookieList
+            v-model="fieldValue[field.key]"
+            @update:model-value="updateValue(field.key, $event)"
           />
         </template>
 
-        <!-- 参数列表 -->
-        <template v-else-if="field.type === 'param-list'">
-          <div class="text-caption q-mb-sm">{{ field.label }}</div>
-          <div
-            v-for="(param, index) in fieldValue[field.key] || []"
-            :key="index"
-            class="row q-col-gutter-sm q-mb-sm"
-          >
-            <div class="col-10">
-              <q-input
-                v-model="fieldValue[field.key][index]"
-                label="参数值"
-                dense
-                outlined
-                @update:model-value="
-                  updateValue(field.key, fieldValue[field.key])
-                "
-              />
-            </div>
-            <div class="col-2">
-              <q-btn
-                flat
-                round
-                dense
-                color="negative"
-                icon="remove"
-                @click="removeParam(field.key, index)"
-              />
-            </div>
-          </div>
-          <q-btn
-            flat
-            dense
-            color="primary"
-            icon="add"
-            label="添加参数"
-            @click="addParam(field.key)"
+        <!-- 命名参数列表 -->
+        <template v-else-if="field.type === 'named-param-list'">
+          <UBrowserNamedParamList
+            v-model="fieldValue[field.key]"
+            :label="field.label"
+            @update:model-value="updateValue(field.key, $event)"
           />
         </template>
 
         <!-- 文件列表 -->
         <template v-else-if="field.type === 'file-list'">
-          <div class="row q-col-gutter-sm">
-            <div
-              v-for="(file, index) in fieldValue[field.key] || []"
-              :key="index"
-              class="col-12"
-            >
-              <div class="row q-col-gutter-sm">
-                <div class="col">
-                  <q-input
-                    v-model="fieldValue[field.key][index]"
-                    label="文件路径"
-                    dense
-                    outlined
-                    @update:model-value="
-                      updateValue(field.key, fieldValue[field.key])
-                    "
-                  />
-                </div>
-                <div class="col-auto">
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    color="negative"
-                    icon="remove"
-                    @click="removeFile(field.key, index)"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <q-btn
-            flat
-            dense
-            color="primary"
-            icon="add"
-            label="添加文件"
-            @click="addFile(field.key)"
-            class="q-mt-xs"
+          <UBrowserFileList
+            v-model="fieldValue[field.key]"
+            @update:model-value="updateValue(field.key, $event)"
           />
         </template>
 
         <!-- 按钮组 -->
         <template v-else-if="field.type === 'button-toggle'">
-          <div class="row items-center no-wrap">
-            <q-badge class="q-pa-xs">{{ field.label }}</q-badge>
-            <q-btn-toggle
-              :model-value="fieldValue[field.key]"
-              :options="field.options"
-              dense
-              flat
-              no-caps
-              spread
-              class="button-group"
-              @update:model-value="updateValue(field.key, $event)"
-            />
-          </div>
+          <UBrowserButtonToggle
+            v-model="fieldValue[field.key]"
+            :label="field.label"
+            :options="field.options"
+            @update:model-value="updateValue(field.key, $event)"
+          />
+        </template>
+
+        <!-- 设备尺寸 -->
+        <template v-else-if="field.type === 'device-size'">
+          <UBrowserDeviceSize
+            v-model="fieldValue.size"
+            @update:model-value="updateValue(field.key, $event)"
+          />
+        </template>
+
+        <!-- 带参数的函数输入 -->
+        <template v-else-if="field.type === 'function-with-params'">
+          <UBrowserFunctionInput
+            v-model:function="fieldValue.function"
+            v-model:args="fieldValue.args"
+            :label="field.label"
+            :icon="field.icon"
+            @update:function="(value) => updateValue('function', value)"
+            @update:args="(value) => updateValue('args', value)"
+          />
         </template>
       </div>
     </template>
@@ -250,9 +129,35 @@
 <script>
 import { defineComponent } from "vue";
 import { get, set } from "lodash";
+import UBrowserFunctionInput from "./UBrowserFunctionInput.vue";
+import UBrowserCheckbox from "./UBrowserCheckbox.vue";
+import UBrowserFileList from "./UBrowserFileList.vue";
+import UBrowserCookieList from "./UBrowserCookieList.vue";
+import UBrowserButtonToggle from "./UBrowserButtonToggle.vue";
+import UBrowserDeviceSize from "./UBrowserDeviceSize.vue";
+import UBrowserNamedParamList from "./UBrowserNamedParamList.vue";
+import UBrowserSelect from "./UBrowserSelect.vue";
+import UBrowserDeviceName from "./UBrowserDeviceName.vue";
+import UBrowserTextarea from "./UBrowserTextarea.vue";
+import UBrowserInput from "./UBrowserInput.vue";
+import UBrowserCheckboxGroup from "./UBrowserCheckboxGroup.vue";
 
 export default defineComponent({
   name: "UBrowserOperation",
+  components: {
+    UBrowserFunctionInput,
+    UBrowserCheckbox,
+    UBrowserFileList,
+    UBrowserCookieList,
+    UBrowserButtonToggle,
+    UBrowserDeviceSize,
+    UBrowserNamedParamList,
+    UBrowserSelect,
+    UBrowserDeviceName,
+    UBrowserTextarea,
+    UBrowserInput,
+    UBrowserCheckboxGroup,
+  },
   props: {
     configs: {
       type: Object,
@@ -283,6 +188,11 @@ export default defineComponent({
         defaultValue = field.defaultValue || [];
       } else if (field.type === "checkbox") {
         defaultValue = field.defaultValue || false;
+      } else if (field.type === "function-with-params") {
+        // 为function-with-params类型设置特殊的默认值结构
+        this.fieldValue.function = value?.function || "";
+        this.fieldValue.args = value?.args || [];
+        return; // 跳过后续的赋值
       } else {
         defaultValue = field.defaultValue;
       }
@@ -306,51 +216,6 @@ export default defineComponent({
       // 发出更新事件
       this.$emit("update:configs", newConfigs);
     },
-
-    // Cookie列表相关方法
-    addCookie(key) {
-      if (!this.fieldValue[key]) {
-        this.fieldValue[key] = [];
-      }
-      this.fieldValue[key].push({ name: "", value: "" });
-      this.updateValue(key, this.fieldValue[key]);
-    },
-    removeCookie(key, index) {
-      this.fieldValue[key].splice(index, 1);
-      if (this.fieldValue[key].length === 0) {
-        this.fieldValue[key].push({ name: "", value: "" });
-      }
-      this.updateValue(key, this.fieldValue[key]);
-    },
-    updateCookieList(key) {
-      this.updateValue(key, this.fieldValue[key]);
-    },
-
-    // 参数列表相关方法
-    addParam(key) {
-      if (!this.fieldValue[key]) {
-        this.fieldValue[key] = [];
-      }
-      this.fieldValue[key].push("");
-      this.updateValue(key, this.fieldValue[key]);
-    },
-    removeParam(key, index) {
-      this.fieldValue[key].splice(index, 1);
-      this.updateValue(key, this.fieldValue[key]);
-    },
-
-    // 文件列表相关方法
-    addFile(key) {
-      if (!this.fieldValue[key]) {
-        this.fieldValue[key] = [];
-      }
-      this.fieldValue[key].push("");
-      this.updateValue(key, this.fieldValue[key]);
-    },
-    removeFile(key, index) {
-      this.fieldValue[key].splice(index, 1);
-      this.updateValue(key, this.fieldValue[key]);
-    },
   },
   watch: {
     // 监听配置变化
@@ -359,6 +224,13 @@ export default defineComponent({
       handler() {
         this.fields.forEach((field) => {
           const value = get(this.configs[this.action], field.key);
+          if (field.type === "function-with-params") {
+            // 为function-with-params类型设置特殊的更新逻辑
+            this.fieldValue.function =
+              value?.function || this.fieldValue.function || "";
+            this.fieldValue.args = value?.args || this.fieldValue.args || [];
+            return;
+          }
           if (value !== undefined) {
             this.fieldValue[field.key] = value;
           }
@@ -368,19 +240,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.button-group-container {
-  position: relative;
-}
-
-.button-group {
-  flex: 1;
-  padding: 0 10px;
-}
-
-.button-group :deep(.q-btn) {
-  min-height: 24px;
-  font-size: 12px;
-}
-</style>
