@@ -38,7 +38,7 @@
       @program-changed="programChanged"
       @run="runCurrentCommand"
       @save="saveCurrentCommand"
-      @add-action="insertText"
+      @use-composer="handleComposer"
     />
 
     <!-- 编辑器 -->
@@ -195,6 +195,16 @@ export default {
     },
     insertText(text) {
       this.$refs.editor.repacleEditorSelection(text);
+    },
+    handleComposer({ type, code }) {
+      switch (type) {
+        case "run":
+          return this.runCurrentCommand(code);
+        case "insert":
+          return this.insertText(code);
+        case "apply":
+          return this.$refs.editor.setEditorValue(code);
+      }
     },
     // 保存
     saveCurrentCommand(message = "保存成功") {

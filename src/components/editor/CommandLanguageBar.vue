@@ -39,8 +39,8 @@
         <template v-if="modelValue.program === 'quickcommand'">
           <q-btn
             v-for="(item, index) in [
-              'keyboard',
-              'rocket_launch',
+              // 'keyboard',
+              // 'rocket_launch',
               'help_center',
               'view_timeline',
             ]"
@@ -53,7 +53,8 @@
             @click="handleQuickCommandAction(index)"
           >
             <q-tooltip>
-              {{ ["录制按键", "快捷动作", "查看文档", "可视化编排"][index] }}
+              <!-- {{ ["录制按键", "快捷动作", "查看文档", "可视化编排"][index] }} -->
+              {{ ["查看文档", "可视化编排"][index] }}
             </q-tooltip>
           </q-btn>
         </template>
@@ -162,17 +163,16 @@
     </div>
 
     <!-- 移动对话框到这里 -->
-    <q-dialog v-model="showActions">
+    <!-- <q-dialog v-model="showActions">
       <QuickAction @addAction="addAction" />
-    </q-dialog>
-    <q-dialog v-model="showRecorder" position="bottom">
+    </q-dialog> -->
+    <!-- <q-dialog v-model="showRecorder" position="bottom">
       <KeyRecorder @sendKeys="addAction" />
-    </q-dialog>
+    </q-dialog> -->
     <q-dialog v-model="showComposer" maximized>
       <CommandComposer
         ref="composer"
-        @run="handleComposerRun"
-        @apply="handleComposerApply"
+        @use-composer="handleComposer"
         @update:model-value="showComposer = false"
       />
     </q-dialog>
@@ -180,15 +180,15 @@
 </template>
 
 <script>
-import QuickAction from "components/popup/QuickAction";
-import KeyRecorder from "components/popup/KeyRecorder";
+// import QuickAction from "components/popup/QuickAction";
+// import KeyRecorder from "components/popup/KeyRecorder";
 import CommandComposer from "components/editor/composer/CommandComposer.vue";
 
 export default {
   name: "CommandLanguageBar",
   components: {
-    QuickAction,
-    KeyRecorder,
+    // QuickAction,
+    // KeyRecorder,
     CommandComposer,
   },
   props: {
@@ -211,8 +211,8 @@ export default {
   },
   data() {
     return {
-      showActions: false,
-      showRecorder: false,
+      // showActions: false,
+      // showRecorder: false,
       showComposer: false,
     };
   },
@@ -280,32 +280,22 @@ export default {
     },
     handleQuickCommandAction(index) {
       const actions = [
-        () => (this.showRecorder = true),
-        () => (this.showActions = true),
+        // () => (this.showRecorder = true),
+        // () => (this.showActions = true),
         () => this.showHelp(),
         () => (this.showComposer = true),
       ];
       actions[index]();
     },
-    addAction(text) {
-      this.$emit("add-action", text);
-    },
+    // addAction(text) {
+    //   this.$emit("add-action", text);
+    // },
     showHelp() {
       window.showUb.docs();
     },
-    handleComposerRun(code) {
-      this.$emit("add-action", code);
-    },
-    handleComposerApply(code) {
-      this.$emit("add-action", code);
-      this.showComposer = false;
-    },
-    applyComposerCommands() {
-      if (this.$refs.composer) {
-        const code = this.$refs.composer.generateCode();
-        this.$emit("add-action", code);
-      }
-      this.showComposer = false;
+    handleComposer({ type, code }) {
+      this.$emit("use-composer", { type, code });
+      if (type !== "run") this.showComposer = false;
     },
   },
 };

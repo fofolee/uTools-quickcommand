@@ -25,8 +25,9 @@
     <!-- 固定底部 -->
     <div class="composer-footer q-pa-sm q-gutter-sm row justify-end">
       <q-btn label="取消" v-close-popup />
-      <q-btn color="primary" label="确认" @click="applyCommands" />
-      <q-btn color="positive" label="运行" @click="runCommands" />
+      <q-btn color="primary" label="插入" @click="handleComposer('insert')" />
+      <q-btn color="primary" label="应用" @click="handleComposer('apply')" />
+      <q-btn color="positive" label="运行" @click="handleComposer('run')" />
     </div>
   </div>
 </template>
@@ -98,14 +99,10 @@ export default defineComponent({
 
       return code.join("\n");
     },
-    runCommands() {
+    handleComposer(type) {
       const code = this.generateCode();
-      this.$emit("run", code);
-    },
-    applyCommands() {
-      const code = this.generateCode();
-      this.$emit("apply", code);
-      this.$emit("update:modelValue", false);
+      this.$emit("use-composer", { type, code });
+      if (type !== "run") this.$emit("update:modelValue", false);
     },
   },
 });
