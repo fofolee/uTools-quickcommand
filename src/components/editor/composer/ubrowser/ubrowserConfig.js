@@ -620,10 +620,3 @@ export const defaultUBrowserConfigs = {
   // 运行参数
   run: defaultUBrowserRunConfigs,
 };
-
-// 定义 ubrowser 操作图标映射
-// 格式：{ wait: 'timer', ...}
-export const ubrowserActionIcons = _.mapValues(
-  ubrowserOperationConfigs,
-  (config) => config.icon
-);

@@ -1,5 +1,4 @@
 export {
-  ubrowserActionIcons,
   ubrowserOperationConfigs,
   defaultUBrowserConfigs,
 } from "./ubrowser/ubrowserConfig";
