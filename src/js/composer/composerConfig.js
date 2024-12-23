@@ -1,7 +1,7 @@
 export {
   ubrowserOperationConfigs,
   defaultUBrowserConfigs,
-} from "./ubrowser/ubrowserConfig";
+} from "./ubrowserConfig";
 
 // 定义命令图标映射
 export const commandIcons = {
@@ -125,20 +125,3 @@ export const commandCategories = [
     ],
   },
 ];
-
-// 定义哪些命令可以产生输出
-export const commandsWithOutput = {
-  system: true,
-  open: true,
-  locate: true,
-  copyTo: true,
-  ubrowser: true,
-};
-
-// 定义哪些命令可以接收输出
-export const commandsAcceptOutput = {
-  message: true,
-  alert: true,
-  send: true,
-  copyTo: true,
-};

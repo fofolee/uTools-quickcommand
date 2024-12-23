@@ -1,10 +1,13 @@
 <template>
   <div class="command-composer">
     <!-- 主体内容 -->
-    <div class="composer-body row no-wrap q-pa-sm">
+    <div class="composer-body row no-wrap q-pa-sm q-gutter-sm">
       <!-- 左侧命令列表 -->
       <div class="col-3 command-section">
-        <div class="text-subtitle1 q-pb-sm">可用命令</div>
+        <div class="section-header">
+          <q-icon name="list" size="20px" class="q-mr-sm text-primary" />
+          <span class="text-subtitle1">可用命令</span>
+        </div>
         <q-scroll-area class="command-scroll">
           <ComposerList
             :commands="availableCommands"
@@ -15,7 +18,12 @@
 
       <!-- 右侧命令流程 -->
       <div class="col q-pl-md command-section">
-        <div class="text-subtitle1 q-pb-sm">命令流程</div>
+        <div class="section-header">
+          <q-icon name="timeline" size="20px" class="q-mr-sm text-primary" />
+          <span class="text-subtitle1">命令流程</span>
+          <q-space />
+          <CodePreview :generate-code="generateCode" />
+        </div>
         <q-scroll-area class="command-scroll">
           <ComposerFlow v-model="commandFlow" @add-command="addCommand" />
         </q-scroll-area>
@@ -23,20 +31,23 @@
     </div>
 
     <!-- 固定底部 -->
-    <div class="composer-footer q-pa-sm q-gutter-sm row justify-end">
-      <q-btn label="取消" v-close-popup />
-      <q-btn color="primary" label="插入" @click="handleComposer('insert')" />
-      <q-btn color="primary" label="应用" @click="handleComposer('apply')" />
-      <q-btn color="positive" label="运行" @click="handleComposer('run')" />
+    <div class="composer-footer q-pa-sm row justify-end">
+      <div class="action-buttons q-gutter-sm">
+        <q-btn label="取消" v-close-popup />
+        <q-btn color="primary" label="插入" @click="handleComposer('insert')" />
+        <q-btn color="primary" label="应用" @click="handleComposer('apply')" />
+        <q-btn color="positive" label="运行" @click="handleComposer('run')" />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, provide, ref } from "vue";
 import ComposerList from "./ComposerList.vue";
 import ComposerFlow from "./ComposerFlow.vue";
-import { commandCategories } from "./composerConfig";
+import CodePreview from "./CodePreview.vue";
+import { commandCategories } from "js/composer/composerConfig";
 
 // 从commandCategories中提取所有命令
 const availableCommands = commandCategories.reduce((commands, category) => {
@@ -53,6 +64,36 @@ export default defineComponent({
   components: {
     ComposerList,
     ComposerFlow,
+    CodePreview,
+  },
+  setup() {
+    const variables = ref([]);
+
+    const addVariable = (name, command) => {
+      if (!variables.value.find((v) => v.name === name)) {
+        variables.value.push({
+          name,
+          sourceCommand: command,
+        });
+      }
+    };
+
+    const removeVariable = (name) => {
+      const index = variables.value.findIndex((v) => v.name === name);
+      if (index !== -1) {
+        variables.value.splice(index, 1);
+      }
+    };
+
+    provide("composerVariables", variables);
+    provide("addVariable", addVariable);
+    provide("removeVariable", removeVariable);
+
+    return {
+      variables,
+      addVariable,
+      removeVariable,
+    };
   },
   data() {
     return {
@@ -68,31 +109,35 @@ export default defineComponent({
         ...action,
         id: this.nextId++,
         argv: "",
+        argvType: "string",
         saveOutput: false,
         useOutput: null,
+        outputVariable: null,
         cmd: action.value || action.cmd,
         value: action.value || action.cmd,
       });
     },
     generateCode() {
       let code = [];
-      let outputVars = new Map();
 
-      this.commandFlow.forEach((cmd, index) => {
+      this.commandFlow.forEach((cmd) => {
         let line = "";
-        if (cmd.saveOutput) {
-          const varName = `output${index}`;
-          outputVars.set(index, varName);
-          line += `let ${varName} = `;
+        // TODO: 切换到变量后还是string类型
+        console.log("Generating code for command:", cmd);
+
+        if (cmd.outputVariable) {
+          line += `let ${cmd.outputVariable} = `;
         }
+
         if (cmd.value === "ubrowser") {
           line += cmd.argv;
         } else if (cmd.useOutput !== null) {
-          const inputVar = outputVars.get(cmd.useOutput);
-          line += `${cmd.value}(${inputVar})`;
+          const outputVar = this.commandFlow[cmd.useOutput].outputVariable;
+          line += `${cmd.value}(${outputVar})`;
         } else {
-          const argv =
-            cmd.value !== "quickcommand.sleep" ? `"${cmd.argv}"` : cmd.argv;
+          const needQuotes =
+            cmd.argvType === "string" && cmd.argvType !== "variable";
+          const argv = needQuotes ? `"${cmd.argv}"` : cmd.argv;
           line += `${cmd.value}(${argv})`;
         }
 
@@ -131,6 +176,25 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.body--dark .command-section {
+  background: #1d1d1d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.body--dark .section-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .command-scroll {
@@ -139,16 +203,18 @@ export default defineComponent({
 }
 
 .composer-footer {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: white;
 }
 
 .body--dark .composer-footer {
-  border-top: 1px solid #676666;
+  border-top-color: rgba(255, 255, 255, 0.1);
+  background: #1d1d1d;
 }
 
 /* 滚动美化 */
 :deep(.q-scrollarea__thumb) {
-  width: 6px;
+  width: 2px;
   opacity: 0.4;
   transition: opacity 0.3s ease;
 }
@@ -157,7 +223,16 @@ export default defineComponent({
   opacity: 0.8;
 }
 
-:deep(.q-scrollarea__content) {
-  padding-right: 8px;
+/* 动画效果 */
+.command-section {
+  transition: all 0.3s ease;
+}
+
+.command-section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.body--dark .command-section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 </style>

@@ -66,8 +66,8 @@ import { defineComponent } from "vue";
 import UBrowserBasic from "./UBrowserBasic.vue";
 import UBrowserOperations from "./UBrowserOperations.vue";
 import UBrowserRun from "./UBrowserRun.vue";
-import { defaultUBrowserConfigs } from "./ubrowserConfig";
-import { generateUBrowserCode } from "./generateUBrowserCode";
+import { defaultUBrowserConfigs } from "js/composer/ubrowserConfig";
+import { generateUBrowserCode } from "js/composer/generateUBrowserCode";
 
 export default defineComponent({
   name: "UBrowserEditor",

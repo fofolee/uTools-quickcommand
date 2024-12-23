@@ -15,13 +15,52 @@
             </div>
             <div class="text-subtitle1">{{ command.label }}</div>
             <q-space />
-            <!-- 输出开关 -->
-            <q-toggle
-              v-if="hasOutput"
-              v-model="saveOutputLocal"
-              label="保存输出"
+
+            <!-- 输出变量设置 -->
+            <div
+              class="output-section row items-center no-wrap"
+              v-if="command.saveOutput"
+            >
+              <q-input
+                :model-value="command.outputVariable"
+                @update:model-value="handleOutputVariableUpdate"
+                dense
+                outlined
+                placeholder="变量名"
+                class="variable-input"
+                style="width: 100px"
+                align="center"
+              >
+              </q-input>
+            </div>
+
+            <q-btn
+              :icon="saveOutputLocal ? 'data_object' : 'output'"
+              :label="saveOutputLocal ? '保存到变量' : '获取输出'"
+              flat
               dense
-            />
+              class="output-btn q-px-sm q-mr-sm"
+              size="sm"
+              @click="handleToggleOutput"
+            >
+              <q-tooltip>
+                <div class="text-body2">
+                  {{
+                    saveOutputLocal
+                      ? "当前命令的输出将保存到变量中"
+                      : "点击将此命令的输出保存为变量以供后续使用"
+                  }}
+                </div>
+                <div class="text-caption text-grey-5">
+                  {{
+                    saveOutputLocal
+                      ? "点击取消输出到变量"
+                      : "保存后可在其他命令中使用此变量"
+                  }}
+                </div>
+              </q-tooltip>
+            </q-btn>
+
             <q-btn
               flat
               round
@@ -29,65 +68,31 @@
               icon="close"
               @click="$emit('remove')"
               size="sm"
-            />
+              class="remove-btn"
+            >
+              <q-tooltip>移除此命令</q-tooltip>
+            </q-btn>
           </div>
 
           <!-- 参数输入 -->
           <div class="row items-center">
-            <!-- 使用上一个命令的输出 -->
-            <template v-if="canUseOutput && availableOutputs.length > 0">
-              <q-select
-                v-model="useOutputLocal"
-                :options="availableOutputs"
-                dense
-                outlined
-                class="col"
-                emit-value
-                map-options
-                clearable
-                :label="placeholder"
-                @clear="handleClearOutput"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="input" />
-                </template>
-                <template v-slot:selected-item="scope">
-                  <div class="row items-center">
-                    <q-icon
-                      name="output"
-                      color="primary"
-                      size="xs"
-                      class="q-mr-xs"
-                    />
-                    {{ scope.opt.label }}
-                  </div>
-                </template>
-              </q-select>
-            </template>
             <!-- 按键编辑器 -->
-            <template v-else-if="command.hasKeyRecorder">
+            <template v-if="command.hasKeyRecorder">
               <KeyEditor v-model="argvLocal" class="col" />
             </template>
             <!-- UBrowser编辑器 -->
             <template v-else-if="command.hasUBrowserEditor">
-              <UBrowserEditor
-                v-model="argvLocal"
-                class="col"
-              />
+              <UBrowserEditor v-model="argvLocal" class="col" />
             </template>
             <!-- 普通参数输入 -->
             <template v-else>
-              <q-input
+              <VariableInput
                 v-model="argvLocal"
-                dense
-                outlined
-                class="col"
                 :label="placeholder"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="text_fields" size="18px" />
-                </template>
-              </q-input>
+                class="col"
+                ref="variableInput"
+                @update:type="handleArgvTypeUpdate"
+              />
             </template>
           </div>
         </div>
@@ -97,28 +102,22 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, inject } from "vue";
 import KeyEditor from "./KeyEditor.vue";
-import UBrowserEditor from './ubrowser/UBrowserEditor.vue';
+import UBrowserEditor from "./ubrowser/UBrowserEditor.vue";
+import VariableInput from "./VariableInput.vue";
 
 export default defineComponent({
   name: "ComposerCard",
   components: {
     KeyEditor,
-    UBrowserEditor
+    UBrowserEditor,
+    VariableInput,
   },
   props: {
     command: {
       type: Object,
       required: true,
-    },
-    hasOutput: {
-      type: Boolean,
-      default: false,
-    },
-    canUseOutput: {
-      type: Boolean,
-      default: false,
     },
     availableOutputs: {
       type: Array,
@@ -138,7 +137,13 @@ export default defineComponent({
       showKeyRecorder: false,
     };
   },
-  emits: ["remove", "toggle-output", "update:argv", "update:use-output"],
+  emits: [
+    "remove",
+    "toggle-output",
+    "update:argv",
+    "update:use-output",
+    "update:command",
+  ],
   computed: {
     saveOutputLocal: {
       get() {
@@ -165,6 +170,15 @@ export default defineComponent({
       },
     },
   },
+  setup() {
+    const addVariable = inject("addVariable");
+    const removeVariable = inject("removeVariable");
+
+    return {
+      addVariable,
+      removeVariable,
+    };
+  },
   methods: {
     handleClearOutput() {
       this.$emit("update:use-output", null);
@@ -176,6 +190,49 @@ export default defineComponent({
       if (matches && matches[1]) {
         this.$emit("update:argv", matches[1]);
       }
+    },
+    handleOutputVariableChange(value) {
+      if (this.command.outputVariable) {
+        this.removeVariable(this.command.outputVariable);
+      }
+      if (value) {
+        this.addVariable(value, this.command);
+      }
+    },
+    handleOutputVariableUpdate(value) {
+      // 创建命令的副本并更新
+      const updatedCommand = {
+        ...this.command,
+        outputVariable: value,
+      };
+      // 发出更新事件
+      this.$emit("update:command", updatedCommand);
+      // 处理变量管理
+      this.handleOutputVariableChange(value);
+    },
+    handleArgvTypeUpdate(type) {
+      console.log("Type updated in card:", type);
+      const updatedCommand = {
+        ...this.command,
+        argvType: type,
+      };
+      this.$emit("update:command", updatedCommand);
+    },
+    handleToggleOutput() {
+      // 创建命令的副本
+      const updatedCommand = {
+        ...this.command,
+        saveOutput: !this.command.saveOutput,
+      };
+
+      // 如果关闭输出，清空变量名
+      if (!updatedCommand.saveOutput && updatedCommand.outputVariable) {
+        this.removeVariable(updatedCommand.outputVariable);
+        updatedCommand.outputVariable = null;
+      }
+
+      // 发出更新事件
+      this.$emit("update:command", updatedCommand);
     },
   },
   mounted() {
@@ -218,8 +275,8 @@ export default defineComponent({
 
 /* 拖拽动画 */
 /* .composer-card:active { */
-  /* transform: scale(1.02); */
-  /* transition: transform 0.2s; */
+/* transform: scale(1.02); */
+/* transition: transform 0.2s; */
 /* } */
 
 .command-item {
@@ -270,5 +327,106 @@ export default defineComponent({
 
 .drag-handle:hover {
   color: var(--q-primary);
+}
+
+/* 添加新的样式 */
+.output-section {
+  max-width: 120px;
+  margin-right: 4px;
+}
+
+.output-section :deep(.q-field) {
+  background: rgba(var(--q-primary-rgb), 0.03);
+  border-radius: 4px;
+}
+
+/* 输出按钮样式优化 */
+.output-btn {
+  font-size: 12px;
+  border-radius: 4px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid rgba(var(--q-primary-rgb), 0.1);
+  transition: all 0.3s ease;
+}
+
+.output-btn:hover {
+  background: rgba(var(--q-primary-rgb), 0.05);
+}
+
+.output-btn .q-icon {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.output-btn.q-btn--active {
+  background: rgba(var(--q-primary-rgb), 0.1);
+  color: var(--q-primary);
+}
+
+/* 移除按钮样式 */
+.remove-btn {
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  font-size: 18px;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+  color: var(--q-negative);
+  transform: scale(1.05);
+}
+
+/* 暗色模式适配 */
+.body--dark .output-section :deep(.q-field) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.body--dark .output-section :deep(.q-field--focused) {
+  background: #1d1d1d;
+}
+
+.body--dark .output-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.body--dark .output-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 输入框内部样式优化 */
+.output-section :deep(.q-field__control) {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 4px;
+}
+
+.output-section :deep(.q-field__marginal) {
+  height: 28px;
+  width: 24px;
+  min-width: 24px;
+}
+
+.output-section :deep(.q-field__native) {
+  padding: 0;
+  font-size: 12px;
+  min-height: 28px;
+  text-align: center;
+}
+
+/* Tooltip 样式优化 */
+:deep(.q-tooltip) {
+  max-width: 300px;
+  padding: 8px 12px;
+}
+
+/* 优化图标样式 */
+.output-section :deep(.q-icon) {
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.output-section :deep(.q-field--focused .q-icon) {
+  opacity: 1;
 }
 </style>

@@ -92,7 +92,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { ubrowserOperationConfigs } from "../composerConfig";
+import { ubrowserOperationConfigs } from "js/composer/composerConfig";
 import UBrowserOperation from "./operations/UBrowserOperation.vue";
 
 export default defineComponent({

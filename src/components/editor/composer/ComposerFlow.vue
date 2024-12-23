@@ -23,19 +23,20 @@
               class="flow-item"
               :class="{
                 'insert-before': dragIndex === index,
-                'insert-after': dragIndex === commands.length && index === commands.length - 1
+                'insert-after':
+                  dragIndex === commands.length &&
+                  index === commands.length - 1,
               }"
             >
               <ComposerCard
                 :command="element"
-                :has-output="hasOutput(element)"
-                :can-use-output="canUseOutput(element, index)"
                 :available-outputs="getAvailableOutputs(index)"
                 :placeholder="getPlaceholder(element, index)"
                 @remove="removeCommand(index)"
                 @toggle-output="toggleSaveOutput(index)"
                 @update:argv="(val) => handleArgvChange(index, val)"
                 @update:use-output="(val) => handleUseOutputChange(index, val)"
+                @update:command="(val) => updateCommand(index, val)"
               />
             </div>
           </transition>
@@ -56,7 +57,6 @@
 import { defineComponent } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
-import { commandsWithOutput, commandsAcceptOutput } from "./composerConfig";
 
 export default defineComponent({
   name: "ComposerFlow",
@@ -84,8 +84,8 @@ export default defineComponent({
   data() {
     return {
       dragIndex: -1,
-      isDragging: false
-    }
+      isDragging: false,
+    };
   },
   methods: {
     onDragStart() {
@@ -100,7 +100,7 @@ export default defineComponent({
     onDragOver(event) {
       if (!this.isDragging) {
         const rect = event.currentTarget.getBoundingClientRect();
-        const items = this.$el.querySelectorAll('.flow-item');
+        const items = this.$el.querySelectorAll(".flow-item");
         const mouseY = event.clientY;
 
         // 找到最近的插入位置
@@ -135,11 +135,11 @@ export default defineComponent({
     },
 
     onDrop(event) {
-      const actionData = JSON.parse(event.dataTransfer.getData('action'));
+      const actionData = JSON.parse(event.dataTransfer.getData("action"));
       const newCommand = {
         ...actionData,
         id: Date.now(), // 或使用其他方式生成唯一ID
-        argv: '',
+        argv: "",
         saveOutput: false,
         useOutput: null,
         cmd: actionData.value || actionData.cmd,
@@ -153,26 +153,17 @@ export default defineComponent({
         newCommands.push(newCommand);
       }
 
-      this.$emit('update:modelValue', newCommands);
+      this.$emit("update:modelValue", newCommands);
       this.dragIndex = -1;
 
-      document.querySelectorAll('.dragging').forEach(el => {
-        el.classList.remove('dragging');
+      document.querySelectorAll(".dragging").forEach((el) => {
+        el.classList.remove("dragging");
       });
     },
     removeCommand(index) {
       const newCommands = [...this.commands];
       newCommands.splice(index, 1);
       this.$emit("update:modelValue", newCommands);
-    },
-    hasOutput(command) {
-      return commandsWithOutput[command.value] || false;
-    },
-    canUseOutput(command, index) {
-      return (
-        commandsAcceptOutput[command.value] &&
-        this.getAvailableOutputs(index).length > 0
-      );
     },
     getAvailableOutputs(currentIndex) {
       return this.commands
@@ -198,7 +189,10 @@ export default defineComponent({
     },
     handleArgvChange(index, value) {
       const newCommands = [...this.commands];
-      newCommands[index].argv = value;
+      newCommands[index] = {
+        ...newCommands[index],
+        argv: value,
+      };
       this.$emit("update:modelValue", newCommands);
     },
     handleUseOutputChange(index, value) {
@@ -215,6 +209,15 @@ export default defineComponent({
       }
       return element.desc;
     },
+    updateCommand(index, updatedCommand) {
+      console.log("Command updated in flow:", updatedCommand);
+      const newCommands = [...this.commands];
+      newCommands[index] = {
+        ...newCommands[index],
+        ...updatedCommand,
+      };
+      this.$emit("update:modelValue", newCommands);
+    },
   },
 });
 </script>
@@ -227,7 +230,7 @@ export default defineComponent({
 
 .command-flow-container {
   padding: 8px;
-  background-color: #fafafa;
+  background-color: rgba(255, 255, 255, 0.8);
   border-radius: 4px;
   transition: all 0.3s ease;
   height: 100%;
@@ -237,7 +240,7 @@ export default defineComponent({
 }
 
 .body--dark .command-flow-container {
-  background-color: #303132;
+  background-color: rgba(32, 32, 32, 0.8);
 }
 
 .flow-list {
@@ -286,7 +289,7 @@ export default defineComponent({
   border-color: #676666;
 }
 
-/* 滑动淡出动画 */
+/* 滑动淡出�����画 */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: all 0.3s ease;
@@ -305,7 +308,7 @@ export default defineComponent({
 /* 拖拽指示器基础样式 */
 .flow-item::before,
 .flow-item::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 12px;
   right: 12px;
@@ -338,18 +341,14 @@ export default defineComponent({
 .flow-item.insert-before::before {
   opacity: 1;
   transform: scaleX(1) translateY(0);
-  box-shadow:
-    0 0 10px rgba(0, 0, 0, 0.03),
-    0 0 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.03), 0 0 4px rgba(0, 0, 0, 0.05);
 }
 
 /* 激活状态 - 插入到最后 */
 .flow-item.insert-after::after {
   opacity: 1;
   transform: scaleX(1) translateY(0);
-  box-shadow:
-    0 0 10px rgba(0, 0, 0, 0.03),
-    0 0 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.03), 0 0 4px rgba(0, 0, 0, 0.05);
 }
 
 /* 拖拽时的卡片效果 */
@@ -382,8 +381,7 @@ export default defineComponent({
     rgba(255, 255, 255, 0.08) 90%,
     transparent
   );
-  box-shadow:
-    0 0 10px rgba(255, 255, 255, 0.03),
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.03),
     0 0 4px rgba(255, 255, 255, 0.05);
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="composer-list">
-    <q-list bordered separator class="rounded-borders">
+    <q-list separator class="rounded-borders">
       <template v-for="category in commandCategories" :key="category.label">
         <q-item-label header class="q-py-sm">
           <div class="row items-center">
@@ -37,7 +37,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { commandCategories } from "./composerConfig";
+import { commandCategories } from "js/composer/composerConfig";
 
 export default defineComponent({
   name: "ComposerList",

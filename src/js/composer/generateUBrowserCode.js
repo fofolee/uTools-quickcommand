@@ -4,7 +4,7 @@
  * @param {Array} selectedActions 已选择的操作列表
  * @returns {string} 生成的代码
  */
-import { defaultUBrowserConfigs } from "./ubrowserConfig";
+import { defaultUBrowserConfigs } from "js/composer/ubrowserConfig";
 
 export function generateUBrowserCode(configs, selectedActions) {
   let code = "utools.ubrowser";
