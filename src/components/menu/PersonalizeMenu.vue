@@ -145,8 +145,6 @@
 </template>
 
 <script>
-import { setCssVar } from "quasar";
-
 export default {
   name: "PersonalizeMenu",
   props: {
@@ -160,7 +158,6 @@ export default {
   },
   methods: {
     setPrimaryColor() {
-      setCssVar("primary", this.$root.profile.primaryColor);
       this.$root.saveProfile();
     },
     resetPrimary() {

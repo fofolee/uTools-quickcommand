@@ -57,8 +57,6 @@ export default defineComponent({
     },
     startUp() {
       this.loadProfile();
-      // 默认主题色
-      this.setCssVar("primary", this.profile.primaryColor);
       this.startUpOnce();
       this.utools.whole.onPluginEnter((enter) => {
         this.enterPlugin(enter);
@@ -239,17 +237,33 @@ export default defineComponent({
       this.utools.delAll("qc_default");
       this.utools.setStorage("st_v300Inited", true);
     },
+    getOpacityColor(color, percent) {
+      return color + parseInt(0xff * percent).toString(16).padStart(2, "0");
+    },
   },
   watch: {
     // 监听 glassEffect 值变化
-    'profile.glassEffect': {
+    "profile.glassEffect": {
       immediate: true,
       handler(val) {
         // 给 body 添加 glass-effect-menu 类和强度值
-        document.body.classList.toggle('glass-effect-menu', val > 0);
-        document.body.style.setProperty('--glass-effect-strength', val);
-      }
-    }
-  }
+        document.body.classList.toggle("glass-effect-menu", val > 0);
+        document.body.style.setProperty("--glass-effect-strength", val);
+      },
+    },
+    // 监听 primaryColor 值变化
+    "profile.primaryColor": {
+      immediate: true,
+      handler(val) {
+        this.setCssVar("primary", val);
+        this.setCssVar("primary-opacity-5", this.getOpacityColor(val, 0.05));
+        this.setCssVar("primary-opacity-10", this.getOpacityColor(val, 0.1));
+        this.setCssVar("primary-opacity-20", this.getOpacityColor(val, 0.2));
+        this.setCssVar("primary-opacity-30", this.getOpacityColor(val, 0.3));
+        this.setCssVar("primary-opacity-40", this.getOpacityColor(val, 0.4));
+        this.setCssVar("primary-opacity-50", this.getOpacityColor(val, 0.5));
+      },
+    },
+  },
 });
 </script>
