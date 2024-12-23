@@ -1,201 +1,248 @@
 <template>
   <div class="row q-col-gutter-sm">
-    <!-- 基础设置 -->
+    <!-- 窗口显示控制 -->
     <div class="col-12">
-      <q-checkbox
-        :value="configs.run.show"
-        @update:modelValue="updateConfig('run.show', $event)"
-        label="显示窗口"
-      />
-    </div>
-
-    <!-- 窗口大小 -->
-    <div class="col-12">
-      <div class="text-subtitle2 q-mb-sm">窗口大小</div>
-      <div class="row q-col-gutter-sm">
-        <UBrowserInput
-          :value="configs.run.width"
-          @update:modelValue="updateConfig('run.width', $event)"
-          type="number"
-          label="宽度"
-          :width="6"
-          icon="width"
+      <div class="row items-center q-gutter-x-md">
+        <q-checkbox
+          :model-value="localConfigs.run.show"
+          label="显示窗口"
+          @update:model-value="updateConfig('show', $event)"
         />
-        <UBrowserInput
-          :value="configs.run.height"
-          @update:modelValue="updateConfig('run.height', $event)"
-          type="number"
-          label="高度"
-          :width="6"
-          icon="height"
+        <q-checkbox
+          :model-value="localConfigs.run.center"
+          label="居中显示"
+          @update:model-value="updateConfig('center', $event)"
+        />
+        <q-checkbox
+          :model-value="localConfigs.run.alwaysOnTop"
+          label="总在最前"
+          @update:model-value="updateConfig('alwaysOnTop', $event)"
+        />
+        <q-checkbox
+          :model-value="localConfigs.run.fullscreen"
+          label="全屏显示"
+          @update:model-value="updateConfig('fullscreen', $event)"
         />
       </div>
     </div>
 
-    <!-- 窗口位置 -->
+    <!-- 窗口尺寸和位置 -->
     <div class="col-12">
-      <div class="text-subtitle2 q-mb-sm">窗口位置</div>
       <div class="row q-col-gutter-sm">
-        <UBrowserInput
-          :value="configs.run.x"
-          @update:modelValue="updateConfig('run.x', $event)"
-          type="number"
-          label="X坐标"
-          :width="6"
-          icon="drag_handle"
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.width"
+            type="number"
+            label="窗口宽度"
+            dense
+            outlined
+            @update:model-value="updateConfig('width', $event)"
+          />
+        </div>
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.height"
+            type="number"
+            label="窗口高度"
+            dense
+            outlined
+            @update:model-value="updateConfig('height', $event)"
+          />
+        </div>
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.x"
+            type="number"
+            label="X坐标"
+            dense
+            outlined
+            @update:model-value="updateConfig('x', $event)"
+          />
+        </div>
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.y"
+            type="number"
+            label="Y坐标"
+            dense
+            outlined
+            @update:model-value="updateConfig('y', $event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- 最大最小尺寸 -->
+    <div class="col-12">
+      <div class="row q-col-gutter-sm">
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.minWidth"
+            type="number"
+            label="最小宽度"
+            dense
+            outlined
+            @update:model-value="updateConfig('minWidth', $event)"
+          />
+        </div>
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.minHeight"
+            type="number"
+            label="最小高度"
+            dense
+            outlined
+            @update:model-value="updateConfig('minHeight', $event)"
+          />
+        </div>
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.maxWidth"
+            type="number"
+            label="最大宽度"
+            dense
+            outlined
+            @update:model-value="updateConfig('maxWidth', $event)"
+          />
+        </div>
+        <div class="col-3">
+          <q-input
+            v-model.number="localConfigs.run.maxHeight"
+            type="number"
+            label="最大高度"
+            dense
+            outlined
+            @update:model-value="updateConfig('maxHeight', $event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- 窗口行为控制 -->
+    <div class="col-12">
+      <div class="row items-center q-gutter-x-md">
+        <q-checkbox
+          :model-value="localConfigs.run.resizable"
+          label="可调整大小"
+          @update:model-value="updateConfig('resizable', $event)"
         />
-        <UBrowserInput
-          :value="configs.run.y"
-          @update:modelValue="updateConfig('run.y', $event)"
-          type="number"
-          label="Y坐标"
-          :width="6"
-          icon="drag_handle"
+        <q-checkbox
+          :model-value="localConfigs.run.movable"
+          label="可移动"
+          @update:model-value="updateConfig('movable', $event)"
+        />
+        <q-checkbox
+          :model-value="localConfigs.run.minimizable"
+          label="可最小化"
+          @update:model-value="updateConfig('minimizable', $event)"
+        />
+        <q-checkbox
+          :model-value="localConfigs.run.maximizable"
+          label="可最大化"
+          @update:model-value="updateConfig('maximizable', $event)"
         />
       </div>
     </div>
 
-    <!-- 窗口限制 -->
+    <!-- 特殊功能控制 -->
     <div class="col-12">
-      <div class="text-subtitle2 q-mb-sm">窗口限制</div>
-      <div class="row q-col-gutter-sm">
-        <UBrowserInput
-          :value="configs.run.minWidth"
-          @update:modelValue="updateConfig('run.minWidth', $event)"
-          type="number"
-          label="最小宽度"
-          :width="6"
-          icon="width"
+      <div class="row items-center q-gutter-x-md">
+        <q-checkbox
+          :model-value="localConfigs.run.enableLargerThanScreen"
+          label="允许超出屏幕"
+          @update:model-value="updateConfig('enableLargerThanScreen', $event)"
         />
-        <UBrowserInput
-          :value="configs.run.minHeight"
-          @update:modelValue="updateConfig('run.minHeight', $event)"
-          type="number"
-          label="最小高度"
-          :width="6"
-          icon="height"
-        />
-        <UBrowserInput
-          :value="configs.run.maxWidth"
-          @update:modelValue="updateConfig('run.maxWidth', $event)"
-          type="number"
-          label="最大宽度"
-          :width="6"
-          icon="width"
-        />
-        <UBrowserInput
-          :value="configs.run.maxHeight"
-          @update:modelValue="updateConfig('run.maxHeight', $event)"
-          type="number"
-          label="最大高度"
-          :width="6"
-          icon="height"
+        <q-checkbox
+          :model-value="localConfigs.run.fullscreenable"
+          label="允许全屏"
+          @update:model-value="updateConfig('fullscreenable', $event)"
         />
       </div>
     </div>
 
-    <!-- 窗口行为 -->
+    <!-- 透明度控制 -->
     <div class="col-12">
-      <div class="text-subtitle2 q-mb-sm">窗口行为</div>
-      <div class="row q-col-gutter-sm">
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.center"
-            @update:modelValue="updateConfig('run.center', $event)"
-            label="居中显示"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.resizable"
-            @update:modelValue="updateConfig('run.resizable', $event)"
-            label="允许调整大小"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.movable"
-            @update:modelValue="updateConfig('run.movable', $event)"
-            label="允许移动"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.minimizable"
-            @update:modelValue="updateConfig('run.minimizable', $event)"
-            label="允许最小化"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.maximizable"
-            @update:modelValue="updateConfig('run.maximizable', $event)"
-            label="允许最大化"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.alwaysOnTop"
-            @update:modelValue="updateConfig('run.alwaysOnTop', $event)"
-            label="总是置顶"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.fullscreen"
-            @update:modelValue="updateConfig('run.fullscreen', $event)"
-            label="全屏显示"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.fullscreenable"
-            @update:modelValue="updateConfig('run.fullscreenable', $event)"
-            label="允许全屏"
-          />
-        </div>
-        <div class="col-12">
-          <q-checkbox
-            :value="configs.run.enableLargerThanScreen"
-            @update:modelValue="updateConfig('run.enableLargerThanScreen', $event)"
-            label="允许超出屏幕大小"
-          />
-        </div>
+      <div class="row items-center">
+        <div class="q-mr-md">透明度</div>
+        <q-slider
+          class="col"
+          v-model="localConfigs.run.opacity"
+          :min="0"
+          :max="1"
+          :step="0.1"
+          label
+          label-always
+          color="primary"
+          @update:model-value="updateConfig('opacity', $event)"
+        >
+          <template v-slot:thumb-label>
+            {{ localConfigs.run.opacity.toFixed(1) }}
+          </template>
+        </q-slider>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-import UBrowserInput from './operations/UBrowserInput.vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: 'UBrowserRun',
-  components: {
-    UBrowserInput
-  },
+  name: "UBrowserRun",
   props: {
     configs: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['update:configs'],
+  emits: ["update:configs"],
+  data() {
+    return {
+      localConfigs: {
+        run: {
+          show: true,
+          width: 1280,
+          height: 800,
+          x: undefined,
+          y: undefined,
+          center: true,
+          minWidth: 800,
+          minHeight: 600,
+          maxWidth: undefined,
+          maxHeight: undefined,
+          resizable: true,
+          movable: true,
+          minimizable: true,
+          maximizable: true,
+          alwaysOnTop: false,
+          fullscreen: false,
+          fullscreenable: true,
+          enableLargerThanScreen: false,
+          opacity: 1,
+        },
+      },
+    };
+  },
+  created() {
+    // 初始化本地配置
+    this.localConfigs = JSON.parse(JSON.stringify(this.configs));
+  },
   methods: {
-    updateConfig(path, value) {
-      const newConfigs = { ...this.configs };
-      const keys = path.split('.');
-      let current = newConfigs;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-
-      current[keys[keys.length - 1]] = value;
-      this.$emit('update:configs', newConfigs);
-    }
-  }
+    updateConfig(key, value) {
+      this.localConfigs.run[key] = value;
+      this.$emit(
+        "update:configs",
+        JSON.parse(JSON.stringify(this.localConfigs))
+      );
+    },
+  },
+  watch: {
+    configs: {
+      deep: true,
+      handler(newConfigs) {
+        this.localConfigs = JSON.parse(JSON.stringify(newConfigs));
+      },
+    },
+  },
 });
 </script>

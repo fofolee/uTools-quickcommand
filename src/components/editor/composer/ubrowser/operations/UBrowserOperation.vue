@@ -1,189 +1,258 @@
 <template>
-  <div class="operation-item-argv q-mb-md">
-    <div class="text-subtitle2 q-mb-sm">{{ title }}</div>
-    <div class="row q-col-gutter-sm">
-      <template v-for="(field, index) in fields" :key="index">
-        <!-- 输入框 -->
-        <template v-if="field.type === 'input'">
-          <UBrowserInput
-            :value="getFieldValue(field.key)"
-            @update:modelValue="updateFieldValue(field.key, $event)"
-            :label="field.label"
-            :icon="field.icon"
-            :type="field.inputType || 'text'"
-            :width="field.width"
-            v-bind="field.props || {}"
-          />
-        </template>
-
-        <!-- 选择框 -->
-        <template v-if="field.type === 'select'">
-          <q-select
-            :value="getFieldValue(field.key)"
-            @update:modelValue="updateFieldValue(field.key, $event)"
-            :options="field.options"
-            :label="field.label"
-            outlined
-            dense
-            class="col-12"
-            v-bind="field.props || {}"
-          />
+  <div class="row q-col-gutter-sm items-center">
+    <template v-for="field in fields" :key="field.key">
+      <div
+        v-if="!field.showWhen || fieldValue[field.showWhen] === field.showValue"
+        :class="['col', field.width ? `col-${field.width}` : 'col-12']"
+      >
+        <!-- 复选框组 -->
+        <template v-if="field.type === 'checkbox-group'">
+          <div class="row items-center">
+            <!-- <div class="text-caption q-mb-sm">{{ field.label }}</div> -->
+            <q-option-group
+              :model-value="fieldValue[field.key] || []"
+              :options="field.options"
+              type="checkbox"
+              inline
+              dense
+              @update:model-value="updateValue(field.key, $event)"
+            />
+          </div>
         </template>
 
         <!-- 单个复选框 -->
-        <template v-if="field.type === 'checkbox'">
-          <div class="col-12">
-            <q-checkbox
-              :value="getFieldValue(field.key)"
-              @update:modelValue="updateFieldValue(field.key, $event)"
-              :label="field.label"
+        <template v-else-if="field.type === 'checkbox'">
+          <div class="row items-center no-wrap">
+            <q-badge class="q-pa-xs">{{ field.label }}</q-badge>
+            <q-btn-toggle
+              :model-value="fieldValue[field.key] ? 'true' : 'false'"
+              :options="[
+                { label: '是', value: 'true' },
+                { label: '否', value: 'false' },
+              ]"
+              dense
+              flat
+              no-caps
+              spread
+              class="button-group"
+              @update:model-value="updateValue(field.key, $event === 'true')"
             />
           </div>
         </template>
 
-        <!-- 复选框组 -->
-        <template v-if="field.type === 'checkbox-group'">
-          <q-option-group
-            :value="getFieldValue(field.key)"
-            @update:modelValue="updateFieldValue(field.key, $event)"
-            :options="field.options"
-            type="checkbox"
-            inline
-            class="col-12"
-          />
+        <!-- 文本输入 -->
+        <template v-else-if="field.type === 'input'">
+          <q-input
+            :model-value="fieldValue[field.key]"
+            :label="field.label"
+            :type="field.inputType || 'text'"
+            dense
+            outlined
+            @update:model-value="updateValue(field.key, $event)"
+          >
+            <template v-slot:prepend>
+              <q-icon :name="field.icon" />
+            </template>
+          </q-input>
         </template>
 
-        <!-- 文本域 -->
-        <template v-if="field.type === 'textarea'">
-          <UBrowserInput
-            :value="getFieldValue(field.key)"
-            @update:modelValue="updateFieldValue(field.key, $event)"
+        <!-- 文本区域 -->
+        <template v-else-if="field.type === 'textarea'">
+          <q-input
+            :model-value="fieldValue[field.key]"
             :label="field.label"
-            :icon="field.icon"
             type="textarea"
+            dense
+            outlined
             autogrow
-            class="col-12"
-          />
+            @update:model-value="updateValue(field.key, $event)"
+          >
+            <template v-slot:prepend>
+              <q-icon :name="field.icon" />
+            </template>
+          </q-input>
+        </template>
+
+        <!-- 选择框 -->
+        <template v-else-if="field.type === 'select'">
+          <q-select
+            :model-value="fieldValue[field.key]"
+            :label="field.label"
+            :options="field.options"
+            dense
+            outlined
+            emit-value
+            map-options
+            @update:model-value="updateValue(field.key, $event)"
+          >
+            <template v-slot:prepend>
+              <q-icon :name="field.icon" />
+            </template>
+          </q-select>
         </template>
 
         <!-- Cookie列表 -->
-        <template v-if="field.type === 'cookie-list'">
-          <div class="col-12">
+        <template v-else-if="field.type === 'cookie-list'">
+          <div class="row q-col-gutter-sm">
             <div
-              v-for="(item, idx) in getFieldValue(field.key)"
-              :key="idx"
-              class="row q-col-gutter-sm q-mb-sm"
+              v-for="(cookie, index) in fieldValue[field.key] || [{}]"
+              :key="index"
+              class="col-12"
             >
-              <UBrowserInput
-                :value="item.name"
-                @update:modelValue="
-                  updateCookieField(field.key, idx, 'name', $event)
-                "
-                label="名称"
-                :width="5"
-                icon="label"
-              />
-              <UBrowserInput
-                :value="item.value"
-                @update:modelValue="
-                  updateCookieField(field.key, idx, 'value', $event)
-                "
-                label="值"
-                :width="5"
-                icon="edit"
-              />
-              <div class="col-2 flex items-center">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="negative"
-                  icon="remove"
-                  @click="removeCookie(field.key, idx)"
-                  v-if="getFieldValue(field.key).length > 1"
-                />
+              <div class="row items-center q-gutter-x-sm">
+                <div class="col">
+                  <q-input
+                    v-model="cookie.name"
+                    label="名称"
+                    dense
+                    outlined
+                    @update:model-value="updateCookieList(field.key)"
+                  />
+                </div>
+                <div class="col">
+                  <q-input
+                    v-model="cookie.value"
+                    label="值"
+                    dense
+                    outlined
+                    @update:model-value="updateCookieList(field.key)"
+                  />
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    color="negative"
+                    icon="remove"
+                    @click="removeCookie(field.key, index)"
+                  />
+                </div>
               </div>
             </div>
-            <q-btn
-              outline
-              color="primary"
-              label="添加Cookie"
-              icon="add"
-              @click="addCookie(field.key)"
-              class="q-mt-sm"
-            />
           </div>
+          <q-btn
+            flat
+            dense
+            color="primary"
+            icon="add"
+            label="添加Cookie"
+            @click="addCookie(field.key)"
+            class="q-mt-xs"
+          />
         </template>
 
         <!-- 参数列表 -->
-        <template v-if="field.type === 'param-list'">
-          <div class="col-12">
-            <div class="row items-center q-gutter-sm q-mb-sm">
-              <UBrowserInput
-                v-model="newParam"
-                label="参数"
-                :width="10"
-                icon="functions"
+        <template v-else-if="field.type === 'param-list'">
+          <div class="text-caption q-mb-sm">{{ field.label }}</div>
+          <div
+            v-for="(param, index) in fieldValue[field.key] || []"
+            :key="index"
+            class="row q-col-gutter-sm q-mb-sm"
+          >
+            <div class="col-10">
+              <q-input
+                v-model="fieldValue[field.key][index]"
+                label="参数值"
+                dense
+                outlined
+                @update:model-value="
+                  updateValue(field.key, fieldValue[field.key])
+                "
               />
-              <q-btn flat round dense icon="add" @click="addParam(field.key)" />
             </div>
-            <div v-if="getFieldValue(field.key).length > 0" class="q-mt-sm">
-              <q-chip
-                v-for="(param, idx) in getFieldValue(field.key)"
-                :key="idx"
-                removable
-                @remove="removeParam(field.key, idx)"
-              >
-                {{ param }}
-              </q-chip>
+            <div class="col-2">
+              <q-btn
+                flat
+                round
+                dense
+                color="negative"
+                icon="remove"
+                @click="removeParam(field.key, index)"
+              />
             </div>
           </div>
+          <q-btn
+            flat
+            dense
+            color="primary"
+            icon="add"
+            label="添加参数"
+            @click="addParam(field.key)"
+          />
         </template>
 
         <!-- 文件列表 -->
-        <template v-if="field.type === 'file-list'">
-          <div class="col-12">
-            <div class="row items-center q-gutter-sm q-mb-sm">
-              <UBrowserInput
-                v-model="newFile"
-                label="文件路径"
-                :width="10"
-                icon="upload_file"
-              />
-              <q-btn flat round dense icon="add" @click="addFile(field.key)" />
-            </div>
-            <div v-if="getFieldValue(field.key).length > 0" class="q-mt-sm">
-              <q-chip
-                v-for="(file, idx) in getFieldValue(field.key)"
-                :key="idx"
-                removable
-                @remove="removeFile(field.key, idx)"
-              >
-                {{ file }}
-              </q-chip>
+        <template v-else-if="field.type === 'file-list'">
+          <div class="row q-col-gutter-sm">
+            <div
+              v-for="(file, index) in fieldValue[field.key] || []"
+              :key="index"
+              class="col-12"
+            >
+              <div class="row q-col-gutter-sm">
+                <div class="col">
+                  <q-input
+                    v-model="fieldValue[field.key][index]"
+                    label="文件路径"
+                    dense
+                    outlined
+                    @update:model-value="
+                      updateValue(field.key, fieldValue[field.key])
+                    "
+                  />
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    color="negative"
+                    icon="remove"
+                    @click="removeFile(field.key, index)"
+                  />
+                </div>
+              </div>
             </div>
           </div>
+          <q-btn
+            flat
+            dense
+            color="primary"
+            icon="add"
+            label="添加文件"
+            @click="addFile(field.key)"
+            class="q-mt-xs"
+          />
         </template>
-      </template>
-    </div>
+
+        <!-- 按钮组 -->
+        <template v-else-if="field.type === 'button-toggle'">
+          <div class="row items-center no-wrap">
+            <q-badge class="q-pa-xs">{{ field.label }}</q-badge>
+            <q-btn-toggle
+              :model-value="fieldValue[field.key]"
+              :options="field.options"
+              dense
+              flat
+              no-caps
+              spread
+              class="button-group"
+              @update:model-value="updateValue(field.key, $event)"
+            />
+          </div>
+        </template>
+      </div>
+    </template>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import UBrowserInput from "./UBrowserInput.vue";
+import { get, set } from "lodash";
 
 export default defineComponent({
   name: "UBrowserOperation",
-  components: {
-    UBrowserInput,
-  },
-  data() {
-    return {
-      newParam: "",
-      newFile: "",
-    };
-  },
   props: {
     configs: {
       type: Object,
@@ -193,78 +262,125 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    title: {
-      type: String,
-    },
     fields: {
       type: Array,
       required: true,
     },
   },
   emits: ["update:configs"],
+  data() {
+    return {
+      fieldValue: {},
+    };
+  },
+  created() {
+    // 初始化字段值，确保有默认值
+    this.fields.forEach((field) => {
+      const value = get(this.configs[this.action], field.key);
+      // 根据字段类型设置适当的默认值
+      let defaultValue;
+      if (field.type === "checkbox-group") {
+        defaultValue = field.defaultValue || [];
+      } else if (field.type === "checkbox") {
+        defaultValue = field.defaultValue || false;
+      } else {
+        defaultValue = field.defaultValue;
+      }
+      this.fieldValue[field.key] = value !== undefined ? value : defaultValue;
+    });
+  },
   methods: {
+    updateValue(key, value) {
+      // 更新本地值
+      this.fieldValue[key] = value;
+
+      // 创建新的配置对
+      const newConfigs = { ...this.configs };
+      if (!newConfigs[this.action]) {
+        newConfigs[this.action] = {};
+      }
+
+      // 使用 lodash 的 set 来处理嵌套路径
+      set(newConfigs[this.action], key, value);
+
+      // 发出更新事件
+      this.$emit("update:configs", newConfigs);
+    },
+
+    // Cookie列表相关方法
     addCookie(key) {
-      const items = [...(this.getFieldValue(key) || [])];
-      items.push({ name: "", value: "" });
-      this.updateFieldValue(key, items);
+      if (!this.fieldValue[key]) {
+        this.fieldValue[key] = [];
+      }
+      this.fieldValue[key].push({ name: "", value: "" });
+      this.updateValue(key, this.fieldValue[key]);
     },
     removeCookie(key, index) {
-      const items = [...this.getFieldValue(key)];
-      items.splice(index, 1);
-      this.updateFieldValue(key, items);
-    },
-    updateCookieField(key, index, field, value) {
-      const items = [...this.getFieldValue(key)];
-      items[index] = {
-        ...items[index],
-        [field]: value,
-      };
-      this.updateFieldValue(key, items);
-    },
-    addParam(key) {
-      if (this.newParam) {
-        const params = [...(this.getFieldValue(key) || [])];
-        params.push(this.newParam);
-        this.updateFieldValue(key, params);
-        this.newParam = "";
+      this.fieldValue[key].splice(index, 1);
+      if (this.fieldValue[key].length === 0) {
+        this.fieldValue[key].push({ name: "", value: "" });
       }
+      this.updateValue(key, this.fieldValue[key]);
+    },
+    updateCookieList(key) {
+      this.updateValue(key, this.fieldValue[key]);
+    },
+
+    // 参数列表相关方法
+    addParam(key) {
+      if (!this.fieldValue[key]) {
+        this.fieldValue[key] = [];
+      }
+      this.fieldValue[key].push("");
+      this.updateValue(key, this.fieldValue[key]);
     },
     removeParam(key, index) {
-      const params = [...this.getFieldValue(key)];
-      params.splice(index, 1);
-      this.updateFieldValue(key, params);
+      this.fieldValue[key].splice(index, 1);
+      this.updateValue(key, this.fieldValue[key]);
     },
+
+    // 文件列表相关方法
     addFile(key) {
-      if (this.newFile) {
-        const files = [...(this.getFieldValue(key) || [])];
-        files.push(this.newFile);
-        this.updateFieldValue(key, files);
-        this.newFile = "";
+      if (!this.fieldValue[key]) {
+        this.fieldValue[key] = [];
       }
+      this.fieldValue[key].push("");
+      this.updateValue(key, this.fieldValue[key]);
     },
     removeFile(key, index) {
-      const files = [...this.getFieldValue(key)];
-      files.splice(index, 1);
-      this.updateFieldValue(key, files);
+      this.fieldValue[key].splice(index, 1);
+      this.updateValue(key, this.fieldValue[key]);
     },
-    getFieldValue(key) {
-      return this.configs[this.action][key];
-    },
-    updateFieldValue(key, value) {
-      this.$emit("update:configs", {
-        ...this.configs,
-        [this.action]: {
-          ...this.configs[this.action],
-          [key]: value,
-        },
-      });
+  },
+  watch: {
+    // 监听配置变化
+    configs: {
+      deep: true,
+      handler() {
+        this.fields.forEach((field) => {
+          const value = get(this.configs[this.action], field.key);
+          if (value !== undefined) {
+            this.fieldValue[field.key] = value;
+          }
+        });
+      },
     },
   },
 });
 </script>
 
 <style scoped>
-.operation-item-argv {
-  padding: 0 4px;
+.button-group-container {
+  position: relative;
+}
+
+.button-group {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.button-group :deep(.q-btn) {
+  min-height: 24px;
+  font-size: 12px;
 }
 </style>

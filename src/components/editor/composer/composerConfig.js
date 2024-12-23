@@ -1,24 +1,24 @@
 // 定义命令图标映射
 export const commandIcons = {
-  'open': 'folder_open',
-  'locate': 'location_on',
-  'visit': 'language',
-  'utools.ubrowser.goto': 'public',
-  'system': 'terminal',
-  'copyTo': 'content_copy',
-  'message': 'message',
-  'alert': 'warning',
-  'send': 'send',
-  'utools.redirect': 'alt_route',
-  'quickcommand.sleep': 'schedule',
-  'keyTap': 'keyboard'
-}
+  open: "folder_open",
+  locate: "location_on",
+  visit: "language",
+  "utools.ubrowser.goto": "public",
+  system: "terminal",
+  copyTo: "content_copy",
+  message: "message",
+  alert: "warning",
+  send: "send",
+  "utools.redirect": "alt_route",
+  "quickcommand.sleep": "schedule",
+  keyTap: "keyboard",
+};
 
 // 定义命令分类
 export const commandCategories = [
   {
-    label: '文件操作',
-    icon: 'folder',
+    label: "文件操作",
+    icon: "folder",
     commands: [
       {
         value: "open",
@@ -29,12 +29,12 @@ export const commandCategories = [
         value: "locate",
         label: "在文件管理器中定位文件",
         desc: "要在文件管理器里显示的文件路径",
-      }
-    ]
+      },
+    ],
   },
   {
-    label: '网络操作',
-    icon: 'language',
+    label: "网络操作",
+    icon: "language",
     commands: [
       {
         value: "visit",
@@ -50,13 +50,13 @@ export const commandCategories = [
         value: "ubrowser",
         label: "UBrowser浏览器操作",
         desc: "配置UBrowser浏览器操作",
-        hasUBrowserEditor: true
-      }
-    ]
+        hasUBrowserEditor: true,
+      },
+    ],
   },
   {
-    label: '系统操作',
-    icon: 'computer',
+    label: "系统操作",
+    icon: "computer",
     commands: [
       {
         value: "system",
@@ -67,12 +67,12 @@ export const commandCategories = [
         value: "copyTo",
         label: "将内容写入剪贴板",
         desc: "要写入剪切板的内容",
-      }
-    ]
+      },
+    ],
   },
   {
-    label: '消息通知',
-    icon: 'notifications',
+    label: "消息通知",
+    icon: "notifications",
     commands: [
       {
         value: "message",
@@ -88,12 +88,12 @@ export const commandCategories = [
         value: "send",
         label: "发送文本到活动窗口",
         desc: "要发送到窗口的文本内容",
-      }
-    ]
+      },
+    ],
   },
   {
-    label: '其他功能',
-    icon: 'more_horiz',
+    label: "其他功能",
+    icon: "more_horiz",
     commands: [
       {
         value: "utools.redirect",
@@ -104,36 +104,91 @@ export const commandCategories = [
         value: "quickcommand.sleep",
         label: "添加延时",
         desc: "延迟的毫秒数",
-      }
-    ]
+      },
+    ],
   },
   {
-    label: '按键操作',
-    icon: 'keyboard',
+    label: "按键操作",
+    icon: "keyboard",
     commands: [
       {
         value: "keyTap",
         label: "模拟按键",
         desc: "模拟键盘按键",
-        hasKeyRecorder: true
-      }
-    ]
-  }
-]
+        hasKeyRecorder: true,
+      },
+    ],
+  },
+];
 
 // 定义哪些命令可以产生输出
 export const commandsWithOutput = {
-  'system': true,
-  'open': true,
-  'locate': true,
-  'copyTo': true,
-  'ubrowser': true,
-}
+  system: true,
+  open: true,
+  locate: true,
+  copyTo: true,
+  ubrowser: true,
+};
 
 // 定义哪些命令可以接收输出
 export const commandsAcceptOutput = {
-  'message': true,
-  'alert': true,
-  'send': true,
-  'copyTo': true,
-}
+  message: true,
+  alert: true,
+  send: true,
+  copyTo: true,
+};
+
+// 添加 ubrowser 操作图标映射
+export const ubrowserActionIcons = {
+  wait: "timer",
+  click: "mouse",
+  css: "style",
+  press: "keyboard",
+  paste: "content_paste",
+  screenshot: "photo_camera",
+  pdf: "picture_as_pdf",
+  device: "devices",
+  cookies: "cookie",
+  evaluate: "code",
+  when: "rule",
+  mousedown: "mouse",
+  mouseup: "mouse",
+  file: "upload_file",
+  value: "edit",
+  check: "check_box",
+  focus: "center_focus_strong",
+  scroll: "swap_vert",
+  download: "download",
+  hide: "visibility_off",
+  show: "visibility",
+  devTools: "developer_board",
+};
+
+// 添加 ubrowser 可用操作列表
+export const ubrowserAvailableActions = [
+  { label: "等待", value: "wait" },
+  { label: "点击", value: "click" },
+  { label: "注入CSS", value: "css" },
+  { label: "按键", value: "press" },
+  { label: "粘贴", value: "paste" },
+  { label: "截图", value: "screenshot" },
+  { label: "导出PDF", value: "pdf" },
+  { label: "模拟设备", value: "device" },
+  { label: "获取Cookie", value: "cookies" },
+  { label: "设置Cookie", value: "setCookies" },
+  { label: "删除Cookie", value: "removeCookies" },
+  { label: "清除Cookie", value: "clearCookies" },
+  { label: "执行脚本", value: "evaluate" },
+  { label: "条件判断", value: "when" },
+  { label: "鼠标按下", value: "mousedown" },
+  { label: "鼠标释放", value: "mouseup" },
+  { label: "上传文件", value: "file" },
+  { label: "设置值", value: "value" },
+  { label: "选中状态", value: "check" },
+  { label: "获取焦点", value: "focus" },
+  { label: "滚动", value: "scroll" },
+  { label: "下载", value: "download" },
+  { label: "隐藏", value: "hide" },
+  { label: "显示", value: "show" },
+  { label: "开发工具", value: "devTools" },
+];

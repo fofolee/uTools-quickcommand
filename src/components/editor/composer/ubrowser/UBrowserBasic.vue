@@ -1,86 +1,115 @@
 <template>
   <div class="row q-col-gutter-sm">
-    <!-- UserAgent -->
+    <!-- 基础配置 -->
     <div class="col-12">
-      <UBrowserInput
-        :value="configs.useragent.value"
-        @update:modelValue="updateConfig('useragent.value', $event)"
-        label="UserAgent"
-        icon="person"
-      />
+      <q-input
+        v-model="localConfigs.goto.url"
+        label="网址"
+        dense
+        outlined
+        @update:model-value="updateConfigs"
+      >
+        <template v-slot:prepend>
+          <q-icon name="link" />
+        </template>
+      </q-input>
     </div>
 
-    <!-- URL -->
+    <!-- 超时配置 -->
     <div class="col-12">
-      <UBrowserInput
-        :value="configs.goto.url"
-        @update:modelValue="updateConfig('goto.url', $event)"
-        label="URL"
-        icon="link"
-      />
-    </div>
-
-    <!-- Headers -->
-    <div class="col-12">
-      <div class="text-subtitle2 q-mb-sm">请求头</div>
-      <UBrowserInput
-        :value="configs.goto.headers.Referer"
-        @update:modelValue="updateConfig('goto.headers.Referer', $event)"
-        label="Referer"
-        icon="link"
-        class="q-mb-sm"
-      />
-      <UBrowserInput
-        :value="configs.goto.headers.userAgent"
-        @update:modelValue="updateConfig('goto.headers.userAgent', $event)"
-        label="User-Agent"
-        icon="person"
-      />
-    </div>
-
-    <!-- Timeout -->
-    <div class="col-12">
-      <UBrowserInput
-        :value="configs.goto.timeout"
-        @update:modelValue="updateConfig('goto.timeout', $event)"
+      <q-input
+        v-model.number="localConfigs.goto.timeout"
         type="number"
         label="超时时间(ms)"
-        icon="timer"
-      />
+        dense
+        outlined
+        @update:model-value="updateConfigs"
+      >
+        <template v-slot:prepend>
+          <q-icon name="timer" />
+        </template>
+      </q-input>
+    </div>
+
+    <!-- Headers配置 -->
+    <div class="col-12">
+      <div class="row q-col-gutter-sm">
+        <div class="col-12">
+          <q-input
+            v-model="localConfigs.goto.headers.Referer"
+            label="Referer"
+            dense
+            outlined
+            @update:model-value="updateConfigs"
+          >
+            <template v-slot:prepend>
+              <q-icon name="link" />
+            </template>
+          </q-input>
+        </div>
+        <div class="col-12">
+          <q-input
+            v-model="localConfigs.goto.headers.userAgent"
+            label="User-Agent"
+            dense
+            outlined
+            @update:model-value="updateConfigs"
+          >
+            <template v-slot:prepend>
+              <q-icon name="computer" />
+            </template>
+          </q-input>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-import UBrowserInput from './operations/UBrowserInput.vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: 'UBrowserBasic',
-  components: {
-    UBrowserInput
-  },
+  name: "UBrowserBasic",
   props: {
     configs: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['update:configs'],
+  emits: ["update:configs"],
+  data() {
+    return {
+      localConfigs: {
+        goto: {
+          url: "",
+          headers: {
+            Referer: "",
+            userAgent: "",
+          },
+          timeout: 60000,
+        },
+      },
+    };
+  },
+  created() {
+    // 初始化本地配置
+    this.localConfigs = JSON.parse(JSON.stringify(this.configs));
+  },
   methods: {
-    updateConfig(path, value) {
-      const newConfigs = { ...this.configs };
-      const keys = path.split('.');
-      let current = newConfigs;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-
-      current[keys[keys.length - 1]] = value;
-      this.$emit('update:configs', newConfigs);
-    }
-  }
+    updateConfigs() {
+      this.$emit(
+        "update:configs",
+        JSON.parse(JSON.stringify(this.localConfigs))
+      );
+    },
+  },
+  watch: {
+    configs: {
+      deep: true,
+      handler(newConfigs) {
+        this.localConfigs = JSON.parse(JSON.stringify(newConfigs));
+      },
+    },
+  },
 });
 </script>
