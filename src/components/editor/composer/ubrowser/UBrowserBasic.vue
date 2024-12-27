@@ -2,49 +2,34 @@
   <div class="row q-col-gutter-sm">
     <!-- 基础配置 -->
     <div class="col-12">
-      <q-input
+      <VariableInput
         v-model="localConfigs.goto.url"
         label="网址"
-        dense
-        outlined
+        :command="{ icon: 'link' }"
         @update:model-value="updateConfigs"
-      >
-        <template v-slot:prepend>
-          <q-icon name="link" />
-        </template>
-      </q-input>
+      />
     </div>
 
     <!-- Headers配置 -->
     <div class="col-12">
       <div class="row q-col-gutter-sm">
         <div class="col-12">
-          <q-input
+          <VariableInput
             v-model="localConfigs.goto.headers.Referer"
             label="Referer"
-            dense
-            outlined
+            :command="{ icon: 'link' }"
             @update:model-value="updateConfigs"
-          >
-            <template v-slot:prepend>
-              <q-icon name="link" />
-            </template>
-          </q-input>
+          />
         </div>
         <div class="col-12">
           <div class="row q-col-gutter-sm">
             <div class="col">
-              <q-input
+              <VariableInput
                 v-model="localConfigs.goto.headers.userAgent"
                 label="User-Agent"
-                dense
-                outlined
+                :command="{ icon: 'devices' }"
                 @update:model-value="updateConfigs"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="devices" />
-                </template>
-              </q-input>
+              />
             </div>
             <div class="col-auto">
               <q-select
@@ -70,27 +55,25 @@
 
     <!-- 超时配置 -->
     <div class="col-12">
-      <q-input
-        v-model.number="localConfigs.goto.timeout"
-        type="number"
+      <VariableInput
+        v-model="localConfigs.goto.timeout"
+        :command="{ icon: 'timer', inputType: 'number' }"
         label="超时时间(ms)"
-        dense
-        outlined
         @update:model-value="updateConfigs"
-      >
-        <template v-slot:prepend>
-          <q-icon name="timer" />
-        </template>
-      </q-input>
+      />
     </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserBasic",
+  components: {
+    VariableInput,
+  },
   props: {
     configs: {
       type: Object,

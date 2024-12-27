@@ -66,14 +66,10 @@
                 <template #item="{ element, index }">
                   <ComposerCard
                     :command="element"
-                    :available-outputs="getAvailableOutputs(index, 'if')"
                     :placeholder="getPlaceholder(element, index, 'if')"
                     @remove="removeCommand('if', index)"
                     @toggle-output="toggleSaveOutput('if', index)"
                     @update:argv="(val) => handleArgvChange('if', index, val)"
-                    @update:use-output="
-                      (val) => handleUseOutputChange('if', index, val)
-                    "
                   />
                 </template>
               </draggable>
@@ -108,14 +104,10 @@
                 <template #item="{ element, index }">
                   <ComposerCard
                     :command="element"
-                    :available-outputs="getAvailableOutputs(index, 'else')"
                     :placeholder="getPlaceholder(element, index, 'else')"
                     @remove="removeCommand('else', index)"
                     @toggle-output="toggleSaveOutput('else', index)"
                     @update:argv="(val) => handleArgvChange('else', index, val)"
-                    @update:use-output="
-                      (val) => handleUseOutputChange('else', index, val)
-                    "
                   />
                 </template>
               </draggable>
@@ -294,20 +286,6 @@ export default defineComponent({
       });
     },
 
-    getAvailableOutputs(currentIndex, branch) {
-      // 获取当前分支的命令列表
-      const commands = branch === "if" ? this.ifCommands : this.elseCommands;
-
-      return commands
-        .slice(0, currentIndex)
-        .map((cmd, index) => ({
-          label: `${cmd.label} 的输出`,
-          value: index,
-          disable: !cmd.saveOutput,
-        }))
-        .filter((item) => !item.disable);
-    },
-
     toggleSaveOutput(branch, index) {
       const commands =
         branch === "if" ? [...this.ifCommands] : [...this.elseCommands];
@@ -332,19 +310,6 @@ export default defineComponent({
       const commands =
         branch === "if" ? [...this.ifCommands] : [...this.elseCommands];
       commands[index].argv = value;
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        [branch]: commands,
-      });
-    },
-
-    handleUseOutputChange(branch, index, value) {
-      const commands =
-        branch === "if" ? [...this.ifCommands] : [...this.elseCommands];
-      commands[index].useOutput = value;
-      if (value !== null) {
-        commands[index].argv = "";
-      }
       this.$emit("update:modelValue", {
         ...this.modelValue,
         [branch]: commands,

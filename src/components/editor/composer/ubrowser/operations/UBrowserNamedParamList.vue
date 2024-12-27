@@ -7,20 +7,18 @@
       class="row q-col-gutter-sm q-mb-sm"
     >
       <div class="col-5">
-        <q-input
+        <VariableInput
           :model-value="param.name"
           label="参数名"
-          dense
-          outlined
+          :command="{ icon: 'label' }"
           @update:model-value="(value) => handleUpdate(index, 'name', value)"
         />
       </div>
       <div class="col-5">
-        <q-input
+        <VariableInput
           :model-value="param.value"
           label="传递给参数的值"
-          dense
-          outlined
+          :command="{ icon: 'edit' }"
           @update:model-value="(value) => handleUpdate(index, 'value', value)"
         />
       </div>
@@ -48,18 +46,19 @@
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserNamedParamList",
+  components: {
+    VariableInput,
+  },
   props: {
     modelValue: {
       type: Array,
-      default: () => [],
+      default: () => [{ name: "", value: "" }],
     },
-    label: {
-      type: String,
-      required: true,
-    },
+    label: String,
   },
   emits: ["update:modelValue"],
   methods: {

@@ -65,7 +65,7 @@ export default defineComponent({
         "action",
         JSON.stringify({
           ...command,
-          cmd: command.value || command.cmd,
+          value: command.value,
         })
       );
       event.target.classList.add("dragging");

@@ -1,17 +1,12 @@
 <template>
   <div class="row q-col-gutter-sm">
     <div class="col">
-      <q-input
+      <VariableInput
+        :command="{ icon: icon }"
         :model-value="modelValue"
         :label="label"
-        dense
-        outlined
         @update:model-value="$emit('update:modelValue', $event)"
-      >
-        <template v-slot:prepend>
-          <q-icon :name="icon" />
-        </template>
-      </q-input>
+      />
     </div>
     <div class="col-auto">
       <q-select
@@ -36,9 +31,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserDeviceName",
+  components: {
+    VariableInput,
+  },
   props: {
     modelValue: {
       type: String,

@@ -10,29 +10,33 @@ export function generateUBrowserCode(configs, selectedActions) {
   let code = "utools.ubrowser";
 
   // 基础参数
-  if (configs.useragent.value) {
-    code += `\n  .useragent('${configs.useragent.value}')`;
-  }
+  // if (configs.useragent.value) {
+  //   code += `\n  .useragent('${configs.useragent.value}')`;
+  // }
 
   if (configs.goto.url) {
-    const gotoOptions = {};
-    if (configs.goto.headers.Referer) {
-      gotoOptions.headers = gotoOptions.headers || {};
-      gotoOptions.headers.Referer = configs.goto.headers.Referer;
-    }
-    if (configs.goto.headers.userAgent) {
-      gotoOptions.headers = gotoOptions.headers || {};
-      gotoOptions.headers["User-Agent"] = configs.goto.headers.userAgent;
-    }
-    if (configs.goto.timeout !== 60000) {
-      gotoOptions.timeout = configs.goto.timeout;
+    let gotoOptionsStr = `\n  .goto(\n`;
+    gotoOptionsStr += `${configs.goto.url}`;
+
+    if (configs.goto.headers.Referer || configs.goto.headers.userAgent) {
+      gotoOptionsStr += ",\n{";
+      if (configs.goto.headers.Referer) {
+        gotoOptionsStr += `\nReferer: ${configs.goto.headers.Referer}`;
+      }
+      if (configs.goto.headers.userAgent) {
+        gotoOptionsStr += `${
+          configs.goto.headers.Referer ? "," : ""
+        }\nuserAgent: ${configs.goto.headers.userAgent}`;
+      }
+      gotoOptionsStr += "\n}";
     }
 
-    code += `\n  .goto('${configs.goto.url}'${
-      Object.keys(gotoOptions).length
-        ? `,\n${JSON.stringify(gotoOptions, null, 2).replace(/\n/g, "\n    ")}`
-        : ""
-    })`;
+    if (configs.goto.timeout !== 60000) {
+      gotoOptionsStr += `,\n${configs.goto.timeout}`;
+    }
+
+    gotoOptionsStr += "\n)";
+    code += gotoOptionsStr;
   }
 
   // 浏览器操作
@@ -43,7 +47,7 @@ export function generateUBrowserCode(configs, selectedActions) {
         if (config.type === "time" && config.time) {
           code += `\n  .wait(${config.time})`;
         } else if (config.type === "selector" && config.selector) {
-          code += `\n  .wait('${config.selector}'${
+          code += `\n  .wait(${config.selector}${
             config.timeout !== 60000 ? `, ${config.timeout}` : ""
           })`;
         } else if (config.type === "function" && config.function) {
@@ -66,13 +70,13 @@ export function generateUBrowserCode(configs, selectedActions) {
 
       case "click":
         if (config.selector) {
-          code += `\n  .click('${config.selector}')`;
+          code += `\n  .click(${config.selector})`;
         }
         break;
 
       case "css":
         if (config.value) {
-          code += `\n  .css('${config.value}')`;
+          code += `\n  .css(${config.value})`;
         }
         break;
 
@@ -81,32 +85,31 @@ export function generateUBrowserCode(configs, selectedActions) {
           const modifiers = config.modifiers.length
             ? `, ${JSON.stringify(config.modifiers)}`
             : "";
-          code += `\n  .press('${config.key}'${modifiers})`;
+          code += `\n  .press(${config.key}${modifiers})`;
         }
         break;
 
       case "paste":
         if (config.text) {
-          code += `\n  .paste('${config.text}')`;
+          code += `\n  .paste(${config.text})`;
         }
         break;
 
       case "screenshot":
-        if (config.selector || config.savePath) {
-          const options = {};
-          if (config.selector) options.selector = config.selector;
-          if (config.rect.width && config.rect.height) {
-            options.rect = config.rect;
-          }
-          code += `\n  .screenshot('${config.savePath}'${
-            Object.keys(options).length ? `, ${JSON.stringify(options)}` : ""
+        if (config.selector) {
+          code += `\n  .screenshot(${config.selector}${
+            config.savePath ? `, '${config.savePath}'` : ""
+          })`;
+        } else if (config.rect) {
+          code += `\n  .screenshot(${JSON.stringify(config.rect)}${
+            config.savePath ? `, ${config.savePath}` : ""
           })`;
         }
         break;
 
       case "pdf":
         if (config.savePath) {
-          code += `\n  .pdf('${config.savePath}'${
+          code += `\n  .pdf(${config.savePath}${
             config.options ? `, ${JSON.stringify(config.options)}` : ""
           })`;
         }
@@ -114,39 +117,56 @@ export function generateUBrowserCode(configs, selectedActions) {
 
       case "device":
         if (config.type === "preset" && config.deviceName) {
-          code += `\n  .device('${config.deviceName}')`;
+          code += `\n  .device(${config.deviceName})`;
         } else if (config.type === "custom") {
-          const options = {
-            size: config.size,
-          };
-          if (config.useragent) options.useragent = config.useragent;
-          code += `\n  .device(${JSON.stringify(options, null, 2).replace(
-            /\n/g,
-            "\n    "
-          )})`;
+          let deviceOptionsStr = `\n  .device(\n{`;
+          if (config.size) {
+            deviceOptionsStr += `\nsize: ${JSON.stringify(config.size)}`;
+          }
+          if (config.useragent) {
+            deviceOptionsStr += `${config.size ? "," : ""}\nuserAgent: ${
+              config.useragent
+            }`;
+          }
+          deviceOptionsStr += "\n}";
+          code += deviceOptionsStr + "\n)";
         }
         break;
 
       case "cookies":
         if (config.name) {
-          code += `\n  .cookies('${config.name}')`;
+          code += `\n  .cookies(${config.name})`;
+        } else {
+          code += `\n  .cookies()`;
         }
         break;
 
       case "setCookies":
         if (config.items?.length) {
-          code += `\n  .setCookies(${JSON.stringify(config.items)})`;
+          let cookiesStr = `\n  .setCookies([\n`;
+          config.items.forEach((item, index) => {
+            cookiesStr += "    {";
+            if (item.name) cookiesStr += `\n      name: ${item.name}`;
+            if (item.value)
+              cookiesStr += `${item.name ? "," : ""}\n      value: ${
+                item.value
+              }}`;
+            if (index < config.items.length - 1) cookiesStr += ",";
+            cookiesStr += "\n";
+          });
+          cookiesStr += "  ])";
+          code += cookiesStr;
         }
         break;
 
       case "removeCookies":
         if (config.name) {
-          code += `\n  .removeCookies('${config.name}')`;
+          code += `\n  .removeCookies(${config.name})`;
         }
         break;
 
       case "clearCookies":
-        code += `\n  .clearCookies(${config.url ? `'${config.url}'` : ""})`;
+        code += `\n  .clearCookies(${config.url || ""})`;
         break;
 
       case "evaluate":
@@ -168,34 +188,38 @@ export function generateUBrowserCode(configs, selectedActions) {
 
       case "when":
         if (config.condition) {
-          code += `\n  .when('${config.condition}')`;
+          code += `\n  .when(${config.condition})`;
         }
         break;
 
       case "mousedown":
       case "mouseup":
         if (config.selector) {
-          code += `\n  .${action.value}('${config.selector}')`;
+          code += `\n  .${action.value}(${config.selector})`;
         }
         break;
 
       case "file":
         if (config.selector && config.files?.length) {
-          code += `\n  .file('${config.selector}', ${JSON.stringify(
-            config.files
-          )})`;
+          let filesStr = `\n  .file(${config.selector}, [\n`;
+          config.files.forEach((file, index) => {
+            filesStr += `    ${file}`;
+            if (index < config.files.length - 1) filesStr += ",\n";
+          });
+          filesStr += "\n  ])";
+          code += filesStr;
         }
         break;
 
       case "value":
         if (config.selector) {
-          code += `\n  .value('${config.selector}', '${config.value}')`;
+          code += `\n  .value(${config.selector}, ${config.value})`;
         }
         break;
 
       case "check":
         if (config.selector) {
-          code += `\n  .check('${config.selector}'${
+          code += `\n  .check(${config.selector}${
             config.checked !== undefined ? `, ${config.checked}` : ""
           })`;
         }
@@ -203,13 +227,13 @@ export function generateUBrowserCode(configs, selectedActions) {
 
       case "focus":
         if (config.selector) {
-          code += `\n  .focus('${config.selector}')`;
+          code += `\n  .focus(${config.selector})`;
         }
         break;
 
       case "scroll":
         if (config.type === "element" && config.selector) {
-          code += `\n  .scroll('${config.selector}')`;
+          code += `\n  .scroll(${config.selector})`;
         } else if (config.type === "position") {
           if (config.x !== undefined && config.y !== undefined) {
             code += `\n  .scroll(${config.x}, ${config.y})`;
@@ -221,8 +245,8 @@ export function generateUBrowserCode(configs, selectedActions) {
 
       case "download":
         if (config.url) {
-          code += `\n  .download('${config.url}'${
-            config.savePath ? `, '${config.savePath}'` : ""
+          code += `\n  .download(${config.url}${
+            config.savePath ? `, ${config.savePath}` : ""
           })`;
         }
         break;
@@ -234,7 +258,7 @@ export function generateUBrowserCode(configs, selectedActions) {
 
       case "devTools":
         if (config.mode) {
-          code += `\n  .devTools('${config.mode}')`;
+          code += `\n  .devTools(${config.mode})`;
         } else {
           code += `\n  .devTools()`;
         }

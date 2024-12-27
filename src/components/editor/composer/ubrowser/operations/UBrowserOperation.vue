@@ -36,11 +36,13 @@
           </template>
           <!-- 普通输入框 -->
           <template v-else>
-            <UBrowserInput
+            <VariableInput
               v-model="fieldValue[field.key]"
               :label="field.label"
-              :icon="field.icon"
-              :input-type="field.inputType"
+              :command="{
+                icon: field.icon,
+                inputType: field.inputType,
+              }"
               @update:model-value="updateValue(field.key, $event)"
             />
           </template>
@@ -139,7 +141,7 @@ import UBrowserNamedParamList from "./UBrowserNamedParamList.vue";
 import UBrowserSelect from "./UBrowserSelect.vue";
 import UBrowserDeviceName from "./UBrowserDeviceName.vue";
 import UBrowserTextarea from "./UBrowserTextarea.vue";
-import UBrowserInput from "./UBrowserInput.vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 import UBrowserCheckboxGroup from "./UBrowserCheckboxGroup.vue";
 
 export default defineComponent({
@@ -155,7 +157,7 @@ export default defineComponent({
     UBrowserSelect,
     UBrowserDeviceName,
     UBrowserTextarea,
-    UBrowserInput,
+    VariableInput,
     UBrowserCheckboxGroup,
   },
   props: {

@@ -1,33 +1,12 @@
 <template>
   <q-input
-    v-model="inputValue"
+    v-if="!isNumber"
+    v-model="localValue"
     dense
     outlined
     :label="label"
     class="variable-input"
   >
-    <template v-slot:prepend>
-      <q-btn
-        flat
-        dense
-        round
-        :icon="isString ? 'format_quote' : 'format_quote'"
-        size="sm"
-        :class="{
-          'text-primary': isString,
-          'text-grey-6': !isString,
-        }"
-        class="string-toggle"
-        @click="toggleStringType"
-      >
-        <q-tooltip>{{
-          isString
-            ? "当前类型是：字符串，点击切换"
-            : "当前类型是：变量、数字、表达式等，点击切换"
-        }}</q-tooltip>
-      </q-btn>
-    </template>
-
     <template v-slot:append>
       <q-btn
         v-if="hasSelectedVariable"
@@ -41,11 +20,25 @@
       >
         <q-tooltip>清除选中的变量</q-tooltip>
       </q-btn>
+      <q-btn
+        flat
+        dense
+        round
+        :icon="isString ? 'format_quote' : 'data_object'"
+        size="sm"
+        class="string-toggle"
+        @click="toggleStringType"
+      >
+        <q-tooltip>{{
+          isString
+            ? "当前类型是：字符串，点击切换"
+            : "当前类型是：变量、数字、表达式等，点击切换"
+        }}</q-tooltip>
+      </q-btn>
 
       <q-btn-dropdown
         flat
         dense
-        :icon="hasSelectedVariable ? 'data_object' : 'functions'"
         :class="{
           'text-primary': hasSelectedVariable,
           'text-grey-6': !hasSelectedVariable,
@@ -92,83 +85,173 @@
         </q-list>
       </q-btn-dropdown>
     </template>
+    <template v-slot:prepend>
+      <q-icon :name="command.icon || commandIcons[command.value] || 'code'" />
+    </template>
+  </q-input>
+  <!-- 强制为数字类型时，不支持切换类型 -->
+  <q-input
+    v-else
+    type="number"
+    v-model.number="localValue"
+    dense
+    outlined
+    :label="label"
+    class="number-input"
+  >
+    <template v-slot:prepend>
+      <q-icon :name="command.icon || commandIcons[command.value] || 'code'" />
+    </template>
+    <template v-slot:append>
+      <!-- <q-icon name="pin" size="xs" /> -->
+      <div class="column items-center number-controls">
+        <q-btn
+          flat
+          dense
+          round
+          icon="keyboard_arrow_up"
+          size="xs"
+          class="number-btn"
+          @click="updateNumber(100)"
+        />
+        <q-btn
+          flat
+          dense
+          round
+          icon="keyboard_arrow_down"
+          size="xs"
+          class="number-btn"
+          @click="updateNumber(-100)"
+        />
+      </div>
+    </template>
   </q-input>
 </template>
 
 <script>
-import { defineComponent, inject, computed } from "vue";
+import { defineComponent, inject } from "vue";
+import { commandIcons } from "js/composer/composerConfig";
 
 export default defineComponent({
   name: "VariableInput",
 
   props: {
-    modelValue: String,
+    modelValue: [String, Number],
     label: String,
+    command: {
+      type: Object,
+      required: true,
+    },
   },
 
-  emits: ["update:modelValue", "update:type"],
+  emits: ["update:modelValue"],
 
   setup() {
     const variables = inject("composerVariables", []);
-    return { variables };
+    return { variables, commandIcons };
   },
 
   data() {
     return {
-      isString: true,
       selectedVariable: null,
+      // 根据输入类型初始化字符串状态
+      isString: this.command.inputType !== "number",
     };
   },
 
   computed: {
-    inputValue: {
+    localValue: {
       get() {
-        return this.modelValue;
+        // 数字类型直接返回原值
+        if (this.isNumber) return this.modelValue;
+        // 非数字类型时，根据isString状态决定是否显示引号
+        const val = this.modelValue || "";
+        return this.isString ? val.replace(/^"|"$/g, "") : val;
       },
       set(value) {
-        this.$emit("update:modelValue", value);
+        this.$emit("update:modelValue", this.formatValue(value));
       },
     },
+
+    // 判断是否有选中的变量，用于控制UI显示和行为
     hasSelectedVariable() {
       return this.selectedVariable !== null;
+    },
+
+    isNumber() {
+      return this.command.inputType === "number";
     },
   },
 
   methods: {
+    // 格式化值，处理引号的添加和移除
+    formatValue(value) {
+      // 空值、变量模式或数字类型时不处理
+      if (!value || this.hasSelectedVariable || this.isNumber) return value;
+      // 根据isString状态添加或移除引号
+      return this.isString
+        ? `"${value.replace(/^"|"$/g, "")}"`
+        : value.replace(/^"|"$/g, "");
+    },
+
+    // 切换字符串/非字符串模式
     toggleStringType() {
       if (!this.hasSelectedVariable) {
         this.isString = !this.isString;
-        this.$emit("update:type", this.isString ? "string" : "number");
+        // 有值时需要重新格式化
+        if (this.modelValue) {
+          this.$emit("update:modelValue", this.formatValue(this.modelValue));
+        }
       }
     },
 
+    // 外部调用的方法，用于设置字符串状态
+    setIsString(value) {
+      if (!this.hasSelectedVariable && this.isString !== value) {
+        this.isString = value;
+        // 有值时需要重新格式化
+        if (this.modelValue) {
+          this.$emit("update:modelValue", this.formatValue(this.modelValue));
+        }
+      }
+    },
+
+    // 插入变量时的处理
     insertVariable(variable) {
       this.selectedVariable = variable;
-      this.isString = false;
-      this.$emit("update:type", "variable");
+      this.isString = false; // 变量模式下不需要字符串处理
       this.$emit("update:modelValue", variable.name);
     },
 
+    // 清除变量时的处理
     clearVariable() {
       this.selectedVariable = null;
-      this.isString = true;
-      this.$emit("update:type", "string");
+      this.isString = true; // 恢复到字符串模式
       this.$emit("update:modelValue", "");
+    },
+
+    // 数字类型特有的增减处理
+    updateNumber(delta) {
+      const current = Number(this.localValue) || 0;
+      this.$emit("update:modelValue", current + delta);
     },
   },
 
   watch: {
-    modelValue(newVal) {
-      if (this.selectedVariable && newVal !== this.selectedVariable.name) {
-        this.selectedVariable = null;
-        this.isString = true;
-        this.$emit("update:type", "string");
-      }
+    // 解决通过外部传入值时，无法触发字符串处理的问题
+    modelValue: {
+      immediate: true,
+      handler(newVal) {
+        // 只在有值且非变量模式且非数字类型时处理
+        if (newVal && !this.hasSelectedVariable && !this.isNumber) {
+          const formattedValue = this.formatValue(newVal);
+          // 只在值真正需要更新时才���发更新
+          if (formattedValue !== newVal) {
+            this.$emit("update:modelValue", formattedValue);
+          }
+        }
+      },
     },
-  },
-
-  mounted() {
-    this.$emit("update:type", "string");
   },
 });
 </script>
@@ -223,7 +306,7 @@ export default defineComponent({
 }
 
 .variable-item:hover {
-  background: rgba(var(--q-primary-rgb), 0.1);
+  background: var(--q-primary-opacity-10);
 }
 
 .variable-name {
@@ -251,5 +334,46 @@ export default defineComponent({
   opacity: 1;
   transform: scale(1.1);
   color: var(--q-negative);
+}
+
+/* 数字输入框样式 */
+.number-input {
+  width: 100%;
+}
+
+/* 隐藏默认的数字输入框箭头 - Chrome, Safari, Edge, Opera */
+.number-input :deep(input[type="number"]::-webkit-outer-spin-button),
+.number-input :deep(input[type="number"]::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-input :deep(.q-field__control) {
+  padding-left: 8px;
+  padding-right: 4px;
+}
+
+.number-controls {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  margin-left: 4px;
+  padding: 2px 4px;
+}
+
+.body--dark .number-controls {
+  border-left-color: rgba(255, 255, 255, 0.12);
+}
+
+.number-btn {
+  opacity: 0.7;
+  font-size: 18px;
+  padding: 2px;
+  margin: 0;
+  min-height: 20px;
+  min-width: 24px;
+}
+
+.number-btn:hover {
+  opacity: 1;
+  color: var(--q-primary);
 }
 </style>

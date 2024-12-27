@@ -8,22 +8,20 @@
       >
         <div class="row items-center q-gutter-x-sm">
           <div class="col">
-            <q-input
+            <VariableInput
               :model-value="cookie.name"
               label="名称"
-              dense
-              outlined
+              :command="{ icon: 'label' }"
               @update:model-value="
                 (value) => handleUpdate(index, 'name', value)
               "
             />
           </div>
           <div class="col">
-            <q-input
+            <VariableInput
               :model-value="cookie.value"
               label="值"
-              dense
-              outlined
+              :command="{ icon: 'edit' }"
               @update:model-value="
                 (value) => handleUpdate(index, 'value', value)
               "
@@ -56,9 +54,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserCookieList",
+  components: {
+    VariableInput,
+  },
   props: {
     modelValue: {
       type: Array,

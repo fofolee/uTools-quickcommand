@@ -95,12 +95,11 @@ export default defineComponent({
       this.configs = newConfigs;
     },
     removeAction(action) {
-      const index = this.selectedActions.findIndex(
-        (a) => a.value === action.value
-      );
-      if (index > -1) {
-        this.selectedActions.splice(index, 1);
-      }
+      const newActions = this.selectedActions.filter((a) => a.id !== action.id);
+      this.selectedActions = newActions;
+      const newConfigs = { ...this.configs };
+      delete newConfigs[action.value];
+      this.configs = newConfigs;
     },
   },
   watch: {

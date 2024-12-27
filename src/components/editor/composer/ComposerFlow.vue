@@ -30,12 +30,10 @@
             >
               <ComposerCard
                 :command="element"
-                :available-outputs="getAvailableOutputs(index)"
                 :placeholder="getPlaceholder(element, index)"
                 @remove="removeCommand(index)"
                 @toggle-output="toggleSaveOutput(index)"
                 @update:argv="(val) => handleArgvChange(index, val)"
-                @update:use-output="(val) => handleUseOutputChange(index, val)"
                 @update:command="(val) => updateCommand(index, val)"
               />
             </div>
@@ -54,7 +52,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, inject } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
 
@@ -80,6 +78,13 @@ export default defineComponent({
         this.$emit("update:modelValue", value);
       },
     },
+  },
+  setup() {
+    const removeVariable = inject("removeVariable");
+
+    return {
+      removeVariable,
+    };
   },
   data() {
     return {
@@ -135,45 +140,59 @@ export default defineComponent({
     },
 
     onDrop(event) {
-      const actionData = JSON.parse(event.dataTransfer.getData("action"));
-      const newCommand = {
-        ...actionData,
-        id: Date.now(), // 或使用其他方式生成唯一ID
-        argv: "",
-        saveOutput: false,
-        useOutput: null,
-        cmd: actionData.value || actionData.cmd,
-        value: actionData.value || actionData.cmd,
-      };
+      try {
+        // 尝试获取拖拽数据
+        const actionData = event.dataTransfer.getData("action");
 
-      const newCommands = [...this.commands];
-      if (this.dragIndex >= 0) {
-        newCommands.splice(this.dragIndex, 0, newCommand);
-      } else {
-        newCommands.push(newCommand);
+        // 如果没有action数据，说明是内部排序，直接返回
+        if (!actionData) {
+          return;
+        }
+
+        // 解析外部拖入的新命令数据
+        const parsedAction = JSON.parse(actionData);
+
+        const newCommand = {
+          ...parsedAction,
+          id: Date.now(),
+          argv: "",
+          saveOutput: false,
+          useOutput: null,
+          outputVariable: null,
+          cmd: parsedAction.value || parsedAction.cmd,
+          value: parsedAction.value || parsedAction.cmd,
+        };
+
+        const newCommands = [...this.commands];
+        if (this.dragIndex >= 0) {
+          newCommands.splice(this.dragIndex, 0, newCommand);
+        } else {
+          newCommands.push(newCommand);
+        }
+
+        this.$emit("update:modelValue", newCommands);
+        this.dragIndex = -1;
+
+        document.querySelectorAll(".dragging").forEach((el) => {
+          el.classList.remove("dragging");
+        });
+      } catch (error) {
+        // 忽略内部拖动排序的错误
+        console.debug("Internal drag & drop reorder", error);
       }
-
-      this.$emit("update:modelValue", newCommands);
-      this.dragIndex = -1;
-
-      document.querySelectorAll(".dragging").forEach((el) => {
-        el.classList.remove("dragging");
-      });
     },
     removeCommand(index) {
+      const command = this.commands[index];
+      // 如果命令有输出变量，需要先清理
+      if (command.outputVariable) {
+        this.removeVariable(command.outputVariable);
+      }
       const newCommands = [...this.commands];
       newCommands.splice(index, 1);
       this.$emit("update:modelValue", newCommands);
     },
-    getAvailableOutputs(currentIndex) {
-      return this.commands
-        .slice(0, currentIndex)
-        .map((cmd, index) => ({
-          label: `${cmd.label} 的输出`,
-          value: index,
-          disable: !cmd.saveOutput,
-        }))
-        .filter((item) => !item.disable);
+    getPlaceholder(element, index) {
+      return element.desc;
     },
     toggleSaveOutput(index) {
       const newCommands = [...this.commands];
@@ -195,22 +214,7 @@ export default defineComponent({
       };
       this.$emit("update:modelValue", newCommands);
     },
-    handleUseOutputChange(index, value) {
-      const newCommands = [...this.commands];
-      newCommands[index].useOutput = value;
-      if (value !== null) {
-        newCommands[index].argv = "";
-      }
-      this.$emit("update:modelValue", newCommands);
-    },
-    getPlaceholder(element, index) {
-      if (element.useOutput !== null) {
-        return `使用 ${this.commands[element.useOutput].label} 的输出`;
-      }
-      return element.desc;
-    },
     updateCommand(index, updatedCommand) {
-      console.log("Command updated in flow:", updatedCommand);
       const newCommands = [...this.commands];
       newCommands[index] = {
         ...newCommands[index],
@@ -289,7 +293,7 @@ export default defineComponent({
   border-color: #676666;
 }
 
-/* 滑动淡出�����画 */
+/* 滑动淡出动画 */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: all 0.3s ease;

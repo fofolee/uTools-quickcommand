@@ -1,0 +1,8 @@
+# 自动识别文本文件并进行换行符标准化
+* text=auto
+
+# 指定特定文件类型的换行符处理
+*.txt text
+*.js text
+*.css text
+*.html text

@@ -145,6 +145,7 @@
 </template>
 
 <script>
+
 export default {
   name: "PersonalizeMenu",
   props: {

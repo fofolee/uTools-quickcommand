@@ -89,9 +89,9 @@
               <VariableInput
                 v-model="argvLocal"
                 :label="placeholder"
+                :command="command"
                 class="col"
                 ref="variableInput"
-                @update:type="handleArgvTypeUpdate"
               />
             </template>
           </div>
@@ -106,6 +106,7 @@ import { defineComponent, inject } from "vue";
 import KeyEditor from "./KeyEditor.vue";
 import UBrowserEditor from "./ubrowser/UBrowserEditor.vue";
 import VariableInput from "./VariableInput.vue";
+import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
   name: "ComposerCard",
@@ -137,13 +138,7 @@ export default defineComponent({
       showKeyRecorder: false,
     };
   },
-  emits: [
-    "remove",
-    "toggle-output",
-    "update:argv",
-    "update:use-output",
-    "update:command",
-  ],
+  emits: ["remove", "toggle-output", "update:argv", "update:command"],
   computed: {
     saveOutputLocal: {
       get() {
@@ -158,31 +153,26 @@ export default defineComponent({
         return this.command.argv;
       },
       set(value) {
-        this.$emit("update:argv", value);
-      },
-    },
-    useOutputLocal: {
-      get() {
-        return this.command.useOutput;
-      },
-      set(value) {
-        this.$emit("update:use-output", value);
+        const updatedCommand = {
+          ...this.command,
+          argv: value,
+        };
+        this.$emit("update:command", updatedCommand);
       },
     },
   },
   setup() {
     const addVariable = inject("addVariable");
     const removeVariable = inject("removeVariable");
+    const variables = inject("composerVariables", []);
 
     return {
       addVariable,
       removeVariable,
+      variables,
     };
   },
   methods: {
-    handleClearOutput() {
-      this.$emit("update:use-output", null);
-    },
     handleKeyRecord(keys) {
       this.showKeyRecorder = false;
       // 从keyTap("a","control")格式中提取参数
@@ -200,6 +190,19 @@ export default defineComponent({
       }
     },
     handleOutputVariableUpdate(value) {
+      // 检查变量名是否合法
+      const validation = validateVariableName(value);
+      if (!validation.isValid) {
+        quickcommand.showMessageBox(validation.error, "warning");
+        return;
+      }
+
+      // 检查变量名是否重复
+      if (this.variables.some((v) => v.name === value)) {
+        quickcommand.showMessageBox(`变量名 "${value}" 已经存在`, "warning");
+        return;
+      }
+
       // 创建命令的副本并更新
       const updatedCommand = {
         ...this.command,
@@ -209,14 +212,6 @@ export default defineComponent({
       this.$emit("update:command", updatedCommand);
       // 处理变量管理
       this.handleOutputVariableChange(value);
-    },
-    handleArgvTypeUpdate(type) {
-      console.log("Type updated in card:", type);
-      const updatedCommand = {
-        ...this.command,
-        argvType: type,
-      };
-      this.$emit("update:command", updatedCommand);
     },
     handleToggleOutput() {
       // 创建命令的副本
@@ -394,7 +389,7 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* 输入框内部样式优化 */
+/* 输入框内部样式美化 */
 .output-section :deep(.q-field__control) {
   height: 28px;
   min-height: 28px;

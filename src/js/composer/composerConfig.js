@@ -109,6 +109,7 @@ export const commandCategories = [
         value: "quickcommand.sleep",
         label: "添加延时",
         desc: "延迟的毫秒数",
+        inputType: "number",
       },
     ],
   },

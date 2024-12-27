@@ -1,41 +1,33 @@
 <template>
   <div class="row q-col-gutter-sm">
     <div class="col-6">
-      <q-input
+      <VariableInput
         v-model.number="size.width"
-        type="number"
         label="宽度"
-        dense
-        outlined
+        :command="{ icon: 'width', inputType: 'number' }"
         @update:model-value="handleUpdate"
-      >
-        <template v-slot:prepend>
-          <q-icon name="width" />
-        </template>
-      </q-input>
+      />
     </div>
     <div class="col-6">
-      <q-input
+      <VariableInput
         v-model.number="size.height"
-        type="number"
         label="高度"
-        dense
-        outlined
+        :command="{ icon: 'height', inputType: 'number' }"
         @update:model-value="handleUpdate"
-      >
-        <template v-slot:prepend>
-          <q-icon name="height" />
-        </template>
-      </q-input>
+      />
     </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserDeviceSize",
+  components: {
+    VariableInput,
+  },
   props: {
     modelValue: {
       type: Object,

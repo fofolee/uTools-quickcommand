@@ -8,11 +8,10 @@
       >
         <div class="row q-col-gutter-sm">
           <div class="col">
-            <q-input
+            <VariableInput
               :model-value="modelValue[index]"
               label="文件路径"
-              dense
-              outlined
+              :command="{ icon: 'folder' }"
               @update:model-value="(value) => handleUpdate(index, value)"
             />
           </div>
@@ -43,9 +42,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserFileList",
+  components: {
+    VariableInput,
+  },
   props: {
     modelValue: {
       type: Array,

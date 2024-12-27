@@ -4,10 +4,8 @@
       <!-- 操作选择网格 -->
       <div class="row q-col-gutter-xs">
         <div
-          v-for="[actionName, { label }] in Object.entries(
-            ubrowserOperationConfigs
-          )"
-          :key="actionName"
+          v-for="action in ubrowserOperationConfigs"
+          :key="action.value"
           class="col-2"
         >
           <q-card
@@ -16,13 +14,13 @@
             class="action-card cursor-pointer"
             :class="{
               'action-selected': selectedActions.some(
-                (a) => a.value === actionName
+                (a) => a.value === action.value
               ),
             }"
-            @click="toggleAction({ value: actionName, label: label })"
+            @click="toggleAction(action)"
           >
             <div class="q-pa-xs text-caption text-wrap text-center">
-              {{ label }}
+              {{ action.label }}
             </div>
           </q-card>
         </div>
@@ -45,9 +43,7 @@
               <q-avatar color="primary">
                 <q-icon
                   color="white"
-                  :name="
-                    ubrowserOperationConfigs[action.value].icon || 'touch_app'
-                  "
+                  :name="getActionProps(action, 'icon') || 'touch_app'"
                   size="14px"
                 />
               </q-avatar>
@@ -76,11 +72,11 @@
               />
             </div>
           </div>
-          <div v-if="ubrowserOperationConfigs[action.value].config">
+          <div v-if="getActionProps(action, 'config')">
             <UBrowserOperation
               :configs="configs"
               :action="action.value"
-              :fields="ubrowserOperationConfigs[action.value].config"
+              :fields="getActionProps(action, 'config')"
               @update:configs="$emit('update:configs', $event)"
             />
           </div>
@@ -147,7 +143,7 @@ export default defineComponent({
         ]);
 
         // 初始化配置对象
-        const { config } = this.ubrowserOperationConfigs[action.value];
+        const { config } = action;
         if (config) {
           const newConfigs = { ...this.configs };
           if (!newConfigs[action.value]) {
@@ -167,6 +163,11 @@ export default defineComponent({
         newActions.splice(index, 1);
         this.$emit("update:selectedActions", newActions);
       }
+    },
+    getActionProps(action, key) {
+      return this.ubrowserOperationConfigs.find(
+        (a) => a.value === action.value
+      )[key];
     },
   },
 });

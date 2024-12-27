@@ -12,8 +12,7 @@ const url = require("url");
 const kill = require("tree-kill");
 const crypto = require("crypto");
 require("ses");
-const sharp = require("sharp");
-
+const Jimp = require("jimp");
 const md5 = (input) => {
   return crypto.createHash("md5").update(input, "utf8").digest("hex");
 };
@@ -789,17 +788,19 @@ window.quickcommandHttpServer = () => {
   };
 };
 
-// 处理背景图片
 window.imageProcessor = async (imagePath) => {
   try {
     // 读取图片
-    let image = sharp(imagePath);
-    let metadata = await image.metadata();
+    const image = await Jimp.read(imagePath);
 
-    // 设置固定目标尺寸
+    // 获取原始尺寸
+    const originalWidth = image.getWidth();
+    const originalHeight = image.getHeight();
+    const ratio = originalWidth / originalHeight;
+
+    // 设置目标尺寸
     let targetWidth = 1280;
     let targetHeight = 720;
-    const ratio = metadata.width / metadata.height;
 
     if (ratio > 16 / 9) {
       targetHeight = Math.min(720, Math.round(targetWidth / ratio));
@@ -808,15 +809,14 @@ window.imageProcessor = async (imagePath) => {
     }
 
     // 调整大小并压缩
-    let processedBuffer = await image
-      .resize(targetWidth, targetHeight, {
-        fit: "contain",
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .jpeg({ quality: 80, progressive: true })
-      .toBuffer();
+    await image
+      .resize(targetWidth, targetHeight, Jimp.RESIZE_BICUBIC)
+      .quality(80);
 
-    return `data:image/jpeg;base64,${processedBuffer.toString("base64")}`;
+    // 转换为 base64
+    const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
+
+    return base64;
   } catch (error) {
     console.error("处理图片失败:", error);
     return null;

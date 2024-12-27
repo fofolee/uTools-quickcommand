@@ -111,7 +111,6 @@ export default defineComponent({
         argv: "",
         argvType: "string",
         saveOutput: false,
-        useOutput: null,
         outputVariable: null,
         cmd: action.value || action.cmd,
         value: action.value || action.cmd,
@@ -122,8 +121,6 @@ export default defineComponent({
 
       this.commandFlow.forEach((cmd) => {
         let line = "";
-        // TODO: 切换到变量后还是string类型
-        console.log("Generating code for command:", cmd);
 
         if (cmd.outputVariable) {
           line += `let ${cmd.outputVariable} = `;
@@ -131,14 +128,8 @@ export default defineComponent({
 
         if (cmd.value === "ubrowser") {
           line += cmd.argv;
-        } else if (cmd.useOutput !== null) {
-          const outputVar = this.commandFlow[cmd.useOutput].outputVariable;
-          line += `${cmd.value}(${outputVar})`;
         } else {
-          const needQuotes =
-            cmd.argvType === "string" && cmd.argvType !== "variable";
-          const argv = needQuotes ? `"${cmd.argv}"` : cmd.argv;
-          line += `${cmd.value}(${argv})`;
+          line += `${cmd.value}(${cmd.argv})`;
         }
 
         code.push(line);

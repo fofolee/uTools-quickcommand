@@ -1,6 +1,7 @@
 // ubrowser 浏览器操作配置
-export const ubrowserOperationConfigs = {
-  wait: {
+export const ubrowserOperationConfigs = [
+  {
+    value: "wait",
     label: "等待",
     config: [
       {
@@ -56,7 +57,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "timer",
   },
-  click: {
+  {
+    value: "click",
     label: "点击",
     config: [
       {
@@ -68,7 +70,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "mouse",
   },
-  css: {
+  {
+    value: "css",
     label: "注入CSS",
     config: [
       {
@@ -80,7 +83,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "style",
   },
-  press: {
+  {
+    value: "press",
     label: "按键",
     config: [
       {
@@ -106,7 +110,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "keyboard",
   },
-  paste: {
+  {
+    value: "paste",
     label: "粘贴",
     config: [
       {
@@ -118,7 +123,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "content_paste",
   },
-  viewport: {
+  {
+    value: "viewport",
     label: "视窗",
     config: [
       {
@@ -140,7 +146,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "crop",
   },
-  screenshot: {
+  {
+    value: "screenshot",
     label: "截图",
     config: [
       { key: "selector", label: "元素选择器", icon: "crop", type: "input" },
@@ -180,7 +187,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "picture_as_pdf",
   },
-  pdf: {
+  {
+    value: "pdf",
     label: "导出PDF",
     config: [
       {
@@ -205,7 +213,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "devices",
   },
-  device: {
+  {
+    value: "device",
     label: "模拟设备",
     config: [
       {
@@ -245,26 +254,44 @@ export const ubrowserOperationConfigs = {
         showValue: "custom",
       },
     ],
+    icon: "phone_iphone",
+  },
+  {
+    value: "cookies",
+    label: "获取Cookie",
+    config: [
+      {
+        key: "name",
+        label: "Cookie名称",
+        icon: "cookie",
+        type: "input",
+        width: 12,
+      },
+    ],
     icon: "cookie",
   },
-  setCookies: {
+  {
+    value: "setCookies",
     label: "设置Cookie",
     config: [{ key: "items", label: "Cookie列表", type: "cookie-list" }],
     icon: "cookie",
   },
-  removeCookies: {
+  {
+    value: "removeCookies",
     label: "删除Cookie",
     config: [
       { key: "name", label: "Cookie名称", icon: "cookie", type: "input" },
     ],
     icon: "cookie",
   },
-  clearCookies: {
+  {
+    value: "clearCookies",
     label: "清空Cookie",
     config: [{ key: "url", label: "URL(可选)", icon: "link", type: "input" }],
     icon: "cookie",
   },
-  evaluate: {
+  {
+    value: "evaluate",
     label: "执行代码",
     config: [
       {
@@ -277,7 +304,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "code",
   },
-  when: {
+  {
+    value: "when",
     label: "条件判断",
     config: [
       {
@@ -322,12 +350,14 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "rule",
   },
-  end: {
+  {
+    value: "end",
     label: "结束条件",
     config: [],
     icon: "stop",
   },
-  mousedown: {
+  {
+    value: "mousedown",
     label: "按下鼠标",
     config: [
       {
@@ -339,7 +369,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "mouse",
   },
-  mouseup: {
+  {
+    value: "mouseup",
     label: "释放鼠标",
     config: [
       {
@@ -351,7 +382,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "mouse",
   },
-  file: {
+  {
+    value: "file",
     label: "上传文件",
     config: [
       {
@@ -364,7 +396,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "upload_file",
   },
-  value: {
+  {
+    value: "value",
     label: "设置值",
     config: [
       {
@@ -384,7 +417,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "check_box",
   },
-  check: {
+  {
+    value: "check",
     label: "设置选中",
     config: [
       {
@@ -404,7 +438,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "center_focus_strong",
   },
-  focus: {
+  {
+    value: "focus",
     label: "聚焦元素",
     config: [
       {
@@ -416,7 +451,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "swap_vert",
   },
-  scroll: {
+  {
+    value: "scroll",
     label: "滚动",
     config: [
       {
@@ -461,7 +497,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "download",
   },
-  download: {
+  {
+    value: "download",
     label: "下载",
     config: [
       {
@@ -481,7 +518,8 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "download",
   },
-  devTools: {
+  {
+    value: "devTools",
     label: "开发工具",
     config: [
       {
@@ -499,7 +537,19 @@ export const ubrowserOperationConfigs = {
     ],
     icon: "developer_board",
   },
-};
+  {
+    value: "hide",
+    label: "隐藏",
+    config: [],
+    icon: "visibility_off",
+  },
+  {
+    value: "show",
+    label: "显示",
+    config: [],
+    icon: "visibility",
+  },
+];
 
 // 添加默认运行配置
 const defaultUBrowserRunConfigs = {
