@@ -3,22 +3,6 @@ export {
   defaultUBrowserConfigs,
 } from "./ubrowserConfig";
 
-// 定义命令图标映射
-export const commandIcons = {
-  open: "folder_open",
-  locate: "location_on",
-  visit: "language",
-  "utools.ubrowser.goto": "public",
-  system: "terminal",
-  copyTo: "content_copy",
-  message: "message",
-  alert: "warning",
-  send: "send",
-  "utools.redirect": "alt_route",
-  "quickcommand.sleep": "schedule",
-  keyTap: "keyboard",
-};
-
 // 定义命令分类
 export const commandCategories = [
   {
@@ -29,11 +13,13 @@ export const commandCategories = [
         value: "open",
         label: "打开文件/文件夹/软件",
         desc: "文件、文件夹或软件的绝对路径",
+        icon: "folder_open",
       },
       {
         value: "locate",
         label: "在文件管理器中定位文件",
         desc: "要在文件管理器里显示的文件路径",
+        icon: "location_on",
       },
     ],
   },
@@ -45,12 +31,14 @@ export const commandCategories = [
         value: "visit",
         label: "用默认浏览器打开网址",
         desc: "要访问的网址链接",
+        icon: "language",
       },
       {
         value: "utools.ubrowser.goto",
         label: "用ubrowser打开网址",
         desc: "要访问的网址链接",
         isAsync: true,
+        icon: "public",
       },
       {
         value: "ubrowser",
@@ -58,6 +46,7 @@ export const commandCategories = [
         desc: "配置UBrowser浏览器操作",
         hasUBrowserEditor: true,
         isAsync: true,
+        icon: "public",
       },
     ],
   },
@@ -69,11 +58,13 @@ export const commandCategories = [
         value: "system",
         label: "执行系统命令",
         desc: "要执行的命令行",
+        icon: "terminal",
       },
       {
         value: "copyTo",
         label: "将内容写入剪贴板",
         desc: "要写入剪切板的内容",
+        icon: "content_copy",
       },
     ],
   },
@@ -85,16 +76,19 @@ export const commandCategories = [
         value: "message",
         label: "发送系统消息",
         desc: "要发送的系统消息文本",
+        icon: "message",
       },
       {
         value: "alert",
         label: "弹窗显示消息",
         desc: "要弹窗显示的消息文本",
+        icon: "warning",
       },
       {
         value: "send",
         label: "发送文本到活动窗口",
         desc: "要发送到窗口的文本内容",
+        icon: "send",
       },
     ],
   },
@@ -106,12 +100,14 @@ export const commandCategories = [
         value: "utools.redirect",
         label: "转至指定插件",
         desc: "要跳转至的插件名称",
+        icon: "alt_route",
       },
       {
         value: "quickcommand.sleep",
         label: "添加延时",
         desc: "延迟的毫秒数",
         inputType: "number",
+        icon: "schedule",
       },
     ],
   },
@@ -124,6 +120,7 @@ export const commandCategories = [
         label: "模拟按键",
         desc: "模拟键盘按键",
         hasKeyRecorder: true,
+        icon: "keyboard",
       },
     ],
   },

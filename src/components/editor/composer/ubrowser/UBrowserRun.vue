@@ -30,42 +30,42 @@
     <div class="col-12">
       <div class="row q-col-gutter-sm">
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.width"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.width"
             label="窗口宽度"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('width', $event)"
           />
         </div>
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.height"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.height"
             label="窗口高度"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('height', $event)"
           />
         </div>
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.x"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.x"
             label="X坐标"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('x', $event)"
           />
         </div>
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.y"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.y"
             label="Y坐标"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('y', $event)"
           />
         </div>
@@ -76,42 +76,42 @@
     <div class="col-12">
       <div class="row q-col-gutter-sm">
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.minWidth"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.minWidth"
             label="最小宽度"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('minWidth', $event)"
           />
         </div>
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.minHeight"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.minHeight"
             label="最小高度"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('minHeight', $event)"
           />
         </div>
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.maxWidth"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.maxWidth"
             label="最大宽度"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('maxWidth', $event)"
           />
         </div>
         <div class="col-3">
-          <q-input
-            v-model.number="localConfigs.run.maxHeight"
-            type="number"
+          <VariableInput
+            v-model="localConfigs.run.maxHeight"
             label="最大高度"
             dense
             outlined
+            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('maxHeight', $event)"
           />
         </div>
@@ -186,9 +186,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import VariableInput from "../VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserRun",
+  components: {
+    VariableInput,
+  },
   props: {
     configs: {
       type: Object,

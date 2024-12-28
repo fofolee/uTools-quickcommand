@@ -86,7 +86,7 @@
       </q-btn-dropdown>
     </template>
     <template v-slot:prepend>
-      <q-icon :name="command.icon || commandIcons[command.value] || 'code'" />
+      <q-icon :name="command.icon || 'code'" />
     </template>
   </q-input>
   <!-- 强制为数字类型时，不支持切换类型 -->
@@ -100,7 +100,7 @@
     class="number-input"
   >
     <template v-slot:prepend>
-      <q-icon :name="command.icon || commandIcons[command.value] || 'code'" />
+      <q-icon v-if="command.icon" :name="command.icon" />
     </template>
     <template v-slot:append>
       <!-- <q-icon name="pin" size="xs" /> -->
@@ -130,7 +130,6 @@
 
 <script>
 import { defineComponent, inject } from "vue";
-import { commandIcons } from "js/composer/composerConfig";
 
 export default defineComponent({
   name: "VariableInput",
@@ -148,7 +147,7 @@ export default defineComponent({
 
   setup() {
     const variables = inject("composerVariables", []);
-    return { variables, commandIcons };
+    return { variables };
   },
 
   data() {
@@ -238,14 +237,14 @@ export default defineComponent({
   },
 
   watch: {
-    // 解决通过外部传入值时，无法触发字符串处理的问题
+    // 解决通过外部传入值时，无法触���字符串处理的问题
     modelValue: {
       immediate: true,
       handler(newVal) {
         // 只在有值且非变量模式且非数字类型时处理
         if (newVal && !this.hasSelectedVariable && !this.isNumber) {
           const formattedValue = this.formatValue(newVal);
-          // 只在值真正需要更新时才���发更新
+          // 只在值真正需要更新时才发更新
           if (formattedValue !== newVal) {
             this.$emit("update:modelValue", formattedValue);
           }
