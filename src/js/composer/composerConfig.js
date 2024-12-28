@@ -79,7 +79,7 @@ export const commandCategories = [
         icon: "message",
       },
       {
-        value: "alert",
+        value: "quickcommand.showMessageBox",
         label: "弹窗显示消息",
         desc: "要弹窗显示的消息文本",
         icon: "warning",
