@@ -46,7 +46,9 @@
           <div class="text-body2 q-mt-sm">从左侧拖拽命令到这里开始编排</div>
         </div>
       </div>
-      <div v-else class="drop-area"></div>
+      <div v-else class="drop-area">
+        <q-icon name="add" size="32px" />
+      </div>
     </div>
   </div>
 </template>
@@ -247,17 +249,29 @@ export default defineComponent({
   background-color: rgba(32, 32, 32, 0.8);
 }
 
-.flow-list {
+/* .flow-list {
   min-height: 50px;
-}
+} */
 
 .drop-area {
   flex: 1;
-  min-height: 100px;
+  min-height: 50px;
+  border-radius: 8px;
+  margin: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9994;
+  border: 2px dashed #9994;
+}
+
+.body--dark .drop-area {
+  color: #6664;
+  border: 2px dashed #6664;
 }
 
 .empty-flow {
-  height: 100px;
+  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -280,17 +294,6 @@ export default defineComponent({
 .body--dark .empty-flow:hover {
   border-color: #676666;
   background-color: #303132;
-}
-
-/* 拖拽时的视觉反馈 */
-.command-flow-container.drag-over {
-  background-color: #f0f4ff;
-  border-color: #2196f3;
-}
-
-.body--dark .command-flow-container.drag-over {
-  background-color: #303132;
-  border-color: #676666;
 }
 
 /* 滑动淡出动画 */

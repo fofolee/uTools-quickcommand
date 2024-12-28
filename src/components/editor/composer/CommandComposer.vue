@@ -1,13 +1,13 @@
 <template>
   <div class="command-composer">
     <!-- 主体内容 -->
-    <div class="composer-body row no-wrap q-pa-sm q-gutter-sm">
+    <div class="composer-body row no-wrap">
       <!-- 左侧命令列表 -->
-      <div class="col-3 command-section">
-        <div class="section-header">
+      <div class="col-3 command-section command-list">
+        <!-- <div class="section-header">
           <q-icon name="list" size="20px" class="q-mr-sm text-primary" />
           <span class="text-subtitle1">可用命令</span>
-        </div>
+        </div> -->
         <q-scroll-area class="command-scroll">
           <ComposerList
             :commands="availableCommands"
@@ -17,26 +17,19 @@
       </div>
 
       <!-- 右侧命令流程 -->
-      <div class="col q-pl-md command-section">
+      <div class="col command-section command-flow">
         <div class="section-header">
           <q-icon name="timeline" size="20px" class="q-mr-sm text-primary" />
           <span class="text-subtitle1">命令流程</span>
           <q-space />
-          <CodePreview :generate-code="generateFlowCode" />
+          <ComposerButtons
+            :generate-code="generateFlowCode"
+            @action="handleComposer"
+          />
         </div>
         <q-scroll-area class="command-scroll">
           <ComposerFlow v-model="commandFlow" @add-command="addCommand" />
         </q-scroll-area>
-      </div>
-    </div>
-
-    <!-- 固定底部 -->
-    <div class="composer-footer q-pa-sm row justify-end">
-      <div class="action-buttons q-gutter-sm">
-        <q-btn label="取消" v-close-popup />
-        <q-btn color="primary" label="插入" @click="handleComposer('insert')" />
-        <q-btn color="primary" label="应用" @click="handleComposer('apply')" />
-        <q-btn color="positive" label="运行" @click="handleComposer('run')" />
       </div>
     </div>
   </div>
@@ -46,7 +39,7 @@
 import { defineComponent, provide, ref } from "vue";
 import ComposerList from "./ComposerList.vue";
 import ComposerFlow from "./ComposerFlow.vue";
-import CodePreview from "./CodePreview.vue";
+import ComposerButtons from "./ComposerButtons.vue";
 import { commandCategories } from "js/composer/composerConfig";
 import { generateCode } from "js/composer/generateCode";
 // 从commandCategories中提取所有命令
@@ -64,7 +57,7 @@ export default defineComponent({
   components: {
     ComposerList,
     ComposerFlow,
-    CodePreview,
+    ComposerButtons,
   },
   setup() {
     const variables = ref([]);
@@ -143,6 +136,8 @@ export default defineComponent({
 .composer-body {
   flex: 1;
   overflow: hidden;
+  gap: 8px;
+  padding: 8px;
 }
 
 .command-section {
@@ -163,6 +158,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   padding: 12px 16px;
+  height: 28px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -173,16 +169,8 @@ export default defineComponent({
 .command-scroll {
   flex: 1;
   overflow: hidden;
-}
-
-.composer-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  background: white;
-}
-
-.body--dark .composer-footer {
-  border-top-color: rgba(255, 255, 255, 0.1);
-  background: #1d1d1d;
+  border-radius: 8px;
+  padding-bottom: 8px;
 }
 
 /* 滚动美化 */

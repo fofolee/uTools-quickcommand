@@ -1,14 +1,32 @@
 <template>
-  <div class="code-preview">
+  <div class="composer-buttons">
+    <q-btn
+      @click="$q.dark.toggle()"
+      :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
+      flat
+      dense
+      v-if="isDev"
+    >
+    </q-btn>
+    <q-btn icon="logout" dense flat v-close-popup>
+      <q-tooltip>退出可视化编排</q-tooltip>
+    </q-btn>
+    <q-btn dense icon="publish" flat @click="$emit('action', 'insert')">
+      <q-tooltip>插入到编辑器光标处</q-tooltip>
+    </q-btn>
+    <q-btn dense flat icon="done_all" @click="$emit('action', 'apply')">
+      <q-tooltip>清空编辑器内容并插入</q-tooltip>
+    </q-btn>
     <q-btn
       flat
-      round
       dense
       icon="preview"
-      class="preview-btn"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
     >
+    </q-btn>
+    <q-btn dense flat icon="play_circle" @click="$emit('action', 'run')">
+      <q-tooltip>运行</q-tooltip>
     </q-btn>
 
     <transition name="preview-fade">
@@ -27,7 +45,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "CodePreview",
+  name: "ComposerButtons",
 
   props: {
     generateCode: {
@@ -36,11 +54,14 @@ export default defineComponent({
     },
   },
 
+  emits: ["action"],
+
   data() {
     return {
       isVisible: false,
       code: "",
       previewTimer: null,
+      isDev: window.utools.isDev(),
     };
   },
 
@@ -65,25 +86,26 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.code-preview {
+.composer-buttons {
   position: relative;
 }
 
-.preview-btn {
-  color: var(--q-primary);
-  opacity: 0.7;
+.composer-buttons > .q-btn {
+  opacity: 0.6;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 12px;
 }
 
-.preview-btn:hover {
+.composer-buttons > .q-btn:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: translateY(-2px);
+  color: var(--q-primary);
 }
 
 .preview-popup {
   position: absolute;
-  top: 0;
-  right: calc(100% + 12px);
+  top: 40px;
+  right: 30px;
   min-width: 300px;
   max-width: 600px;
   background: #fff;
