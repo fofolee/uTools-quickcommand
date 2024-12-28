@@ -22,7 +22,7 @@
           <q-icon name="timeline" size="20px" class="q-mr-sm text-primary" />
           <span class="text-subtitle1">命令流程</span>
           <q-space />
-          <CodePreview :generate-code="generateCode" />
+          <CodePreview :generate-code="generateFlowCode" />
         </div>
         <q-scroll-area class="command-scroll">
           <ComposerFlow v-model="commandFlow" @add-command="addCommand" />
@@ -48,7 +48,7 @@ import ComposerList from "./ComposerList.vue";
 import ComposerFlow from "./ComposerFlow.vue";
 import CodePreview from "./CodePreview.vue";
 import { commandCategories } from "js/composer/composerConfig";
-
+import { generateCode } from "js/composer/generateCode";
 // 从commandCategories中提取所有命令
 const availableCommands = commandCategories.reduce((commands, category) => {
   return commands.concat(
@@ -116,29 +116,11 @@ export default defineComponent({
         value: action.value || action.cmd,
       });
     },
-    generateCode() {
-      let code = [];
-
-      this.commandFlow.forEach((cmd) => {
-        let line = "";
-
-        if (cmd.outputVariable) {
-          line += `let ${cmd.outputVariable} = `;
-        }
-
-        if (cmd.value === "ubrowser") {
-          line += cmd.argv;
-        } else {
-          line += `${cmd.value}(${cmd.argv})`;
-        }
-
-        code.push(line);
-      });
-
-      return code.join("\n");
+    generateFlowCode() {
+      return generateCode(this.commandFlow);
     },
     handleComposer(type) {
-      const code = this.generateCode();
+      const code = this.generateFlowCode();
       this.$emit("use-composer", { type, code });
       if (type !== "run") this.$emit("update:modelValue", false);
     },
