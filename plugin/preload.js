@@ -9,24 +9,39 @@ const path = require("path");
 const axios = require("axios");
 const http = require("http");
 const url = require("url");
-const kill = require("tree-kill");
 const crypto = require("crypto");
 require("ses");
-const Jimp = require("jimp");
 const md5 = (input) => {
   return crypto.createHash("md5").update(input, "utf8").digest("hex");
 };
 
 window._ = require("lodash");
+
+const getCommandToLaunchTerminal = require("./lib/getCommandToLaunchTerminal");
+const shortCodes = require("./lib/shortCodes");
+const { pluginInfo, getUtoolsPlugins } = require("./lib/getUtoolsPlugins");
+const {
+  getBase64Ico,
+  getFileInfo,
+  getCurrentFolderPathFix,
+  saveFile,
+  getSelectFile,
+  convertFilePathToUtoolsPayload,
+} = require("./lib/utils");
+window.pluginInfo = pluginInfo;
+window.getUtoolsPlugins = getUtoolsPlugins;
+window.getBase64Ico = getBase64Ico;
+window.getFileInfo = getFileInfo;
+window.getCurrentFolderPathFix = getCurrentFolderPathFix;
+window.saveFile = saveFile;
+window.getSelectFile = getSelectFile;
+window.convertFilePathToUtoolsPayload = convertFilePathToUtoolsPayload;
+
 window.getuToolsLite = require("./lib/utoolsLite");
-// window.yuQueClient = axios.create({
-//     baseURL: 'https://www.yuque.com/api/v2/',
-//     headers: {
-//         'Content-Type': 'application/json',
-//         // 只读权限
-//         'X-Auth-Token': 'WNrd0Z4kfCZLFrGLVAaas93DZ7sbG6PirKq7VxBL'
-//     }
-// });
+window.quickcommand = require("./lib/quickcommand");
+window.getQuickcommandTempFile = require("./lib/getQuickcommandTempFile");
+window.imageProcessor = require("./lib/imageprocessor");
+window.showUb = require("./lib/showDocs");
 
 window.getSharedQcById = async (id) => {
   const url = "https://qc.qaz.ink/home/quick/script/getScript";
@@ -66,309 +81,11 @@ window.multiProcessDetection = () => {
 
 // axios.defaults.adapter = require('axios/lib/adapters/http')
 
-if (!utools.isWindows())
+if (!window.utools.isWindows())
   process.env.PATH = `/usr/local/bin:/usr/local/sbin:${process.env.PATH}`;
 
-if (utools.isMacOS())
+if (window.utools.isMacOS())
   process.env.PATH = `/opt/homebrew/bin:/opt/homebrew/sbin:${process.env.PATH}`;
-
-const shortCodes = {
-  open: (path) => {
-    utools.shellOpenItem(path);
-  },
-  locate: (path) => {
-    utools.shellShowItemInFolder(path);
-  },
-  visit: (url) => {
-    utools.shellOpenExternal(url);
-  },
-  system: (cmd) => {
-    let result = child_process.execSync(cmd, {
-      windowsHide: true,
-      encoding: "buffer",
-    });
-    return iconv.decode(result, utools.isWindows() ? "gbk" : "utf8");
-  },
-  message: (msg) => {
-    utools.showNotification(msg);
-  },
-  keyTap: (key, ...modifier) => utools.simulateKeyboardTap(key, ...modifier),
-  copyTo: (text) => {
-    electron.clipboard.writeText(text);
-  },
-  send: (text) => {
-    utools.hideMainWindowTypeString(text);
-  },
-};
-
-const ctlKey = utools.isMacOs() ? "command" : "control";
-
-window.quickcommand = {
-  // 模拟复制操作
-  simulateCopy: function () {
-    utools.simulateKeyboardTap("c", ctlKey);
-  },
-
-  // 模拟粘贴操作
-  simulatePaste: function () {
-    utools.simulateKeyboardTap("v", ctlKey);
-  },
-
-  // setTimout 不能在 vm2 中使用，同时在 electron 中有 bug
-  sleep: function (ms) {
-    var start = new Date().getTime();
-    try {
-      // node 16.13.1
-      child_process.execSync(getSleepCodeByShell(ms), {
-        timeout: ms,
-        windowsHide: true,
-      });
-    } catch (ex) {}
-    var end = new Date().getTime();
-    return end - start;
-  },
-
-  // 重写 setTimeout
-  setTimeout: function (callback, ms) {
-    var start = new Date().getTime();
-    child_process.exec(
-      getSleepCodeByShell(ms),
-      {
-        timeout: ms,
-      },
-      (err, stdout, stderr) => {
-        var end = new Date().getTime();
-        callback(end - start);
-      }
-    );
-  },
-
-  // 关闭进程
-  kill: function (pid, signal = "SIGTERM", cb) {
-    kill(pid, signal, cb);
-  },
-
-  // dom 解析
-  htmlParse: function (html) {
-    return new DOMParser().parseFromString(html, "text/html");
-  },
-
-  // 下载文件
-  downloadFile: function (url, file = {}) {
-    return new Promise((reslove, reject) => {
-      if (file instanceof Object)
-        file = utools.showSaveDialog(JSON.parse(JSON.stringify(file)));
-      axios({
-        method: "get",
-        url: url,
-        responseType: "arraybuffer",
-      })
-        .then((res) => {
-          var filebuffer = Buffer.from(res.data);
-          fs.writeFile(file, filebuffer, (err) => {
-            if (err) reject(err);
-            else reslove(filebuffer);
-          });
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
-  },
-
-  // 上传文件
-  uploadFile: function (url, file = {}, name = "file", formData = {}) {
-    return new Promise((reslove, reject) => {
-      var objfile;
-      if (file instanceof File) {
-        objfile = file;
-      } else {
-        if (file instanceof Object)
-          file = utools.showOpenDialog(JSON.parse(JSON.stringify(file)))[0];
-        if (!fs.existsSync(file)) return reject("文件不存在");
-        var arraybuffer = fs.readFileSync(file).buffer;
-        var objfile = new File([arraybuffer], path.basename(file));
-      }
-      var form = new FormData();
-      form.append(name, objfile);
-      var keys = Object.keys(formData);
-      if (keys.length) keys.forEach((k) => form.append(k, formData[k]));
-      axios
-        .post(url, form, {
-          headers: {
-            accept: "application/json",
-            "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
-          },
-        })
-        .then((res) => {
-          reslove(res);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
-  },
-
-  // 载入在线资源
-  loadRemoteScript: async function (url) {
-    if (
-      !/^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/.test(
-        url
-      )
-    )
-      throw "url 不合法";
-    let local = getQuickcommandTempFile("js");
-    await this.downloadFile(url, local);
-    let source = require(local);
-    fs.unlinkSync(local);
-    return source;
-  },
-
-  // 唤醒 uTools
-  wakeUtools: function () {
-    let uToolsPath = utools.isMacOs()
-      ? process.execPath.replace(/\/Frameworks\/.*/, "/MacOS/uTools")
-      : process.execPath;
-    child_process.exec(uToolsPath, () => {});
-  },
-
-  readClipboard: function () {
-    return electron.clipboard.readText();
-  },
-
-  writeClipboard: function (text) {
-    electron.clipboard.writeText(text.toString());
-  },
-};
-
-if (process.platform === "win32") {
-  // 运行vbs脚本
-  quickcommand.runVbs = function (script) {
-    return new Promise((reslove, reject) => {
-      var tempfile = getQuickcommandTempFile("vbs", "TempVBSScript");
-      fs.writeFile(tempfile, iconv.encode(script, "gbk"), (err) => {
-        child_process.exec(
-          `cscript.exe /nologo "${tempfile}"`,
-          {
-            encoding: "buffer",
-          },
-          (err, stdout, stderr) => {
-            if (err) reject(iconv.decode(stderr, "gbk"));
-            else reslove(iconv.decode(stdout, "gbk"));
-          }
-        );
-      });
-    });
-  };
-  // 运行powershell脚本
-  quickcommand.runPowerShell = function (script) {
-    return new Promise((reslove, reject) => {
-      let base64str = Buffer.from(script, "utf16le").toString("base64");
-      child_process.exec(
-        `powershell.exe -e "${base64str}"`,
-        {
-          encoding: "buffer",
-        },
-        (err, stdout, stderr) => {
-          if (err) reject(iconv.decode(stderr, "gbk"));
-          else reslove(iconv.decode(stdout, "gbk"));
-        }
-      );
-    });
-  };
-}
-
-if (process.platform === "darwin") {
-  // 运行AppleScript脚本
-  quickcommand.runAppleScript = function (script) {
-    return new Promise((reslove, reject) => {
-      child_process.execFile(
-        "osascript",
-        ["-e", script],
-        (err, stdout, stderr) => {
-          if (err) reject(stderr);
-          else reslove(stdout);
-        }
-      );
-    });
-  };
-}
-
-// python -c
-window.runPythonCommand = (py) => {
-  try {
-    let result = child_process.execFileSync("python", ["-c", py], {
-      windowsHide: true,
-      encoding: "buffer",
-    });
-    return iconv.decode(result, utools.isWindows() ? "gbk" : "utf8").trim();
-  } catch (e) {
-    alert(e);
-    return "";
-  }
-};
-
-// 在终端中执行
-if (process.platform !== "linux")
-  quickcommand.runInTerminal = function (cmdline, dir) {
-    let command = getCommandToLaunchTerminal(cmdline, dir);
-    child_process.exec(command);
-  };
-
-let getCommandToLaunchTerminal = (cmdline, dir) => {
-  let cd, command;
-  if (utools.isWindows()) {
-    let appPath = path.join(
-      utools.getPath("home"),
-      "/AppData/Local/Microsoft/WindowsApps/"
-    );
-    // 直接 existsSync wt.exe 无效
-    if (fs.existsSync(appPath) && fs.readdirSync(appPath).includes("wt.exe")) {
-      cmdline = cmdline.replace(/"/g, `\\"`);
-      cd = dir ? `-d "${dir.replace(/\\/g, "/")}"` : "";
-      command = `${appPath}wt.exe ${cd} cmd /k "${cmdline}"`;
-    } else {
-      cmdline = cmdline.replace(/"/g, `^"`);
-      cd = dir ? `cd /d "${dir.replace(/\\/g, "/")}" &&` : "";
-      command = `${cd} start "" cmd /k "${cmdline}"`;
-    }
-  } else if (utools.isMacOs()) {
-    cmdline = cmdline.replace(/"/g, `\\"`);
-    cd = dir ? `cd ${dir.replace(/ /g, "\\\\ ")} &&` : "";
-    command = fs.existsSync("/Applications/iTerm.app")
-      ? `osascript -e 'tell application "iTerm"
-                if application "iTerm" is running then
-                  create window with default profile
-                end if
-                tell current session of first window to write text "clear && ${cd} ${cmdline}"
-                activate
-              end tell'`
-      : `osascript -e 'tell application "Terminal"
-                if application "Terminal" is running then
-                  do script "clear && ${cd} ${cmdline}"
-                else
-                  do script "clear && ${cd} ${cmdline}" in window 1
-                end if
-                activate
-              end tell'`;
-  }
-  return command;
-};
-
-window.pluginInfo = () => {
-  return JSON.parse(fs.readFileSync(path.join(__dirname, "plugin.json")));
-};
-
-let getSleepCodeByShell = (ms) => {
-  var cmd, tempFilePath;
-  if (utools.isWindows()) {
-    tempFilePath = getQuickcommandTempFile("vbs", "SleepVBSScript");
-    cmd = `echo set ws=CreateObject("Wscript.Shell") > ${tempFilePath} && echo Wscript.sleep ${ms} >> ${tempFilePath} && cscript /nologo ${tempFilePath}`;
-  } else {
-    cmd = `sleep ${ms / 1000}`;
-  }
-  return cmd;
-};
 
 window.htmlEncode = (value) => {
   let dom = quickcommand.htmlParse().querySelector("body");
@@ -387,188 +104,12 @@ window.base64Decode = (text) => Buffer.from(text, "base64").toString("utf8");
 window.processPlatform = process.platform;
 window.joinPath = path.join;
 
-window.getUtoolsPlugins = () => {
-  let root = utools.isMacOs()
-    ? path.join(os.homedir(), "Library/Application Support/uTools/plugins/")
-    : utools.isWindows()
-    ? path.join(os.homedir(), "AppData/Roaming/uTools/plugins")
-    : path.join(os.homedir(), ".config/uTools/plugins");
-  let plugins = {};
-  let files = fs.readdirSync(root);
-  let deleted = path.join(root, "deleted");
-  let deletedList = fs.existsSync(deleted)
-    ? fs.readFileSync(path.join(root, "deleted"), "utf8").split("|")
-    : [];
-  files.forEach((file) => {
-    if (/[a-zA-Z0-9\-]+\.asar$/.test(file) && !deletedList.includes(file)) {
-      let pluginInfo = JSON.parse(
-        fs.readFileSync(path.join(root, file, "plugin.json"))
-      );
-      pluginInfo.logoPath = path.join(root, file, pluginInfo.logo);
-      let keyWordFeatures = [];
-      pluginInfo.features.forEach((f) => {
-        f.cmds.some((c) => {
-          c.length && keyWordFeatures.push(c);
-          return true;
-        });
-      });
-      if (!_.isEmpty(keyWordFeatures)) {
-        pluginInfo["keyWordFeatures"] = keyWordFeatures;
-        plugins[pluginInfo.pluginName] = pluginInfo;
-      }
-    }
-  });
-  return plugins;
-};
-
-window.getQuickcommandTempFile = (ext, name, dir = "quickcommandTempDir") => {
-  if (!name) name = new Date().getTime() + (Math.random() * 10 ** 6).toFixed();
-  let tempDir = path.join(os.tmpdir(), dir);
-  if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
-  return path.join(tempDir, `${name}.${ext}`);
-};
-
-window.delTempFile = (...args) => {
-  let tmpPath = path.join(os.tmpdir(), ...args);
-  if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
-};
-
-window.getBase64Ico = (filepath) => {
-  let sourceImage,
-    ext = path.extname(filepath).slice(1);
-  if (["png", "jpg", "jpeg", "bmp", "ico", "gif", "svg"].includes(ext)) {
-    if (ext == "svg") ext = "svg+xml";
-    sourceImage =
-      `data:image/${ext};base64,` + fs.readFileSync(filepath, "base64");
-    if (ext == "png") return sourceImage;
-  } else {
-    sourceImage = utools.getFileIcon(filepath);
-    return sourceImage;
-  }
-  return sourceImage;
-};
-
-window.getFileInfo = (options) => {
-  var file;
-  if (options.type == "file") {
-    file = options.argvs;
-  } else if (options.type == "dialog") {
-    var dialog = utools.showOpenDialog(options.argvs);
-    if (!dialog) return false;
-    file = dialog[0];
-  } else {
-    return false;
-  }
-  var information = {
-    name: path.basename(file),
-    ext: path.extname(file),
-    path: file,
-  };
-  if (options.readfile) {
-    var codec =
-      information.ext == ".bat" || information == ".ps1" ? "gbk" : "utf8";
-    information.data = iconv.decode(fs.readFileSync(file), codec);
-  }
-  return information;
-};
-
-window.getCurrentFolderPathFix = () => {
-  let pwd = utools.getCurrentFolderPath();
-  let pwdFix = pwd ? pwd : path.join(utools.getPath("home"), "desktop");
-  return pwdFix.replace(/\\/g, "\\\\");
-};
-
-window.saveFile = (content, file) => {
-  if (file instanceof Object) file = utools.showSaveDialog(file);
-  if (!file) return false;
-  try {
-    fs.writeFileSync(file, content);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-window.getSelectFile = (hwnd) => {
-  if (utools.isWindows()) {
-    var cmd = `powershell.exe -NoProfile "(New-Object -COM 'Shell.Application').Windows() | Where-Object { $_.HWND -eq ${hwnd} } | Select-Object -Expand Document | select @{ n='SelectItems'; e={$_.SelectedItems()} }  | select -Expand SelectItems | select -Expand Path "`;
-    let result = child_process.execSync(cmd, {
-      encoding: "buffer",
-      windowsHide: true,
-    });
-    return iconv.decode(result, "GBK").trim().replace(/\\/g, "/");
-  } else {
-    var cmd = `osascript -e 'tell application "Finder" to set selectedItems to selection as alias list
-            if selectedItems is {} then return
-            set parentPath to do shell script "dirname " & quoted form of POSIX path of (item 1 of selectedItems)
-            set pathData to ""
-            repeat with theItem in selectedItems
-                set pathData to pathData & POSIX path of theItem & linefeed
-            end repeat
-            '
-            `;
-    let result = child_process.execSync(cmd, {
-      encoding: "utf8",
-      windowsHide: true,
-    });
-    return result ? result.trim() : "";
-  }
-};
-
-let runUbrowser = (path) => {
-  utools.ubrowser
-    .goto(path)
-    .css(
-      `
-        .ant-modal-content,
-        .ant-modal-mask,
-        [class*='index-module_contentWrapper'],
-        [class*='index-module_reward'],
-        [class*='ReaderLayout-module_asideWrapper'],
-        [class*='CornerBubble-module_cornerBubble'],
-        [class*='DocReader-module_comment'],
-        #header,
-        #footer {
-          display: none
-        }`
-    )
-    .run({
-      width: 980,
-      height: 750,
-    });
-};
-
-const docsRepoUrl = "https://www.yuque.com/fofolee/qcdocs3";
-
-window.showUb = {
-  help: function (path = "") {
-    runUbrowser(docsRepoUrl + "/bg31vl" + path);
-  },
-  docs: function (path = "") {
-    runUbrowser(docsRepoUrl + "/pt589p" + path);
-  },
-  changelog: function (path = "") {
-    runUbrowser(docsRepoUrl + "/ucnd2o" + path);
-  },
-};
-
 window.clipboardReadText = () => electron.clipboard.readText();
-
-window.convertFilePathToUtoolsPayload = (files) =>
-  files.map((file) => {
-    let isFile = fs.statSync(file).isFile();
-    return {
-      isFile: isFile,
-      isDirectory: !isFile,
-      name: path.basename(file),
-      path: file,
-    };
-  });
 
 let getSandboxFuns = () => {
   var sandbox = {
     fetch: fetch.bind(window),
-    utools: getuToolsLite(),
+    utools: window.getuToolsLite(),
     electron,
     axios,
     Audio,
@@ -786,39 +327,4 @@ window.quickcommandHttpServer = () => {
     run,
     stop,
   };
-};
-
-window.imageProcessor = async (imagePath) => {
-  try {
-    // 读取图片
-    const image = await Jimp.read(imagePath);
-
-    // 获取原始尺寸
-    const originalWidth = image.getWidth();
-    const originalHeight = image.getHeight();
-    const ratio = originalWidth / originalHeight;
-
-    // 设置目标尺寸
-    let targetWidth = 1280;
-    let targetHeight = 720;
-
-    if (ratio > 16 / 9) {
-      targetHeight = Math.min(720, Math.round(targetWidth / ratio));
-    } else {
-      targetWidth = Math.min(1280, Math.round(targetHeight * ratio));
-    }
-
-    // 调整大小并压缩
-    await image
-      .resize(targetWidth, targetHeight, Jimp.RESIZE_BICUBIC)
-      .quality(80);
-
-    // 转换为 base64
-    const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
-
-    return base64;
-  } catch (error) {
-    console.error("处理图片失败:", error);
-    return null;
-  }
 };
