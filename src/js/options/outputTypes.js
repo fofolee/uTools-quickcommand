@@ -41,21 +41,21 @@ const outputTypes = {
         label: "复制到剪贴板",
         icon: "content_paste",
         outPlugin: true,
-        action: result => window.copyTo(result)
+        action: result => window.utools.copyText(result)
     },
     send: {
         name: "send",
         label: "发送到活动窗口",
         icon: "web_asset",
         outPlugin: true,
-        action: result => window.send(result)
+        action: result => window.utools.hideMainWindowTypeString(result)
     },
     notice: {
         name: "notice",
         label: "发送系统通知",
         icon: "sms",
         outPlugin: true,
-        action: result => window.message(result)
+        action: result => window.utools.showNotification(result)
     },
 };
 

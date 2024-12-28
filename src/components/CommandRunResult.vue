@@ -13,11 +13,11 @@
           <div>
             <q-avatar :size="`${headerHeight}`">
               <q-icon :class="runResultStatus ? 'text-green' : 'text-red'"
-                :name="runResultStatus ? 'task_alt' : 'error'"></q-icon>
+                :name="runResultStatus ? 'task_alt' : 'error'" size="sm"></q-icon>
             </q-avatar>
-            <span class="text-weight-bold text-h6">运行结果</span>
+            <span class="text-weight-bold text-h7">运行结果</span>
           </div>
-          <ResultMenu class="no-shadow" :stretch="true" :content="runResult.join('')" :closebtn="!fromUtools"
+          <ResultMenu class="no-shadow q-pa-sm" :stretch="true" :content="runResult.join('')" :closebtn="!fromUtools"
             :textbtn="!enableHtml" :imagebtn="!enableHtml && isDataUrl" @showImg="showBase64Img" :style="{
       height: headerHeight + 'px',
     }" />
