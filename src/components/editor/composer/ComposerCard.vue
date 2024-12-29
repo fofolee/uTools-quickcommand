@@ -84,6 +84,14 @@
             <template v-else-if="command.hasUBrowserEditor">
               <UBrowserEditor v-model="argvLocal" class="col" />
             </template>
+            <!-- Axios编辑器 -->
+            <template v-else-if="command.hasAxiosEditor">
+              <AxiosConfigEditor v-model="argvLocal" class="col" />
+            </template>
+            <!-- Fetch编辑器 -->
+            <template v-else-if="command.hasFetchEditor">
+              <FetchConfigEditor v-model="argvLocal" class="col" />
+            </template>
             <!-- 普通参数输入 -->
             <template v-else>
               <VariableInput
@@ -106,6 +114,8 @@ import { defineComponent, inject } from "vue";
 import KeyEditor from "./KeyEditor.vue";
 import UBrowserEditor from "./ubrowser/UBrowserEditor.vue";
 import VariableInput from "./VariableInput.vue";
+import AxiosConfigEditor from "./http/AxiosConfigEditor.vue";
+import FetchConfigEditor from "./http/FetchConfigEditor.vue";
 import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
@@ -114,6 +124,8 @@ export default defineComponent({
     KeyEditor,
     UBrowserEditor,
     VariableInput,
+    AxiosConfigEditor,
+    FetchConfigEditor,
   },
   props: {
     command: {
@@ -150,12 +162,33 @@ export default defineComponent({
     },
     argvLocal: {
       get() {
+        if (this.command.hasAxiosEditor || this.command.hasFetchEditor) {
+          // 如果是编辑现有配置
+          if (
+            this.command.argv &&
+            !this.command.argv.includes("axios.") &&
+            !this.command.argv.includes("fetch(")
+          ) {
+            try {
+              return JSON.parse(this.command.argv);
+            } catch (e) {
+              return {};
+            }
+          }
+          // 如果已经是格式化的代码，直接返回
+          return this.command.argv || {};
+        }
         return this.command.argv;
       },
       set(value) {
         const updatedCommand = {
           ...this.command,
-          argv: value,
+          argv:
+            this.command.hasAxiosEditor || this.command.hasFetchEditor
+              ? typeof value === "string"
+                ? value
+                : JSON.stringify(value)
+              : value,
         };
         this.$emit("update:command", updatedCommand);
       },

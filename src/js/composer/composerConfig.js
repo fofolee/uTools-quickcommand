@@ -48,6 +48,22 @@ export const commandCategories = [
         isAsync: true,
         icon: "public",
       },
+      {
+        value: "axios",
+        label: "发送HTTP请求(Axios)",
+        desc: "使用Axios发送HTTP请求",
+        hasAxiosEditor: true,
+        isAsync: true,
+        icon: "http",
+      },
+      {
+        value: "fetch",
+        label: "发送HTTP请求(Fetch)",
+        desc: "使用Fetch API发送HTTP请求",
+        hasFetchEditor: true,
+        isAsync: true,
+        icon: "http",
+      },
     ],
   },
   {

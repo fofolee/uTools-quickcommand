@@ -14,6 +14,8 @@ export function generateCode(commandFlow) {
 
     if (cmd.value === "ubrowser") {
       line += `await ${cmd.argv}`;
+    } else if (cmd.value === "axios" || cmd.value === "fetch") {
+      line += `await ${cmd.argv}`;
     } else {
       line += `${cmd.isAsync ? "await " : ""}${cmd.value}(${cmd.argv})`;
     }

@@ -67,6 +67,7 @@
 
 <script>
 import { defineComponent } from "vue";
+import { userAgent } from "js/options/httpHeaders";
 import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
@@ -97,58 +98,7 @@ export default defineComponent({
           timeout: 60000,
         },
       },
-      userAgentOptions: [
-        {
-          label: "Chrome (Windows)",
-          value:
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        },
-        {
-          label: "Chrome (macOS)",
-          value:
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        },
-        {
-          label: "Chrome (Linux)",
-          value:
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        },
-        {
-          label: "IE 11",
-          value:
-            "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko",
-        },
-        {
-          label: "微信 (Android)",
-          value:
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UQ1A.240205.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.6261.64 Mobile Safari/537.36 XWEB/1160027 MMWEBSDK/20231202 MMWEBID/2308 MicroMessenger/8.0.47.2560(0x28002F35) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64",
-        },
-        {
-          label: "微信 (iOS)",
-          value:
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.47(0x18002f2c) NetType/WIFI Language/zh_CN",
-        },
-        {
-          label: "iPhone",
-          value:
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
-        },
-        {
-          label: "iPad",
-          value:
-            "Mozilla/5.0 (iPad; CPU OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
-        },
-        {
-          label: "Android Phone",
-          value:
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
-        },
-        {
-          label: "Android Tablet",
-          value:
-            "Mozilla/5.0 (Linux; Android 14; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        },
-      ],
+      userAgentOptions: userAgent,
     };
   },
   created() {

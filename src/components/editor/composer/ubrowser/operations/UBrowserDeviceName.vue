@@ -31,6 +31,7 @@
 
 <script>
 import { defineComponent } from "vue";
+import { deviceName } from "js/options/httpHeaders";
 import VariableInput from "components/editor/composer/VariableInput.vue";
 
 export default defineComponent({
@@ -56,18 +57,7 @@ export default defineComponent({
   data() {
     return {
       selectedDevice: null,
-      deviceOptions: [
-        { label: "iPhone 11", value: "iPhone 11" },
-        { label: "iPhone X", value: "iPhone X" },
-        { label: "iPad", value: "iPad" },
-        { label: "iPhone 6/7/8 Plus", value: "iPhone 6/7/8 Plus" },
-        { label: "iPhone 6/7/8", value: "iPhone 6/7/8" },
-        { label: "iPhone 5/SE", value: "iPhone 5/SE" },
-        { label: "HUAWEI Mate10", value: "HUAWEI Mate10" },
-        { label: "HUAWEI Mate20", value: "HUAWEI Mate20" },
-        { label: "HUAWEI Mate30", value: "HUAWEI Mate30" },
-        { label: "HUAWEI Mate30 Pro", value: "HUAWEI Mate30 Pro" },
-      ],
+      deviceOptions: deviceName,
     };
   },
   methods: {

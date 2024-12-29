@@ -28,6 +28,7 @@
         size="sm"
         class="string-toggle"
         @click="toggleStringType"
+        v-if="!hasSelectedVariable"
       >
         <q-tooltip>{{
           isString
@@ -45,6 +46,7 @@
         }"
         class="variable-dropdown"
         size="sm"
+        v-if="variables.length"
       >
         <q-list class="variable-list">
           <q-item-label header class="text-subtitle2">
@@ -52,9 +54,9 @@
             选择变量
           </q-item-label>
 
-          <q-separator v-if="variables.length > 0" />
+          <q-separator />
 
-          <template v-if="variables.length > 0">
+          <template v-if="variables.length">
             <q-item
               v-for="variable in variables"
               :key="variable.name"
@@ -73,15 +75,6 @@
               </q-item-section>
             </q-item>
           </template>
-
-          <q-item v-else class="text-grey-6">
-            <q-item-section class="text-center">
-              <q-item-label>暂无可用变量</q-item-label>
-              <q-item-label caption>
-                点击命令卡片的「获取输出」按钮输入保存的变量名
-              </q-item-label>
-            </q-item-section>
-          </q-item>
         </q-list>
       </q-btn-dropdown>
     </template>
@@ -237,7 +230,7 @@ export default defineComponent({
   },
 
   watch: {
-    // 解决通过外部传入值时，无法触���字符串处理的问题
+    // 解决通过外部传入值时，无法触发字符串处理的问题
     modelValue: {
       immediate: true,
       handler(newVal) {
@@ -354,8 +347,8 @@ export default defineComponent({
 
 .number-controls {
   border-left: 1px solid rgba(0, 0, 0, 0.12);
-  margin-left: 4px;
-  padding: 2px 4px;
+  /* margin-left: 4px; */
+  padding-left: 2px;
 }
 
 .body--dark .number-controls {
@@ -368,7 +361,7 @@ export default defineComponent({
   padding: 2px;
   margin: 0;
   min-height: 20px;
-  min-width: 24px;
+  /* min-width: 24px; */
 }
 
 .number-btn:hover {
