@@ -93,7 +93,10 @@ module.exports = configure(function (ctx) {
             ],
           },
         ]);
-        chain.resolve.alias.set("plugins", path.join(__dirname, "./src/plugins"));
+        chain.resolve.alias.set(
+          "plugins",
+          path.join(__dirname, "./src/plugins")
+        );
         chain.resolve.alias.set("js", path.join(__dirname, "./src/js"));
       },
       extendWebpack(cfg) {
@@ -194,7 +197,6 @@ module.exports = configure(function (ctx) {
         orientation: "portrait",
         background_color: "#ffffff",
         theme_color: "#027be3",
-
       },
     },
 

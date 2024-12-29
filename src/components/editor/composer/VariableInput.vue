@@ -101,7 +101,6 @@
         <q-btn
           flat
           dense
-          round
           icon="keyboard_arrow_up"
           size="xs"
           class="number-btn"
@@ -110,7 +109,6 @@
         <q-btn
           flat
           dense
-          round
           icon="keyboard_arrow_down"
           size="xs"
           class="number-btn"
@@ -262,7 +260,7 @@ export default defineComponent({
 .string-toggle {
   min-width: 24px;
   padding: 4px;
-  opacity: 0.8;
+  opacity: 0.6;
   transition: all 0.3s ease;
 }
 
@@ -348,6 +346,7 @@ export default defineComponent({
 .number-controls {
   height: 100%;
   display: flex;
+  width: 32px;
   flex-direction: column;
   justify-content: center;
 }

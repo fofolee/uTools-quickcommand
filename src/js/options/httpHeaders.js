@@ -55,12 +55,15 @@ export const commonHeaders = [
   { label: "Content-Type", value: "Content-Type" },
   { label: "Authorization", value: "Authorization" },
   { label: "User-Agent", value: "User-Agent" },
+  { label: "Cookie", value: "Cookie" },
   { label: "Accept", value: "Accept" },
   { label: "Accept-Language", value: "Accept-Language" },
   { label: "Accept-Encoding", value: "Accept-Encoding" },
-  { label: "Cookie", value: "Cookie" },
   { label: "Origin", value: "Origin" },
   { label: "Referer", value: "Referer" },
+  { label: "X-Requested-With", value: "X-Requested-With" },
+  { label: "X-Forwarded-For", value: "X-Forwarded-For" },
+  { label: "X-Real-IP", value: "X-Real-IP" },
 ];
 
 export const deviceName = [
@@ -74,4 +77,39 @@ export const deviceName = [
   { label: "HUAWEI Mate20", value: "HUAWEI Mate20" },
   { label: "HUAWEI Mate30", value: "HUAWEI Mate30" },
   { label: "HUAWEI Mate30 Pro", value: "HUAWEI Mate30 Pro" },
+];
+
+export const contentTypes = [
+  {
+    label: "application/json",
+    value: "application/json",
+  },
+  {
+    label: "application/x-www-form-urlencoded",
+    value: "application/x-www-form-urlencoded",
+  },
+  {
+    label: "multipart/form-data",
+    value: "multipart/form-data",
+  },
+  {
+    label: "text/plain",
+    value: "text/plain",
+  },
+  {
+    label: "text/html",
+    value: "text/html",
+  },
+  {
+    label: "text/xml",
+    value: "text/xml",
+  },
+  {
+    label: "application/xml",
+    value: "application/xml",
+  },
+  {
+    label: "application/octet-stream",
+    value: "application/octet-stream",
+  },
 ];

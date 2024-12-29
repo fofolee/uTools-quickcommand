@@ -1,5 +1,5 @@
 <template>
-  <div class="row q-col-gutter-sm">
+  <div class="row q-col-gutter-sm ubrowser-function-input">
     <div class="col-12">
       <div class="row q-col-gutter-sm">
         <div class="col-3">
@@ -35,6 +35,7 @@
             type="textarea"
             dense
             borderless
+            style="font-family: monospace, monoca, consola"
             autogrow
             @update:model-value="updateFunction"
           >
@@ -198,7 +199,39 @@ export default defineComponent({
 </script>
 
 <style scoped>
-:deep(.q-field__control) .text-primary.func-symbol {
-  font-size: 18px !important;
+.ubrowser-function-input :deep(.q-field__control) .text-primary.func-symbol {
+  font-size: 24px !important;
+}
+
+.ubrowser-function-input :deep(.q-select__input) {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.ubrowser-function-input :deep(.q-select .q-field__native) {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.ubrowser-function-input :deep(.q-select .q-field__native > div) {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.ubrowser-function-input :deep(.q-select .q-chip) {
+  flex: 0 0 auto !important;
+  margin-right: 4px !important;
+}
+
+.ubrowser-function-input :deep(.q-select__input::-webkit-scrollbar),
+.ubrowser-function-input :deep(.q-select .q-field__native::-webkit-scrollbar) {
+  display: none !important;
 }
 </style>

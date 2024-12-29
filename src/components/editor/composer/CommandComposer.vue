@@ -202,7 +202,7 @@ export default defineComponent({
 .command-composer :deep(.q-field--filled .q-field__control),
 .command-composer :deep(.q-field--filled .q-field__control > *),
 .command-composer
-  :deep(.q-field--filled.q-select--with-input .q-field__native) {
+  :deep(.q-field--filled:not(.q-field--labeled) .q-field__native) {
   border-radius: 5px;
   font-size: 12px;
   max-height: 36px !important;
@@ -236,9 +236,10 @@ export default defineComponent({
   border-bottom: none;
 }
 
-/* 输入框背景颜色 */
+/* 输入框背景颜色及内边距 */
 .command-composer :deep(.q-field--filled .q-field__control) {
   background: rgba(0, 0, 0, 0.03);
+  padding: 0 8px;
 }
 
 /* 输入框聚焦时的背景颜色 */

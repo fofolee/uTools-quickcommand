@@ -42,25 +42,17 @@ export const commandCategories = [
       },
       {
         value: "ubrowser",
-        label: "UBrowser浏览器操作",
-        desc: "配置UBrowser浏览器操作",
+        label: "ubrowser浏览器操作",
+        desc: "配置ubrowser浏览器操作",
         hasUBrowserEditor: true,
         isAsync: true,
         icon: "public",
       },
       {
         value: "axios",
-        label: "发送HTTP请求(Axios)",
+        label: "HTTP请求(Axios)",
         desc: "使用Axios发送HTTP请求",
         hasAxiosEditor: true,
-        isAsync: true,
-        icon: "http",
-      },
-      {
-        value: "fetch",
-        label: "发送HTTP请求(Fetch)",
-        desc: "使用Fetch API发送HTTP请求",
-        hasFetchEditor: true,
         isAsync: true,
         icon: "http",
       },
@@ -82,6 +74,13 @@ export const commandCategories = [
         desc: "要写入剪切板的内容",
         icon: "content_copy",
       },
+      {
+        value: "electron.clipboard.readText",
+        label: "获取剪贴板内容",
+        desc: "获取剪贴板内容",
+        icon: "content_copy",
+        hasNoArgs: true,
+      },
     ],
   },
   {
@@ -89,16 +88,16 @@ export const commandCategories = [
     icon: "notifications",
     commands: [
       {
+        value: "console.log",
+        label: "打印消息",
+        desc: "要打印的消息文本",
+        icon: "info",
+      },
+      {
         value: "message",
         label: "发送系统消息",
         desc: "要发送的系统消息文本",
         icon: "message",
-      },
-      {
-        value: "quickcommand.showMessageBox",
-        label: "弹窗显示消息",
-        desc: "要弹窗显示的消息文本",
-        icon: "warning",
       },
       {
         value: "send",

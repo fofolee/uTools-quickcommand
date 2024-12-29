@@ -37,86 +37,185 @@
         </div>
       </div>
     </div>
-
-    <!-- Headers -->
-    <div class="col-12">
-      <HeaderEditor
-        :headers="localConfig.headers"
-        @input="
-          (val) => {
-            localConfig.headers = val;
-            updateConfig();
-          }
-        "
-      />
-    </div>
-
-    <!-- 请求参数 -->
-    <div class="col-12">
-      <VariableInput
-        v-model="localConfig.params"
-        label="URL参数"
-        :command="{ icon: 'link' }"
-        @update:model-value="updateConfig"
-      />
-    </div>
-
-    <!-- 请求体 -->
-    <div class="col-12">
-      <VariableInput
-        v-model="localConfig.data"
-        label="请求体"
-        :command="{ icon: 'data_object' }"
-        @update:model-value="updateConfig"
-      />
-    </div>
-
-    <!-- 超时设置 -->
-    <div class="col-12">
-      <VariableInput
-        v-model="localConfig.timeout"
-        label="超时时间(ms)"
-        :command="{ icon: 'timer', inputType: 'number' }"
-        @update:model-value="updateConfig"
-      />
-    </div>
-
-    <!-- 其他选项 -->
+    <!-- 响应设置 -->
     <div class="col-12">
       <div class="row q-col-gutter-sm">
-        <div class="col-6">
-          <q-checkbox
-            v-model="localConfig.withCredentials"
-            label="发送凭证"
+        <div class="col-3">
+          <q-select
+            v-model="localConfig.responseType"
+            filled
+            dense
+            emit-value
+            map-options
+            :options="['json', 'text', 'blob', 'arraybuffer']"
+            label="响应类型"
+            @update:model-value="updateConfig"
+          >
+            <template v-slot:prepend>
+              <q-icon name="data_object" />
+            </template>
+          </q-select>
+        </div>
+        <div class="col">
+          <VariableInput
+            v-model="localConfig.maxRedirects"
+            label="最大重定向次数"
+            :command="{ icon: 'repeat', inputType: 'number' }"
             @update:model-value="updateConfig"
           />
         </div>
-        <div class="col-6">
-          <q-checkbox
-            v-model="localConfig.decompress"
-            label="自动解压"
+        <div class="col">
+          <VariableInput
+            v-model="localConfig.timeout"
+            label="超时时间(ms)"
+            :command="{ icon: 'timer', inputType: 'number' }"
             @update:model-value="updateConfig"
           />
         </div>
       </div>
     </div>
 
-    <!-- 响应类型 -->
-    <div class="col-12">
-      <q-select
-        v-model="localConfig.responseType"
-        :options="['json', 'text', 'blob', 'arraybuffer']"
-        label="响应类型"
-        dense
-        filled
-        emit-value
-        map-options
-        @update:model-value="updateConfig"
-      >
-        <template v-slot:prepend>
-          <q-icon name="data_object" />
-        </template>
-      </q-select>
+    <!-- Headers -->
+    <!-- Content-Type -->
+    <q-select
+      v-model="localConfig.headers['Content-Type']"
+      label="Content-Type"
+      dense
+      filled
+      emit-value
+      map-options
+      :options="contentTypes"
+      class="col-12"
+      @update:model-value="updateConfig"
+    >
+      <template v-slot:prepend>
+        <q-icon name="data_object" />
+      </template>
+    </q-select>
+    <!-- User-Agent -->
+    <div class="col-12 row q-col-gutter-sm">
+      <div class="col">
+        <VariableInput
+          v-model="localConfig.headers['User-Agent']"
+          label="User Agent"
+          :command="{ icon: 'devices' }"
+          @update:model-value="updateConfig"
+        />
+      </div>
+      <div class="col-auto flex items-center">
+        <q-btn-dropdown flat dense dropdown-icon="menu">
+          <q-list>
+            <q-item
+              v-for="ua in userAgentOptions"
+              :key="ua.value"
+              clickable
+              v-close-popup
+              @click="setUserAgent(ua.value)"
+            >
+              <q-item-section>
+                <q-item-label>{{ ua.label }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+      </div>
+    </div>
+
+    <!-- Other Headers -->
+    <div class="col-12" style="margin-top: -8px">
+      <BorderLabel label="Headers">
+        <DictEditor
+          v-model="otherHeaders"
+          :options="{
+            items: commonHeaderOptions,
+          }"
+          @update:model-value="updateHeaders"
+        />
+      </BorderLabel>
+    </div>
+
+    <!-- 请求体 -->
+    <div v-if="hasRequestData" class="col-12" style="margin-top: -8px">
+      <BorderLabel label="请求体">
+        <DictEditor
+          v-model="localConfig.data"
+          @update:model-value="updateConfig"
+        />
+      </BorderLabel>
+    </div>
+
+    <!-- 请求参数 -->
+    <div class="col-12" style="margin-top: -8px">
+      <BorderLabel label="URL参数">
+        <DictEditor
+          v-model="localConfig.params"
+          @update:model-value="updateConfig"
+        />
+      </BorderLabel>
+    </div>
+
+    <!-- 认证信息 -->
+    <div class="col-12" style="margin-top: -8px">
+      <BorderLabel label="HTTP认证">
+        <div class="row q-col-gutter-sm">
+          <div class="col-6">
+            <VariableInput
+              v-model="localConfig.auth.username"
+              label="用户名"
+              :command="{ icon: 'person' }"
+              @update:model-value="updateConfig"
+            />
+          </div>
+          <div class="col-6">
+            <VariableInput
+              v-model="localConfig.auth.password"
+              label="密码"
+              :command="{ icon: 'password' }"
+              @update:model-value="updateConfig"
+            />
+          </div>
+        </div>
+      </BorderLabel>
+    </div>
+
+    <!-- 代理设置 -->
+    <div class="col-12" style="margin-top: -8px">
+      <BorderLabel label="代理设置">
+        <div class="row q-col-gutter-sm">
+          <div class="col-3">
+            <VariableInput
+              v-model="localConfig.proxy.host"
+              label="主机"
+              :command="{ icon: 'dns' }"
+              @update:model-value="updateConfig"
+            />
+          </div>
+          <div class="col-3">
+            <VariableInput
+              v-model="localConfig.proxy.port"
+              label="端口"
+              :command="{ icon: 'router', inputType: 'number' }"
+              @update:model-value="updateConfig"
+            />
+          </div>
+          <div class="col-3">
+            <VariableInput
+              v-model="localConfig.proxy.auth.username"
+              label="用户名"
+              :command="{ icon: 'person' }"
+              @update:model-value="updateConfig"
+            />
+          </div>
+          <div class="col-3">
+            <VariableInput
+              v-model="localConfig.proxy.auth.password"
+              label="密码"
+              :command="{ icon: 'password' }"
+              @update:model-value="updateConfig"
+            />
+          </div>
+        </div>
+      </BorderLabel>
     </div>
   </div>
 </template>
@@ -124,14 +223,17 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "../VariableInput.vue";
-import HeaderEditor from "./HeaderEditor.vue";
+import DictEditor from "../DictEditor.vue";
 import { formatJsonVariables } from "js/composer/formatString";
+import { userAgent, commonHeaders, contentTypes } from "js/options/httpHeaders";
+import BorderLabel from "../BorderLabel.vue";
 
 export default defineComponent({
   name: "AxiosConfigEditor",
   components: {
     VariableInput,
-    HeaderEditor,
+    DictEditor,
+    BorderLabel,
   },
   props: {
     modelValue: {
@@ -144,7 +246,6 @@ export default defineComponent({
     let initialConfig = {};
     if (typeof this.modelValue === "string") {
       try {
-        // 尝试从代码字符串中提取配置对象
         const match = this.modelValue.match(
           /axios\.\w+\([^{]*({\s*[^]*})\s*\)/
         );
@@ -162,15 +263,34 @@ export default defineComponent({
       localConfig: {
         url: "",
         method: "GET",
-        headers: {},
-        params: "",
-        data: "",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        params: {},
+        data: {},
         timeout: 0,
-        withCredentials: false,
+        maxRedirects: 5,
         responseType: "json",
-        decompress: true,
+        auth: {
+          username: "",
+          password: "",
+        },
+        proxy: {
+          host: "",
+          port: "",
+          auth: {
+            username: "",
+            password: "",
+          },
+        },
         ...initialConfig,
       },
+      userAgentOptions: userAgent,
+      contentTypes,
+      commonHeaderOptions: commonHeaders
+        .filter((h) => !["User-Agent", "Content-Type"].includes(h.value))
+        .map((h) => h.value),
+      otherHeaders: {},
     };
   },
   created() {
@@ -179,72 +299,43 @@ export default defineComponent({
       ([name, value]) => ({ name, value })
     );
   },
+  computed: {
+    hasRequestData() {
+      return ["PUT", "POST", "PATCH"].includes(this.localConfig.method);
+    },
+  },
   methods: {
     updateConfig() {
-      // 移除空值
-      const config = { ...this.localConfig };
-      Object.keys(config).forEach((key) => {
-        if (
-          config[key] === "" ||
-          config[key] === null ||
-          config[key] === undefined
-        ) {
-          delete config[key];
-        }
-      });
-
       // 生成代码
-      const { method = "GET", url, data, ...restConfig } = config;
+      const { method = "GET", url, data, ...restConfig } = this.localConfig;
       if (!url) return;
-      let code = "";
-      const variableFields = ["headers", "timeout", "params", "data"];
-      if (method.toUpperCase() === "GET") {
-        code = `axios.get(${url}${
-          Object.keys(restConfig).length
-            ? `, ${formatJsonVariables(restConfig, variableFields)}`
-            : ""
-        })`;
-      } else {
-        const { data: reqData, ...configWithoutData } = restConfig;
-        code = `axios.${method.toLowerCase()}(${url}${
-          reqData ? `, ${reqData}` : ", undefined"
-        }${
-          Object.keys(configWithoutData).length
-            ? `, ${formatJsonVariables(restConfig, variableFields)}`
-            : ""
-        })`;
-      }
+
+      // 这两个字段非VariableInput获取，不进行处理
+      const excludeFields = ["headers.Content-Type", "responseType"];
+      const configStr = Object.keys(restConfig).length
+        ? `, ${formatJsonVariables(restConfig, null, excludeFields)}`
+        : "";
+
+      const code = `axios.${method.toLowerCase()}(${url}${
+        this.hasRequestData ? `, ${formatJsonVariables(data)}` : ""
+      }${configStr})?.data`;
 
       this.$emit("update:modelValue", code);
     },
-    addHeader() {
-      this.headers.push({ name: "", value: "" });
+    updateHeaders(headers) {
+      // 保留 Content-Type 和 User-Agent
+      const { "Content-Type": contentType, "User-Agent": userAgent } =
+        this.localConfig.headers;
+      // 重置 headers，只保留特殊字段
+      this.localConfig.headers = {
+        "Content-Type": contentType,
+        ...(userAgent ? { "User-Agent": userAgent } : {}),
+        ...headers,
+      };
+      this.updateConfig();
     },
-    removeHeader(index) {
-      this.headers.splice(index, 1);
-      this.updateHeaders();
-    },
-    updateHeaders() {
-      this.localConfig.headers = this.headers.reduce((acc, header) => {
-        if (header.name) {
-          // 如果值是变量引用（不带引号），直接使用
-          if (
-            header.value &&
-            !header.value.startsWith('"') &&
-            !header.value.endsWith('"')
-          ) {
-            acc[header.name] = header.value;
-          } else {
-            // ��则尝试解析JSON，如果失败则使用原始值
-            try {
-              acc[header.name] = JSON.parse(header.value);
-            } catch (e) {
-              acc[header.name] = header.value;
-            }
-          }
-        }
-        return acc;
-      }, {});
+    setUserAgent(value) {
+      this.localConfig.headers["User-Agent"] = value;
       this.updateConfig();
     },
   },

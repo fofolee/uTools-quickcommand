@@ -13,13 +13,45 @@ const processVariableValue = (value) => {
 };
 
 /**
+ * 检查路径是否匹配或是目标路径的父路径
+ * @param {string} currentPath 当前路径
+ * @param {string[]} targetPaths 目标路径列表
+ * @returns {boolean} 是否匹配
+ */
+const isPathMatched = (currentPath, targetPaths) => {
+  if (!targetPaths) return false;
+  return targetPaths.some(
+    (path) =>
+      path === currentPath || // 精确匹配
+      path.startsWith(currentPath + ".") // 是父路径
+  );
+};
+
+/**
+ * 递归移除对象中的空值
+ * @param {Object} obj 要处理的对象
+ * @returns {Object} 处理后的对象
+ */
+const removeEmptyValues = (obj) => {
+  return _.omitBy(obj, (value) => {
+    if (_.isNil(value) || value === "") return true;
+    if (typeof value === "object")
+      return _.isEmpty(removeEmptyValues(value));
+    return false;
+  });
+};
+
+/**
  * 递归处理对象的值
  * @param {Object} obj 要处理的对象
  * @param {string} parentPath 父路径
  * @param {string[]|null} variableFields 需要处理的字段列表，null表示处理所有字段
+ * @param {string[]|null} excludeFields 需要排除的字段列表，即使匹配了处理条件也不处理
  * @returns {string} 处理后的字符串
  */
-const processObject = (obj, parentPath = "", variableFields) => {
+const processObject = (obj, parentPath = "", variableFields, excludeFields) => {
+  // 移除空值
+  obj = removeEmptyValues(obj);
   let result = "{\n";
   const entries = Object.entries(obj);
 
@@ -28,16 +60,20 @@ const processObject = (obj, parentPath = "", variableFields) => {
     let valueStr = "";
 
     // 检查是否需要处理当前字段
-    const shouldProcess =
-      !variableFields || // 不传递variableFields则处理所有字段
-      variableFields.includes(parentPath) || // 父字段是完整处理字段
-      variableFields.includes(key) || // 当前字段是完整处理字段
-      variableFields.includes(currentPath) || // 当前路径精确匹配
-      variableFields.some((field) => field.startsWith(currentPath + ".")); // 当前路径是指定路径的父路径
+    const isIncluded =
+      !variableFields || isPathMatched(currentPath, variableFields);
+    const isExcluded =
+      excludeFields && isPathMatched(currentPath, excludeFields);
+    const shouldProcess = isIncluded && !isExcluded;
 
     // 处理对象类型
     if (typeof value === "object" && value !== null) {
-      valueStr = processObject(value, currentPath, variableFields);
+      valueStr = processObject(
+        value,
+        currentPath,
+        variableFields,
+        excludeFields
+      );
     }
     // 处理字符串类型
     else if (typeof value === "string") {
@@ -71,13 +107,19 @@ const processObject = (obj, parentPath = "", variableFields) => {
  * 1. 完整字段处理：如 headers - 处理整个对象及其所有子字段
  * 2. 指定路径处理：如 data.headers.Referer - 只处理特定路径
  * 3. 不传递 variableFields 则处理所有字段
+ * 4. 可以通过 excludeFields 排除特定字段，即使匹配了处理条件也不处理
  * @param {string} jsonStr JSON字符串
  * @param {string[]|null} [variableFields] 需要处理的字段列表，包括完整字段和指定路径。不传则处理所有字段
+ * @param {string[]|null} [excludeFields] 需要排除的字段列表，即使匹配了处理条件也不处理
  * @returns {string} 处理后的字符串
  */
-export const formatJsonVariables = (jsonObj, variableFields = null) => {
+export const formatJsonVariables = (
+  jsonObj,
+  variableFields = null,
+  excludeFields = null
+) => {
   try {
-    return processObject(jsonObj, "", variableFields);
+    return processObject(jsonObj, "", variableFields, excludeFields);
   } catch (e) {
     console.warn("Failed to process JSON variables:", e);
     return JSON.stringify(jsonObj, null, 2);
