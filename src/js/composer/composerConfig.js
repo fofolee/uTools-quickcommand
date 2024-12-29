@@ -108,6 +108,48 @@ export const commandCategories = [
     ],
   },
   {
+    label: "编码解码",
+    icon: "code",
+    commands: [
+      {
+        value: "(text=>Buffer.from(text).toString('base64'))",
+        label: "Base64编码",
+        desc: "将文本编码为Base64",
+        icon: "lock",
+      },
+      {
+        value: "(text=>Buffer.from(text,'base64').toString())",
+        label: "Base64解码",
+        desc: "将Base64解码为文本",
+        icon: "lock_open",
+      },
+      {
+        value: "(text=>Buffer.from(text).toString('hex'))",
+        label: "十六进制编码",
+        desc: "将文本编码为十六进制",
+        icon: "lock",
+      },
+      {
+        value: "(text=>Buffer.from(text,'hex').toString())",
+        label: "十六进制解码",
+        desc: "将十六进制解码为文本",
+        icon: "lock_open",
+      },
+      {
+        value: "encodeURIComponent",
+        label: "URL编码",
+        desc: "将文本进行URL编码",
+        icon: "link",
+      },
+      {
+        value: "decodeURIComponent",
+        label: "URL解码",
+        desc: "将URL编码解码为文本",
+        icon: "link_off",
+      },
+    ],
+  },
+  {
     label: "其他功能",
     icon: "more_horiz",
     commands: [
