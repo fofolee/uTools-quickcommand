@@ -571,6 +571,10 @@ export default {
       if (verify !== true) {
         return quickcommand.showMessageBox(verify, "error");
       }
+
+      if (outputTypes[updateData.output].outPlugin) {
+        updateData.features.mainHide = true;
+      }
       // 匹配文件时，额外添加文件类型
       let rules = this.cmdMatch;
       if (this.cmdType.name === "files") {
