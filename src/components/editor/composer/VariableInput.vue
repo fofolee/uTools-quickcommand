@@ -3,7 +3,7 @@
     v-if="!isNumber"
     v-model="localValue"
     dense
-    outlined
+    filled
     :label="label"
     class="variable-input"
   >
@@ -88,7 +88,7 @@
     type="number"
     v-model.number="localValue"
     dense
-    outlined
+    filled
     :label="label"
     class="number-input"
   >
@@ -346,22 +346,24 @@ export default defineComponent({
 }
 
 .number-controls {
-  border-left: 1px solid rgba(0, 0, 0, 0.12);
-  /* margin-left: 4px; */
-  padding-left: 2px;
-}
-
-.body--dark .number-controls {
-  border-left-color: rgba(255, 255, 255, 0.12);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .number-btn {
   opacity: 0.7;
-  font-size: 18px;
-  padding: 2px;
+  font-size: 12px;
+  padding: 0;
   margin: 0;
-  min-height: 20px;
-  /* min-width: 24px; */
+  min-height: 16px;
+  height: 16px;
+  width: 20px;
+}
+
+.number-btn :deep(.q-icon) {
+  font-size: 12px;
 }
 
 .number-btn:hover {

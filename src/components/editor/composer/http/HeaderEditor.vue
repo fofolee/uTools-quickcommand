@@ -7,7 +7,7 @@
         :options="commonHeaders"
         label="添加常用Header"
         dense
-        outlined
+        filled
         emit-value
         map-options
         style="width: 200px"
@@ -33,7 +33,7 @@
           v-model="header.name"
           label="Header名称"
           dense
-          outlined
+          filled
           @update:model-value="emitUpdate"
         />
         <q-input
@@ -41,7 +41,7 @@
           :model-value="header.name"
           label="Header名称"
           dense
-          outlined
+          filled
           readonly
         />
       </div>

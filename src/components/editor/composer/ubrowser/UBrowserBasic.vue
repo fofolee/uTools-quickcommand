@@ -37,7 +37,7 @@
                 :options="userAgentOptions"
                 label="常用 UA"
                 dense
-                outlined
+                filled
                 emit-value
                 map-options
                 options-dense

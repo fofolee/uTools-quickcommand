@@ -4,7 +4,7 @@
     :label="label"
     :options="options"
     dense
-    outlined
+    filled
     emit-value
     map-options
     @update:model-value="$emit('update:modelValue', $event)"

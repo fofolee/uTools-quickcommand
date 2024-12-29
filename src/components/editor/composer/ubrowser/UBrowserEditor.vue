@@ -131,3 +131,13 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.ubrowser-editor :deep(.q-stepper) {
+  padding: 0 !important;
+}
+
+.ubrowser-editor :deep(.q-stepper__tab) {
+  padding: 5px 25px;
+}
+</style>

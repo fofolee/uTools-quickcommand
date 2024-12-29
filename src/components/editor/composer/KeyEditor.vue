@@ -6,7 +6,6 @@
         v-model="mainKey"
         :options="commonKeys"
         dense
-        square
         filled
         use-input
         hide-dropdown-icon

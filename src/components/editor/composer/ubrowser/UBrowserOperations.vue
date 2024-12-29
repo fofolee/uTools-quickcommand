@@ -193,14 +193,14 @@ export default defineComponent({
   padding: 2px 4px;
   border-color: rgba(0, 0, 0, 0.15);
 }
-
+/*
 .operation-item:hover {
   background: rgba(0, 0, 0, 0.05);
 }
 
 .body--dark .operation-item:hover {
   background: rgba(0, 0, 0, 0.25);
-}
+} */
 
 .move-btn {
   opacity: 0.6;

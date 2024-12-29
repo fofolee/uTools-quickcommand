@@ -9,6 +9,7 @@
             use-chips
             multiple
             dense
+            borderless
             hide-dropdown-icon
             options-dense
             input-debounce="0"
@@ -20,10 +21,10 @@
             ref="paramSelect"
           >
             <template v-slot:prepend>
-              <div class="text-primary text-bold">(</div>
+              <div class="text-primary func-symbol">(</div>
             </template>
             <template v-slot:append>
-              <div class="text-primary text-bold">)</div>
+              <div class="text-primary func-symbol">)</div>
             </template>
           </q-select>
         </div>
@@ -33,15 +34,15 @@
             :label="label"
             type="textarea"
             dense
-            outlined
+            borderless
             autogrow
             @update:model-value="updateFunction"
           >
             <template v-slot:prepend>
-              <div class="text-primary text-bold">=> {</div>
+              <div class="text-primary func-symbol">=> {</div>
             </template>
             <template v-slot:append>
-              <div class="text-primary text-bold">}</div>
+              <div class="text-primary func-symbol">}</div>
             </template>
           </q-input>
         </div>
@@ -66,7 +67,7 @@
               v-model="paramValues[param]"
               :label="`传递给参数 ${param} 的值`"
               dense
-              outlined
+              filled
               @update:model-value="updateParamValue(param, $event)"
             />
           </div>
@@ -195,3 +196,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+:deep(.q-field__control) .text-primary.func-symbol {
+  font-size: 18px !important;
+}
+</style>

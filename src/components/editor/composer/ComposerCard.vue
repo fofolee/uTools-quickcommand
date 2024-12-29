@@ -13,7 +13,7 @@
             <div class="drag-handle cursor-move q-mr-sm">
               <q-icon name="drag_indicator" size="18px" class="text-grey-6" />
             </div>
-            <div class="text-subtitle1">{{ command.label }}</div>
+            <div class="text-subtitle2">{{ command.label }}</div>
             <q-space />
 
             <!-- 输出变量设置 -->

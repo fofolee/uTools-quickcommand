@@ -23,6 +23,11 @@
           label="全屏显示"
           @update:model-value="updateConfig('fullscreen', $event)"
         />
+        <q-checkbox
+          :model-value="localConfigs.run.fullscreenable"
+          label="允许全屏"
+          @update:model-value="updateConfig('fullscreenable', $event)"
+        />
       </div>
     </div>
 
@@ -33,8 +38,6 @@
           <VariableInput
             v-model="localConfigs.run.width"
             label="窗口宽度"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('width', $event)"
           />
@@ -43,8 +46,6 @@
           <VariableInput
             v-model="localConfigs.run.height"
             label="窗口高度"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('height', $event)"
           />
@@ -53,8 +54,6 @@
           <VariableInput
             v-model="localConfigs.run.x"
             label="X坐标"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('x', $event)"
           />
@@ -63,8 +62,6 @@
           <VariableInput
             v-model="localConfigs.run.y"
             label="Y坐标"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('y', $event)"
           />
@@ -79,8 +76,6 @@
           <VariableInput
             v-model="localConfigs.run.minWidth"
             label="最小宽度"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('minWidth', $event)"
           />
@@ -89,8 +84,6 @@
           <VariableInput
             v-model="localConfigs.run.minHeight"
             label="最小高度"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('minHeight', $event)"
           />
@@ -99,8 +92,6 @@
           <VariableInput
             v-model="localConfigs.run.maxWidth"
             label="最大宽度"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('maxWidth', $event)"
           />
@@ -109,8 +100,6 @@
           <VariableInput
             v-model="localConfigs.run.maxHeight"
             label="最大高度"
-            dense
-            outlined
             :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('maxHeight', $event)"
           />
@@ -141,29 +130,18 @@
           label="可最大化"
           @update:model-value="updateConfig('maximizable', $event)"
         />
-      </div>
-    </div>
-
-    <!-- 特殊功能控制 -->
-    <div class="col-12">
-      <div class="row items-center q-gutter-x-md">
         <q-checkbox
           :model-value="localConfigs.run.enableLargerThanScreen"
           label="允许超出屏幕"
           @update:model-value="updateConfig('enableLargerThanScreen', $event)"
-        />
-        <q-checkbox
-          :model-value="localConfigs.run.fullscreenable"
-          label="允许全屏"
-          @update:model-value="updateConfig('fullscreenable', $event)"
         />
       </div>
     </div>
 
     <!-- 透明度控制 -->
     <div class="col-12">
-      <div class="row items-center">
-        <div class="q-mr-md">透明度</div>
+      <div class="row items-center" style="height: 36px">
+        <div class="q-mr-md" style="font-size: 12px">透明度</div>
         <q-slider
           class="col"
           v-model="localConfigs.run.opacity"
@@ -171,8 +149,9 @@
           :max="1"
           :step="0.1"
           label
-          label-always
           color="primary"
+          switch-label-side
+          dense
           @update:model-value="updateConfig('opacity', $event)"
         >
           <template v-slot:thumb-label>

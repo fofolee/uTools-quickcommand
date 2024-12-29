@@ -14,7 +14,7 @@
         :options="deviceOptions"
         label="常用设备"
         dense
-        outlined
+        filled
         emit-value
         map-options
         options-dense

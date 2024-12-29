@@ -4,7 +4,7 @@
     :label="label"
     type="textarea"
     dense
-    outlined
+    filled
     autogrow
     @update:model-value="$emit('update:modelValue', $event)"
   >

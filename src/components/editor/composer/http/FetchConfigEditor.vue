@@ -16,7 +16,7 @@
         :options="['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']"
         label="请求方法"
         dense
-        outlined
+        filled
         emit-value
         map-options
         @update:model-value="updateConfig"
@@ -57,7 +57,7 @@
         :options="['follow', 'error', 'manual']"
         label="重定向策略"
         dense
-        outlined
+        filled
         emit-value
         map-options
         @update:model-value="updateConfig"

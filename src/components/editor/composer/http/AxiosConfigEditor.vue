@@ -17,7 +17,7 @@
             ]"
             label="请求方法"
             dense
-            outlined
+            filled
             emit-value
             map-options
             @update:model-value="updateConfig"
@@ -108,7 +108,7 @@
         :options="['json', 'text', 'blob', 'arraybuffer']"
         label="响应类型"
         dense
-        outlined
+        filled
         emit-value
         map-options
         @update:model-value="updateConfig"

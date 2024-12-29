@@ -26,7 +26,7 @@
               command.label
             }}</q-item-label>
           </q-item-section>
-          <q-item-section side>
+          <q-item-section side style="padding-left: 8px">
             <q-icon name="drag_indicator" color="grey-6" size="16px" />
           </q-item-section>
         </q-item>
