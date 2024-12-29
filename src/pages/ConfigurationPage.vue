@@ -86,7 +86,7 @@ export default {
   },
   data() {
     return {
-      currentTag: "默认",
+      currentTag: "",
       lastTag: "",
       activatedQuickCommandFeatureCodes: [],
       activatedQuickPanels: [],
@@ -205,13 +205,11 @@ export default {
       this.getAllQuickCommandTags();
     },
     getAllQuickCommandTags() {
+      // 获取所有标签
       this.allQuickCommandTags = _.union(
         ...Object.values(this.allQuickCommands).map((x) => x.tags)
       )
-        .concat([
-          "未分类",
-          // "来自分享"
-        ])
+        .concat(["未分类"])
         .filter((x) => x);
     },
     // 监听命令变更事件

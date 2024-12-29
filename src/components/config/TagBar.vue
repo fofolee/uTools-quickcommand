@@ -17,13 +17,35 @@
       :key="denseTagBar"
       :dense="denseTagBar"
     >
-      <!-- 所有标签 -->
+      <!-- 可拖拽标签 -->
+      <draggable
+        v-model="sortableTags"
+        :animation="200"
+        ghost-class="ghost"
+        tag="div"
+        item-key="tag"
+        class="draggable-container"
+        handle=".q-tab"
+        @change="handleTagsChange"
+      >
+        <template #item="{ element }">
+          <q-tab
+            :name="element"
+            :data-active-panel="activatedQuickPanels.includes(element)"
+            class="draggable-tag"
+          >
+            {{ element }}
+          </q-tab>
+        </template>
+      </draggable>
+      <!-- 固定标签（不可拖拽） -->
       <q-tab
-        v-for="tag in allQuickCommandTags"
+        v-for="tag in fixedTags"
         :key="tag"
         :name="tag"
         :data-search-result="tag === '搜索结果'"
         :data-active-panel="activatedQuickPanels.includes(tag)"
+        class="fixed-tag"
       >
         {{ tag }}
         <q-tooltip v-if="tag === '未分类'">
@@ -36,8 +58,17 @@
 </template>
 
 <script>
+import draggable from "vuedraggable";
+
+const FIXED_TAGS = ["未分类", "默认", "搜索结果"];
+const TAG_ORDER_KEY = "cfg_tagOrder";
+
 export default {
   name: "TagBar",
+  components: {
+    draggable,
+  },
+  emits: ["update:modelValue", "tags-reordered"],
   props: {
     tabBarWidth: {
       type: String,
@@ -60,6 +91,19 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      savedTagOrder: null, // 缓存标签顺序
+    };
+  },
+  created() {
+    // 初始化时读取一次数据库
+    this.savedTagOrder = this.$root.utools.getDB(TAG_ORDER_KEY);
+    if (!this.savedTagOrder.length) {
+      this.savedTagOrder = this.allQuickCommandTags;
+    }
+    this.currentTag = this.savedTagOrder[0];
+  },
   computed: {
     currentTag: {
       get() {
@@ -68,6 +112,56 @@ export default {
       set(value) {
         this.$emit("update:modelValue", value);
       },
+    },
+    // 固定标签（不可拖拽）
+    fixedTags() {
+      return FIXED_TAGS.filter((tag) => this.allQuickCommandTags.includes(tag));
+    },
+    // 可拖拽标签
+    sortableTags: {
+      get() {
+        const draggableTags = this.allQuickCommandTags.filter(
+          (tag) => !FIXED_TAGS.includes(tag)
+        );
+
+        // 根据保存的顺序排序
+        const orderedTags = [];
+        // 先添加有序的标签
+        this.savedTagOrder.forEach((tag) => {
+          if (draggableTags.includes(tag)) {
+            orderedTags.push(tag);
+          }
+        });
+        // 再添加新标签
+        draggableTags.forEach((tag) => {
+          if (!orderedTags.includes(tag)) {
+            orderedTags.push(tag);
+          }
+        });
+
+        return orderedTags;
+      },
+      set(value) {
+        // 更新内部缓存
+        this.savedTagOrder = value;
+        // 保存到数据库
+        this.$root.utools.putDB(value, TAG_ORDER_KEY);
+        // 触发标签重排序事件
+        this.$emit("tags-reordered", value);
+      },
+    },
+  },
+  methods: {
+    handleTagsChange(evt) {
+      if (evt.moved) {
+        const newOrder = [...this.sortableTags];
+        // 更新内部缓存
+        this.savedTagOrder = newOrder;
+        // 保存到数据库
+        this.$root.utools.putDB(newOrder, TAG_ORDER_KEY);
+        // 触发重新加载标签
+        this.$emit("tags-reordered", newOrder);
+      }
     },
   },
 };
@@ -156,8 +250,21 @@ export default {
   width: 0 !important;
 }
 
-/* 暗色模式适配 */
-:deep(.body--dark) .q-tab:hover::after {
+/* 拖拽相关样式 */
+.draggable-container {
+  width: 100%;
+}
+
+.draggable-tag {
+  cursor: move;
+  touch-action: none;
+}
+
+.ghost {
   opacity: 0.15;
+}
+
+.fixed-tag {
+  cursor: default;
 }
 </style>
