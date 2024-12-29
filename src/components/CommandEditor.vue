@@ -82,10 +82,25 @@ import CommandSideBar from "components/editor/CommandSideBar";
 import CommandLanguageBar from "components/editor/CommandLanguageBar";
 import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
+
+// 预加载 MonacoEditor
+const MonacoEditorPromise = import("components/editor/MonacoEditor");
+// 在空闲时预加载
+if (window.requestIdleCallback) {
+  window.requestIdleCallback(() => {
+    MonacoEditorPromise;
+  });
+} else {
+  setTimeout(() => {
+    MonacoEditorPromise;
+  }, 0);
+}
+
 // Performance Scripting > 500ms
-const MonacoEditor = defineAsyncComponent(() =>
-  import("components/editor/MonacoEditor")
-);
+const MonacoEditor = defineAsyncComponent({
+  loader: () => MonacoEditorPromise,
+  timeout: 3000,
+});
 
 export default {
   components: {
@@ -326,7 +341,7 @@ export default {
 }
 
 .command-editor-container.run-code {
-  animation: slideDownIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: none;
 }
 
 .command-editor-container.leaving {
