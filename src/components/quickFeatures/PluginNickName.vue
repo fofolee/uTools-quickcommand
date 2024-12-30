@@ -95,7 +95,7 @@ export default {
     };
   },
   mounted() {
-    this.plugins = _.values(window.getUtoolsPlugins());
+    this.plugins = window.lodashM.values(window.getUtoolsPlugins());
     this.plugin = this.plugins[0];
     this.feature = this.features[0];
   },

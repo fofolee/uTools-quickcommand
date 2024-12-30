@@ -27,7 +27,7 @@ export default {
   },
   methods: {
     runCurrentCommand(command) {
-      this.$refs.result.runCurrentCommand(_.cloneDeep(command));
+      this.$refs.result.runCurrentCommand(window.lodashM.cloneDeep(command));
     },
   },
 };

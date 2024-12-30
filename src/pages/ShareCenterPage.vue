@@ -195,9 +195,9 @@ export default {
       if (!code)
         return quickcommand.showMessageBox("该命令格式有误！", "error");
       this.installedCodes.push(code);
-      let pushData = _.cloneDeep(command);
+      let pushData = window.lodashM.cloneDeep(command);
       pushData.fromShare = true;
-      this.$root.utools.putDB(_.cloneDeep(pushData), "qc_" + code);
+      this.$root.utools.putDB(window.lodashM.cloneDeep(pushData), "qc_" + code);
       // 通过模拟访问页面来统计下载量
       utools.ubrowser
         .goto(`https://www.yuque.com/${this.releaseRepo}/${code}`)
@@ -249,7 +249,7 @@ export default {
           this.compareTime(y.content_updated_at, x.content_updated_at)
         );
         this.checkCommands();
-        this.matchedCommands = _.cloneDeep(this.remoteCommands);
+        this.matchedCommands = window.lodashM.cloneDeep(this.remoteCommands);
         this.fetchCommandDetails(1);
       });
     },
@@ -265,7 +265,7 @@ export default {
           item.data.updateTime || "2022-04-01T00:00:00.000Z";
         if (this.compareTime(remote.content_updated_at, localUpdateTime) > 0) {
           needUpdate.push(code);
-          _.pull(this.remoteCommands, remote);
+          window.lodashM.pull(this.remoteCommands, remote);
           this.remoteCommands.unshift(remote);
         } else installed.push(code);
         this.installedCodes = installed;

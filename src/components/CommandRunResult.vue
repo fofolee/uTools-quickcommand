@@ -1,31 +1,63 @@
 <template>
   <div>
-    <q-dialog v-model="isResultShow" :position="fromUtools ? 'top' : 'bottom'" @hide="stopRun" :maximized="fromUtools"
-      :transition-duration="fromUtools ? 0 : 200">
-      <q-card :style="{
-      maxWidth: fromUtools ? '100%' : '700px',
-      width: fromUtools ? '100%' : '700px',
-      overflow: 'hidden',
-    }">
-        <div v-if="!(enableHtml && fromUtools)" :style="{
-      height: headerHeight + 'px',
-    }" class="flex items-center justify-between">
+    <q-dialog
+      v-model="isResultShow"
+      :position="fromUtools ? 'top' : 'bottom'"
+      @hide="stopRun"
+      :maximized="fromUtools"
+      :transition-duration="fromUtools ? 0 : 200"
+    >
+      <q-card
+        :style="{
+          maxWidth: fromUtools ? '100%' : '700px',
+          width: fromUtools ? '100%' : '700px',
+          overflow: 'hidden',
+        }"
+      >
+        <div
+          v-if="!(enableHtml && fromUtools)"
+          :style="{
+            height: headerHeight + 'px',
+          }"
+          class="flex items-center justify-between"
+        >
           <div>
             <q-avatar :size="`${headerHeight}`">
-              <q-icon :class="runResultStatus ? 'text-green' : 'text-red'"
-                :name="runResultStatus ? 'task_alt' : 'error'" size="sm"></q-icon>
+              <q-icon
+                :class="runResultStatus ? 'text-green' : 'text-red'"
+                :name="runResultStatus ? 'task_alt' : 'error'"
+                size="sm"
+              ></q-icon>
             </q-avatar>
             <span class="text-weight-bold text-h7">运行结果</span>
           </div>
-          <ResultMenu class="no-shadow q-pa-sm" :stretch="true" :content="runResult.join('')" :closebtn="!fromUtools"
-            :textbtn="!enableHtml" :imagebtn="!enableHtml && isDataUrl" @showImg="showBase64Img" :style="{
-      height: headerHeight + 'px',
-    }" />
+          <ResultMenu
+            class="no-shadow q-pa-sm"
+            :stretch="true"
+            :content="runResult.join('')"
+            :closebtn="!fromUtools"
+            :textbtn="!enableHtml"
+            :imagebtn="!enableHtml && isDataUrl"
+            @showImg="showBase64Img"
+            :style="{
+              height: headerHeight + 'px',
+            }"
+          />
         </div>
-        <div :style="{ maxHeight: maxHeight - headerHeight + 'px' }" class="scroll">
-          <ResultArea v-if="isResultShow" @frameLoad="frameLoad" :frameInitHeight="frameInitHeight"
-            :enableHtml="enableHtml" :runResultStatus="runResultStatus" :runResult="runResult" :key="timeStamp"
-            @mouseup="selectHandler" />
+        <div
+          :style="{ maxHeight: maxHeight - headerHeight + 'px' }"
+          class="scroll"
+        >
+          <ResultArea
+            v-if="isResultShow"
+            @frameLoad="frameLoad"
+            :frameInitHeight="frameInitHeight"
+            :enableHtml="enableHtml"
+            :runResultStatus="runResultStatus"
+            :runResult="runResult"
+            :key="timeStamp"
+            @mouseup="selectHandler"
+          />
           <q-resize-observer @resize="autoHeight" debounce="0" />
         </div>
         <q-menu v-if="selectText" touch-position @before-hide="clearSelect">
@@ -35,7 +67,6 @@
     </q-dialog>
   </div>
 </template>
-
 
 <script>
 import outputTypes from "js/options/outputTypes.js";
@@ -158,14 +189,14 @@ export default {
     },
     escapeItem(item) {
       // 无论什么类型，先转为String
-      if (typeof item === 'object') {
+      if (typeof item === "object") {
         try {
-          item = JSON.stringify(item)
+          item = JSON.stringify(item);
         } catch (_) {
-          item = item.toString()
+          item = item.toString();
         }
       } else {
-        item = item.toString()
+        item = item.toString();
       }
       // 通过JSON.stringify，将所有特殊字符转义，输出为一个带双引号的字符串
       item = JSON.stringify(item)
@@ -174,19 +205,21 @@ export default {
         // 单独转义单引号、反引号
         .replace(/`|'/g, "\\$&")
         // 转义双括号
-        .replace(/\{\{/g, "\\{\\{")
+        .replace(/\{\{/g, "\\{\\{");
       // .replace("$", '$$$')
-      return item
+      return item;
     },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
       let userData = this.$root.utools.userData.all();
-      let spVars = _.filter(specialVars, (sp) => sp.repl);
-      _.forIn(spVars, (val, key) => {
+      let spVars = window.lodashM.filter(specialVars, (sp) => sp.repl);
+      window.lodashM.forIn(spVars, (val, key) => {
         let label = val.label.slice(0, -2);
         if (cmd.includes(label)) {
           let replData = label === "{{usr:" ? userData : this.$root.enterData;
-          cmd = cmd.replace(val.match, (x) => this.escapeItem(val.repl(x, replData)));
+          cmd = cmd.replace(val.match, (x) =>
+            this.escapeItem(val.repl(x, replData))
+          );
         }
       });
       return cmd;
@@ -200,7 +233,7 @@ export default {
         this.subInputValue = text;
       }, placeholder);
       let querySubInput = () => {
-        let command = _.cloneDeep(currentCommand);
+        let command = window.lodashM.cloneDeep(currentCommand);
         command.cmd = currentCommand.cmd.replace(
           specialVars.subinput.match,
           this.subInputValue
@@ -270,7 +303,7 @@ export default {
       this.autoScroll();
     },
     async handleContent(content) {
-      if (!_.isArray(content)) content = [content];
+      if (!window.lodashM.isArray(content)) content = [content];
       if (this.enableHtml) content = await this.cacheScript(content);
       return content;
     },

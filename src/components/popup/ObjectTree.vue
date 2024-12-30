@@ -47,12 +47,12 @@ export default {
       if (item === null) return "null";
       if (typeof item === "undefined") return "undefined";
       if (typeof item === "string")
-        return _.truncate(item, { length: maxSize.txt });
+        return window.lodashM.truncate(item, { length: maxSize.txt });
       if (typeof item === "number") return item;
       if (typeof item === "function")
         return `f ${item.name ? item.name + "()" : "anonymous()"}`;
       if (typeof item !== "object") return item.toString();
-      if (_.isBuffer(item)) {
+      if (window.lodashM.isBuffer(item)) {
         var bufferString = `[Buffer ${item
           .slice(0, maxSize.buff)
           .toString("hex")

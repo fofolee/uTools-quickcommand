@@ -167,7 +167,10 @@ export default {
           ? this.$root.utools.getDB("cfg_codeHistory")
           : this.action.data;
       quickCommandInfo?.program &&
-        Object.assign(this.quickcommandInfo, _.cloneDeep(quickCommandInfo));
+        Object.assign(
+          this.quickcommandInfo,
+          window.lodashM.cloneDeep(quickCommandInfo)
+        );
       // 默认命令不可编辑
       if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
         this.canCommandSave = false;
@@ -230,8 +233,11 @@ export default {
     saveCurrentCommand(message = "保存成功") {
       let updatedData = this.$refs.sidebar?.SaveMenuData();
       if (!updatedData) return;
-      Object.assign(this.quickcommandInfo, _.cloneDeep(updatedData));
-      let newQuickcommandInfo = _.cloneDeep(this.quickcommandInfo);
+      Object.assign(
+        this.quickcommandInfo,
+        window.lodashM.cloneDeep(updatedData)
+      );
+      let newQuickcommandInfo = window.lodashM.cloneDeep(this.quickcommandInfo);
       this.$root.utools.putDB(
         newQuickcommandInfo,
         "qc_" + this.quickcommandInfo.features.code
@@ -247,7 +253,7 @@ export default {
     // 运行
     runCurrentCommand(cmd) {
       this.saveToHistory(); // 运行时不保存但记录历史
-      let command = _.cloneDeep(this.quickcommandInfo);
+      let command = window.lodashM.cloneDeep(this.quickcommandInfo);
       if (cmd) command.cmd = cmd;
       command.output =
         this.$refs.sidebar?.currentCommand.output ||
@@ -257,7 +263,7 @@ export default {
     },
     saveCodeHistory() {
       if (this.action.type !== "run") return;
-      let command = _.cloneDeep(this.quickcommandInfo);
+      let command = window.lodashM.cloneDeep(this.quickcommandInfo);
       command.cursorPosition = this.$refs.editor.getCursorPosition();
       this.$root.utools.putDB(command, "cfg_codeHistory");
     },

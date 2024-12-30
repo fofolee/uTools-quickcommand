@@ -87,7 +87,7 @@ export default defineComponent({
     return {
       step: 1,
       selectedActions: [],
-      configs: _.cloneDeep(defaultUBrowserConfigs),
+      configs: window.lodashM.cloneDeep(defaultUBrowserConfigs),
     };
   },
   methods: {

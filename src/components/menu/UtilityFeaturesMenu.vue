@@ -14,7 +14,9 @@
           style="width: 280px"
           autofocus
           v-model="$root.profile.quickFileTag"
-          @blur="$root.profile.quickFileTag || ($root.profile.quickFileTag = '文件')"
+          @blur="
+            $root.profile.quickFileTag || ($root.profile.quickFileTag = '文件')
+          "
           type="text"
         >
           <template v-slot:append>
@@ -25,7 +27,11 @@
               color="primary"
             />
           </template>
-          <q-tooltip>启用后，选中文件可以通过超级面板快速将文件收藏到「{{ $root.profile.quickFileTag }}」标签</q-tooltip>
+          <q-tooltip
+            >启用后，选中文件可以通过超级面板快速将文件收藏到「{{
+              $root.profile.quickFileTag
+            }}」标签</q-tooltip
+          >
         </q-input>
       </q-item>
       <q-item>
@@ -40,7 +46,9 @@
           input-class="text-center"
           style="width: 280px"
           v-model="$root.profile.quickUrlTag"
-          @blur="$root.profile.quickUrlTag || ($root.profile.quickUrlTag = '网址')"
+          @blur="
+            $root.profile.quickUrlTag || ($root.profile.quickUrlTag = '网址')
+          "
           type="text"
         >
           <template v-slot:append>
@@ -51,7 +59,11 @@
               color="primary"
             />
           </template>
-          <q-tooltip>启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{ $root.profile.quickUrlTag }}」标签</q-tooltip>
+          <q-tooltip
+            >启用后，在浏览器界面可以通过超级面板快速将网址收藏到「{{
+              $root.profile.quickUrlTag
+            }}」标签</q-tooltip
+          >
         </q-input>
       </q-item>
       <q-item>
@@ -89,13 +101,19 @@
         </q-item-section>
         <q-field dense outlined style="width: 280px">
           <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0">快捷命令服务</div>
+            <div class="self-center full-width no-outline" tabindex="0">
+              快捷命令服务
+            </div>
           </template>
           <template v-slot:append>
             <q-btn flat @click="$router.push('server')" icon="open_in_new" />
           </template>
           <q-tooltip>
-            通过本地监听 {{ $root.nativeProfile.serverPort }} 端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
+            通过本地监听
+            {{
+              $root.nativeProfile.serverPort
+            }}
+            端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
             <br />需要配置插件跟随 utools 启动和保留后台<br />也可在主输入框通过关键字「快捷命令服务配置」进入
           </q-tooltip>
         </q-field>
@@ -106,7 +124,9 @@
         </q-item-section>
         <q-field dense outlined style="width: 280px">
           <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0">运行代码</div>
+            <div class="self-center full-width no-outline" tabindex="0">
+              运行代码
+            </div>
           </template>
           <template v-slot:append>
             <q-btn flat @click="$router.push('code')" icon="open_in_new" />
@@ -124,13 +144,15 @@
 import features from "js/options/quickFeatures.js";
 
 export default {
-  name: 'UtilityFeaturesMenu',
+  name: "UtilityFeaturesMenu",
   methods: {
     toggleFeature(type, enable) {
       enable
-        ? this.$root.utools.whole.setFeature(_.cloneDeep(features[type]))
+        ? this.$root.utools.whole.setFeature(
+            window.lodashM.cloneDeep(features[type])
+          )
         : this.$root.utools.whole.removeFeature(features[type].code);
-    }
-  }
+    },
+  },
 };
 </script>

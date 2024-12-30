@@ -33,10 +33,10 @@ const isPathMatched = (currentPath, targetPaths) => {
  * @returns {Object} 处理后的对象
  */
 const removeEmptyValues = (obj) => {
-  return _.omitBy(obj, (value) => {
-    if (_.isNil(value) || value === "") return true;
+  return window.lodashM.omitBy(obj, (value) => {
+    if (window.lodashM.isNil(value) || value === "") return true;
     if (typeof value === "object")
-      return _.isEmpty(removeEmptyValues(value));
+      return window.lodashM.isEmpty(removeEmptyValues(value));
     return false;
   });
 };

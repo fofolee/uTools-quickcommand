@@ -437,7 +437,7 @@ export default {
       if (this.currentCommand.features.mainPush) return ["text"];
       switch (this.$parent.quickcommandInfo.program) {
         case "quickcommand":
-          return _.without(this.outputTypesOptions, "terminal");
+          return window.lodashM.without(this.outputTypesOptions, "terminal");
         case "html":
           return ["html"];
         default:
@@ -476,7 +476,14 @@ export default {
       this.cmdMatch = currentQuickCommandCmds.match;
       Object.assign(
         this.currentCommand,
-        _.cloneDeep(_.pick(this.quickcommandInfo, "tags", "output", "features"))
+        window.lodashM.cloneDeep(
+          window.lodashM.pick(
+            this.quickcommandInfo,
+            "tags",
+            "output",
+            "features"
+          )
+        )
       );
       this.setIcon(this.quickcommandInfo.program);
       this.platformVerify();

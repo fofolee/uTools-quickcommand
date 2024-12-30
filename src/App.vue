@@ -85,16 +85,19 @@ export default defineComponent({
       let nativeProfile = this.utools.getDB(
         "cfg_" + utools.getNativeId() + "_profile"
       );
-      this.profile = Object.assign(_.cloneDeep(this.profile), commonProfile);
+      this.profile = Object.assign(
+        window.lodashM.cloneDeep(this.profile),
+        commonProfile
+      );
       this.nativeProfile = Object.assign(
-        _.cloneDeep(this.nativeProfile),
+        window.lodashM.cloneDeep(this.nativeProfile),
         nativeProfile
       );
     },
     saveProfile() {
-      this.utools.putDB(_.cloneDeep(this.profile), "cfg_profile");
+      this.utools.putDB(window.lodashM.cloneDeep(this.profile), "cfg_profile");
       this.utools.putDB(
-        _.cloneDeep(this.nativeProfile),
+        window.lodashM.cloneDeep(this.nativeProfile),
         "cfg_" + utools.getNativeId() + "_profile"
       );
     },
@@ -103,9 +106,12 @@ export default defineComponent({
       if (window.multiProcessDetection())
         return console.log("multiProcess Detected");
       // 计划任务
-      _.forIn(this.nativeProfile.crontabs, (cronExp, featureCode) => {
-        this.runCronTask(featureCode, cronExp);
-      });
+      window.lodashM.forIn(
+        this.nativeProfile.crontabs,
+        (cronExp, featureCode) => {
+          this.runCronTask(featureCode, cronExp);
+        }
+      );
       // 快捷命令服务
       if (this.nativeProfile.serverStatus) {
         window.quickcommandHttpServer().run(this.nativeProfile.serverPort);
@@ -221,7 +227,7 @@ export default defineComponent({
       window.showUb.help();
       // 处理统计数据
       // let statisticsData = this.utools.getDB("cfg_statisticsData");
-      // _.forIn(statisticsData, (data, year) => {
+      // window.lodashM.forIn(statisticsData, (data, year) => {
       //   statisticsData[year] = data.map((x) => {
       //     if (!x.command) return x;
       //     let code =
@@ -238,7 +244,12 @@ export default defineComponent({
       this.utools.setStorage("st_v300Inited", true);
     },
     getOpacityColor(color, percent) {
-      return color + parseInt(0xff * percent).toString(16).padStart(2, "0");
+      return (
+        color +
+        parseInt(0xff * percent)
+          .toString(16)
+          .padStart(2, "0")
+      );
     },
   },
   watch: {

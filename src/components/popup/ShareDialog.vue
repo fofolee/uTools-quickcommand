@@ -170,7 +170,10 @@ export default {
       return this.$root.utools.getDB("cfg_extraInfo");
     },
     saveYuQueInfo() {
-      this.$root.utools.putDB(_.cloneDeep(this.yuQueInfo), "cfg_extraInfo");
+      this.$root.utools.putDB(
+        window.lodashM.cloneDeep(this.yuQueInfo),
+        "cfg_extraInfo"
+      );
     },
   },
 };

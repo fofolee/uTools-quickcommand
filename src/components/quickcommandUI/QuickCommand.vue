@@ -65,16 +65,16 @@ export default {
             hints: [],
             title: title,
           };
-          if (!_.isObject(options))
+          if (!window.lodashM.isObject(options))
             return reject(new TypeError(`应为 Object, 而非 ${typeof options}`));
-          if (_.isArray(options)) props.labels = options;
+          if (window.lodashM.isArray(options)) props.labels = options;
           else Object.assign(props, options);
           this.showUI(InputBox, props, false, reslove);
         }),
 
       showButtonBox: (labels = ["确定"], title = "") =>
         new Promise((reslove, reject) => {
-          if (!_.isArray(labels))
+          if (!window.lodashM.isArray(labels))
             return reject(new TypeError(`应为 Array, 而非 ${typeof labels}`));
           this.showUI(ButtonBox, { labels, title }, false, reslove);
         }),
@@ -90,7 +90,7 @@ export default {
         }),
 
       showMessageBox: (message, icon = "success", time, position = "top") => {
-        message = _.truncate(message, { length: 1200 });
+        message = window.lodashM.truncate(message, { length: 1200 });
         if (icon === "success") icon = "positive";
         if (icon === "error") icon = "negative";
         if (typeof time === "undefined")
@@ -119,7 +119,7 @@ export default {
 
       showSelectList: (initItems, options = {}) =>
         new Promise((reslove, reject) => {
-          if (!_.isArray(initItems))
+          if (!window.lodashM.isArray(initItems))
             return reject(
               new TypeError(`应为 Array, 而非 ${typeof initItems}`)
             );

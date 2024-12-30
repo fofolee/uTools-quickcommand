@@ -102,7 +102,9 @@ export default {
   computed: {
     // 当前标签下的所有快捷命令
     currentTagQuickCommands() {
-      let commands = Object.values(_.cloneDeep(this.allQuickCommands));
+      let commands = Object.values(
+        window.lodashM.cloneDeep(this.allQuickCommands)
+      );
 
       // 根据 order 排序
       const sortByOrder = (cmds) => {
@@ -197,7 +199,7 @@ export default {
     },
     // 获取所有的命令（导出的格式）
     getAllQuickCommands() {
-      this.allQuickCommands = _.cloneDeep(defaultCommands);
+      this.allQuickCommands = window.lodashM.cloneDeep(defaultCommands);
       this.$root.utools.getAll("qc_").forEach((x) => {
         if (x.data.features.code.includes("default_")) return;
         this.allQuickCommands[x.data.features.code] = x.data;
@@ -206,9 +208,8 @@ export default {
     },
     getAllQuickCommandTags() {
       // 获取所有标签
-      this.allQuickCommandTags = _.union(
-        ...Object.values(this.allQuickCommands).map((x) => x.tags)
-      )
+      this.allQuickCommandTags = window.lodashM
+        .union(...Object.values(this.allQuickCommands).map((x) => x.tags))
         .concat(["未分类"])
         .filter((x) => x);
     },
@@ -236,13 +237,13 @@ export default {
     },
     runCommand(code) {
       this.$refs.result.runCurrentCommand(
-        _.cloneDeep(this.allQuickCommands[code])
+        window.lodashM.cloneDeep(this.allQuickCommands[code])
       );
     },
     // 启用命令
     enableCommand(code) {
       this.$root.utools.whole.setFeature(
-        _.cloneDeep(this.allQuickCommands[code].features)
+        window.lodashM.cloneDeep(this.allQuickCommands[code].features)
       );
       this.activatedQuickCommandFeatureCodes.push(code);
     },
@@ -283,7 +284,7 @@ export default {
       if (typeof command === "string") command = this.allQuickCommands[command];
       this.commandEditorAction = {
         type: "edit",
-        data: _.cloneDeep(command),
+        data: window.lodashM.cloneDeep(command),
       };
       this.isCommandEditorShow = true;
     },
@@ -356,7 +357,7 @@ export default {
           },
         ],
       };
-      let commandsToExport = _.cloneDeep(this.allQuickCommands);
+      let commandsToExport = window.lodashM.cloneDeep(this.allQuickCommands);
       // 不导出默认命令
       Object.keys(commandsToExport).forEach((code) => {
         if (this.isDefaultCommand(code)) delete commandsToExport[code];
@@ -379,7 +380,7 @@ export default {
           this.exportAllCommands(false);
           this.$root.utools.delAll("qc_");
           this.clearAllFeatures();
-          this.allQuickCommands = _.cloneDeep(defaultCommands);
+          this.allQuickCommands = window.lodashM.cloneDeep(defaultCommands);
           this.getAllQuickCommandTags();
           this.changeCurrentTag("默认");
           quickcommand.showMessageBox(
@@ -498,7 +499,10 @@ export default {
       // 只保存被修改的命令
       Object.entries(tagCommands).forEach(([code, command]) => {
         if (!this.isDefaultCommand(code)) {
-          this.$root.utools.putDB(_.cloneDeep(command), "qc_" + code);
+          this.$root.utools.putDB(
+            window.lodashM.cloneDeep(command),
+            "qc_" + code
+          );
         }
       });
     },

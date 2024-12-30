@@ -81,7 +81,7 @@ export default {
   },
   mounted() {
     this.frameInit();
-    URL.revokeObjectURL(this.src)
+    URL.revokeObjectURL(this.src);
   },
   methods: {
     frameInit() {
@@ -109,8 +109,8 @@ export default {
         quickcommand.showMessageBox(args.join(" "), "success", 0);
       };
       return {
-        quickcommand: _.cloneDeep(quickcommand),
-        utools: _.cloneDeep(utools),
+        quickcommand: window.lodashM.cloneDeep(quickcommand),
+        utools: window.lodashM.cloneDeep(utools),
         parent: undefined,
         console: {
           log: showLog,

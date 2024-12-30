@@ -103,18 +103,18 @@ export default defineComponent({
   },
   created() {
     // 初始化本地配置
-    this.localConfigs = _.cloneDeep(this.configs);
+    this.localConfigs = window.lodashM.cloneDeep(this.configs);
   },
   methods: {
     updateConfigs() {
-      this.$emit("update:configs", _.cloneDeep(this.localConfigs));
+      this.$emit("update:configs", window.lodashM.cloneDeep(this.localConfigs));
     },
   },
   watch: {
     configs: {
       deep: true,
       handler(newConfigs) {
-        this.localConfigs = _.cloneDeep(newConfigs);
+        this.localConfigs = window.lodashM.cloneDeep(newConfigs);
       },
     },
     selectedUA(value) {

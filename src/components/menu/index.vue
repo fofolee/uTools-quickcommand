@@ -144,7 +144,10 @@ export default {
       this.$root.utools.whole.removeFeature(
         `panel_${window.hexEncode(this.currentTag)}`
       );
-      _.pull(this.$root.$refs.view.activatedQuickPanels, this.currentTag);
+      window.lodashM.pull(
+        this.$root.$refs.view.activatedQuickPanels,
+        this.currentTag
+      );
       quickcommand.showMessageBox("取消收藏成功");
     },
   },

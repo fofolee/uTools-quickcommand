@@ -49,7 +49,8 @@ export default {
   computed: {
     isPlatformSupported() {
       let { platform } = this.commandInfo.features;
-      return !_.isEmpty(platform) && !platform.includes(window.processPlatform)
+      return !window.lodashM.isEmpty(platform) &&
+        !platform.includes(window.processPlatform)
         ? false
         : true;
     },

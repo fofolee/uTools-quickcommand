@@ -93,7 +93,8 @@ export default {
   },
   computed: {
     cronConverted() {
-      return _.values(this.cronDetail)
+      return window.lodashM
+        .values(this.cronDetail)
         .map((x) => x.value)
         .join(" ");
     },
@@ -129,7 +130,7 @@ export default {
       window.showUb.help("#Q0e7s");
     },
     initValue() {
-      this.cronDetail = _.cloneDeep(this.default);
+      this.cronDetail = window.lodashM.cloneDeep(this.default);
       if (!this.cronExp) return;
       let splited = this.cronExp.split(" ");
       Object.keys(this.cronDetail).forEach((key, index) => {
@@ -149,7 +150,7 @@ export default {
     },
     delCrontab() {
       this.$emit("delCrontab");
-      this.cronDetail = _.cloneDeep(this.default);
+      this.cronDetail = window.lodashM.cloneDeep(this.default);
       quickcommand.showMessageBox("禁用成功");
     },
   },

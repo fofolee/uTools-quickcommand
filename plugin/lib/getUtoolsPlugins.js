@@ -32,7 +32,7 @@ const getUtoolsPlugins = () => {
           return true;
         });
       });
-      if (!_.isEmpty(keyWordFeatures)) {
+      if (!window.lodashM.isEmpty(keyWordFeatures)) {
         pluginInfo["keyWordFeatures"] = keyWordFeatures;
         plugins[pluginInfo.pluginName] = pluginInfo;
       }

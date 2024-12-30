@@ -15,7 +15,7 @@ const md5 = (input) => {
   return crypto.createHash("md5").update(input, "utf8").digest("hex");
 };
 
-window._ = require("lodash");
+window.lodashM = require("./lib/lodashMini");
 
 const getCommandToLaunchTerminal = require("./lib/getCommandToLaunchTerminal");
 const shortCodes = require("./lib/shortCodes");
@@ -113,7 +113,6 @@ let getSandboxFuns = () => {
     electron,
     axios,
     Audio,
-    _,
     AbortController,
     AbortSignal,
     Buffer,
@@ -142,7 +141,7 @@ let liteErr = (e) => {
 // vm 模块将无法在渲染进程中使用，改用 ses 来执行代码
 window.evalCodeInSandbox = (code, addVars = {}) => {
   let sandboxWithAD = Object.assign(addVars, getSandboxFuns());
-  sandboxWithAD.quickcommand = _.cloneDeep(quickcommand);
+  sandboxWithAD.quickcommand = window.lodashM.cloneDeep(quickcommand);
   try {
     return new Compartment(sandboxWithAD).evaluate(code);
   } catch (error) {
@@ -163,7 +162,7 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
     },
   };
   let sandboxWithAD = Object.assign(addVars, sandbox);
-  sandboxWithAD.quickcommand = _.cloneDeep(quickcommand);
+  sandboxWithAD.quickcommand = window.lodashM.cloneDeep(quickcommand);
   if (addVars.enterData) {
     sandboxWithAD.quickcommand.enterData = addVars.enterData;
     sandboxWithAD.quickcommand.payload = addVars.enterData.payload;
@@ -229,7 +228,7 @@ window.runCodeFile = (cmd, option, terminal, callback, realTime = true) => {
   } else {
     cmdline = `${bin} ${argv} "${script}" ${scptarg}`;
   }
-  let processEnv = _.cloneDeep(process.env);
+  let processEnv = window.lodashM.cloneDeep(process.env);
   if (envPath) processEnv.PATH = envPath;
   if (alias) cmdline = alias + "\n" + cmdline;
   // 在终端中输出
@@ -293,7 +292,9 @@ window.quickcommandHttpServer = () => {
     httpServer = http.createServer();
     httpServer.on("request", (req, res) => {
       if (req.method === "GET") {
-        let parsedParams = _.cloneDeep(url.parse(req.url, true).query);
+        let parsedParams = window.lodashM.cloneDeep(
+          url.parse(req.url, true).query
+        );
         runUserCode(res, parsedParams);
       } else if (req.method === "POST") {
         let data = [];
@@ -307,7 +308,9 @@ window.quickcommandHttpServer = () => {
           try {
             parsedParams = JSON.parse(params);
           } catch (error) {
-            parsedParams = _.cloneDeep(url.parse("?" + params, true).query);
+            parsedParams = window.lodashM.cloneDeep(
+              url.parse("?" + params, true).query
+            );
           }
           runUserCode(res, parsedParams);
         });

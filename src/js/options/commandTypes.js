@@ -53,7 +53,7 @@ const commandTypes = {
     disabledSpecialVars:
       /{{input}}|{{SelectFile}}|{{pwd}}|{{WindowInfo.*?}}|{{MatchedFiles.*?}}/g,
     matchToCmds: (rules, desc) => rules,
-    verify: (rules) => !_.isEmpty(rules) || "关键词不能为空",
+    verify: (rules) => !window.lodashM.isEmpty(rules) || "关键词不能为空",
   },
   regex: {
     name: "regex",
@@ -120,7 +120,7 @@ const commandTypes = {
         },
       },
     ],
-    verify: (rules) => !_.isEmpty(rules) || "进程名不能为空",
+    verify: (rules) => !window.lodashM.isEmpty(rules) || "进程名不能为空",
   },
   img: {
     name: "img",

@@ -176,7 +176,7 @@ export default {
       });
     },
     getRawCommand() {
-      let command = _.cloneDeep(this.commandInfo);
+      let command = window.lodashM.cloneDeep(this.commandInfo);
       command.features.explain = window.removeHtmlTags(
         command.features.explain
       );

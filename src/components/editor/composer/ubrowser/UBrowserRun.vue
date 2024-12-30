@@ -181,20 +181,20 @@ export default defineComponent({
   emits: ["update:configs"],
   data() {
     return {
-      localConfigs: _.cloneDeep(this.configs),
+      localConfigs: window.lodashM.cloneDeep(this.configs),
     };
   },
   methods: {
     updateConfig(key, value) {
       this.localConfigs.run[key] = value;
-      this.$emit("update:configs", _.cloneDeep(this.localConfigs));
+      this.$emit("update:configs", window.lodashM.cloneDeep(this.localConfigs));
     },
   },
   watch: {
     configs: {
       deep: true,
       handler(newConfigs) {
-        this.localConfigs = _.cloneDeep(newConfigs);
+        this.localConfigs = window.lodashM.cloneDeep(newConfigs);
       },
     },
   },
