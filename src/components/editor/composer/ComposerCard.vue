@@ -130,6 +130,8 @@ import KeyEditor from "./KeyEditor.vue";
 import UBrowserEditor from "./ubrowser/UBrowserEditor.vue";
 import VariableInput from "./VariableInput.vue";
 import AxiosConfigEditor from "./http/AxiosConfigEditor.vue";
+import SymmetricCryptoEditor from "./crypto/SymmetricCryptoEditor.vue";
+import AsymmetricCryptoEditor from "./crypto/AsymmetricCryptoEditor.vue";
 import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
@@ -139,6 +141,8 @@ export default defineComponent({
     UBrowserEditor,
     VariableInput,
     AxiosConfigEditor,
+    SymmetricCryptoEditor,
+    AsymmetricCryptoEditor,
   },
   props: {
     command: {
@@ -351,7 +355,7 @@ export default defineComponent({
 
 .command-item:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
+  /* transform: translateY(-1px); */
 }
 
 .composer-card :deep(.q-field__label) {

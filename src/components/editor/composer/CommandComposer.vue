@@ -163,14 +163,21 @@ export default defineComponent({
 
 /* 布局更加紧凑 */
 /* 输入框高度及字体 */
-.command-composer :deep(.q-field--filled .q-field__control),
-.command-composer :deep(.q-field--filled .q-field__control > *),
+.command-composer :deep(.q-field--filled:not(.q-textarea) .q-field__control),
 .command-composer
-  :deep(.q-field--filled:not(.q-field--labeled) .q-field__native) {
-  border-radius: 5px;
-  font-size: 12px;
+  :deep(.q-field--filled:not(.q-textarea) .q-field__control > *),
+.command-composer
+  :deep(.q-field--filled:not(.q-field--labeled):not(.q-textarea)
+    .q-field__native) {
   max-height: 36px !important;
   min-height: 36px !important;
+}
+
+.command-composer :deep(.q-field--filled .q-field__control),
+.command-composer :deep(.q-field--filled .q-field__control > *),
+.command-composer :deep(.q-field--filled .q-field__native) {
+  border-radius: 5px;
+  font-size: 12px;
 }
 
 /* 输入框图标大小 */

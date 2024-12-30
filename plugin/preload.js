@@ -39,6 +39,7 @@ window.convertFilePathToUtoolsPayload = convertFilePathToUtoolsPayload;
 
 window.getuToolsLite = require("./lib/utoolsLite");
 window.quickcommand = require("./lib/quickcommand");
+window.quickcomposer = require("./lib/quickcomposer");
 window.getQuickcommandTempFile = require("./lib/getQuickcommandTempFile");
 window.imageProcessor = require("./lib/imageprocessor");
 window.showUb = require("./lib/showDocs");
@@ -97,6 +98,7 @@ window.removeHtmlTags = (value) => {
   return quickcommand.htmlParse(value).querySelector("body").innerText;
 };
 
+
 window.hexEncode = (text) => Buffer.from(text, "utf8").toString("hex");
 window.hexDecode = (text) => Buffer.from(text, "hex").toString("utf8");
 window.base64Decode = (text) => Buffer.from(text, "base64").toString("utf8");
@@ -123,6 +125,7 @@ let getSandboxFuns = () => {
     path,
     os,
     child_process,
+    quickcomposer,
   };
   Object.keys(shortCodes).forEach((f) => {
     sandbox[f] = shortCodes[f];
