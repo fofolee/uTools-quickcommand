@@ -145,6 +145,7 @@
 </template>
 
 <script>
+import pictureCompress from "picture-compressor";
 
 export default {
   name: "PersonalizeMenu",
@@ -169,8 +170,9 @@ export default {
       const file =
         mode === "light" ? this.selectFileLight : this.selectFileDark;
       if (!file) return;
-
-      const processedImage = await window.imageProcessor(file.path);
+      const processedImage = await this.compressingPic(
+        window.resolveFileToBase64(file.path)
+      );
 
       if (mode === "light") {
         this.$root.profile.backgroundImgLight = processedImage;
@@ -187,6 +189,16 @@ export default {
     toggleGlassEffect(val) {
       this.$root.profile.glassEffect = val;
       this.$root.saveProfile();
+    },
+    async compressingPic(img) {
+      let compressedImage = await pictureCompress({
+        img: img,
+        width: 1280,
+        height: 720,
+        type: "jpg",
+        quality: 0.8,
+      });
+      return compressedImage.img;
     },
   },
 };

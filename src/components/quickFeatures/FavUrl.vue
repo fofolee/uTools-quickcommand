@@ -51,7 +51,7 @@ export default {
     };
     try {
       let res = await quickcommand.downloadFile(iconUrl, iconPath);
-      if (res) command.features.icon = window.getBase64Ico(iconPath);
+      if (res) command.features.icon = window.resolveFileToBase64(iconPath);
     } catch (e) {}
     this.importCommand(command);
     utools.showNotification("操作成功！");

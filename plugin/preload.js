@@ -21,7 +21,7 @@ const getCommandToLaunchTerminal = require("./lib/getCommandToLaunchTerminal");
 const shortCodes = require("./lib/shortCodes");
 const { pluginInfo, getUtoolsPlugins } = require("./lib/getUtoolsPlugins");
 const {
-  getBase64Ico,
+  resolveFileToBase64,
   getFileInfo,
   getCurrentFolderPathFix,
   saveFile,
@@ -30,7 +30,7 @@ const {
 } = require("./lib/utils");
 window.pluginInfo = pluginInfo;
 window.getUtoolsPlugins = getUtoolsPlugins;
-window.getBase64Ico = getBase64Ico;
+window.resolveFileToBase64 = resolveFileToBase64;
 window.getFileInfo = getFileInfo;
 window.getCurrentFolderPathFix = getCurrentFolderPathFix;
 window.saveFile = saveFile;
@@ -41,7 +41,6 @@ window.getuToolsLite = require("./lib/utoolsLite");
 window.quickcommand = require("./lib/quickcommand");
 window.quickcomposer = require("./lib/quickcomposer");
 window.getQuickcommandTempFile = require("./lib/getQuickcommandTempFile");
-window.imageProcessor = require("./lib/imageprocessor");
 window.showUb = require("./lib/showDocs");
 
 window.getSharedQcById = async (id) => {
@@ -97,7 +96,6 @@ window.htmlEncode = (value) => {
 window.removeHtmlTags = (value) => {
   return quickcommand.htmlParse(value).querySelector("body").innerText;
 };
-
 
 window.hexEncode = (text) => Buffer.from(text, "utf8").toString("hex");
 window.hexDecode = (text) => Buffer.from(text, "hex").toString("utf8");

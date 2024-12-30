@@ -92,7 +92,8 @@ export default {
       options: ref(null),
       loading: false,
       icon8: {
-        platform: "office80,color,fluent,nolan,3d-fluency,isometric,emoji,dusk,stickers,plasticine,bubbles,cotton,clouds,doodle,arcade,pulsar-color,clr-gls,ultraviolet,flat_round,parakeet,neon,matisse,tiny-color,stencil,avantgarde,water-color,retro,3d-plastilina,stitch",
+        platform:
+          "office80,color,fluent,nolan,3d-fluency,isometric,emoji,dusk,stickers,plasticine,bubbles,cotton,clouds,doodle,arcade,pulsar-color,clr-gls,ultraviolet,flat_round,parakeet,neon,matisse,tiny-color,stencil,avantgarde,water-color,retro,3d-plastilina,stitch",
         amount: "300",
         baseUrl: "https://search.icons8.com/api/iconsets/v5/search",
       },
@@ -158,7 +159,7 @@ export default {
         this.localIconFile.slice(-4) === ".exe"
       )
         return this.setIcon(utools.getFileIcon(this.localIconFile));
-      this.compressingPic(window.getBase64Ico(this.localIconFile)).then(
+      this.compressingPic(window.resolveFileToBase64(this.localIconFile)).then(
         (dataUrl) => {
           dataUrl && this.setIcon(dataUrl);
         }
@@ -177,13 +178,15 @@ export default {
         argvs: imgUrl,
         readfile: false,
       });
-      let imgPath = window.getQuickcommandTempFile(imgInfo.ext, 'TempImgFile');
+      let imgPath = window.getQuickcommandTempFile(imgInfo.ext, "TempImgFile");
       quickcommand
         .downloadFile(imgUrl, imgPath)
         .then(() => {
-          this.compressingPic(window.getBase64Ico(imgPath)).then((src) => {
-            callback(src);
-          });
+          this.compressingPic(window.resolveFileToBase64(imgPath)).then(
+            (src) => {
+              callback(src);
+            }
+          );
         })
         .catch((e) => {
           quickcommand.showMessageBox("图片地址有误！", "error");

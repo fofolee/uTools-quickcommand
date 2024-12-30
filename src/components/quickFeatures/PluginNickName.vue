@@ -120,7 +120,7 @@ export default {
         features: {
           cmds: this.nickName,
           explain: this.feature.explain,
-          icon: window.getBase64Ico(this.plugin.logoPath),
+          icon: window.resolveFileToBase64(this.plugin.logoPath),
           platform: this.plugin.platform || ["darwin", "win32", "linux"],
           code: `key_${uid}`,
         },

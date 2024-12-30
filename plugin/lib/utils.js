@@ -3,19 +3,17 @@ const path = require("path");
 const iconv = require("iconv-lite");
 const child_process = require("child_process");
 
-const getBase64Ico = (filepath) => {
-  let sourceImage,
+const resolveFileToBase64 = (filepath) => {
+  let imageBase64,
     ext = path.extname(filepath).slice(1);
   if (["png", "jpg", "jpeg", "bmp", "ico", "gif", "svg"].includes(ext)) {
     if (ext == "svg") ext = "svg+xml";
-    sourceImage =
+    imageBase64 =
       `data:image/${ext};base64,` + fs.readFileSync(filepath, "base64");
-    if (ext == "png") return sourceImage;
   } else {
-    sourceImage = window.utools.getFileIcon(filepath);
-    return sourceImage;
+    imageBase64 = window.utools.getFileIcon(filepath);
   }
-  return sourceImage;
+  return imageBase64;
 };
 
 const getFileInfo = (options) => {
@@ -98,7 +96,7 @@ const convertFilePathToUtoolsPayload = (files) => {
 };
 
 module.exports = {
-  getBase64Ico,
+  resolveFileToBase64,
   getFileInfo,
   getCurrentFolderPathFix,
   saveFile,
