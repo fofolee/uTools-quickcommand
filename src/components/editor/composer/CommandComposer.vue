@@ -217,7 +217,7 @@ export default defineComponent({
 /* 输入框标签字体大小，占位时的位置 */
 .command-composer :deep(.q-field--filled .q-field__label) {
   font-size: 11px;
-  top: 8px;
+  top: 10px;
 }
 
 /* 输入框标签悬浮的位置 */

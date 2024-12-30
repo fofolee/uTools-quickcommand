@@ -12,12 +12,12 @@ export function generateCode(commandFlow) {
       line += `let ${cmd.outputVariable} = `;
     }
 
-    if (cmd.value === "ubrowser") {
-      line += `await ${cmd.argv}`;
-    } else if (cmd.value === "axios" || cmd.value === "fetch") {
-      line += `await ${cmd.argv}`;
+    let awaitCmd = cmd.isAsync ? "await " : "";
+
+    if (!!cmd.component) {
+      line += `${awaitCmd}${cmd.argv}`;
     } else {
-      line += `${cmd.isAsync ? "await " : ""}${cmd.value}(${cmd.argv})`;
+      line += `${awaitCmd}${cmd.value}(${cmd.argv})`;
     }
 
     code.push(line);

@@ -272,12 +272,12 @@ export default defineComponent({
 
       const args = [this.mainKey, ...activeModifiers];
       // 为每个参数添加引号
-      this.$emit("update:modelValue", `"${args.join('","')}"`);
+      this.$emit("update:modelValue", `keyTap("${args.join('","')}")`);
     },
     parseKeyString(val) {
       try {
-        // 移除开头和结尾的引号
-        const cleanVal = val.replace(/^"|"$/g, "");
+        // 移除 keyTap 和引号
+        const cleanVal = val.replace(/^keyTap\("/, "").replace(/"\)$/, "");
         // 分割并移除每个参数的引号
         const args = cleanVal
           .split('","')

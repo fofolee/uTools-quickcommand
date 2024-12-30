@@ -76,27 +76,28 @@
 
           <!-- 参数输入 -->
           <div class="row items-center">
-            <!-- 按键编辑器 -->
-            <template v-if="command.hasKeyRecorder">
-              <KeyEditor v-model="argvLocal" class="col" />
-            </template>
-            <!-- UBrowser编辑器 -->
-            <template v-else-if="command.hasUBrowserEditor">
-              <UBrowserEditor v-model="argvLocal" class="col" />
-            </template>
-            <!-- Axios编辑器 -->
-            <template v-else-if="command.hasAxiosEditor">
-              <AxiosConfigEditor v-model="argvLocal" class="col" />
-            </template>
-            <!-- 普通参数输入 -->
-            <template v-else-if="!command.hasNoArgs">
-              <VariableInput
-                v-model="argvLocal"
-                :label="placeholder"
-                :command="command"
-                class="col"
-                ref="variableInput"
-              />
+            <!-- 单独写组件的参数 -->
+            <component
+              :is="command.component"
+              v-model="argvLocal"
+              class="col"
+              v-if="!!command.component"
+            />
+            <!-- 通用组件参数 -->
+            <template v-else>
+              <div
+                v-for="item in command.config"
+                :key="item.key"
+                class="col-12 row q-col-gutter-xs"
+              >
+                <VariableInput
+                  v-model="argvLocal"
+                  :label="item.label"
+                  :command="command"
+                  :class="`col-${item.width || 12}`"
+                  v-if="item.type === 'input'"
+                />
+              </div>
             </template>
           </div>
         </div>
