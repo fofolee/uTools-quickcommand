@@ -182,7 +182,7 @@
 <script>
 // import QuickAction from "components/popup/QuickAction";
 // import KeyRecorder from "components/popup/KeyRecorder";
-import CommandComposer from "components/editor/composer/CommandComposer.vue";
+import CommandComposer from "components/composer/CommandComposer.vue";
 
 export default {
   name: "CommandLanguageBar",

@@ -222,11 +222,11 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "../VariableInput.vue";
-import DictEditor from "../DictEditor.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
+import DictEditor from "components/composer/ui/DictEditor.vue";
 import { formatJsonVariables } from "js/composer/formatString";
 import { userAgent, commonHeaders, contentTypes } from "js/options/httpHeaders";
-import BorderLabel from "../BorderLabel.vue";
+import BorderLabel from "components/composer/ui/BorderLabel.vue";
 
 export default defineComponent({
   name: "AxiosConfigEditor",

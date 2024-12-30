@@ -128,13 +128,13 @@
 
 <script>
 import { defineComponent, inject } from "vue";
-import KeyEditor from "./KeyEditor.vue";
-import UBrowserEditor from "./ubrowser/UBrowserEditor.vue";
-import VariableInput from "./VariableInput.vue";
-import AxiosConfigEditor from "./http/AxiosConfigEditor.vue";
-import SymmetricCryptoEditor from "./crypto/SymmetricCryptoEditor.vue";
-import AsymmetricCryptoEditor from "./crypto/AsymmetricCryptoEditor.vue";
-import FunctionSelector from "./FunctionSelector.vue";
+import KeyEditor from "components/composer/ui/KeyEditor.vue";
+import UBrowserEditor from "components/composer/ubrowser/UBrowserEditor.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
+import AxiosConfigEditor from "components/composer/http/AxiosConfigEditor.vue";
+import SymmetricCryptoEditor from "components/composer/crypto/SymmetricCryptoEditor.vue";
+import AsymmetricCryptoEditor from "components/composer/crypto/AsymmetricCryptoEditor.vue";
+import FunctionSelector from "components/composer/ui/FunctionSelector.vue";
 import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({

@@ -32,7 +32,7 @@
 <script>
 import { defineComponent } from "vue";
 import { deviceName } from "js/options/httpHeaders";
-import VariableInput from "components/editor/composer/VariableInput.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserDeviceName",

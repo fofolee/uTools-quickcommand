@@ -141,7 +141,7 @@ import UBrowserNamedParamList from "./UBrowserNamedParamList.vue";
 import UBrowserSelect from "./UBrowserSelect.vue";
 import UBrowserDeviceName from "./UBrowserDeviceName.vue";
 import UBrowserTextarea from "./UBrowserTextarea.vue";
-import VariableInput from "components/editor/composer/VariableInput.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
 import UBrowserCheckboxGroup from "./UBrowserCheckboxGroup.vue";
 
 export default defineComponent({

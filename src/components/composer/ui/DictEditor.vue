@@ -94,7 +94,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "./VariableInput.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
 
 export default defineComponent({
   name: "DictEditor",
