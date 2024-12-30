@@ -61,6 +61,19 @@
               </q-tooltip>
             </q-btn>
 
+            <!-- 运行按钮 -->
+            <q-btn
+              flat
+              dense
+              round
+              icon="play_arrow"
+              class="run-btn q-px-sm q-mr-sm"
+              size="sm"
+              @click="runCommand"
+            >
+              <q-tooltip>单独运行此命令并打印输出</q-tooltip>
+            </q-btn>
+
             <q-btn
               flat
               round
@@ -86,16 +99,21 @@
             <!-- 通用组件参数 -->
             <template v-else>
               <div
-                v-for="item in command.config"
+                v-for="(item, index) in command.config"
                 :key="item.key"
-                class="col-12 row q-col-gutter-xs"
+                class="param-item col-12"
+                :class="{ 'q-mt-sm': index > 0 }"
               >
                 <VariableInput
-                  v-model="argvLocal"
+                  v-model="item.value"
                   :label="item.label"
                   :command="command"
-                  :class="`col-${item.width || 12}`"
+                  :class="[
+                    `col-${item.width || 12}`,
+                    { 'q-mt-sm': item.width && item.width < 12 },
+                  ]"
                   v-if="item.type === 'input'"
+                  @update:model-value="handleArgvChange(item.key, $event)"
                 />
               </div>
             </template>
@@ -145,7 +163,7 @@ export default defineComponent({
       showKeyRecorder: false,
     };
   },
-  emits: ["remove", "toggle-output", "update:argv", "update:command"],
+  emits: ["remove", "toggle-output", "update:argv", "update:command", "run"],
   computed: {
     saveOutputLocal: {
       get() {
@@ -255,6 +273,30 @@ export default defineComponent({
 
       // 发出更新事件
       this.$emit("update:command", updatedCommand);
+    },
+    handleArgvChange(key, value) {
+      // 收集所有参数的当前值
+      const args = this.command.config.reduce((acc, item) => {
+        acc[item.key] = item.key === key ? value : item.value || "";
+        return acc;
+      }, {});
+
+      // 按照配置顺序拼接参数值
+      const argv = this.command.config
+        .map((item) => args[item.key])
+        .filter(Boolean)
+        .join(",");
+
+      this.$emit("update:argv", argv);
+    },
+    runCommand() {
+      // 创建一个带临时变量的命令副本
+      const tempCommand = {
+        ...this.command,
+        outputVariable: this.command.outputVariable || `temp_${Date.now()}`,
+        saveOutput: true,
+      };
+      this.$emit("run", tempCommand);
     },
   },
   mounted() {
@@ -386,17 +428,26 @@ export default defineComponent({
   color: var(--q-primary);
 }
 
-/* 移除按钮样式 */
+/* 按钮样式 */
+.run-btn,
 .remove-btn {
   opacity: 0.5;
   transition: all 0.3s ease;
   font-size: 18px;
 }
 
+.run-btn:hover,
 .remove-btn:hover {
   opacity: 1;
-  color: var(--q-negative);
   transform: scale(1.05);
+}
+
+.run-btn:hover {
+  color: var(--q-positive);
+}
+
+.remove-btn:hover {
+  color: var(--q-negative);
 }
 
 /* 暗色模式适配 */
@@ -450,5 +501,17 @@ export default defineComponent({
 
 .output-section :deep(.q-field--focused .q-icon) {
   opacity: 1;
+}
+
+/* 参数项样式 */
+.param-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 当参数项换行时的间距 */
+.param-item :deep(.q-field) {
+  margin-bottom: 0;
 }
 </style>

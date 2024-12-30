@@ -95,8 +95,8 @@ export default defineComponent({
     generateFlowCode() {
       return generateCode(this.commandFlow);
     },
-    handleComposer(type) {
-      const code = this.generateFlowCode();
+    handleComposer(type, flow) {
+      const code = flow ? generateCode(flow) : generateCode(this.commandFlow);
       this.$emit("use-composer", { type, code });
       if (type !== "run") this.$emit("update:modelValue", false);
     },

@@ -46,6 +46,7 @@
                   @toggle-output="toggleSaveOutput(index)"
                   @update:argv="(val) => handleArgvChange(index, val)"
                   @update:command="(val) => updateCommand(index, val)"
+                  @run="handleRunCommand"
                 />
               </div>
             </transition>
@@ -241,6 +242,18 @@ export default defineComponent({
         ...updatedCommand,
       };
       this.$emit("update:modelValue", newCommands);
+    },
+    handleRunCommand(command) {
+      // 创建一个临时的命令流程
+      const tempFlow = [
+        command,
+        {
+          value: "console.log",
+          argv: command.outputVariable,
+        },
+      ];
+      // 触发运行事件
+      this.$emit("action", "run", tempFlow);
     },
   },
 });
