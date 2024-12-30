@@ -5,24 +5,6 @@ export const textProcessingCommands = {
   commands: [
     {
       value: "quickcomposer.textProcessing",
-      label: "哈希计算",
-      desc: "计算文本的哈希值",
-      icon: "enhanced_encryption",
-      component: "FunctionSelector",
-      componentProps: {
-        inputLabel: "要计算哈希的文本",
-        selectLabel: "哈希算法",
-        options: [
-          { label: "MD5", value: "quickcomposer.textProcessing.md5Hash" },
-          { label: "SHA1", value: "quickcomposer.textProcessing.sha1Hash" },
-          { label: "SHA256", value: "quickcomposer.textProcessing.sha256Hash" },
-          { label: "SHA512", value: "quickcomposer.textProcessing.sha512Hash" },
-          { label: "SM3", value: "quickcomposer.textProcessing.sm3Hash" },
-        ],
-      },
-    },
-    {
-      value: "quickcomposer.textProcessing",
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
@@ -61,6 +43,34 @@ export const textProcessingCommands = {
       },
     },
     {
+      value: "quickcomposer.textProcessing.symmetricCrypto",
+      label: "对称加解密",
+      component: "SymmetricCryptoEditor",
+    },
+    {
+      value: "quickcomposer.textProcessing.asymmetricCrypto",
+      label: "非对称加解密",
+      component: "AsymmetricCryptoEditor",
+    },
+    {
+      value: "quickcomposer.textProcessing",
+      label: "哈希计算",
+      desc: "计算文本的哈希值",
+      icon: "enhanced_encryption",
+      component: "FunctionSelector",
+      componentProps: {
+        inputLabel: "要计算哈希的文本",
+        selectLabel: "哈希算法",
+        options: [
+          { label: "MD5", value: "quickcomposer.textProcessing.md5Hash" },
+          { label: "SHA1", value: "quickcomposer.textProcessing.sha1Hash" },
+          { label: "SHA256", value: "quickcomposer.textProcessing.sha256Hash" },
+          { label: "SHA512", value: "quickcomposer.textProcessing.sha512Hash" },
+          { label: "SM3", value: "quickcomposer.textProcessing.sm3Hash" },
+        ],
+      },
+    },
+    {
       value: "quickcomposer.textProcessing.reverseString",
       label: "字符串反转",
       config: [
@@ -83,6 +93,7 @@ export const textProcessingCommands = {
           type: "input",
           defaultValue: "",
           icon: "text_fields",
+          width: 4,
         },
         {
           key: "oldStr",
@@ -90,6 +101,7 @@ export const textProcessingCommands = {
           type: "input",
           defaultValue: "",
           icon: "find_replace",
+          width: 4,
         },
         {
           key: "newStr",
@@ -97,6 +109,7 @@ export const textProcessingCommands = {
           type: "input",
           defaultValue: "",
           icon: "text_fields",
+          width: 4,
         },
       ],
     },
@@ -110,22 +123,23 @@ export const textProcessingCommands = {
           type: "input",
           defaultValue: "",
           icon: "text_fields",
+          width: 6,
         },
         {
           key: "start",
           label: "起始位置",
           type: "input",
           inputType: "number",
-          defaultValue: "0",
           icon: "first_page",
+          width: 3,
         },
         {
           key: "end",
           label: "结束位置",
           type: "input",
           inputType: "number",
-          defaultValue: "",
           icon: "last_page",
+          width: 3,
         },
       ],
     },
@@ -148,16 +162,6 @@ export const textProcessingCommands = {
           icon: "regex",
         },
       ],
-    },
-    {
-      value: "quickcomposer.textProcessing.symmetricCrypto",
-      label: "对称加解密",
-      component: "SymmetricCryptoEditor",
-    },
-    {
-      value: "quickcomposer.textProcessing.asymmetricCrypto",
-      label: "非对称加解密",
-      component: "AsymmetricCryptoEditor",
     },
   ],
 };

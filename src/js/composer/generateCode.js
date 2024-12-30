@@ -13,12 +13,7 @@ export function generateCode(commandFlow) {
     }
 
     let awaitCmd = cmd.isAsync ? "await " : "";
-
-    if (!!cmd.component) {
-      line += `${awaitCmd}${cmd.argv}`;
-    } else {
-      line += `${awaitCmd}${cmd.value}(${cmd.argv})`;
-    }
+    line += `${awaitCmd}${cmd.value}(${cmd.argv})`;
 
     code.push(line);
   });

@@ -99,26 +99,12 @@
               v-bind="command.componentProps || {}"
             />
             <!-- 通用组件参数 -->
-            <template v-else>
-              <div
-                v-for="(item, index) in command.config"
-                :key="item.key"
-                class="param-item col-12"
-                :class="{ 'q-mt-sm': index > 0 }"
-              >
-                <VariableInput
-                  v-model="item.value"
-                  :label="item.label"
-                  :command="command"
-                  :class="[
-                    `col-${item.width || 12}`,
-                    { 'q-mt-sm': item.width && item.width < 12 },
-                  ]"
-                  v-if="item.type === 'input'"
-                  @update:model-value="handleArgvChange(item.key, $event)"
-                />
-              </div>
-            </template>
+            <MultiParamInput
+              v-else
+              v-model="argvLocal"
+              :command="command"
+              class="col"
+            />
           </div>
         </div>
       </q-card-section>
@@ -131,6 +117,7 @@ import { defineComponent, inject } from "vue";
 import KeyEditor from "components/composer/ui/KeyEditor.vue";
 import UBrowserEditor from "components/composer/ubrowser/UBrowserEditor.vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
+import MultiParamInput from "components/composer/ui/MultiParamInput.vue";
 import AxiosConfigEditor from "components/composer/http/AxiosConfigEditor.vue";
 import SymmetricCryptoEditor from "components/composer/crypto/SymmetricCryptoEditor.vue";
 import AsymmetricCryptoEditor from "components/composer/crypto/AsymmetricCryptoEditor.vue";
@@ -143,6 +130,7 @@ export default defineComponent({
     KeyEditor,
     UBrowserEditor,
     VariableInput,
+    MultiParamInput,
     AxiosConfigEditor,
     SymmetricCryptoEditor,
     AsymmetricCryptoEditor,
@@ -317,39 +305,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* 卡片基础样式 */
 .composer-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
   opacity: 1;
   transform: translateY(0) scale(1);
 }
-
-/* 进入动画 */
-.composer-card-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.composer-card-enter-from {
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-}
-
-/* 移除动画 */
-.composer-card-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-}
-
-.composer-card-leave-to {
-  opacity: 0;
-  transform: translateY(-20px) scale(0.95);
-}
-
-/* 拖拽动画 */
-/* .composer-card:active { */
-/* transform: scale(1.02); */
-/* transition: transform 0.2s; */
-/* } */
 
 .command-item {
   transition: all 0.3s ease;
@@ -359,14 +321,9 @@ export default defineComponent({
 
 .command-item:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  /* transform: translateY(-1px); */
 }
 
-.composer-card :deep(.q-field__label) {
-  font-size: 13px;
-}
-
-/* 可放置状态动画 */
+/* 拖拽和放置样式 */
 .can-drop {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -374,21 +331,6 @@ export default defineComponent({
 
 .can-drop .command-item {
   border: 2px dashed var(--q-primary);
-  background: rgba(var(--q-primary-rgb), 0.05);
-}
-
-/* 暗色模式适配 */
-.body--dark .command-item {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.body--dark .command-item:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.body--dark .can-drop {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .drag-handle {
@@ -401,81 +343,16 @@ export default defineComponent({
   color: var(--q-primary);
 }
 
-/* 添加新的样式 */
+/* 输出部分样式 */
 .output-section {
   max-width: 120px;
   margin-right: 4px;
 }
 
 .output-section :deep(.q-field) {
-  background: rgba(var(--q-primary-rgb), 0.03);
   border-radius: 4px;
 }
 
-/* 输出按钮样式优化 */
-.output-btn {
-  font-size: 12px;
-  border-radius: 4px;
-  min-height: 28px;
-  padding: 0 8px;
-  border: 1px solid rgba(var(--q-primary-rgb), 0.1);
-  transition: all 0.3s ease;
-}
-
-.output-btn:hover {
-  background: rgba(var(--q-primary-rgb), 0.05);
-}
-
-.output-btn .q-icon {
-  font-size: 14px;
-  margin-right: 4px;
-}
-
-.output-btn.q-btn--active {
-  background: rgba(var(--q-primary-rgb), 0.1);
-  color: var(--q-primary);
-}
-
-/* 按钮样式 */
-.run-btn,
-.remove-btn {
-  opacity: 0.5;
-  transition: all 0.3s ease;
-  font-size: 18px;
-}
-
-.run-btn:hover,
-.remove-btn:hover {
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-.run-btn:hover {
-  color: var(--q-positive);
-}
-
-.remove-btn:hover {
-  color: var(--q-negative);
-}
-
-/* 暗色模式适配 */
-.body--dark .output-section :deep(.q-field) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.body--dark .output-section :deep(.q-field--focused) {
-  background: #1d1d1d;
-}
-
-.body--dark .output-btn {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.body--dark .output-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* 输入框内部样式美化 */
 .output-section :deep(.q-field__control) {
   height: 28px;
   min-height: 28px;
@@ -495,31 +372,86 @@ export default defineComponent({
   text-align: center;
 }
 
-/* Tooltip 样式优化 */
-:deep(.q-tooltip) {
-  max-width: 300px;
-  padding: 8px 12px;
+/* 按钮样式 */
+.output-btn,
+.run-btn,
+.remove-btn {
+  font-size: 12px;
+  border-radius: 4px;
+  min-height: 28px;
+  padding: 0 8px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
 }
 
-/* 优化图标样式 */
-.output-section :deep(.q-icon) {
-  opacity: 0.8;
-  transition: opacity 0.3s ease;
-}
-
-.output-section :deep(.q-field--focused .q-icon) {
+.output-btn:hover,
+.run-btn:hover,
+.remove-btn:hover {
   opacity: 1;
+  transform: scale(1.05);
 }
 
-/* 参数项样式 */
-.param-item {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.run-btn:hover {
+  color: var(--q-positive);
 }
 
-/* 当参数项换行时的间距 */
-.param-item :deep(.q-field) {
-  margin-bottom: 0;
+.remove-btn:hover {
+  color: var(--q-negative);
+}
+
+.output-btn.q-btn--active {
+  color: var(--q-primary);
+}
+
+/* 动画效果 */
+.composer-card-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.composer-card-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+.composer-card-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+}
+
+.composer-card-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+/* 暗色模式适配 */
+.body--dark {
+  .command-item {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .command-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .can-drop {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .output-section :deep(.q-field) {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .output-section :deep(.q-field--focused) {
+    background: #1d1d1d;
+  }
+
+  .output-btn {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .output-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
 }
 </style>
