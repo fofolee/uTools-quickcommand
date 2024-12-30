@@ -44,14 +44,14 @@ export default defineComponent({
     handleArgvChange(key, value) {
       // 收集所有参数的当前值
       const args = this.config.reduce((acc, item) => {
-        acc[item.key] = item.key === key ? value : item.value || "";
+        acc[item.key] = item.key === key ? value : item.value ?? "";
         return acc;
       }, {});
 
       // 按照配置顺序拼接参数值
       const argv = this.config
         .map((item) => args[item.key])
-        .filter(Boolean)
+        .filter((val) => val !== undefined && val !== "")
         .join(",");
 
       this.$emit("update:modelValue", argv);

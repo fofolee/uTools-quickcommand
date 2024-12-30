@@ -97,7 +97,7 @@ const textProcessing = {
   },
   // 字符串替换
   replaceString: function (text, oldStr, newStr) {
-    return text.replace(oldStr, newStr);
+    return text.replaceAll(oldStr, newStr);
   },
   // 字符串截取
   substring: function (text, start, end) {
