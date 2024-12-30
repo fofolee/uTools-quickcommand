@@ -4,108 +4,61 @@ export const textProcessingCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.textProcessing.base64Encode",
-      label: "Base64编码",
-      config: [
-        {
-          key: "text",
-          label: "要编码的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "lock",
-        },
-      ],
+      value: "quickcomposer.textProcessing",
+      label: "哈希计算",
+      desc: "计算文本的哈希值",
+      icon: "enhanced_encryption",
+      component: "FunctionSelector",
+      componentProps: {
+        inputLabel: "要计算哈希的文本",
+        selectLabel: "哈希算法",
+        options: [
+          { label: "MD5", value: "quickcomposer.textProcessing.md5Hash" },
+          { label: "SHA1", value: "quickcomposer.textProcessing.sha1Hash" },
+          { label: "SHA256", value: "quickcomposer.textProcessing.sha256Hash" },
+          { label: "SHA512", value: "quickcomposer.textProcessing.sha512Hash" },
+          { label: "SM3", value: "quickcomposer.textProcessing.sm3Hash" },
+        ],
+      },
     },
     {
-      value: "quickcomposer.textProcessing.base64Decode",
-      label: "Base64解码",
-      config: [
-        {
-          key: "text",
-          label: "要解码的Base64文本",
-          type: "input",
-          defaultValue: "",
-          icon: "lock_open",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.hexEncode",
-      label: "十六进制编码",
-      config: [
-        {
-          key: "text",
-          label: "要编码的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "lock",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.hexDecode",
-      label: "十六进制解码",
-      config: [
-        {
-          key: "text",
-          label: "要解码的十六进制文本",
-          type: "input",
-          defaultValue: "",
-          icon: "lock_open",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.urlEncode",
-      label: "URL编码",
-      config: [
-        {
-          key: "text",
-          label: "要编码的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "link",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.urlDecode",
-      label: "URL解码",
-      config: [
-        {
-          key: "text",
-          label: "要解码的URL编码文本",
-          type: "input",
-          defaultValue: "",
-          icon: "link_off",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.htmlEncode",
-      label: "HTML编码",
-      config: [
-        {
-          key: "text",
-          label: "要编码的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "code",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.htmlDecode",
-      label: "HTML解码",
-      config: [
-        {
-          key: "text",
-          label: "要解码的HTML文本",
-          type: "input",
-          defaultValue: "",
-          icon: "code_off",
-        },
-      ],
+      value: "quickcomposer.textProcessing",
+      label: "编解码",
+      desc: "文本编解码",
+      icon: "code",
+      component: "FunctionSelector",
+      componentProps: {
+        inputLabel: "要编解码的文本",
+        selectLabel: "编解码方式",
+        options: [
+          {
+            label: "Base64编码",
+            value: "quickcomposer.textProcessing.base64Encode",
+          },
+          {
+            label: "Base64解码",
+            value: "quickcomposer.textProcessing.base64Decode",
+          },
+          {
+            label: "十六进制编码",
+            value: "quickcomposer.textProcessing.hexEncode",
+          },
+          {
+            label: "十六进制解码",
+            value: "quickcomposer.textProcessing.hexDecode",
+          },
+          { label: "URL编码", value: "quickcomposer.textProcessing.urlEncode" },
+          { label: "URL解码", value: "quickcomposer.textProcessing.urlDecode" },
+          {
+            label: "HTML编码",
+            value: "quickcomposer.textProcessing.htmlEncode",
+          },
+          {
+            label: "HTML解码",
+            value: "quickcomposer.textProcessing.htmlDecode",
+          },
+        ],
+      },
     },
     {
       value: "quickcomposer.textProcessing.reverseString",
@@ -205,45 +158,6 @@ export const textProcessingCommands = {
       value: "quickcomposer.textProcessing.asymmetricCrypto",
       label: "非对称加解密",
       component: "AsymmetricCryptoEditor",
-    },
-    {
-      value: "quickcomposer.textProcessing.md5Hash",
-      label: "MD5哈希",
-      config: [
-        {
-          key: "text",
-          label: "要哈希的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "enhanced_encryption",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.sha256Hash",
-      label: "SHA256哈希",
-      config: [
-        {
-          key: "text",
-          label: "要哈希的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "enhanced_encryption",
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.textProcessing.sm3Hash",
-      label: "SM3哈希",
-      config: [
-        {
-          key: "text",
-          label: "要哈希的文本",
-          type: "input",
-          defaultValue: "",
-          icon: "enhanced_encryption",
-        },
-      ],
     },
   ],
 };

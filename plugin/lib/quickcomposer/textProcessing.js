@@ -71,6 +71,140 @@ const textProcessing = {
   hexDecode: function (text) {
     return dataConv(text, "hex", "utf8");
   },
+  // MD5 哈希
+  md5Hash: function (text) {
+    return NodeForge.md.md5.create().update(text).digest().toHex();
+  },
+  // SHA1 哈希
+  sha1Hash: function (text) {
+    return NodeForge.md.sha1.create().update(text).digest().toHex();
+  },
+  // SHA256 哈希
+  sha256Hash: function (text) {
+    return NodeForge.md.sha256.create().update(text).digest().toHex();
+  },
+  // SHA512 哈希
+  sha512Hash: function (text) {
+    return NodeForge.md.sha512.create().update(text).digest().toHex();
+  },
+  // SM3 哈希
+  sm3Hash: function (text) {
+    return sm3(text);
+  },
+  // 字符串反转
+  reverseString: function (text) {
+    return text.split("").reverse().join("");
+  },
+  // 字符串替换
+  replaceString: function (text, oldStr, newStr) {
+    return text.replace(oldStr, newStr);
+  },
+  // 字符串截取
+  substring: function (text, start, end) {
+    return text.substring(start, end);
+  },
+  // 正则提取
+  regexExtract: function (text, regex) {
+    const match = text.match(regex);
+    return match ? match[0] : "";
+  },
+  // 非对称加解密
+  asymmetricCrypto: function (config) {
+    const {
+      text,
+      algorithm,
+      operation,
+      format = "Base64",
+      publicKey = { key: "", codec: "Pem" },
+      privateKey = { key: "", codec: "Pem" },
+      padding = "RSAES-PKCS1-V1_5",
+      cipherMode = 1,
+    } = config;
+
+    if (algorithm === "SM2") {
+      if (operation === "encrypt") {
+        if (!publicKey.key) throw "缺少公钥";
+        // 转换公钥格式
+        const hexPubKey =
+          publicKey.codec === "Hex"
+            ? publicKey.key
+            : dataConv(publicKey.key, publicKey.codec, "Hex");
+        // 加密
+        const cipher = sm2.doEncrypt(text, hexPubKey, cipherMode);
+        // 转换输出格式
+        return format === "Base64" ? dataConv(cipher, "Hex", "Base64") : cipher;
+      } else {
+        if (!privateKey.key) throw "缺少私钥";
+        // 转换私钥格式
+        const hexPriKey =
+          privateKey.codec === "Hex"
+            ? privateKey.key
+            : dataConv(privateKey.key, privateKey.codec, "Hex");
+        // 转换输入格式
+        const hexCipher =
+          format === "Base64" ? dataConv(text, "Base64", "Hex") : text;
+        // 解密
+        const msg = sm2.doDecrypt(hexCipher, hexPriKey, cipherMode, {
+          output: "utf8",
+        });
+        if (!msg) throw "解密失败";
+        return msg;
+      }
+    } else if (algorithm === "RSA") {
+      if (operation === "encrypt") {
+        if (!publicKey.key) throw "缺少公钥";
+        // 转换公钥格式
+        let formattedPubKey = publicKey.key;
+        if (publicKey.codec !== "Pem") {
+          formattedPubKey =
+            "-----BEGIN RSA PUBLIC KEY-----\n" +
+            dataConv(publicKey.key, publicKey.codec, "Base64") +
+            "\n-----END RSA PUBLIC KEY-----";
+        }
+        formattedPubKey = formattedPubKey.replace(/\\n/g, "\n");
+
+        // 创建 RSA 公钥对象
+        const publicKeyObj = NodeForge.pki.publicKeyFromPem(formattedPubKey);
+        // 将文本转换为二进制数据
+        const binaryData = NodeForge.util.encodeUtf8(text);
+        // 使用指定的填充方式加密
+        const encrypted = publicKeyObj.encrypt(binaryData, padding);
+        // 转换输出格式
+        return format === "Base64"
+          ? dataConv(encrypted, "binary", "Base64")
+          : dataConv(encrypted, "binary", "Hex");
+      } else {
+        if (!privateKey.key) throw "缺少私钥";
+        // 转换私钥格式
+        let formattedPriKey = privateKey.key;
+        if (privateKey.codec !== "Pem") {
+          formattedPriKey =
+            "-----BEGIN RSA PRIVATE KEY-----\n" +
+            dataConv(privateKey.key, privateKey.codec, "Base64") +
+            "\n-----END RSA PRIVATE KEY-----";
+        }
+        formattedPriKey = formattedPriKey.replace(/\\n/g, "\n");
+
+        // 创建 RSA 私钥对象
+        const privateKeyObj = NodeForge.pki.privateKeyFromPem(formattedPriKey);
+        // 转换输入格式
+        const binary =
+          format === "Base64"
+            ? dataConv(text, "Base64", "binary")
+            : dataConv(text, "Hex", "binary");
+        // 解密
+        try {
+          const decrypted = privateKeyObj.decrypt(binary, padding);
+          // 将二进制数据转换回文本
+          return NodeForge.util.decodeUtf8(decrypted);
+        } catch (e) {
+          console.error(e);
+          throw "解密失败";
+        }
+      }
+    }
+    throw "不支持的算法";
+  },
   // 对称加解密
   symmetricCrypto: function (config) {
     const {
@@ -223,160 +357,6 @@ const textProcessing = {
       }
       return CryptoJS.enc.Utf8.stringify(decrypted);
     }
-  },
-  // RSA 加密
-  rsaEncrypt: function (text, key) {
-    return crypto.publicEncrypt(key, Buffer.from(text)).toString("base64");
-  },
-  // RSA 解密
-  rsaDecrypt: function (text, key) {
-    return crypto.privateDecrypt(key, Buffer.from(text, "base64")).toString();
-  },
-  // SM4 加密
-  sm4Encrypt: function (text, key) {
-    // 将密钥转换为 16 进制字符串
-    const hexKey = Buffer.from(key).toString("hex");
-    return sm4.encrypt(text, hexKey);
-  },
-  // SM4 解密
-  sm4Decrypt: function (text, key) {
-    // 将密钥转换为 16 进制字符串
-    const hexKey = Buffer.from(key).toString("hex");
-    return sm4.decrypt(text, hexKey);
-  },
-  // SM2 加密
-  sm2Encrypt: function (text, key) {
-    return sm2.encrypt(text, key);
-  },
-  // SM2 解密
-  sm2Decrypt: function (text, key) {
-    return sm2.decrypt(text, key);
-  },
-  // MD5 哈希
-  md5Hash: function (text) {
-    return crypto.createHash("md5").update(text).digest("hex");
-  },
-  // SHA256 哈希
-  sha256Hash: function (text) {
-    return crypto.createHash("sha256").update(text).digest("hex");
-  },
-  // SM3 哈希
-  sm3Hash: function (text) {
-    return sm3(text);
-  },
-  // 字符串反转
-  reverseString: function (text) {
-    return text.split("").reverse().join("");
-  },
-  // 字符串替换
-  replaceString: function (text, oldStr, newStr) {
-    return text.replace(oldStr, newStr);
-  },
-  // 字符串截取
-  substring: function (text, start, end) {
-    return text.substring(start, end);
-  },
-  // 正则提取
-  regexExtract: function (text, regex) {
-    const match = text.match(regex);
-    return match ? match[0] : "";
-  },
-  // 非对称加解密
-  asymmetricCrypto: function (config) {
-    const {
-      text,
-      algorithm,
-      operation,
-      format = "Base64",
-      publicKey = { key: "", codec: "Pem" },
-      privateKey = { key: "", codec: "Pem" },
-      padding = "RSAES-PKCS1-V1_5",
-      cipherMode = 1,
-    } = config;
-
-    if (algorithm === "SM2") {
-      if (operation === "encrypt") {
-        if (!publicKey.key) throw "缺少公钥";
-        // 转换公钥格式
-        const hexPubKey =
-          publicKey.codec === "Hex"
-            ? publicKey.key
-            : dataConv(publicKey.key, publicKey.codec, "Hex");
-        // 加密
-        const cipher = sm2.doEncrypt(text, hexPubKey, cipherMode);
-        // 转换输出格式
-        return format === "Base64" ? dataConv(cipher, "Hex", "Base64") : cipher;
-      } else {
-        if (!privateKey.key) throw "缺少私钥";
-        // 转换私钥格式
-        const hexPriKey =
-          privateKey.codec === "Hex"
-            ? privateKey.key
-            : dataConv(privateKey.key, privateKey.codec, "Hex");
-        // 转换输入格式
-        const hexCipher =
-          format === "Base64" ? dataConv(text, "Base64", "Hex") : text;
-        // 解密
-        const msg = sm2.doDecrypt(hexCipher, hexPriKey, cipherMode, {
-          output: "utf8",
-        });
-        if (!msg) throw "解密失败";
-        return msg;
-      }
-    } else if (algorithm === "RSA") {
-      if (operation === "encrypt") {
-        if (!publicKey.key) throw "缺少公钥";
-        // 转换公钥格式
-        let formattedPubKey = publicKey.key;
-        if (publicKey.codec !== "Pem") {
-          formattedPubKey =
-            "-----BEGIN RSA PUBLIC KEY-----\n" +
-            dataConv(publicKey.key, publicKey.codec, "Base64") +
-            "\n-----END RSA PUBLIC KEY-----";
-        }
-        formattedPubKey = formattedPubKey.replace(/\\n/g, "\n");
-
-        // 创建 RSA 公钥对象
-        const publicKeyObj = NodeForge.pki.publicKeyFromPem(formattedPubKey);
-        // 将文本转换为二进制数据
-        const binaryData = NodeForge.util.encodeUtf8(text);
-        // 使用指定的填充方式加密
-        const encrypted = publicKeyObj.encrypt(binaryData, padding);
-        // 转换输出格式
-        return format === "Base64"
-          ? dataConv(encrypted, "binary", "Base64")
-          : dataConv(encrypted, "binary", "Hex");
-      } else {
-        if (!privateKey.key) throw "缺少私钥";
-        // 转换私钥格式
-        let formattedPriKey = privateKey.key;
-        if (privateKey.codec !== "Pem") {
-          formattedPriKey =
-            "-----BEGIN RSA PRIVATE KEY-----\n" +
-            dataConv(privateKey.key, privateKey.codec, "Base64") +
-            "\n-----END RSA PRIVATE KEY-----";
-        }
-        formattedPriKey = formattedPriKey.replace(/\\n/g, "\n");
-
-        // 创建 RSA 私钥对象
-        const privateKeyObj = NodeForge.pki.privateKeyFromPem(formattedPriKey);
-        // 转换输入格式
-        const binary =
-          format === "Base64"
-            ? dataConv(text, "Base64", "binary")
-            : dataConv(text, "Hex", "binary");
-        // 解密
-        try {
-          const decrypted = privateKeyObj.decrypt(binary, padding);
-          // 将二进制数据转换回文本
-          return NodeForge.util.decodeUtf8(decrypted);
-        } catch (e) {
-          console.error(e);
-          throw "解密失败";
-        }
-      }
-    }
-    throw "不支持的算法";
   },
 };
 

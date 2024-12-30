@@ -93,8 +93,10 @@
             <component
               :is="command.component"
               v-model="argvLocal"
+              :command="command"
               class="col"
               v-if="!!command.component"
+              v-bind="command.componentProps || {}"
             />
             <!-- 通用组件参数 -->
             <template v-else>
@@ -132,6 +134,7 @@ import VariableInput from "./VariableInput.vue";
 import AxiosConfigEditor from "./http/AxiosConfigEditor.vue";
 import SymmetricCryptoEditor from "./crypto/SymmetricCryptoEditor.vue";
 import AsymmetricCryptoEditor from "./crypto/AsymmetricCryptoEditor.vue";
+import FunctionSelector from "./FunctionSelector.vue";
 import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
@@ -143,6 +146,7 @@ export default defineComponent({
     AxiosConfigEditor,
     SymmetricCryptoEditor,
     AsymmetricCryptoEditor,
+    FunctionSelector,
   },
   props: {
     command: {
