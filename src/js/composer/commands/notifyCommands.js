@@ -1,6 +1,7 @@
 export const notifyCommands = {
   label: "消息通知",
   icon: "notifications",
+  defaultOpened: false,
   commands: [
     {
       value: "console.log",

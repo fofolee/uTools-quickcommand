@@ -3,33 +3,18 @@
     <!-- 主体内容 -->
     <div class="composer-body row no-wrap">
       <!-- 左侧命令列表 -->
-      <div class="col-3 command-section command-list">
-        <!-- <div class="section-header">
-          <q-icon name="list" size="20px" class="q-mr-sm text-primary" />
-          <span class="text-subtitle1">可用命令</span>
-        </div> -->
-        <q-scroll-area class="command-scroll">
-          <ComposerList
-            :commands="availableCommands"
-            @add-command="addCommand"
-          />
-        </q-scroll-area>
+      <div class="col-3 command-section">
+        <ComposerList :commands="availableCommands" @add-command="addCommand" />
       </div>
 
       <!-- 右侧命令流程 -->
-      <div class="col command-section command-flow">
-        <div class="section-header">
-          <q-icon name="timeline" size="20px" class="q-mr-sm text-primary" />
-          <span class="text-subtitle1">命令流程</span>
-          <q-space />
-          <ComposerButtons
-            :generate-code="generateFlowCode"
-            @action="handleComposer"
-          />
-        </div>
-        <q-scroll-area class="command-scroll">
-          <ComposerFlow v-model="commandFlow" @add-command="addCommand" />
-        </q-scroll-area>
+      <div class="col command-section">
+        <ComposerFlow
+          v-model="commandFlow"
+          :generate-code="generateFlowCode"
+          @add-command="addCommand"
+          @action="handleComposer"
+        />
       </div>
     </div>
   </div>
@@ -39,7 +24,6 @@
 import { defineComponent, provide, ref } from "vue";
 import ComposerList from "./ComposerList.vue";
 import ComposerFlow from "./ComposerFlow.vue";
-import ComposerButtons from "./ComposerButtons.vue";
 import { commandCategories } from "js/composer/composerConfig";
 import { generateCode } from "js/composer/generateCode";
 // 从commandCategories中提取所有命令
@@ -57,7 +41,6 @@ export default defineComponent({
   components: {
     ComposerList,
     ComposerFlow,
-    ComposerButtons,
   },
   setup() {
     const variables = ref([]);
@@ -152,25 +135,6 @@ export default defineComponent({
 .body--dark .command-section {
   background: #1d1d1d;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  height: 28px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.body--dark .section-header {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-.command-scroll {
-  flex: 1;
-  overflow: hidden;
-  border-radius: 8px;
-  padding-bottom: 8px;
 }
 
 /* 滚动美化 */

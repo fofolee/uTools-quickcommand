@@ -98,7 +98,7 @@ export default defineComponent({
 
 .composer-buttons > .q-btn:hover {
   opacity: 1;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   color: var(--q-primary);
 }
 

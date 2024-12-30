@@ -1,6 +1,7 @@
 export const otherCommands = {
   label: "其他功能",
   icon: "more_horiz",
+  defaultOpened: false,
   commands: [
     {
       value: "utools.redirect",

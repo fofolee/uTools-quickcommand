@@ -1,6 +1,7 @@
 export const encodeCommands = {
   label: "编码解码",
   icon: "code",
+  defaultOpened: false,
   commands: [
     {
       value: "(text=>Buffer.from(text).toString('base64'))",

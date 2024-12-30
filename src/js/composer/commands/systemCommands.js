@@ -1,6 +1,7 @@
 export const systemCommands = {
   label: "系统操作",
   icon: "computer",
+  defaultOpened: false,
   commands: [
     {
       value: "system",

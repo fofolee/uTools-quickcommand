@@ -1,55 +1,67 @@
 <template>
   <div class="composer-flow">
-    <div
-      class="command-flow-container"
-      @dragover.prevent="onDragOver"
-      @drop="onDrop"
-      @dragleave.prevent="onDragLeave"
-    >
-      <draggable
-        v-model="commands"
-        group="commands"
-        item-key="id"
-        class="flow-list"
-        handle=".drag-handle"
-        :animation="200"
-        @start="onDragStart"
-        @end="onDragEnd"
+    <div class="section-header">
+      <q-icon name="timeline" size="20px" class="q-mx-sm text-primary" />
+      <span class="text-subtitle1">命令流程</span>
+      <q-space />
+      <ComposerButtons
+        :generate-code="generateCode"
+        @action="$emit('action', $event)"
+      />
+    </div>
+
+    <q-scroll-area class="command-scroll">
+      <div
+        class="command-flow-container"
+        @dragover.prevent="onDragOver"
+        @drop="onDrop"
+        @dragleave.prevent="onDragLeave"
       >
-        <template #item="{ element, index }">
-          <transition name="slide-fade" mode="out-in" appear>
-            <div
-              :key="element.id"
-              class="flow-item"
-              :class="{
-                'insert-before': dragIndex === index,
-                'insert-after':
-                  dragIndex === commands.length &&
-                  index === commands.length - 1,
-              }"
-            >
-              <ComposerCard
-                :command="element"
-                :placeholder="getPlaceholder(element, index)"
-                @remove="removeCommand(index)"
-                @toggle-output="toggleSaveOutput(index)"
-                @update:argv="(val) => handleArgvChange(index, val)"
-                @update:command="(val) => updateCommand(index, val)"
-              />
-            </div>
-          </transition>
-        </template>
-      </draggable>
-      <div v-if="commands.length === 0" class="empty-flow">
-        <div class="text-center text-grey-6">
-          <q-icon name="drag_indicator" size="32px" />
-          <div class="text-body2 q-mt-sm">从左侧拖拽命令到这里开始编排</div>
+        <draggable
+          v-model="commands"
+          group="commands"
+          item-key="id"
+          class="flow-list"
+          handle=".drag-handle"
+          :animation="200"
+          @start="onDragStart"
+          @end="onDragEnd"
+        >
+          <template #item="{ element, index }">
+            <transition name="slide-fade" mode="out-in" appear>
+              <div
+                :key="element.id"
+                class="flow-item"
+                :class="{
+                  'insert-before': dragIndex === index,
+                  'insert-after':
+                    dragIndex === commands.length &&
+                    index === commands.length - 1,
+                }"
+              >
+                <ComposerCard
+                  :command="element"
+                  :placeholder="getPlaceholder(element, index)"
+                  @remove="removeCommand(index)"
+                  @toggle-output="toggleSaveOutput(index)"
+                  @update:argv="(val) => handleArgvChange(index, val)"
+                  @update:command="(val) => updateCommand(index, val)"
+                />
+              </div>
+            </transition>
+          </template>
+        </draggable>
+        <div v-if="commands.length === 0" class="empty-flow">
+          <div class="text-center text-grey-6">
+            <q-icon name="drag_indicator" size="32px" />
+            <div class="text-body2 q-mt-sm">从左侧拖拽命令到这里开始编排</div>
+          </div>
+        </div>
+        <div v-else class="drop-area">
+          <q-icon name="add" size="32px" />
         </div>
       </div>
-      <div v-else class="drop-area">
-        <q-icon name="add" size="32px" />
-      </div>
-    </div>
+    </q-scroll-area>
   </div>
 </template>
 
@@ -57,20 +69,26 @@
 import { defineComponent, inject } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
+import ComposerButtons from "./ComposerButtons.vue";
 
 export default defineComponent({
   name: "ComposerFlow",
   components: {
     draggable,
     ComposerCard,
+    ComposerButtons,
   },
   props: {
     modelValue: {
       type: Array,
       required: true,
     },
+    generateCode: {
+      type: Function,
+      required: true,
+    },
   },
-  emits: ["update:modelValue", "add-command"],
+  emits: ["update:modelValue", "add-command", "action"],
   computed: {
     commands: {
       get() {
@@ -230,8 +248,25 @@ export default defineComponent({
 
 <style scoped>
 .composer-flow {
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  border-radius: 10px;
+}
+
+.section-header {
+  flex-shrink: 0;
+  padding: 0 8px;
+  height: 30px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+
+.command-scroll {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 10px;
 }
 
 .command-flow-container {
@@ -239,7 +274,6 @@ export default defineComponent({
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 4px;
   transition: all 0.3s ease;
-  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -390,5 +424,9 @@ export default defineComponent({
   );
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.03),
     0 0 4px rgba(255, 255, 255, 0.05);
+}
+
+.body--dark .section-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 </style>

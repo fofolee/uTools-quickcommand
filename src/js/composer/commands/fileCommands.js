@@ -1,6 +1,7 @@
 export const fileCommands = {
   label: "文件操作",
   icon: "folder",
+  defaultOpened: true,
   commands: [
     {
       value: "open",

@@ -1,6 +1,7 @@
 export const networkCommands = {
   label: "网络操作",
   icon: "language",
+  defaultOpened: true,
   commands: [
     {
       value: "visit",
