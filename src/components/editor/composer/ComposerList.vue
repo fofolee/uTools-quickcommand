@@ -7,6 +7,8 @@
         borderless
         placeholder="搜索命令..."
         class="search-input"
+        ref="searchInput"
+        autofocus
       >
         <template v-slot:prepend>
           <q-icon name="search" size="sm" />
@@ -24,7 +26,8 @@
             <q-expansion-item
               :label="category.label"
               :icon="category.icon"
-              :default-opened="!!searchQuery || category.defaultOpened"
+              :model-value="isExpanded(category)"
+              @update:model-value="updateExpanded(category, $event)"
               dense-toggle
               class="category-item"
               header-class="category-header"
@@ -83,6 +86,7 @@ export default defineComponent({
     return {
       commandCategories,
       searchQuery: "",
+      expandedCategories: new Set(),
     };
   },
   computed: {
@@ -90,7 +94,7 @@ export default defineComponent({
       if (!this.searchQuery) return this.commandCategories;
 
       const query = this.searchQuery.toLowerCase();
-      return this.commandCategories
+      const filtered = this.commandCategories
         .map((category) => ({
           ...category,
           commands: this.commands
@@ -99,14 +103,17 @@ export default defineComponent({
                 (cmd.label && pinyinMatch.match(cmd.label, query)) ||
                 (cmd.value && pinyinMatch.match(cmd.value, query))
             )
-            .filter((cmd) =>
-              category.commands.some(
-                (catCmd) =>
-                  catCmd.value === cmd.value || catCmd.value === cmd.cmd
-              )
-            ),
+            .filter((cmd) => cmd.type === category.label),
         }))
         .filter((category) => category.commands.length > 0);
+
+      if (filtered.length > 0) {
+        filtered.forEach((category) => {
+          this.expandedCategories.add(category.label);
+        });
+      }
+
+      return filtered;
     },
   },
   methods: {
@@ -147,6 +154,21 @@ export default defineComponent({
         text.slice(end + 1)
       );
     },
+    isExpanded(category) {
+      return (
+        category.defaultOpened || this.expandedCategories.has(category.label)
+      );
+    },
+    updateExpanded(category, value) {
+      if (value) {
+        this.expandedCategories.add(category.label);
+      } else {
+        this.expandedCategories.delete(category.label);
+      }
+    },
+  },
+  mounted() {
+    this.$refs.searchInput.focus();
   },
 });
 </script>
