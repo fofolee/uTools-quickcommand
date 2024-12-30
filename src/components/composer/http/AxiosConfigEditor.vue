@@ -121,8 +121,18 @@
       </div>
     </div>
 
+    <!-- 请求体 -->
+    <div v-if="hasRequestData" class="col-12">
+      <BorderLabel label="请求体" :modelValue="false">
+        <DictEditor
+          v-model="localConfig.data"
+          @update:model-value="updateConfig"
+        />
+      </BorderLabel>
+    </div>
+
     <!-- Other Headers -->
-    <div class="col-12" style="margin-top: -8px">
+    <div class="col-12">
       <BorderLabel label="Headers">
         <DictEditor
           v-model="otherHeaders"
@@ -134,18 +144,8 @@
       </BorderLabel>
     </div>
 
-    <!-- 请求体 -->
-    <div v-if="hasRequestData" class="col-12" style="margin-top: -8px">
-      <BorderLabel label="请求体">
-        <DictEditor
-          v-model="localConfig.data"
-          @update:model-value="updateConfig"
-        />
-      </BorderLabel>
-    </div>
-
     <!-- 请求参数 -->
-    <div class="col-12" style="margin-top: -8px">
+    <div class="col-12">
       <BorderLabel label="URL参数">
         <DictEditor
           v-model="localConfig.params"
@@ -155,7 +155,7 @@
     </div>
 
     <!-- 认证信息 -->
-    <div class="col-12" style="margin-top: -8px">
+    <div class="col-12">
       <BorderLabel label="HTTP认证">
         <div class="row q-col-gutter-sm">
           <div class="col-6">
@@ -179,7 +179,7 @@
     </div>
 
     <!-- 代理设置 -->
-    <div class="col-12" style="margin-top: -8px">
+    <div class="col-12">
       <BorderLabel label="代理设置">
         <div class="row q-col-gutter-sm">
           <div class="col-3">
