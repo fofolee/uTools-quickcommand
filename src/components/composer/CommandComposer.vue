@@ -188,12 +188,13 @@ export default defineComponent({
 /* 输入框标签字体大小，占位时的位置 */
 .command-composer :deep(.q-field--filled .q-field__label) {
   font-size: 11px;
-  top: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* 输入框标签悬浮的位置 */
-.command-composer :deep(.q-field--filled .q-field--float .q_field__label) {
-  transform: translateY(-35%) scale(0.7);
+.command-composer :deep(.q-field--filled.q-field--float .q-field__label) {
+  transform: translateY(-90%) scale(0.7);
 }
 
 /* 去除filled输入框边框 */
