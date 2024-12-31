@@ -144,24 +144,12 @@ export const textProcessingCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessing.regexExtract",
-      label: "正则提取",
-      config: [
-        {
-          key: "text",
-          label: "原始文本",
-          type: "input",
-          defaultValue: "",
-          icon: "text_fields",
-        },
-        {
-          key: "regex",
-          label: "正则表达式",
-          type: "input",
-          defaultValue: "",
-          icon: "regex",
-        },
-      ],
+      value: "quickcomposer.textProcessing.regexTransform",
+      label: "正则提取/替换",
+      component: "RegexEditor",
+      componentProps: {
+        inputLabel: "要处理的文本",
+      },
     },
   ],
 };

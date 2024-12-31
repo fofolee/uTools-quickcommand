@@ -122,6 +122,7 @@ import AxiosConfigEditor from "components/composer/http/AxiosConfigEditor.vue";
 import SymmetricCryptoEditor from "components/composer/crypto/SymmetricCryptoEditor.vue";
 import AsymmetricCryptoEditor from "components/composer/crypto/AsymmetricCryptoEditor.vue";
 import FunctionSelector from "components/composer/ui/FunctionSelector.vue";
+import RegexEditor from "components/composer/regex/RegexEditor.vue";
 import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
@@ -135,6 +136,7 @@ export default defineComponent({
     SymmetricCryptoEditor,
     AsymmetricCryptoEditor,
     FunctionSelector,
+    RegexEditor,
   },
   props: {
     command: {
@@ -321,6 +323,7 @@ export default defineComponent({
 
 .command-item:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 /* 拖拽和放置样式 */
@@ -424,34 +427,31 @@ export default defineComponent({
 }
 
 /* 暗色模式适配 */
-.body--dark {
-  .command-item {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+.body--dark .command-item {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
-  .command-item:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
+.body--dark .command-item:hover {
+  box-shadow: 0 4px 8px rgba(58, 58, 58, 0.3);
+}
 
-  .can-drop {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
+.body--dark .can-drop {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
 
-  .output-section :deep(.q-field) {
-    background: rgba(255, 255, 255, 0.03);
-  }
+.body--dark .output-section :deep(.q-field) {
+  background: rgba(255, 255, 255, 0.03);
+}
 
-  .output-section :deep(.q-field--focused) {
-    background: #1d1d1d;
-  }
+.body--dark .output-section :deep(.q-field--focused) {
+  background: #1d1d1d;
+}
 
-  .output-btn {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
+.body--dark .output-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+}
 
-  .output-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-  }
+.body--dark .output-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 </style>

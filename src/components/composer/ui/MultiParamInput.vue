@@ -54,7 +54,7 @@ export default defineComponent({
         .filter((val) => val !== undefined && val !== "")
         .join(",");
 
-      this.$emit("update:modelValue", argv);
+      this.$emit("update:modelValue", `${this.command.value}(${argv})`);
     },
   },
 });

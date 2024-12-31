@@ -198,9 +198,14 @@ export default defineComponent({
       ],
     };
   },
+  props: {
+    command: {
+      type: Object,
+    },
+  },
   methods: {
     updateConfig() {
-      const code = `quickcomposer.textProcessing.asymmetricCrypto(${formatJsonVariables(
+      const code = `${this.command.value}(${formatJsonVariables(
         {
           text: this.text,
           algorithm: this.algorithm,

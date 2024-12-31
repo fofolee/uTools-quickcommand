@@ -164,6 +164,9 @@ export default defineComponent({
       type: [String, Object],
       default: "",
     },
+    command: {
+      type: Object,
+    },
   },
   data() {
     return {
@@ -243,7 +246,7 @@ export default defineComponent({
   },
   methods: {
     updateConfig() {
-      const code = `quickcomposer.textProcessing.symmetricCrypto(${formatJsonVariables(
+      const code = `${this.command.value}(${formatJsonVariables(
         {
           text: this.text,
           algorithm: this.algorithm,

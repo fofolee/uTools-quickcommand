@@ -35,7 +35,7 @@
             type="textarea"
             dense
             borderless
-            style="font-family: monospace, monoca, consola"
+            style="font-family: Consolas, Monaco, 'Courier New'"
             autogrow
             @update:model-value="updateFunction"
           >

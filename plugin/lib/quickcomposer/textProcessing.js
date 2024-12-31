@@ -103,10 +103,14 @@ const textProcessing = {
   substring: function (text, start, end) {
     return text.substring(start, end);
   },
-  // 正则提取
-  regexExtract: function (text, regex) {
-    const match = text.match(regex);
-    return match ? match[0] : "";
+  // 正则处理
+  regexTransform: function (text, regex, replace) {
+    try {
+      if (replace === undefined) return text.match(regex);
+      return text.replace(regex, replace);
+    } catch (e) {
+      throw "正则表达式格式错误";
+    }
   },
   // 非对称加解密
   asymmetricCrypto: function (config) {

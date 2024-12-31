@@ -240,6 +240,9 @@ export default defineComponent({
       type: [Object, String],
       default: () => ({}),
     },
+    command: {
+      type: Object,
+    },
   },
   emits: ["update:modelValue"],
   data() {
@@ -316,9 +319,9 @@ export default defineComponent({
         ? `, ${formatJsonVariables(restConfig, null, excludeFields)}`
         : "";
 
-      const code = `axios.${method.toLowerCase()}(${url}${
+      const code = `${this.command.value}(${url}${
         this.hasRequestData ? `, ${formatJsonVariables(data)}` : ""
-      }${configStr})?.data`;
+      }${configStr})`;
 
       this.$emit("update:modelValue", code);
     },
@@ -344,7 +347,7 @@ export default defineComponent({
       deep: true,
       handler(newValue) {
         if (typeof newValue === "string") {
-          // 如果是字符串，明是编辑现有的配置
+          // 如果是字符串，说明是编辑现有的配置
           try {
             const config = JSON.parse(newValue);
             this.localConfig = {

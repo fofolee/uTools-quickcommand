@@ -121,6 +121,11 @@ export default defineComponent({
       ],
     };
   },
+  props: {
+    command: {
+      type: Object,
+    },
+  },
   computed: {
     mainKeyDisplay() {
       if (!this.mainKey) return "";
@@ -272,7 +277,7 @@ export default defineComponent({
 
       const args = [this.mainKey, ...activeModifiers];
       // 为每个参数添加引号
-      this.$emit("update:modelValue", `keyTap("${args.join('","')}")`);
+      this.$emit("update:modelValue", `${this.command.value}("${args.join('","')}")`);
     },
     parseKeyString(val) {
       try {
