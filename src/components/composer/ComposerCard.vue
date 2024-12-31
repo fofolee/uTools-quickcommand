@@ -6,108 +6,48 @@
   >
     <q-card class="command-item">
       <q-card-section class="q-pa-sm">
-        <div class="col">
-          <!-- 命令标题和描述 -->
-          <div class="row items-center q-mb-sm">
-            <!-- 拖拽手柄 -->
-            <div class="drag-handle cursor-move q-mr-sm">
-              <q-icon name="drag_indicator" size="18px" class="text-grey-6" />
-            </div>
-            <div class="text-subtitle2">{{ command.label }}</div>
-            <q-space />
-
-            <!-- 输出变量设置 -->
-            <div
-              class="output-section row items-center no-wrap"
-              v-if="command.saveOutput"
-            >
-              <q-input
-                :model-value="command.outputVariable"
-                @update:model-value="handleOutputVariableUpdate"
-                dense
-                outlined
-                placeholder="变量名"
-                class="variable-input"
-                style="width: 100px"
-                align="center"
-              >
-              </q-input>
-            </div>
-
-            <q-btn
-              :icon="saveOutputLocal ? 'data_object' : 'output'"
-              :label="saveOutputLocal ? '保存到变量' : '获取输出'"
-              flat
-              dense
-              class="output-btn q-px-sm q-mr-sm"
-              size="sm"
-              v-if="showOutputBtn"
-              @click="handleToggleOutput"
-            >
-              <q-tooltip>
-                <div class="text-body2">
-                  {{
-                    saveOutputLocal
-                      ? "当前命令的输出将保存到变量中"
-                      : "点击将此命令的输出保存为变量以供后续使用"
-                  }}
-                </div>
-                <div class="text-caption text-grey-5">
-                  {{
-                    saveOutputLocal
-                      ? "点击取消输出到变量"
-                      : "保存后可在其他命令中使用此变量"
-                  }}
-                </div>
-              </q-tooltip>
-            </q-btn>
-
-            <!-- 运行按钮 -->
-            <q-btn
-              flat
-              dense
-              round
-              icon="play_arrow"
-              v-if="showRunBtn"
-              class="run-btn q-px-sm q-mr-sm"
-              size="sm"
-              @click="runCommand"
-            >
-              <q-tooltip>单独运行此命令并打印输出</q-tooltip>
-            </q-btn>
-
-            <q-btn
-              flat
-              round
-              dense
-              icon="close"
-              @click="$emit('remove')"
-              size="sm"
-              class="remove-btn"
-            >
-              <q-tooltip>移除此命令</q-tooltip>
-            </q-btn>
-          </div>
-
-          <!-- 参数输入 -->
-          <div class="row items-center">
-            <!-- 单独写组件的参数 -->
+        <CommandHead
+          :command="command"
+          :is-control-flow="command.isControlFlow"
+          @update:outputVariable="handleOutputVariableUpdate"
+          @toggle-output="handleToggleOutput"
+          @run="runCommand"
+          @remove="$emit('remove')"
+        >
+          <!-- 控制流程组件，直接把组件放在head中 -->
+          <template v-if="command.isControlFlow">
             <component
               :is="command.component"
               v-model="argvLocal"
               :command="command"
-              class="col"
-              v-if="!!command.component"
               v-bind="command.componentProps || {}"
+              :type="command.controlFlowType"
+              @addBranch="$emit('addBranch')"
             />
-            <!-- 通用组件参数 -->
-            <MultiParamInput
-              v-else
-              v-model="argvLocal"
-              :command="command"
-              class="col"
-            />
-          </div>
+          </template>
+
+          <!-- 非控制流程组件，使用正常布局 -->
+          <template v-else>
+            <q-space />
+          </template>
+        </CommandHead>
+
+        <!-- 非控制流程组件的参数输入 -->
+        <div v-if="!command.isControlFlow" class="row items-center q-mt-sm">
+          <component
+            v-if="!!command.component"
+            :is="command.component"
+            v-model="argvLocal"
+            :command="command"
+            class="col"
+            v-bind="command.componentProps || {}"
+          />
+          <MultiParamInput
+            v-else
+            v-model="argvLocal"
+            :command="command"
+            class="col"
+          />
         </div>
       </q-card-section>
     </q-card>
@@ -119,12 +59,14 @@ import { defineComponent, inject, defineAsyncComponent } from "vue";
 import { validateVariableName } from "js/common/variableValidator";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import MultiParamInput from "components/composer/ui/MultiParamInput.vue";
+import CommandHead from "components/composer/card/CommandHead.vue";
 
 export default defineComponent({
   name: "ComposerCard",
   components: {
     VariableInput,
     MultiParamInput,
+    CommandHead,
     KeyEditor: defineAsyncComponent(() =>
       import("components/composer/ui/KeyEditor.vue")
     ),
@@ -173,7 +115,14 @@ export default defineComponent({
       showKeyRecorder: false,
     };
   },
-  emits: ["remove", "toggle-output", "update:argv", "update:command", "run"],
+  emits: [
+    "remove",
+    "toggle-output",
+    "update:argv",
+    "update:command",
+    "run",
+    "addBranch",
+  ],
   computed: {
     saveOutputLocal: {
       get() {
@@ -315,12 +264,6 @@ export default defineComponent({
       this.$emit("run", tempCommand);
     },
   },
-  mounted() {
-    this.$el.classList.add("composer-card-enter-from");
-    requestAnimationFrame(() => {
-      this.$el.classList.remove("composer-card-enter-from");
-    });
-  },
 });
 </script>
 
@@ -341,7 +284,6 @@ export default defineComponent({
 
 .command-item:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
 /* 拖拽和放置样式 */
@@ -352,96 +294,6 @@ export default defineComponent({
 
 .can-drop .command-item {
   border: 2px dashed var(--q-primary);
-}
-
-.drag-handle {
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-}
-
-.drag-handle:hover {
-  color: var(--q-primary);
-}
-
-/* 输出部分样式 */
-.output-section {
-  max-width: 120px;
-  margin-right: 4px;
-}
-
-.output-section :deep(.q-field) {
-  border-radius: 4px;
-}
-
-.output-section :deep(.q-field__control) {
-  height: 28px;
-  min-height: 28px;
-  padding: 0 4px;
-}
-
-.output-section :deep(.q-field__marginal) {
-  height: 28px;
-  width: 24px;
-  min-width: 24px;
-}
-
-.output-section :deep(.q-field__native) {
-  padding: 0;
-  font-size: 12px;
-  min-height: 28px;
-  text-align: center;
-}
-
-/* 按钮样式 */
-.output-btn,
-.run-btn,
-.remove-btn {
-  font-size: 12px;
-  border-radius: 4px;
-  min-height: 28px;
-  padding: 0 8px;
-  opacity: 0.6;
-  transition: all 0.3s ease;
-}
-
-.output-btn:hover,
-.run-btn:hover,
-.remove-btn:hover {
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-.run-btn:hover {
-  color: var(--q-positive);
-}
-
-.remove-btn:hover {
-  color: var(--q-negative);
-}
-
-.output-btn.q-btn--active {
-  color: var(--q-primary);
-}
-
-/* 动画效果 */
-.composer-card-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.composer-card-enter-from {
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-}
-
-.composer-card-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-}
-
-.composer-card-leave-to {
-  opacity: 0;
-  transform: translateY(-20px) scale(0.95);
 }
 
 /* 暗色模式适配 */
@@ -457,19 +309,8 @@ export default defineComponent({
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.body--dark .output-section :deep(.q-field) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.body--dark .output-section :deep(.q-field--focused) {
-  background: #1d1d1d;
-}
-
-.body--dark .output-btn {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.body--dark .output-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+/* 调整控制流程组件的样式 */
+.command-item :deep(.condition-type-btn) {
+  margin-left: -8px;
 }
 </style>

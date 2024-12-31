@@ -47,6 +47,7 @@
                   @update:argv="(val) => handleArgvChange(index, val)"
                   @update:command="(val) => updateCommand(index, val)"
                   @run="handleRunCommand"
+                  @add-branch="() => addBranch(index)"
                 />
               </div>
             </transition>
@@ -162,16 +163,11 @@ export default defineComponent({
 
     onDrop(event) {
       try {
-        // 尝试获取拖拽数据
         const actionData = event.dataTransfer.getData("action");
+        if (!actionData) return;
 
-        // 如果没有action数据，说明是内部排序，直接返回
-        if (!actionData) {
-          return;
-        }
-
-        // 解析外部拖入的新命令数据
         const parsedAction = JSON.parse(actionData);
+        const isControlFlow = parsedAction.isControlFlow;
 
         const newCommand = {
           ...parsedAction,
@@ -185,20 +181,37 @@ export default defineComponent({
         };
 
         const newCommands = [...this.commands];
-        if (this.dragIndex >= 0) {
-          newCommands.splice(this.dragIndex, 0, newCommand);
+
+        // 如果是控制流程命令，添加start和end两个卡片
+        if (isControlFlow) {
+          const startCommand = {
+            ...newCommand,
+            id: Date.now(),
+            controlFlowType: "start",
+          };
+
+          const endCommand = {
+            ...newCommand,
+            id: Date.now() + 1,
+            controlFlowType: "end",
+          };
+
+          if (this.dragIndex >= 0) {
+            newCommands.splice(this.dragIndex, 0, startCommand, endCommand);
+          } else {
+            newCommands.push(startCommand, endCommand);
+          }
         } else {
-          newCommands.push(newCommand);
+          if (this.dragIndex >= 0) {
+            newCommands.splice(this.dragIndex, 0, newCommand);
+          } else {
+            newCommands.push(newCommand);
+          }
         }
 
         this.$emit("update:modelValue", newCommands);
         this.dragIndex = -1;
-
-        document.querySelectorAll(".dragging").forEach((el) => {
-          el.classList.remove("dragging");
-        });
       } catch (error) {
-        // 忽略内部拖动排序的错误
         console.debug("Internal drag & drop reorder", error);
       }
     },
@@ -254,6 +267,30 @@ export default defineComponent({
       ];
       // 触发运行事件
       this.$emit("action", "run", tempFlow);
+    },
+    addBranch(index) {
+      const newCommands = [...this.commands];
+      const midCommand = {
+        ...newCommands[index],
+        id: Date.now(),
+        controlFlowType: "mid",
+        argv: "",
+      };
+
+      // 找到对应的end位置
+      let endIndex = index + 1;
+      let depth = 1;
+      while (endIndex < newCommands.length && depth > 0) {
+        if (newCommands[endIndex].controlFlowType === "start") depth++;
+        if (newCommands[endIndex].controlFlowType === "end") depth--;
+        endIndex++;
+      }
+
+      // 在end之前插入新的分支
+      if (endIndex > index + 1) {
+        newCommands.splice(endIndex - 1, 0, midCommand);
+        this.$emit("update:modelValue", newCommands);
+      }
     },
   },
 });

@@ -1,83 +1,54 @@
 <template>
-  <div class="row items-center no-wrap">
-    <!-- 下拉按钮 -->
-    <q-btn-dropdown
-      dense
-      flat
-      class="condition-type-btn"
-      :class="{ 'text-primary': type !== 'end' }"
-    >
-      <q-list>
-        <q-item
-          v-for="option in options"
-          :key="option.value"
-          clickable
-          v-close-popup
-          @click="handleTypeChange(option.value)"
-          :active="type === option.value"
-        >
-          <q-item-section>
-            <q-item-label>{{ option.label }}</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-btn-dropdown>
-
-    <!-- 显示选中的类型文本 -->
-    <div class="condition-type-text q-mx-sm">
-      {{ getTypeLabel }}
-    </div>
-
-    <!-- 条件表达式输入框和按钮 -->
-    <template v-if="type !== 'end'">
-      <template v-if="type === 'else'">
-        <!-- 否则的条件按钮 -->
-        <q-btn
-          v-if="!showElseCondition"
-          dense
-          flat
-          size="sm"
-          class="condition-add-btn"
-          icon="add"
-          @click="showElseCondition = true"
-        >
-          <q-tooltip>添加条件</q-tooltip>
-        </q-btn>
-        <!-- 否则的条件输入框 -->
-        <q-input
-          v-else
-          v-model="condition"
-          dense
-          filled
-          class="col condition-input"
-          placeholder="请输入条件表达式"
-          @update:model-value="handleConditionChange"
-        >
-          <template v-slot:prepend>
-            <q-icon name="code" />
-          </template>
-          <template v-slot:append>
-            <q-btn dense flat round icon="close" @click="clearElseCondition" />
-          </template>
-        </q-input>
-      </template>
-      <!-- 如果的条件输入框 -->
-      <q-input
-        v-else
-        v-model="condition"
-        dense
-        filled
-        class="col condition-input"
-        placeholder="请输入条件表达式"
-        @update:model-value="handleConditionChange"
-      >
-        <template v-slot:prepend>
-          <q-icon name="code" />
+  <div class="conditional-judgment">
+    <div class="row items-center no-wrap">
+      <!-- 类型标签 -->
+      <div class="text-subtitle2 type-label">
+        <template v-if="type === 'start'">如果满足</template>
+        <template v-else-if="type === 'mid'">
+          {{ showCondition ? "否则满足" : "否则" }}
         </template>
-      </q-input>
-    </template>
-    <!-- 结束如果时的占位 -->
-    <div v-else class="col"></div>
+        <template v-else>结束条件判断</template>
+      </div>
+
+      <!-- start类型显示添加按钮 -->
+      <q-btn
+        v-if="type === 'start'"
+        flat
+        round
+        dense
+        size="sm"
+        icon="add"
+        class="control-btn q-mx-xs"
+        @click="$emit('addBranch')"
+      >
+        <q-tooltip>添加条件分支</q-tooltip>
+      </q-btn>
+
+      <!-- mid类型显示切换按钮 -->
+      <q-btn
+        v-if="type === 'mid'"
+        flat
+        round
+        dense
+        size="sm"
+        :icon="showCondition ? 'unfold_less' : 'unfold_more'"
+        class="control-btn q-mx-xs"
+        @click="toggleCondition"
+      >
+        <q-tooltip>{{ showCondition ? "隐藏条件" : "显示条件" }}</q-tooltip>
+      </q-btn>
+
+      <!-- 条件输入框 -->
+      <q-input
+        v-if="showCondition"
+        v-model="conditionLocal"
+        dense
+        borderless
+        :bg-color="$q.dark.isActive ? 'grey-9' : 'grey-2'"
+        placeholder="输入条件表达式"
+        class="condition-input"
+      />
+    </div>
   </div>
 </template>
 
@@ -86,150 +57,156 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "ConditionalJudgment",
-
   props: {
-    modelValue: {
+    modelValue: String,
+    command: Object,
+    type: {
       type: String,
-      default: "",
-    },
-    command: {
-      type: Object,
       required: true,
+      validator: (value) => ["start", "mid", "end"].includes(value),
     },
   },
-
-  emits: ["update:modelValue"],
-
+  emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      options: [
-        { label: "如果", value: "if" },
-        { label: "否则", value: "else" },
-        { label: "结束判断", value: "end" },
-      ],
-      type: "if",
+      showMidCondition: false,
       condition: "",
-      showElseCondition: false,
     };
   },
-
-  computed: {
-    getTypeLabel() {
-      switch (this.type) {
-        case "if":
-          return "如果满足：";
-        case "else":
-          return this.showElseCondition ? "否则，满足：" : "否则：";
-        case "end":
-          return "结束条件判断";
-        default:
-          return "";
-      }
-    },
-  },
-
   created() {
-    // 解析初始值
-    if (this.modelValue) {
-      const match = this.modelValue.match(
-        /^(if|else if|else|end)(?:\((.*)\))?$/
-      );
-      if (match) {
-        if (match[1] === "else if") {
-          this.type = "else";
-          this.condition = match[2] || "";
-          this.showElseCondition = true;
-        } else {
-          this.type = match[1];
-          this.condition = match[2] || "";
-          this.showElseCondition = false;
-        }
-      }
-    }
+    // 组件创建时生成初始代码
+    this.updateValue();
   },
-
-  methods: {
-    generateCode() {
+  computed: {
+    showCondition() {
+      return (
+        this.type === "start" || (this.type === "mid" && this.showMidCondition)
+      );
+    },
+    conditionLocal: {
+      get() {
+        return this.condition;
+      },
+      set(value) {
+        this.condition = value;
+        this.updateValue();
+      },
+    },
+    generatedCode() {
       switch (this.type) {
-        case "if":
-          return `if (${this.condition}) {`;
-        case "else":
-          return this.condition
-            ? `} else if (${this.condition}) {`
-            : "} else {";
+        case "start":
+          return `if(${this.condition || "true"}){`;
+        case "mid":
+          return this.showMidCondition && this.condition
+            ? `}else if(${this.condition}){`
+            : "}else{";
         case "end":
           return "}";
         default:
           return "";
       }
     },
-
-    handleTypeChange(value) {
-      this.type = value;
-      if (this.type === "end") {
+  },
+  watch: {
+    modelValue: {
+      immediate: true,
+      handler(val) {
+        if (val) {
+          this.parseCodeString(val);
+        }
+      },
+    },
+  },
+  methods: {
+    toggleCondition() {
+      this.showMidCondition = !this.showMidCondition;
+      if (!this.showMidCondition) {
         this.condition = "";
-        this.showElseCondition = false;
+        this.updateValue();
       }
-      this.$emit("update:modelValue", this.generateCode());
     },
-
-    handleConditionChange() {
-      this.$emit("update:modelValue", this.generateCode());
+    updateValue() {
+      this.$emit("update:modelValue", this.generatedCode);
     },
-
-    clearElseCondition() {
-      this.condition = "";
-      this.showElseCondition = false;
-      this.$emit("update:modelValue", this.generateCode());
+    parseCodeString(val) {
+      try {
+        if (this.type === "start") {
+          const match = val.match(/^if\((.*)\){$/);
+          if (match) {
+            this.condition = match[1] === "true" ? "" : match[1];
+          }
+        } else if (this.type === "mid") {
+          if (val === "}else{") {
+            this.showMidCondition = false;
+            this.condition = "";
+          } else {
+            const match = val.match(/^}else if\((.*)\){$/);
+            if (match) {
+              this.showMidCondition = true;
+              this.condition = match[1];
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse code string:", e);
+      }
     },
   },
 });
 </script>
 
 <style scoped>
-.condition-type-btn {
-  min-width: 32px;
-  width: 32px;
-  height: 36px;
-  padding: 0;
+.conditional-judgment {
+  padding: 4px 0;
 }
 
-.condition-type-btn :deep(.q-btn__content) {
-  padding: 0;
-}
-
-.condition-type-btn :deep(.q-icon) {
-  font-size: 20px;
-}
-
-.condition-type-text {
+.type-label {
   font-size: 14px;
   color: var(--q-primary);
   white-space: nowrap;
-}
-
-.condition-add-btn {
-  margin-left: 4px;
-  opacity: 0.7;
-  height: 36px;
-  color: var(--q-primary);
-}
-
-.condition-add-btn:hover {
-  opacity: 1;
-  background: rgba(var(--q-primary-rgb), 0.1);
+  opacity: 0.9;
 }
 
 .condition-input {
+  flex: 1;
   transition: all 0.3s ease;
 }
 
 .condition-input :deep(.q-field__control) {
-  padding-right: 8px;
+  padding: 0 16px;
+  height: 24px !important;
+  min-height: 24px;
+  border-radius: 4px;
+}
+
+.control-btn {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 /* 暗色模式适配 */
-.body--dark .condition-type-text {
+.body--dark .condition-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.body--dark .type-label {
+  color: var(--q-primary);
+  opacity: 0.8;
+}
+
+.body--dark .control-btn {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.body--dark .control-btn:hover {
   color: var(--q-primary);
 }
 </style>
