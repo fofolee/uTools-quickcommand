@@ -1,7 +1,7 @@
 <template>
   <transition
     name="tester"
-    @enter="el => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })"
+    @enter="(el) => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })"
   >
     <div class="regex-tester" v-if="shouldShowPreview">
       <div class="matches">

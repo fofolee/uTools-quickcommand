@@ -41,6 +41,7 @@
               dense
               class="output-btn q-px-sm q-mr-sm"
               size="sm"
+              v-if="showOutputBtn"
               @click="handleToggleOutput"
             >
               <q-tooltip>
@@ -67,6 +68,7 @@
               dense
               round
               icon="play_arrow"
+              v-if="showRunBtn"
               class="run-btn q-px-sm q-mr-sm"
               size="sm"
               @click="runCommand"
@@ -113,30 +115,40 @@
 </template>
 
 <script>
-import { defineComponent, inject } from "vue";
-import KeyEditor from "components/composer/ui/KeyEditor.vue";
-import UBrowserEditor from "components/composer/ubrowser/UBrowserEditor.vue";
+import { defineComponent, inject, defineAsyncComponent } from "vue";
+import { validateVariableName } from "js/common/variableValidator";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import MultiParamInput from "components/composer/ui/MultiParamInput.vue";
-import AxiosConfigEditor from "components/composer/http/AxiosConfigEditor.vue";
-import SymmetricCryptoEditor from "components/composer/crypto/SymmetricCryptoEditor.vue";
-import AsymmetricCryptoEditor from "components/composer/crypto/AsymmetricCryptoEditor.vue";
-import FunctionSelector from "components/composer/ui/FunctionSelector.vue";
-import RegexEditor from "components/composer/regex/RegexEditor.vue";
-import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
   name: "ComposerCard",
   components: {
-    KeyEditor,
-    UBrowserEditor,
     VariableInput,
     MultiParamInput,
-    AxiosConfigEditor,
-    SymmetricCryptoEditor,
-    AsymmetricCryptoEditor,
-    FunctionSelector,
-    RegexEditor,
+    KeyEditor: defineAsyncComponent(() =>
+      import("components/composer/ui/KeyEditor.vue")
+    ),
+    UBrowserEditor: defineAsyncComponent(() =>
+      import("components/composer/ubrowser/UBrowserEditor.vue")
+    ),
+    AxiosConfigEditor: defineAsyncComponent(() =>
+      import("components/composer/http/AxiosConfigEditor.vue")
+    ),
+    SymmetricCryptoEditor: defineAsyncComponent(() =>
+      import("components/composer/crypto/SymmetricCryptoEditor.vue")
+    ),
+    AsymmetricCryptoEditor: defineAsyncComponent(() =>
+      import("components/composer/crypto/AsymmetricCryptoEditor.vue")
+    ),
+    FunctionSelector: defineAsyncComponent(() =>
+      import("components/composer/ui/FunctionSelector.vue")
+    ),
+    RegexEditor: defineAsyncComponent(() =>
+      import("components/composer/regex/RegexEditor.vue")
+    ),
+    ConditionalJudgment: defineAsyncComponent(() =>
+      import("components/composer/control/ConditionalJudgment.vue")
+    ),
   },
   props: {
     command: {
@@ -202,6 +214,12 @@ export default defineComponent({
         };
         this.$emit("update:command", updatedCommand);
       },
+    },
+    showRunBtn() {
+      return !this.command.isControlFlow;
+    },
+    showOutputBtn() {
+      return !this.command.isControlFlow;
     },
   },
   setup() {

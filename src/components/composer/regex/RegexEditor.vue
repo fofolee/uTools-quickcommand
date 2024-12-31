@@ -76,7 +76,9 @@
     <!-- 正则表达式构建工具 -->
     <transition
       name="builder"
-      @enter="el => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })"
+      @enter="
+        (el) => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      "
     >
       <div v-if="showBuilder" class="builder-container">
         <RegexBuilder :selection="selection" @insert="insertPattern" />
