@@ -1,13 +1,16 @@
 <template>
   <div class="composer-flow">
     <ChainStyles ref="chainStyles" :commands="commands" />
-    <div class="section-header">
-      <q-icon name="timeline" size="20px" class="q-mx-sm text-primary" />
-      <span class="text-subtitle1">命令流程</span>
-      <q-space />
+    <div class="section-header flow-header">
+      <div class="flow-title">
+        <q-icon name="timeline" size="20px" class="q-mx-sm text-primary" />
+        <span class="text-subtitle1">命令流程</span>
+      </div>
       <ComposerButtons
         :generate-code="generateCode"
-        @action="$emit('action', $event)"
+        :is-all-collapsed="isAllCollapsed"
+        @action="handleAction"
+        class="flex-grow"
       />
     </div>
 
@@ -23,8 +26,8 @@
           group="commands"
           item-key="id"
           class="flow-list"
-          handle=".drag-handle"
           :animation="200"
+          handle=".drag-handle"
           @start="onDragStart"
           @end="onDragEnd"
           @change="onDragChange"
@@ -39,6 +42,7 @@
                   'insert-after':
                     dragIndex === commands.length &&
                     index === commands.length - 1,
+                  ...getCollapsedChainClass(index),
                   ...getChainGroupClass(index),
                 }"
               >
@@ -51,6 +55,7 @@
                   @update:command="(val) => updateCommand(index, val)"
                   @run="handleRunCommand"
                   @add-branch="(chainInfo) => addBranch(index, chainInfo)"
+                  @toggle-collapse="(event) => handleControlFlowCollapse(event)"
                 />
               </div>
             </transition>
@@ -67,7 +72,7 @@
 import { defineComponent, inject } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
-import ComposerButtons from "./ComposerButtons.vue";
+import ComposerButtons from "./flow/ComposerButtons.vue";
 import ChainStyles from "./flow/ChainStyles.vue";
 import EmptyFlow from "./flow/EmptyFlow.vue";
 import DropArea from "./flow/DropArea.vue";
@@ -102,6 +107,8 @@ export default defineComponent({
       dragIndex: -1,
       isDragging: false,
       draggedCommand: null,
+      collapsedRanges: [],
+      isAllCollapsed: false,
     };
   },
   computed: {
@@ -284,15 +291,53 @@ export default defineComponent({
     getUniqueId() {
       return this.$root.getUniqueId();
     },
+    isFirstCommandInChain(command) {
+      if (!command.commandChain) return false;
+      return command.commandType === command.commandChain?.[0];
+    },
+    removeRangeCommand(startIndex, endIndex, chainId) {
+      if (!endIndex) endIndex = startIndex;
+      const newCommands = [...this.commands];
+      // 从后往前删除，避免索引变化
+      for (let i = endIndex; i >= startIndex; i--) {
+        const cmd = newCommands[i];
+        // 如果chainId不为空，则只删除指定chainId的命令
+        if (chainId && cmd.chainId !== chainId) continue;
+        if (cmd.outputVariable) {
+          this.removeVariable(cmd.outputVariable);
+        }
+        newCommands.splice(i, 1);
+      }
+      this.$emit("update:modelValue", newCommands);
+    },
     removeCommand(index) {
       const command = this.commands[index];
-      // 如果命令有输出变量，需要先清理
-      if (command.outputVariable) {
-        this.removeVariable(command.outputVariable);
+
+      // 如果是控制流程的起始命令
+      if (this.isFirstCommandInChain(command)) {
+        // 显示确认对话框
+        quickcommand
+          .showButtonBox(["全部删除", "保留内部命令", "手抖👋🏻"])
+          .then(({ id }) => {
+            if (id !== 0 && id !== 1) return;
+            const newCommands = [...this.commands];
+            const chainId = command.chainId;
+            const lastIndex = newCommands.findLastIndex(
+              (cmd) => cmd.chainId === chainId
+            );
+            const startIndex = newCommands.findIndex(
+              (cmd) => cmd.chainId === chainId
+            );
+            this.removeRangeCommand(
+              startIndex,
+              lastIndex,
+              id === 0 ? null : chainId
+            );
+          });
+      } else {
+        // 如果不是控制流程的起始命令，直接删除
+        this.removeRangeCommand(index);
       }
-      const newCommands = [...this.commands];
-      newCommands.splice(index, 1);
-      this.$emit("update:modelValue", newCommands);
     },
     toggleSaveOutput(index) {
       const newCommands = [...this.commands];
@@ -358,6 +403,87 @@ export default defineComponent({
         this.$emit("update:modelValue", newCommands);
       }
     },
+    handleControlFlowCollapse(event) {
+      const chainId = event.chainId;
+      const isCollapsed = !event.isCollapsed; // 取反，因为我们要切换状态
+      if (!chainId) return;
+
+      // 遍历commands找到相同chainId的第一个和最后一个命令的index
+      const startIndex = this.commands.findIndex(
+        (cmd) => cmd.chainId === chainId
+      );
+      const endIndex = this.commands.findLastIndex(
+        (cmd) => cmd.chainId === chainId
+      );
+
+      if (startIndex === -1 || endIndex === -1) return;
+
+      // 更新命令的折叠状态
+      const newCommands = [...this.commands];
+      newCommands[startIndex] = {
+        ...newCommands[startIndex],
+        isCollapsed,
+      };
+
+      this.$emit("update:modelValue", newCommands);
+
+      if (isCollapsed) {
+        // 折叠命令：添加新的折叠区间
+        this.collapsedRanges.push({
+          chainId,
+          start: startIndex,
+          end: endIndex,
+        });
+      } else {
+        // 展开命令：移除对应的折叠区间
+        const existingRangeIndex = this.collapsedRanges.findIndex(
+          (range) => range.chainId === chainId
+        );
+        if (existingRangeIndex !== -1) {
+          this.collapsedRanges.splice(existingRangeIndex, 1);
+        }
+      }
+    },
+    getCollapsedChainClass(index) {
+      // 找出所有包含当前index的折叠区间
+      const matchingRanges = this.collapsedRanges.filter(
+        (range) => index >= range.start && index <= range.end
+      );
+      if (!matchingRanges.length) return {};
+      // 检查是否是任意区间的中间或结束位置
+      const isAnyMiddleEnd = matchingRanges.some(
+        (range) => index > range.start && index <= range.end
+      );
+      // 只要在任何区间内部，无论是否是开始位置，都返回hidden样式，解决嵌套问题
+      return isAnyMiddleEnd
+        ? { "collapsed-chain-hidden": true }
+        : { "collapsed-chain-start": true };
+    },
+    handleAction(action, payload) {
+      if (action === "collapseAll") {
+        this.collapseAll();
+      } else if (action === "expandAll") {
+        this.expandAll();
+      } else {
+        this.$emit("action", action, payload);
+      }
+    },
+    collapseAll() {
+      const newCommands = this.commands.map((cmd) => ({
+        ...cmd,
+        isCollapsed: true,
+      }));
+      this.$emit("update:modelValue", newCommands);
+      this.isAllCollapsed = true;
+    },
+    expandAll() {
+      const newCommands = this.commands.map((cmd) => ({
+        ...cmd,
+        isCollapsed: false,
+      }));
+      this.$emit("update:modelValue", newCommands);
+      this.isAllCollapsed = false;
+    },
   },
 });
 </script>
@@ -377,6 +503,17 @@ export default defineComponent({
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.flow-title {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.flex-grow {
+  flex-grow: 1;
 }
 
 .command-scroll {
@@ -461,10 +598,49 @@ export default defineComponent({
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.03), 0 0 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 拖拽时的卡片效果 */
+/* 流程卡片 */
 .flow-item {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  margin: 3px 0;
+  border-radius: 5px;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+/* 隐藏的链式命令 */
+.collapsed-chain-hidden {
+  grid-template-rows: 0fr !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.collapsed-chain-hidden > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.flow-item.chain-start {
+  border-radius: 5px 5px 0 0;
+  margin: 0;
+}
+
+.flow-item.chain-start.collapsed-chain-start {
+  border-radius: 5px;
+}
+
+.flow-item.chain-middle {
+  border-radius: 0;
+  margin: 0;
+}
+
+.flow-item.chain-end {
+  border-radius: 0 0 5px 5px;
+  margin: 0;
 }
 
 .flow-item.insert-before {

@@ -1,12 +1,26 @@
 <template>
-  <div class="composer-card" :class="{ 'can-drop': canDrop }" v-bind="$attrs">
+  <div
+    class="composer-card"
+    :class="{
+      collapsed: isCollapsed && !command.isControlFlow,
+      'drag-handle': !isLastCommandInChain,
+      'no-animation': isClickingControl,
+    }"
+    v-bind="$attrs"
+    @mousedown="handleMouseDown"
+    @mouseup="handleMouseUp"
+  >
     <q-card class="command-item">
-      <q-card-section class="q-pa-sm">
+      <q-card-section
+        class="card-section"
+        :class="{ collapsed: isCollapsed || command.isControlFlow }"
+      >
         <CommandHead
           :command="command"
-          :is-control-flow="command.isControlFlow"
+          :is-collapsed="isCollapsed"
           @update:outputVariable="handleOutputVariableUpdate"
           @toggle-output="handleToggleOutput"
+          @toggle-collapse="handleToggleCollapse"
           @run="runCommand"
           @remove="$emit('remove')"
         >
@@ -29,21 +43,27 @@
         </CommandHead>
 
         <!-- 非控制流程组件的参数输入 -->
-        <div v-if="!command.isControlFlow" class="row items-center q-mt-sm">
-          <component
-            v-if="!!command.component"
-            :is="command.component"
-            v-model="argvLocal"
-            :command="command"
-            class="col"
-            v-bind="command.componentProps || {}"
-          />
-          <MultiParamInput
-            v-else
-            v-model="argvLocal"
-            :command="command"
-            class="col"
-          />
+        <div
+          v-if="!command.isControlFlow"
+          class="command-content-wrapper"
+          :class="{ collapsed: isCollapsed }"
+        >
+          <div class="command-content">
+            <component
+              v-if="!!command.component"
+              :is="command.component"
+              v-model="argvLocal"
+              :command="command"
+              class="col"
+              v-bind="command.componentProps || {}"
+            />
+            <MultiParamInput
+              v-else
+              v-model="argvLocal"
+              :command="command"
+              class="col"
+            />
+          </div>
         </div>
       </q-card-section>
     </q-card>
@@ -101,7 +121,7 @@ export default defineComponent({
       type: String,
       default: "",
     },
-    canDrop: {
+    isDragging: {
       type: Boolean,
       default: false,
     },
@@ -109,7 +129,19 @@ export default defineComponent({
   data() {
     return {
       showKeyRecorder: false,
+      isCollapsed: false,
+      isClickingControl: false,
     };
+  },
+  watch: {
+    "command.isCollapsed": {
+      immediate: true,
+      handler(val) {
+        if (val !== undefined) {
+          this.isCollapsed = val;
+        }
+      },
+    },
   },
   emits: [
     "remove",
@@ -118,6 +150,7 @@ export default defineComponent({
     "update:command",
     "run",
     "addBranch",
+    "toggle-collapse",
   ],
   computed: {
     saveOutputLocal: {
@@ -165,6 +198,12 @@ export default defineComponent({
     },
     showOutputBtn() {
       return !this.command.isControlFlow;
+    },
+    isLastCommandInChain() {
+      if (!this.command.commandChain) return false;
+      return (
+        this.command.commandType === this.command.commandChain?.slice(-1)[0]
+      );
     },
   },
   setup() {
@@ -259,6 +298,31 @@ export default defineComponent({
       };
       this.$emit("run", tempCommand);
     },
+    handleToggleCollapse() {
+      if (this.command.isControlFlow) {
+        // 控制命令的折叠，直接传递给父组件处理
+        this.$emit("toggle-collapse", {
+          isCollapsed: this.isCollapsed,
+          chainId: this.command.chainId,
+        });
+      } else {
+        // 非控制命令的折叠，更新自身状态
+        this.isCollapsed = !this.isCollapsed;
+      }
+    },
+    handleMouseDown(event) {
+      // 检查点击的元素是否是控制元素（按钮、输入框等）
+      const isControlElement = event.target.closest(
+        ".q-btn, .q-field, .q-icon, button, input, .border-label"
+      );
+      this.isClickingControl = !!isControlElement;
+    },
+    handleMouseUp() {
+      // 延迟重置状态，以确保动画不会立即触发
+      setTimeout(() => {
+        this.isClickingControl = false;
+      }, 100);
+    },
   },
 });
 </script>
@@ -269,28 +333,68 @@ export default defineComponent({
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
   opacity: 1;
-  padding: 2px 2px 2px 0;
   transform: translateY(0) scale(1);
+  border-radius: inherit;
+  position: relative;
+}
+
+.composer-card.no-animation,
+.composer-card.no-animation::before,
+.composer-card.no-animation .command-item {
+  transition: none !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.composer-card.drag-handle {
+  cursor: grab;
+}
+
+.composer-card.no-animation.drag-handle {
+  cursor: default;
+}
+
+.composer-card.drag-handle:active {
+  cursor: grabbing;
+}
+
+.composer-card.drag-handle:hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--q-primary);
+  opacity: 0.03;
+  border-radius: inherit;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.composer-card.drag-handle:active::before {
+  opacity: 0.06;
+  transform: scale(0.99);
 }
 
 .command-item {
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: inherit;
+  user-select: none;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
-.command-item:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.drag-handle .command-item {
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
-/* 拖拽和放置样式 */
-.can-drop {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.drag-handle:hover .command-item {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.can-drop .command-item {
-  border: 2px dashed var(--q-primary);
+.drag-handle:active .command-item {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* 暗色模式适配 */
@@ -298,12 +402,61 @@ export default defineComponent({
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.body--dark .command-item:hover {
-  box-shadow: 0 4px 8px rgba(58, 58, 58, 0.3);
+.body--dark .drag-handle:hover .command-item {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.body--dark .can-drop {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.body--dark .drag-handle:active .command-item {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.body--dark .composer-card.drag-handle:hover::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.body--dark .composer-card.drag-handle:active::before {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 收起状态样式 */
+.composer-card.collapsed {
+  transform-origin: top;
+}
+
+.composer-card.collapsed .command-item {
+  min-height: 20px;
+}
+
+/* 卡片内容区域动画 */
+.card-section {
+  transition: padding 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 8px;
+}
+
+.card-section.collapsed {
+  padding: 2px 8px;
+}
+
+/* 命令内容动画 */
+.command-content-wrapper {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 8px;
+}
+
+.command-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.command-content-wrapper.collapsed {
+  grid-template-rows: 0fr;
+  margin-top: 0;
+}
+
+.command-content-wrapper.collapsed .command-content {
+  opacity: 0;
 }
 
 /* 调整控制流程组件的样式 */

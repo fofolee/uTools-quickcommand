@@ -1,33 +1,46 @@
 <template>
   <div class="composer-buttons">
-    <q-btn
-      @click="$q.dark.toggle()"
-      :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
-      flat
-      dense
-      v-if="isDev"
-    >
-    </q-btn>
-    <q-btn icon="logout" dense flat v-close-popup>
-      <q-tooltip>退出可视化编排</q-tooltip>
-    </q-btn>
-    <q-btn dense icon="publish" flat @click="$emit('action', 'insert')">
-      <q-tooltip>插入到编辑器光标处</q-tooltip>
-    </q-btn>
-    <q-btn dense flat icon="done_all" @click="$emit('action', 'apply')">
-      <q-tooltip>清空编辑器内容并插入</q-tooltip>
-    </q-btn>
-    <q-btn
-      flat
-      dense
-      icon="preview"
-      @mouseenter="handleMouseEnter"
-      @mouseleave="handleMouseLeave"
-    >
-    </q-btn>
-    <q-btn dense flat icon="play_circle" @click="$emit('action', 'run')">
-      <q-tooltip>运行</q-tooltip>
-    </q-btn>
+    <div class="left-buttons">
+      <q-btn
+        :icon="isAllCollapsed ? 'unfold_more' : 'unfold_less'"
+        dense
+        flat
+        @click="$emit('action', isAllCollapsed ? 'expandAll' : 'collapseAll')"
+      >
+        <q-tooltip>{{ isAllCollapsed ? "展开所有" : "折叠所有" }}</q-tooltip>
+      </q-btn>
+    </div>
+
+    <div class="right-buttons">
+      <q-btn
+        @click="$q.dark.toggle()"
+        :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
+        flat
+        dense
+        v-if="isDev"
+      >
+      </q-btn>
+      <q-btn icon="logout" dense flat v-close-popup>
+        <q-tooltip>退出可视化编排</q-tooltip>
+      </q-btn>
+      <q-btn dense icon="publish" flat @click="$emit('action', 'insert')">
+        <q-tooltip>插入到编辑器光标处</q-tooltip>
+      </q-btn>
+      <q-btn dense flat icon="done_all" @click="$emit('action', 'apply')">
+        <q-tooltip>清空编辑器内容并插入</q-tooltip>
+      </q-btn>
+      <q-btn
+        flat
+        dense
+        icon="preview"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave"
+      >
+      </q-btn>
+      <q-btn dense flat icon="play_circle" @click="$emit('action', 'run')">
+        <q-tooltip>运行</q-tooltip>
+      </q-btn>
+    </div>
 
     <transition name="preview-fade">
       <div v-if="isVisible" class="preview-popup">
@@ -51,6 +64,10 @@ export default defineComponent({
     generateCode: {
       type: Function,
       required: true,
+    },
+    isAllCollapsed: {
+      type: Boolean,
+      default: false,
     },
   },
 
@@ -88,15 +105,25 @@ export default defineComponent({
 <style scoped>
 .composer-buttons {
   position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
-.composer-buttons > .q-btn {
+.left-buttons,
+.right-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.composer-buttons > div > .q-btn {
   opacity: 0.6;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 12px;
 }
 
-.composer-buttons > .q-btn:hover {
+.composer-buttons > div > .q-btn:hover {
   opacity: 1;
   transform: translateY(-1px);
   color: var(--q-primary);

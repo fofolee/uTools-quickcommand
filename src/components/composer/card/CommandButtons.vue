@@ -4,14 +4,13 @@
       <!-- 输出变量设置和按钮 -->
       <div
         class="output-section row items-center no-wrap"
-        v-if="!showDeleteOnly"
+        v-if="!isControlFlow"
       >
         <!-- 变量输入框 -->
         <q-input
           v-if="command.saveOutput"
           :model-value="command.outputVariable"
           @update:model-value="$emit('update:outputVariable', $event)"
-          dense
           outlined
           placeholder="变量名"
           class="variable-input"
@@ -19,13 +18,9 @@
         >
         </q-input>
         <!-- 保存变量按钮 -->
-        <q-btn
-          :icon="command.saveOutput ? 'data_object' : 'output'"
-          :label="command.saveOutput ? '保存到变量' : '获取输出'"
-          flat
-          dense
+        <q-icon
+          :name="command.saveOutput ? 'data_object' : 'output'"
           class="output-btn"
-          size="sm"
           @click="$emit('toggle-output')"
         >
           <q-tooltip>
@@ -44,35 +39,28 @@
               }}
             </div>
           </q-tooltip>
-        </q-btn>
+        </q-icon>
       </div>
 
       <!-- 操作按钮组 -->
       <div class="action-buttons row items-center no-wrap">
-        <q-btn
-          flat
-          dense
-          v-if="!showDeleteOnly"
-          round
-          icon="play_arrow"
-          class="run-btn q-mr-xs"
-          size="sm"
+        <q-icon
+          v-if="!isControlFlow"
+          name="play_arrow"
+          class="run-btn"
           @click="$emit('run')"
         >
           <q-tooltip>单独运行此命令并打印输出</q-tooltip>
-        </q-btn>
+        </q-icon>
 
-        <q-btn
-          flat
-          round
-          dense
-          icon="close"
+        <q-icon
+          name="close"
           @click="$emit('remove')"
-          size="sm"
           class="remove-btn"
+          v-if="!isLastCommandInChain"
         >
           <q-tooltip>移除此命令</q-tooltip>
-        </q-btn>
+        </q-icon>
       </div>
     </div>
   </div>
@@ -86,12 +74,30 @@ export default {
       type: Object,
       required: true,
     },
-    showDeleteOnly: {
+    isCollapsed: {
+      type: Boolean,
+      default: false,
+    },
+    isControlFlow: {
+      type: Boolean,
+      default: false,
+    },
+    isFirstCommandInChain: {
+      type: Boolean,
+      default: false,
+    },
+    isLastCommandInChain: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ["update:outputVariable", "toggle-output", "run", "remove"],
+  emits: [
+    "update:outputVariable",
+    "toggle-output",
+    "run",
+    "remove",
+    "toggle-collapse",
+  ],
 };
 </script>
 
@@ -99,11 +105,12 @@ export default {
 .command-buttons {
   display: flex;
   align-items: center;
+  height: 20px;
 }
 
 /* 输出部分样式 */
 .output-section {
-  margin-right: 8px;
+  /* margin-right: 8px; */
   gap: 8px;
 }
 
@@ -116,13 +123,13 @@ export default {
 }
 
 .output-section :deep(.q-field__control) {
-  height: 28px;
-  min-height: 28px;
+  height: 20px;
+  min-height: 20px;
   padding: 0 4px;
 }
 
 .output-section :deep(.q-field__marginal) {
-  height: 28px;
+  height: 20px;
   width: 24px;
   min-width: 24px;
 }
@@ -130,7 +137,7 @@ export default {
 .output-section :deep(.q-field__native) {
   padding: 0;
   font-size: 12px;
-  min-height: 28px;
+  min-height: 20px;
   text-align: center;
 }
 
@@ -138,18 +145,20 @@ export default {
 .output-btn,
 .run-btn,
 .remove-btn {
-  font-size: 12px;
-  border-radius: 4px;
-  min-height: 28px;
+  font-size: 18px;
+  min-height: 25px;
+  cursor: pointer;
   opacity: 0.6;
   transition: all 0.3s ease;
+  padding: 0 4px;
 }
 
 .output-btn:hover,
 .run-btn:hover,
 .remove-btn:hover {
   opacity: 1;
-  transform: scale(1.05);
+  transform: scale(1.1) translateY(-1px);
+  transition: all 0.3s ease;
 }
 
 .run-btn:hover {

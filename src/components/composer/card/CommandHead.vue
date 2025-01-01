@@ -1,13 +1,19 @@
 <template>
-  <div
-    class="row items-center"
-    :class="{
-      'q-pb-sm': !isControlFlow,
-    }"
-  >
-    <!-- 拖拽手柄 -->
-    <div class="drag-handle q-mr-sm" draggable="true">
-      <q-icon name="drag_indicator" size="18px" class="text-grey-6" />
+  <div class="row items-center">
+    <!-- 折叠按钮 -->
+    <div class="collapse-btn" v-if="!isLastCommandInChain">
+      <q-btn
+        :icon="isCollapsed ? 'expand_more' : 'expand_less'"
+        dense
+        flat
+        size="sm"
+        @click="$emit('toggle-collapse')"
+      >
+        <q-tooltip>折叠/展开此{{ isControlFlow ? "流程" : "命令" }}</q-tooltip>
+      </q-btn>
+    </div>
+    <div v-else class="end-icon">
+      <q-icon name="last_page" size="xs" />
     </div>
 
     <!-- 标题 -->
@@ -23,8 +29,11 @@
     <!-- 按钮组 -->
     <CommandButtons
       :command="command"
-      :show-delete-only="isControlFlow"
       v-bind="$attrs"
+      :isCollapsed="isCollapsed"
+      :isControlFlow="isControlFlow"
+      :isFirstCommandInChain="isFirstCommandInChain"
+      :isLastCommandInChain="isLastCommandInChain"
       @update:outputVariable="$emit('update:outputVariable', $event)"
       @toggle-output="$emit('toggle-output')"
       @run="$emit('run')"
@@ -46,50 +55,66 @@ export default {
       type: Object,
       required: true,
     },
-    isControlFlow: {
+    isCollapsed: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ["update:outputVariable", "toggle-output", "run", "remove"],
+  emits: [
+    "update:outputVariable",
+    "toggle-output",
+    "run",
+    "remove",
+    "toggle-collapse",
+  ],
   computed: {
     contentClass() {
       return {
         col: true,
-        "q-ml-md": !this.isControlFlow,
+        "q-ml-md": !this.command.isControlFlow,
       };
+    },
+    isControlFlow() {
+      return this.command.isControlFlow;
+    },
+    isFirstCommandInChain() {
+      if (!this.command.commandChain) return false;
+      return this.command.commandType === this.command.commandChain?.[0];
+    },
+    isLastCommandInChain() {
+      if (!this.command.commandChain) return false;
+      return (
+        this.command.commandType === this.command.commandChain?.slice(-1)[0]
+      );
     },
   },
 };
 </script>
 
 <style scoped>
-.drag-handle {
+.collapse-btn,
+.end-icon {
   display: flex;
   align-items: center;
-  padding: 0 4px;
-  cursor: grab;
+  padding-right: 4px;
+  transition: all 0.2s ease;
+}
+
+.collapse-btn :deep(.q-btn),
+.end-icon {
   opacity: 0.6;
-  transition: all 0.2s ease;
+  min-height: 20px;
+  padding: 0 4px;
 }
 
-.row:hover .drag-handle {
-  opacity: 0.8;
-}
-
-.drag-handle:hover {
+.collapse-btn :deep(.q-btn:hover) {
   opacity: 1;
+  transform: scale(1.1) translateY(-1px);
   color: var(--q-primary);
-  transform: scale(1.2);
-  transition: all 0.2s ease;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
-  transform: scale(0.95);
 }
 
 .command-label {
   user-select: none;
+  pointer-events: none;
 }
 </style>

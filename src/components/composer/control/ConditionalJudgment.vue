@@ -1,6 +1,6 @@
 <template>
   <div class="conditional-judgment">
-    <div class="row items-center no-wrap">
+    <div class="row items-end no-wrap">
       <!-- 类型标签 -->
       <div class="text-subtitle2 type-label">
         <template v-if="type === 'if'">如果满足</template>
@@ -14,7 +14,6 @@
       <q-btn
         v-if="type === 'if'"
         flat
-        round
         dense
         size="sm"
         icon="add"
@@ -33,10 +32,9 @@
       <q-btn
         v-if="type === 'else'"
         flat
-        round
         dense
         size="sm"
-        :icon="showCondition ? 'unfold_less' : 'unfold_more'"
+        :icon="showCondition ? 'remove' : 'add'"
         class="control-btn q-mx-xs"
         @click="toggleCondition"
       >
@@ -49,7 +47,6 @@
         v-model="conditionLocal"
         dense
         borderless
-        :bg-color="$q.dark.isActive ? 'grey-9' : 'grey-2'"
         placeholder="输入条件表达式"
         class="condition-input"
       />
@@ -161,10 +158,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.conditional-judgment {
-  padding: 4px 0;
-}
-
 .type-label {
   font-size: 14px;
   color: var(--q-primary);
@@ -178,17 +171,19 @@ export default defineComponent({
   transition: all 0.3s ease;
 }
 
-.condition-input :deep(.q-field__control) {
-  padding: 0 16px;
-  height: 24px !important;
-  min-height: 24px;
+.condition-input :deep(.q-field__control),
+.condition-input :deep(.q-field__native) {
+  padding: 1px;
+  height: 21px !important;
+  min-height: 21px;
   border-radius: 4px;
+  font-size: 13px;
 }
 
 .control-btn {
-  width: 24px;
-  height: 24px;
-  min-height: 24px;
+  width: 21px;
+  height: 21px;
+  min-height: 21px;
   opacity: 0.7;
   transition: all 0.2s ease;
 }
@@ -196,11 +191,6 @@ export default defineComponent({
 .control-btn:hover {
   opacity: 1;
   transform: scale(1.1);
-}
-
-/* 暗色模式适配 */
-.body--dark .condition-input {
-  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .body--dark .type-label {
