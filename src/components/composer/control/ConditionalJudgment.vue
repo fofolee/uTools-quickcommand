@@ -2,7 +2,7 @@
   <div class="conditional-judgment">
     <div class="row items-end no-wrap">
       <!-- 类型标签 -->
-      <div class="text-subtitle2 type-label">
+      <div class="control-type-label">
         <template v-if="type === 'if'">如果满足</template>
         <template v-else-if="type === 'else'">
           {{ showCondition ? "否则满足" : "否则" }}
@@ -158,9 +158,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.type-label {
+.control-type-label {
   font-size: 14px;
-  color: var(--q-primary);
   white-space: nowrap;
   opacity: 0.9;
   user-select: none;
@@ -191,11 +190,6 @@ export default defineComponent({
 .control-btn:hover {
   opacity: 1;
   transform: scale(1.1);
-}
-
-.body--dark .type-label {
-  color: var(--q-primary);
-  opacity: 0.8;
 }
 
 .body--dark .control-btn {

@@ -194,45 +194,32 @@ export default defineComponent({
       }
     },
     checkAllChainOrders(commands) {
-      // 获取所有不同的 chainId
-      const chainIds = new Set(
-        commands.filter((cmd) => cmd.chainId).map((cmd) => cmd.chainId)
-      );
+      // 按chainId分组
+      const chainGroups = commands.reduce((groups, cmd) => {
+        if (cmd.chainId) {
+          if (!groups[cmd.chainId]) {
+            groups[cmd.chainId] = [];
+          }
+          groups[cmd.chainId].push(cmd);
+        }
+        return groups;
+      }, {});
+
+      // 如果没有链式命令，直接返回true
+      if (Object.keys(chainGroups).length === 0) return true;
 
       // 检查每个链的命令顺序
-      for (const chainId of chainIds) {
-        // 获取当前链的所有命令的索引
-        const indices = commands
-          .map((cmd, index) => ({ cmd, index }))
-          .filter((item) => item.cmd.chainId === chainId)
-          .map((item) => item.index);
-
-        // 获取 if、else、end 的位置
-        const ifIndex = indices.find(
-          (index) => commands[index].commandType === "if"
-        );
-        const endIndex = indices.find(
-          (index) => commands[index].commandType === "end"
-        );
-        const elseIndices = indices.filter(
-          (index) =>
-            commands[index].commandType !== "if" &&
-            commands[index].commandType !== "end"
-        );
-
-        // 验证顺序
-        // 1. 必须有 if 和 end
-        if (ifIndex === undefined || endIndex === undefined) return false;
-        // 2. if 必须在所有其他命令前面
-        if (indices.some((index) => index < ifIndex)) return false;
-        // 3. end 必须在所有其他命令后面
-        if (indices.some((index) => index > endIndex)) return false;
-        // 4. else 必须在 if 和 end 之间
-        if (elseIndices.some((index) => index < ifIndex || index > endIndex))
+      return Object.values(chainGroups).every((chainCommands) => {
+        const commandChain = chainCommands[0].commandChain;
+        const firstCommand = chainCommands[0];
+        const lastCommand = chainCommands[chainCommands.length - 1];
+        // 对于每个chain来说，第一个命令必须是chainCommands的第一个命令
+        if (firstCommand.commandType !== commandChain[0]) return false;
+        // 最后一个命令必须是chainCommands的最后一个命令
+        if (lastCommand.commandType !== commandChain[commandChain.length - 1])
           return false;
-      }
-
-      return true;
+        return true;
+      });
     },
     onDrop(event) {
       try {

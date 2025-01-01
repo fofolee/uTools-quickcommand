@@ -9,5 +9,12 @@ export const controlCommands = {
       isControlFlow: true,
       commandChain: ["if", "end"],
     },
+    {
+      value: "loop",
+      label: "循环",
+      component: "LoopControl",
+      isControlFlow: true,
+      commandChain: ["loop", "end"],
+    },
   ],
 };

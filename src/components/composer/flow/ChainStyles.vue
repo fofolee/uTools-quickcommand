@@ -10,8 +10,8 @@ const STYLE_CONSTANTS = {
   goldenRatio: 0.618033988749895,
   hueStep: 360 * 0.618033988749895,
   indent: 5,
-  lightSl: "60%, 60%",
-  darkSl: "60%, 40%",
+  lightSl: "70%, 60%",
+  darkSl: "60%, 60%",
 };
 
 // 工具函数
@@ -158,9 +158,17 @@ export default defineComponent({
             boxShadow: shadows.light.join(", "),
           };
 
+          styleRules["." + className + " .control-type-label"] = {
+            color: `hsl(${hue}, ${lightSl})`,
+          };
+
           styleRules[".body--dark ." + className] = {
             ...commonStyle,
             boxShadow: shadows.dark.join(", "),
+          };
+
+          styleRules[".body--dark ." + className + " .control-type-label"] = {
+            color: `hsl(${hue}, ${darkSl})`,
           };
         });
 

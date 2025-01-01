@@ -107,6 +107,9 @@ export default defineComponent({
     ConditionalJudgment: defineAsyncComponent(() =>
       import("components/composer/control/ConditionalJudgment.vue")
     ),
+    LoopControl: defineAsyncComponent(() =>
+      import("components/composer/control/LoopControl.vue")
+    ),
   },
   props: {
     command: {

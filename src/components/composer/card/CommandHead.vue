@@ -1,7 +1,7 @@
 <template>
   <div class="row items-center">
     <!-- 折叠按钮 -->
-    <div class="collapse-btn" v-if="!isLastCommandInChain">
+    <div class="collapse-btn" v-if="!isControlFlow || isFirstCommandInChain">
       <q-btn
         :icon="isCollapsed ? 'expand_more' : 'expand_less'"
         dense
@@ -12,8 +12,11 @@
         <q-tooltip>折叠/展开此{{ isControlFlow ? "流程" : "命令" }}</q-tooltip>
       </q-btn>
     </div>
-    <div v-else class="end-icon">
-      <q-icon name="last_page" size="xs" />
+    <div v-else-if="isLastCommandInChain" class="chain-icon">
+      <q-icon name="linear_scale" size="xs" />
+    </div>
+    <div v-else class="chain-icon">
+      <q-icon name="fork_left" size="xs" />
     </div>
 
     <!-- 标题 -->
@@ -93,15 +96,19 @@ export default {
 
 <style scoped>
 .collapse-btn,
-.end-icon {
+.chain-icon {
   display: flex;
   align-items: center;
   padding-right: 4px;
   transition: all 0.2s ease;
 }
 
+.chain-icon {
+  margin-right: 4px;
+}
+
 .collapse-btn :deep(.q-btn),
-.end-icon {
+.chain-icon {
   opacity: 0.6;
   min-height: 20px;
   padding: 0 4px;
