@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="composer-card q-pa-xs"
-    :class="{ 'can-drop': canDrop }"
-    v-bind="$attrs"
-  >
+  <div class="composer-card" :class="{ 'can-drop': canDrop }" v-bind="$attrs">
     <q-card class="command-item">
       <q-card-section class="q-pa-sm">
         <CommandHead
@@ -21,8 +17,8 @@
               v-model="argvLocal"
               :command="command"
               v-bind="command.componentProps || {}"
-              :type="command.controlFlowType"
-              @addBranch="$emit('addBranch')"
+              :type="command.commandType"
+              @addBranch="(chainInfo) => $emit('addBranch', chainInfo)"
             />
           </template>
 
@@ -273,6 +269,7 @@ export default defineComponent({
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
   opacity: 1;
+  padding: 2px 2px 2px 0;
   transform: translateY(0) scale(1);
 }
 

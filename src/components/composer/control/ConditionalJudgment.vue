@@ -3,30 +3,35 @@
     <div class="row items-center no-wrap">
       <!-- 类型标签 -->
       <div class="text-subtitle2 type-label">
-        <template v-if="type === 'start'">如果满足</template>
-        <template v-else-if="type === 'mid'">
+        <template v-if="type === 'if'">如果满足</template>
+        <template v-else-if="type === 'else'">
           {{ showCondition ? "否则满足" : "否则" }}
         </template>
         <template v-else>结束条件判断</template>
       </div>
 
-      <!-- start类型显示添加按钮 -->
+      <!-- if类型显示添加按钮 -->
       <q-btn
-        v-if="type === 'start'"
+        v-if="type === 'if'"
         flat
         round
         dense
         size="sm"
         icon="add"
         class="control-btn q-mx-xs"
-        @click="$emit('addBranch')"
+        @click="
+          $emit('addBranch', {
+            chainId: command.chainId,
+            commandType: 'else',
+          })
+        "
       >
         <q-tooltip>添加条件分支</q-tooltip>
       </q-btn>
 
       <!-- mid类型显示切换按钮 -->
       <q-btn
-        v-if="type === 'mid'"
+        v-if="type === 'else'"
         flat
         round
         dense
@@ -63,7 +68,7 @@ export default defineComponent({
     type: {
       type: String,
       required: true,
-      validator: (value) => ["start", "mid", "end"].includes(value),
+      validator: (value) => ["if", "else", "end"].includes(value),
     },
   },
   emits: ["update:modelValue", "addBranch"],
@@ -80,7 +85,7 @@ export default defineComponent({
   computed: {
     showCondition() {
       return (
-        this.type === "start" || (this.type === "mid" && this.showMidCondition)
+        this.type === "if" || (this.type === "else" && this.showMidCondition)
       );
     },
     conditionLocal: {
@@ -94,9 +99,9 @@ export default defineComponent({
     },
     generatedCode() {
       switch (this.type) {
-        case "start":
+        case "if":
           return `if(${this.condition || "true"}){`;
-        case "mid":
+        case "else":
           return this.showMidCondition && this.condition
             ? `}else if(${this.condition}){`
             : "}else{";
@@ -130,12 +135,12 @@ export default defineComponent({
     },
     parseCodeString(val) {
       try {
-        if (this.type === "start") {
+        if (this.type === "if") {
           const match = val.match(/^if\((.*)\){$/);
           if (match) {
             this.condition = match[1] === "true" ? "" : match[1];
           }
-        } else if (this.type === "mid") {
+        } else if (this.type === "else") {
           if (val === "}else{") {
             this.showMidCondition = false;
             this.condition = "";
@@ -165,6 +170,7 @@ export default defineComponent({
   color: var(--q-primary);
   white-space: nowrap;
   opacity: 0.9;
+  user-select: none;
 }
 
 .condition-input {

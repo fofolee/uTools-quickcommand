@@ -133,7 +133,7 @@ export default defineComponent({
           ...this.selectedActions,
           {
             ...action,
-            id: Date.now(),
+            id: this.$root.getUniqueId(),
             argv: "",
             saveOutput: false,
             useOutput: null,

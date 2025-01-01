@@ -7,6 +7,7 @@ export const controlCommands = {
       label: "条件判断",
       component: "ConditionalJudgment",
       isControlFlow: true,
+      commandChain: ["if", "end"],
     },
   ],
 };

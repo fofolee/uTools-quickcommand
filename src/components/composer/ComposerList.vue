@@ -179,6 +179,7 @@ export default defineComponent({
   flex-direction: column;
   height: 100%;
   border-radius: 10px;
+  user-select: none;
 }
 
 .section-header {
@@ -216,6 +217,10 @@ export default defineComponent({
 .composer-list :deep(.q-expansion-item) {
   margin: 0;
   border: none;
+}
+
+.composer-list :deep(.q-expansion-item .q-item) {
+  justify-content: space-between;
 }
 
 .body--dark .composer-list {

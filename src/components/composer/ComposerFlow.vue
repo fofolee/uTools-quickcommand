@@ -1,5 +1,6 @@
 <template>
   <div class="composer-flow">
+    <ChainStyles ref="chainStyles" :commands="commands" />
     <div class="section-header">
       <q-icon name="timeline" size="20px" class="q-mx-sm text-primary" />
       <span class="text-subtitle1">命令流程</span>
@@ -18,7 +19,7 @@
         @dragleave.prevent="onDragLeave"
       >
         <draggable
-          v-model="commands"
+          :list="commands"
           group="commands"
           item-key="id"
           class="flow-list"
@@ -26,6 +27,7 @@
           :animation="200"
           @start="onDragStart"
           @end="onDragEnd"
+          @change="onDragChange"
         >
           <template #item="{ element, index }">
             <transition name="slide-fade" mode="out-in" appear>
@@ -37,6 +39,7 @@
                   'insert-after':
                     dragIndex === commands.length &&
                     index === commands.length - 1,
+                  ...getChainGroupClass(index),
                 }"
               >
                 <ComposerCard
@@ -47,21 +50,14 @@
                   @update:argv="(val) => handleArgvChange(index, val)"
                   @update:command="(val) => updateCommand(index, val)"
                   @run="handleRunCommand"
-                  @add-branch="() => addBranch(index)"
+                  @add-branch="(chainInfo) => addBranch(index, chainInfo)"
                 />
               </div>
             </transition>
           </template>
         </draggable>
-        <div v-if="commands.length === 0" class="empty-flow">
-          <div class="text-center text-grey-6">
-            <q-icon name="drag_indicator" size="32px" />
-            <div class="text-body2 q-mt-sm">从左侧拖拽命令到这里开始编排</div>
-          </div>
-        </div>
-        <div v-else class="drop-area">
-          <q-icon name="add" size="32px" />
-        </div>
+        <EmptyFlow v-if="commands.length === 0" />
+        <DropArea v-else />
       </div>
     </q-scroll-area>
   </div>
@@ -72,6 +68,9 @@ import { defineComponent, inject } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
 import ComposerButtons from "./ComposerButtons.vue";
+import ChainStyles from "./flow/ChainStyles.vue";
+import EmptyFlow from "./flow/EmptyFlow.vue";
+import DropArea from "./flow/DropArea.vue";
 
 export default defineComponent({
   name: "ComposerFlow",
@@ -79,6 +78,9 @@ export default defineComponent({
     draggable,
     ComposerCard,
     ComposerButtons,
+    ChainStyles,
+    EmptyFlow,
+    DropArea,
   },
   props: {
     modelValue: {
@@ -91,6 +93,17 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue", "add-command", "action"],
+  setup() {
+    const removeVariable = inject("removeVariable");
+    return { removeVariable };
+  },
+  data() {
+    return {
+      dragIndex: -1,
+      isDragging: false,
+      draggedCommand: null,
+    };
+  },
   computed: {
     commands: {
       get() {
@@ -101,32 +114,46 @@ export default defineComponent({
       },
     },
   },
-  setup() {
-    const removeVariable = inject("removeVariable");
-
-    return {
-      removeVariable,
-    };
-  },
-  data() {
-    return {
-      dragIndex: -1,
-      isDragging: false,
-    };
-  },
   methods: {
-    onDragStart() {
-      this.isDragging = true;
+    getChainGroupClass(index) {
+      return this.$refs.chainStyles?.getChainGroupClass(index) || {};
     },
-
+    getPlaceholder(element, index) {
+      return element.desc;
+    },
+    onDragStart(event) {
+      this.isDragging = true;
+      this.draggedCommand = this.commands[event.oldIndex];
+    },
     onDragEnd() {
       this.isDragging = false;
       this.dragIndex = -1;
+      this.draggedCommand = null;
     },
+    onDragChange(event) {
+      let newCommands = [...this.commands];
 
+      if (event.moved || event.added) {
+        // 检查所有链式命令的顺序
+        const isValidOrder = this.checkAllChainOrders(newCommands);
+
+        if (!isValidOrder) {
+          // 如果顺序无效，恢复原始状态
+          if (event.moved) {
+            const { oldIndex, newIndex } = event.moved;
+            const [item] = newCommands.splice(newIndex, 1);
+            newCommands.splice(oldIndex, 0, item);
+          } else if (event.added) {
+            const { newIndex } = event.added;
+            newCommands.splice(newIndex, 1);
+          }
+        }
+      }
+
+      this.$emit("update:modelValue", newCommands);
+    },
     onDragOver(event) {
       if (!this.isDragging) {
-        const rect = event.currentTarget.getBoundingClientRect();
         const items = this.$el.querySelectorAll(".flow-item");
         const mouseY = event.clientY;
 
@@ -154,58 +181,85 @@ export default defineComponent({
         this.dragIndex = closestIndex;
       }
     },
-
     onDragLeave() {
       if (!this.isDragging) {
         this.dragIndex = -1;
       }
     },
+    checkAllChainOrders(commands) {
+      // 获取所有不同的 chainId
+      const chainIds = new Set(
+        commands.filter((cmd) => cmd.chainId).map((cmd) => cmd.chainId)
+      );
 
+      // 检查每个链的命令顺序
+      for (const chainId of chainIds) {
+        // 获取当前链的所有命令的索引
+        const indices = commands
+          .map((cmd, index) => ({ cmd, index }))
+          .filter((item) => item.cmd.chainId === chainId)
+          .map((item) => item.index);
+
+        // 获取 if、else、end 的位置
+        const ifIndex = indices.find(
+          (index) => commands[index].commandType === "if"
+        );
+        const endIndex = indices.find(
+          (index) => commands[index].commandType === "end"
+        );
+        const elseIndices = indices.filter(
+          (index) =>
+            commands[index].commandType !== "if" &&
+            commands[index].commandType !== "end"
+        );
+
+        // 验证顺序
+        // 1. 必须有 if 和 end
+        if (ifIndex === undefined || endIndex === undefined) return false;
+        // 2. if 必须在所有其他命令前面
+        if (indices.some((index) => index < ifIndex)) return false;
+        // 3. end 必须在所有其他命令后面
+        if (indices.some((index) => index > endIndex)) return false;
+        // 4. else 必须在 if 和 end 之间
+        if (elseIndices.some((index) => index < ifIndex || index > endIndex))
+          return false;
+      }
+
+      return true;
+    },
     onDrop(event) {
       try {
         const actionData = event.dataTransfer.getData("action");
         if (!actionData) return;
 
         const parsedAction = JSON.parse(actionData);
-        const isControlFlow = parsedAction.isControlFlow;
+        const commandChain = parsedAction.commandChain;
+        const newCommand = this.createNewCommand(parsedAction);
+        let newCommands = [...this.commands];
 
-        const newCommand = {
-          ...parsedAction,
-          id: Date.now(),
-          argv: "",
-          saveOutput: false,
-          useOutput: null,
-          outputVariable: null,
-          cmd: parsedAction.value || parsedAction.cmd,
-          value: parsedAction.value || parsedAction.cmd,
-        };
-
-        const newCommands = [...this.commands];
-
-        // 如果是控制流程命令，添加start和end两个卡片
-        if (isControlFlow) {
-          const startCommand = {
-            ...newCommand,
-            id: Date.now(),
-            controlFlowType: "start",
-          };
-
-          const endCommand = {
-            ...newCommand,
-            id: Date.now() + 1,
-            controlFlowType: "end",
-          };
-
-          if (this.dragIndex >= 0) {
-            newCommands.splice(this.dragIndex, 0, startCommand, endCommand);
-          } else {
-            newCommands.push(startCommand, endCommand);
-          }
-        } else {
+        if (!commandChain) {
+          // 处理单个命令
           if (this.dragIndex >= 0) {
             newCommands.splice(this.dragIndex, 0, newCommand);
           } else {
             newCommands.push(newCommand);
+          }
+        } else {
+          // 处理链式命令
+          const chainId = this.getUniqueId();
+          let insertIndex =
+            this.dragIndex >= 0 ? this.dragIndex : newCommands.length;
+
+          // 按顺序插入命令
+          for (const commandType of commandChain) {
+            const commandItem = {
+              ...newCommand,
+              id: this.getUniqueId(),
+              commandType,
+              chainId,
+            };
+            newCommands.splice(insertIndex, 0, commandItem);
+            insertIndex++; // 更新插入位置，确保命令按顺序排列
           }
         }
 
@@ -214,6 +268,21 @@ export default defineComponent({
       } catch (error) {
         console.debug("Internal drag & drop reorder", error);
       }
+    },
+    createNewCommand(parsedAction) {
+      return {
+        ...parsedAction,
+        id: this.getUniqueId(),
+        argv: "",
+        saveOutput: false,
+        useOutput: null,
+        outputVariable: null,
+        cmd: parsedAction.value || parsedAction.cmd,
+        value: parsedAction.value || parsedAction.cmd,
+      };
+    },
+    getUniqueId() {
+      return this.$root.getUniqueId();
     },
     removeCommand(index) {
       const command = this.commands[index];
@@ -224,9 +293,6 @@ export default defineComponent({
       const newCommands = [...this.commands];
       newCommands.splice(index, 1);
       this.$emit("update:modelValue", newCommands);
-    },
-    getPlaceholder(element, index) {
-      return element.desc;
     },
     toggleSaveOutput(index) {
       const newCommands = [...this.commands];
@@ -268,27 +334,27 @@ export default defineComponent({
       // 触发运行事件
       this.$emit("action", "run", tempFlow);
     },
-    addBranch(index) {
+    addBranch(index, chainInfo) {
       const newCommands = [...this.commands];
-      const midCommand = {
+      const branchCommand = {
         ...newCommands[index],
-        id: Date.now(),
-        controlFlowType: "mid",
+        id: this.getUniqueId(),
+        chainId: chainInfo.chainId,
+        commandType: chainInfo.commandType,
         argv: "",
       };
 
-      // 找到对应的end位置
-      let endIndex = index + 1;
-      let depth = 1;
-      while (endIndex < newCommands.length && depth > 0) {
-        if (newCommands[endIndex].controlFlowType === "start") depth++;
-        if (newCommands[endIndex].controlFlowType === "end") depth--;
-        endIndex++;
+      // 找到对应的 chainId 的最后一个命令位置
+      let lastIndex = -1;
+      for (let i = index + 1; i < newCommands.length; i++) {
+        if (newCommands[i].chainId === chainInfo.chainId) {
+          lastIndex = i;
+        }
       }
 
-      // 在end之前插入新的分支
-      if (endIndex > index + 1) {
-        newCommands.splice(endIndex - 1, 0, midCommand);
+      // 在最后一个命令之前插入新的分支命令
+      if (lastIndex !== -1) {
+        newCommands.splice(lastIndex, 0, branchCommand);
         this.$emit("update:modelValue", newCommands);
       }
     },
@@ -331,53 +397,6 @@ export default defineComponent({
 
 .body--dark .command-flow-container {
   background-color: rgba(32, 32, 32, 0.8);
-}
-
-/* .flow-list {
-  min-height: 50px;
-} */
-
-.drop-area {
-  flex: 1;
-  min-height: 50px;
-  border-radius: 8px;
-  margin: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9994;
-  border: 2px dashed #9994;
-}
-
-.body--dark .drop-area {
-  color: #6664;
-  border: 2px dashed #6664;
-}
-
-.empty-flow {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed #e0e0e0;
-  border-radius: 4px;
-  margin: 8px 0;
-  transition: all 0.3s ease;
-  flex: 1;
-}
-
-.body--dark .empty-flow {
-  border: 2px dashed #676666;
-}
-
-.empty-flow:hover {
-  border-color: #bdbdbd;
-  background-color: #fafafa;
-}
-
-.body--dark .empty-flow:hover {
-  border-color: #676666;
-  background-color: #303132;
 }
 
 /* 滑动淡出动画 */
@@ -459,24 +478,5 @@ export default defineComponent({
 /* 拖拽时相邻元素的间距调整 */
 .flow-item.insert-before + .flow-item {
   transform: translateY(3px);
-}
-
-/* 暗色模式适配 */
-.body--dark .flow-item::before,
-.body--dark .flow-item::after {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.08) 10%,
-    rgba(255, 255, 255, 0.15) 50%,
-    rgba(255, 255, 255, 0.08) 90%,
-    transparent
-  );
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.03),
-    0 0 4px rgba(255, 255, 255, 0.05);
-}
-
-.body--dark .section-header {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 </style>
