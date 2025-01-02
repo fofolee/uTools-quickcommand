@@ -15,17 +15,9 @@
     </q-tabs>
 
     <!-- 内容区域 -->
-    <q-tab-panels
-      v-model="step"
-      animated
-      swipeable
-      class="ubrowser-panels"
-    >
+    <q-tab-panels v-model="step" animated swipeable class="ubrowser-panels">
       <q-tab-panel name="1" class="panel-content">
-        <UBrowserBasic
-          :configs="configs"
-          @update:configs="updateConfigs"
-        />
+        <UBrowserBasic :configs="configs" @update:configs="updateConfigs" />
       </q-tab-panel>
 
       <q-tab-panel name="2" class="panel-content">
@@ -38,10 +30,7 @@
       </q-tab-panel>
 
       <q-tab-panel name="3" class="panel-content">
-        <UBrowserRun
-          :configs="configs"
-          @update:configs="updateConfigs"
-        />
+        <UBrowserRun :configs="configs" @update:configs="updateConfigs" />
       </q-tab-panel>
     </q-tab-panels>
   </div>
@@ -143,9 +132,9 @@ export default defineComponent({
 }
 
 /* 暗色模式 */
-.body--dark .ubrowser-tabs,
-.body--dark .ubrowser-panels {
-  background: rgba(255, 255, 255, 0.05);
+.body--dark .q-tab,
+.body--dark .q-tab-panel {
+  background-color: #303133;
 }
 
 /* 调整面板内边距和布局 */

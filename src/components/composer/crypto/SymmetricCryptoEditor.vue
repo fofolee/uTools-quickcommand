@@ -1,27 +1,40 @@
 <template>
-  <div class="symmetric-crypto-editor q-gutter-y-sm">
+  <div class="symmetric-crypto-editor">
     <!-- 加密/解密切换 -->
-    <q-btn-toggle
-      v-model="operation"
-      :options="[
-        { label: '加密', value: 'encrypt' },
-        { label: '解密', value: 'decrypt' },
-      ]"
-      spread
-      dense
-      no-caps
-      unelevated
-      toggle-color="primary"
-    />
+    <div class="tabs-container">
+      <q-tabs
+        v-model="operation"
+        dense
+        class="text-grey"
+        active-color="primary"
+        indicator-color="primary"
+        align="justify"
+        narrow-indicator
+        inline-label
+      >
+        <q-tab name="encrypt" no-caps>
+          <div class="row items-center no-wrap">
+            <q-icon name="enhanced_encryption" size="16px" />
+            <div class="q-ml-xs">加密</div>
+          </div>
+        </q-tab>
+        <q-tab name="decrypt" no-caps>
+          <div class="row items-center no-wrap">
+            <q-icon name="no_encryption" size="16px" />
+            <div class="q-ml-xs">解密</div>
+          </div>
+        </q-tab>
+      </q-tabs>
+      <q-separator />
+    </div>
 
     <!-- 文本输入 -->
-    <div class="row">
+    <div class="row q-mt-xs">
       <VariableInput
         v-model="text"
         :label="operation === 'encrypt' ? '要加密的文本' : '要解密的文本'"
         :command="{
-          icon:
-            operation === 'encrypt' ? 'enhanced_encryption' : 'no_encryption',
+          icon: operation === 'encrypt' ? 'text_fields' : 'password',
         }"
         class="col-8"
         @update:model-value="updateConfig"
@@ -316,16 +329,39 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.crypto-editor {
+.symmetric-crypto-editor {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.tabs-container {
+  position: relative;
+}
+
+.tabs-container .q-tabs {
+  min-height: 32px;
+}
+
+.tabs-container .q-tab {
+  min-height: 32px;
+  padding: 0 12px;
+}
+
+.tabs-container .q-tab__content {
+  min-height: 32px;
+}
+
+.tabs-container .q-separator {
+  position: relative;
+  z-index: 0;
 }
 
 .row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: stretch;
 }
 
 .col-select {
@@ -356,15 +392,6 @@ export default defineComponent({
     flex: 1 1 calc(50% - 8px);
     max-width: none;
   }
-}
-
-.q-btn-toggle {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-}
-
-.body--dark .q-btn-toggle {
-  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .key-input {
@@ -419,6 +446,11 @@ export default defineComponent({
 .body--dark .codec-dropdown :deep(.q-list) {
   background: #1d1d1d;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.body--dark .q-tab,
+.body--dark .q-tab-panel {
+  background-color: #303133;
 }
 
 /* 确保下拉按钮内容垂直居中 */

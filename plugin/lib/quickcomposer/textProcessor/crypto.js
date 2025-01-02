@@ -1,117 +1,10 @@
 const sm2 = require("sm-crypto").sm2;
-const sm3 = require("sm-crypto").sm3;
 const sm4 = require("sm-crypto").sm4;
 const CryptoJS = require("crypto-js");
 const NodeForge = require("node-forge");
+const { processSecret, dataConv } = require("./utils");
 
-// 数据编码转换
-const dataConv = (str, fromCodec, toCodec) => {
-  // 特殊处理 PEM 格式
-  if (fromCodec.toLowerCase() === "pem") {
-    const pemContent = str
-      .replace(/-----(BEGIN|END)[^-]+-----/g, "")
-      .replace(/[\r\n]/g, "");
-    return Buffer.from(pemContent, "base64").toString(toCodec.toLowerCase());
-  }
-  // 其他格式直接转换
-  return Buffer.from(str, fromCodec.toLowerCase()).toString(
-    toCodec.toLowerCase()
-  );
-};
-
-// 处理密钥和IV
-const processSecret = (key, codec, len) => {
-  // 转换成 hex 并填充到指定长度
-  const hexStr = dataConv(key, codec, "hex")
-    .padEnd(len * 2, "0")
-    .slice(0, len * 2);
-  return CryptoJS.enc.Hex.parse(hexStr);
-};
-
-const textProcessing = {
-  // base64 编码
-  base64Encode: function (text) {
-    return dataConv(text, "utf8", "base64");
-  },
-  // base64 解码
-  base64Decode: function (text) {
-    return dataConv(text, "base64", "utf8");
-  },
-  // URL 编码
-  urlEncode: function (text) {
-    return encodeURIComponent(text);
-  },
-  // URL 解码
-  urlDecode: function (text) {
-    return decodeURIComponent(text);
-  },
-  // html 编码
-  htmlEncode: function (text) {
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  },
-  // html 解码
-  htmlDecode: function (text) {
-    return text
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'");
-  },
-  // 十六进制
-  hexEncode: function (text) {
-    return dataConv(text, "utf8", "hex");
-  },
-  // 十六进制解码
-  hexDecode: function (text) {
-    return dataConv(text, "hex", "utf8");
-  },
-  // MD5 哈希
-  md5Hash: function (text) {
-    return NodeForge.md.md5.create().update(text).digest().toHex();
-  },
-  // SHA1 哈希
-  sha1Hash: function (text) {
-    return NodeForge.md.sha1.create().update(text).digest().toHex();
-  },
-  // SHA256 哈希
-  sha256Hash: function (text) {
-    return NodeForge.md.sha256.create().update(text).digest().toHex();
-  },
-  // SHA512 哈希
-  sha512Hash: function (text) {
-    return NodeForge.md.sha512.create().update(text).digest().toHex();
-  },
-  // SM3 哈希
-  sm3Hash: function (text) {
-    return sm3(text);
-  },
-  // 字符串反转
-  reverseString: function (text) {
-    return text.split("").reverse().join("");
-  },
-  // 字符串替换
-  replaceString: function (text, oldStr, newStr) {
-    return text.replaceAll(oldStr, newStr);
-  },
-  // 字符串截取
-  substring: function (text, start, end) {
-    return text.substring(start, end);
-  },
-  // 正则处理
-  regexTransform: function (text, regex, replace) {
-    try {
-      if (replace === undefined) return text.match(regex);
-      return text.replace(regex, replace);
-    } catch (e) {
-      throw "正则表达式格式错误";
-    }
-  },
+const crypto = {
   // 非对称加解密
   asymmetricCrypto: function (config) {
     const {
@@ -209,6 +102,7 @@ const textProcessing = {
     }
     throw "不支持的算法";
   },
+
   // 对称加解密
   symmetricCrypto: function (config) {
     const {
@@ -364,4 +258,4 @@ const textProcessing = {
   },
 };
 
-module.exports = textProcessing;
+module.exports = crypto;

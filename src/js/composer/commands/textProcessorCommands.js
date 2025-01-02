@@ -1,10 +1,10 @@
-export const textProcessingCommands = {
+export const textProcessorCommands = {
   label: "文本处理",
   icon: "code",
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.textProcessing",
+      value: "quickcomposer.textProcessor",
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
@@ -21,46 +21,46 @@ export const textProcessingCommands = {
         options: [
           {
             label: "Base64编码",
-            value: "quickcomposer.textProcessing.base64Encode",
+            value: "quickcomposer.textProcessor.base64Encode",
           },
           {
             label: "Base64解码",
-            value: "quickcomposer.textProcessing.base64Decode",
+            value: "quickcomposer.textProcessor.base64Decode",
           },
           {
             label: "十六进制编码",
-            value: "quickcomposer.textProcessing.hexEncode",
+            value: "quickcomposer.textProcessor.hexEncode",
           },
           {
             label: "十六进制解码",
-            value: "quickcomposer.textProcessing.hexDecode",
+            value: "quickcomposer.textProcessor.hexDecode",
           },
-          { label: "URL编码", value: "quickcomposer.textProcessing.urlEncode" },
-          { label: "URL解码", value: "quickcomposer.textProcessing.urlDecode" },
+          { label: "URL编码", value: "quickcomposer.textProcessor.urlEncode" },
+          { label: "URL解码", value: "quickcomposer.textProcessor.urlDecode" },
           {
             label: "HTML编码",
-            value: "quickcomposer.textProcessing.htmlEncode",
+            value: "quickcomposer.textProcessor.htmlEncode",
           },
           {
             label: "HTML解码",
-            value: "quickcomposer.textProcessing.htmlDecode",
+            value: "quickcomposer.textProcessor.htmlDecode",
           },
         ],
         width: 3,
       },
     },
     {
-      value: "quickcomposer.textProcessing.symmetricCrypto",
+      value: "quickcomposer.textProcessor.symmetricCrypto",
       label: "对称加解密",
       component: "SymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.textProcessing.asymmetricCrypto",
+      value: "quickcomposer.textProcessor.asymmetricCrypto",
       label: "非对称加解密",
       component: "AsymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.textProcessing",
+      value: "quickcomposer.textProcessor",
       label: "哈希计算",
       desc: "计算文本的哈希值",
       icon: "enhanced_encryption",
@@ -75,17 +75,17 @@ export const textProcessingCommands = {
       functionSelector: {
         selectLabel: "哈希算法",
         options: [
-          { label: "MD5", value: "quickcomposer.textProcessing.md5Hash" },
-          { label: "SHA1", value: "quickcomposer.textProcessing.sha1Hash" },
-          { label: "SHA256", value: "quickcomposer.textProcessing.sha256Hash" },
-          { label: "SHA512", value: "quickcomposer.textProcessing.sha512Hash" },
-          { label: "SM3", value: "quickcomposer.textProcessing.sm3Hash" },
+          { label: "MD5", value: "quickcomposer.textProcessor.md5Hash" },
+          { label: "SHA1", value: "quickcomposer.textProcessor.sha1Hash" },
+          { label: "SHA256", value: "quickcomposer.textProcessor.sha256Hash" },
+          { label: "SHA512", value: "quickcomposer.textProcessor.sha512Hash" },
+          { label: "SM3", value: "quickcomposer.textProcessor.sm3Hash" },
         ],
       },
       width: 3,
     },
     {
-      value: "quickcomposer.textProcessing.reverseString",
+      value: "quickcomposer.textProcessor.reverseString",
       label: "字符串反转",
       config: [
         {
@@ -98,7 +98,7 @@ export const textProcessingCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessing.replaceString",
+      value: "quickcomposer.textProcessor.replaceString",
       label: "字符串替换",
       config: [
         {
@@ -128,7 +128,7 @@ export const textProcessingCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessing.substring",
+      value: "quickcomposer.textProcessor.substring",
       label: "字符串截取",
       config: [
         {
@@ -158,7 +158,7 @@ export const textProcessingCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessing.regexTransform",
+      value: "quickcomposer.textProcessor.regexTransform",
       label: "正则提取/替换",
       component: "RegexEditor",
       componentProps: {

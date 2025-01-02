@@ -2,7 +2,7 @@ import { fileCommands } from "./fileCommands";
 import { networkCommands } from "./networkCommands";
 import { systemCommands } from "./systemCommands";
 import { notifyCommands } from "./notifyCommands";
-import { textProcessingCommands } from "./textProcessingCommands";
+import { textProcessorCommands } from "./textProcessorCommands";
 import { otherCommands } from "./otherCommands";
 import { simulateCommands } from "./simulateCommands";
 import { controlCommands } from "./controlCommands";
@@ -12,7 +12,7 @@ export const commandCategories = [
   networkCommands,
   systemCommands,
   notifyCommands,
-  textProcessingCommands,
+  textProcessorCommands,
   controlCommands,
   otherCommands,
   simulateCommands,
