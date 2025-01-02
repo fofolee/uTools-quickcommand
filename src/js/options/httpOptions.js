@@ -113,3 +113,15 @@ export const contentTypes = [
     value: "application/octet-stream",
   },
 ];
+
+export const methods = [
+  "GET",
+  "POST",
+  "PUT",
+  "DELETE",
+  "PATCH",
+  "HEAD",
+  "OPTIONS",
+];
+
+export const responseTypes = ["json", "text", "blob", "arraybuffer"];

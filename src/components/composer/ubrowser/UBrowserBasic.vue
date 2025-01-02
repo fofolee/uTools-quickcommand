@@ -67,7 +67,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { userAgent } from "js/options/httpHeaders";
+import { userAgent } from "js/options/httpOptions";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 
 export default defineComponent({
