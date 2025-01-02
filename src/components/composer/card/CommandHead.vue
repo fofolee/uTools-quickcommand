@@ -9,7 +9,7 @@
         size="sm"
         @click="$emit('toggle-collapse')"
       >
-        <q-tooltip>折叠/展开此{{ isControlFlow ? "流程" : "命令" }}</q-tooltip>
+        <q-tooltip>{{ isCollapsed ? "展开" : "折叠" }}</q-tooltip>
       </q-btn>
     </div>
     <div v-else-if="isLastCommandInChain" class="chain-icon">

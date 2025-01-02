@@ -33,12 +33,12 @@
               header-class="category-header"
             >
               <template v-slot:header>
-                <div class="row items-center">
+                <div class="category-header-content">
                   <q-icon
                     :name="category.icon"
                     color="primary"
                     size="sm"
-                    class="q-mr-sm"
+                    class="category-icon"
                   />
                   <span class="text-weight-medium">{{ category.label }}</span>
                 </div>
@@ -47,18 +47,18 @@
               <q-item
                 v-for="command in getCategoryCommands(category)"
                 :key="command.value"
-                class="command-item q-py-xs"
+                class="command-item"
                 draggable="true"
                 @dragstart="onDragStart($event, command)"
               >
+                <div class="drag-icon-left">
+                  <q-icon name="drag_indicator" color="grey-6" size="16px" />
+                </div>
                 <q-item-section>
                   <q-item-label
                     class="text-weight-medium"
                     v-html="highlightText(command.label)"
                   />
-                </q-item-section>
-                <q-item-section side style="padding-left: 8px">
-                  <q-icon name="drag_indicator" color="grey-6" size="16px" />
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -88,6 +88,13 @@ export default defineComponent({
       searchQuery: "",
       expandedCategories: new Set(),
     };
+  },
+  created() {
+    this.commandCategories.forEach((category) => {
+      if (category.defaultOpened) {
+        this.expandedCategories.add(category.label);
+      }
+    });
   },
   computed: {
     filteredCategories() {
@@ -155,9 +162,7 @@ export default defineComponent({
       );
     },
     isExpanded(category) {
-      return (
-        category.defaultOpened || this.expandedCategories.has(category.label)
-      );
+      return this.expandedCategories.has(category.label);
     },
     updateExpanded(category, value) {
       if (value) {
@@ -193,6 +198,7 @@ export default defineComponent({
   flex: 1;
   overflow: hidden;
   border-radius: 10px;
+  padding: 4px 0;
 }
 
 .search-input {
@@ -234,21 +240,78 @@ export default defineComponent({
 }
 
 :deep(.q-item.category-header) {
-  min-height: 40px;
+  min-height: 30px;
   margin: 0 8px;
   padding: 0 4px;
   border-radius: 4px;
   transition: background-color 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.q-item.category-header .q-item__section--side) {
+  position: absolute;
+  right: 4px;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.category-header-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.category-icon {
+  position: absolute;
+  left: 4px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.category-header-content span {
+  flex: 1;
+  text-align: center;
+  padding: 0 24px;
+  line-height: 1;
+}
+
+:deep(.q-expansion-item__toggle-icon) {
+  font-size: 1.2em;
+  line-height: 1;
 }
 
 .command-item.q-item-type {
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 4px;
   margin: 4px 8px;
+  padding: 0 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: rgba(0, 0, 0, 0.02);
   cursor: grab;
   font-size: 12px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.command-item.q-item-type :deep(.q-item__section) {
+  padding: 0;
+  min-height: unset;
+  flex: 1;
+}
+
+.command-item.q-item-type :deep(.q-item__label) {
+  line-height: 1;
+  text-align: center;
 }
 
 .command-item.q-item-type:hover {
@@ -281,5 +344,13 @@ export default defineComponent({
   font-weight: bold;
   padding: 0 1px;
   border-radius: 2px;
+}
+
+.drag-icon-left {
+  position: absolute;
+  left: 8px;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 </style>
