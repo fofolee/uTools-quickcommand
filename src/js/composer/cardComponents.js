@@ -4,9 +4,6 @@ import { defineAsyncComponent } from "vue";
 export const KeyEditor = defineAsyncComponent(() =>
   import("components/composer/ui/KeyEditor.vue")
 );
-export const FunctionSelector = defineAsyncComponent(() =>
-  import("components/composer/ui/FunctionSelector.vue")
-);
 
 // Control Flow Components
 export const ConditionalJudgment = defineAsyncComponent(() =>

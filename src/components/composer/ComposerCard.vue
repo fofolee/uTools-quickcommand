@@ -51,14 +51,14 @@
               :is="command.component"
               v-model="argvLocal"
               :command="command"
-              class="col"
+              class="col q-mt-sm"
               v-bind="command.componentProps || {}"
             />
-            <MultiParamInput
+            <MultiParams
               v-else
               v-model="argvLocal"
               :command="command"
-              class="col"
+              :class="command.config?.length ? 'col q-mt-sm' : 'col'"
             />
           </div>
         </div>
@@ -71,7 +71,7 @@
 import { defineComponent, inject } from "vue";
 import { validateVariableName } from "js/common/variableValidator";
 import VariableInput from "./ui/VariableInput.vue";
-import MultiParamInput from "./ui/MultiParamInput.vue";
+import MultiParams from "./ui/MultiParams.vue";
 import CommandHead from "./card/CommandHead.vue";
 import * as CardComponents from "js/composer/cardComponents";
 
@@ -79,7 +79,7 @@ export default defineComponent({
   name: "ComposerCard",
   components: {
     VariableInput,
-    MultiParamInput,
+    MultiParams,
     CommandHead,
     ...CardComponents,
   },
@@ -362,7 +362,6 @@ export default defineComponent({
   display: grid;
   grid-template-rows: 1fr;
   transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: 8px;
 }
 
 .command-content {

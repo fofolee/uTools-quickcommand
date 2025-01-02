@@ -33,7 +33,7 @@ export const systemCommands = {
       value: "electron.clipboard.readText",
       label: "获取剪贴板内容",
       config: [],
-      icon: "content_copy",
+      allowEmptyArgv: true,
     },
   ],
 };

@@ -8,9 +8,15 @@ export const textProcessingCommands = {
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
-      component: "FunctionSelector",
-      componentProps: {
-        inputLabel: "要编解码的文本",
+      config: [
+        {
+          label: "要编解码的文本",
+          icon: "text_fields",
+          type: "input",
+          width: 8,
+        },
+      ],
+      functionSelector: {
         selectLabel: "编解码方式",
         options: [
           {
@@ -40,6 +46,7 @@ export const textProcessingCommands = {
             value: "quickcomposer.textProcessing.htmlDecode",
           },
         ],
+        width: 3,
       },
     },
     {
@@ -57,9 +64,15 @@ export const textProcessingCommands = {
       label: "哈希计算",
       desc: "计算文本的哈希值",
       icon: "enhanced_encryption",
-      component: "FunctionSelector",
-      componentProps: {
-        inputLabel: "要计算哈希的文本",
+      config: [
+        {
+          label: "要计算哈希的文本",
+          icon: "text_fields",
+          type: "input",
+          width: 8,
+        },
+      ],
+      functionSelector: {
         selectLabel: "哈希算法",
         options: [
           { label: "MD5", value: "quickcomposer.textProcessing.md5Hash" },
@@ -69,6 +82,7 @@ export const textProcessingCommands = {
           { label: "SM3", value: "quickcomposer.textProcessing.sm3Hash" },
         ],
       },
+      width: 3,
     },
     {
       value: "quickcomposer.textProcessing.reverseString",

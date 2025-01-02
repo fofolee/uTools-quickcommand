@@ -4,7 +4,7 @@ import { systemCommands } from "./systemCommands";
 import { notifyCommands } from "./notifyCommands";
 import { textProcessingCommands } from "./textProcessingCommands";
 import { otherCommands } from "./otherCommands";
-import { keyCommands } from "./keyCommands";
+import { simulateCommands } from "./simulateCommands";
 import { controlCommands } from "./controlCommands";
 
 export const commandCategories = [
@@ -15,5 +15,5 @@ export const commandCategories = [
   textProcessingCommands,
   controlCommands,
   otherCommands,
-  keyCommands,
+  simulateCommands,
 ];
