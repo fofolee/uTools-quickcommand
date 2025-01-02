@@ -360,8 +360,7 @@ export default defineComponent({
       const tempFlow = [
         command,
         {
-          value: "console.log",
-          argv: command.outputVariable,
+          argv: `console.log(${command.outputVariable})`,
         },
       ];
       // 触发运行事件

@@ -407,6 +407,11 @@ interface quickcommandApi {
   readClipboard(): text<string>;
 
   /**
+   * 读剪贴板图片
+   */
+  readClipboardImage(): text<string>;
+
+  /**
    * 写剪贴板
    *
    * @param txt 要写入的文本

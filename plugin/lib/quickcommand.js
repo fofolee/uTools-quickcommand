@@ -157,6 +157,21 @@ const quickcommand = {
   writeClipboard: function (text) {
     electron.clipboard.writeText(text.toString());
   },
+
+  readClipboardImage: function () {
+    // 从剪贴板获取图片
+    const image = electron.clipboard.readImage();
+    if (!image.isEmpty()) {
+      return image.toDataURL();
+    }
+
+    // 尝试获取文本（可能是base64格式的图片）
+    const clipboardText = electron.clipboard.readText();
+    if (clipboardText && clipboardText.startsWith("data:image")) {
+      return clipboardText;
+    }
+    return null;
+  },
 };
 
 if (process.platform === "win32") {

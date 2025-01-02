@@ -137,32 +137,12 @@ export default defineComponent({
     },
     argvLocal: {
       get() {
-        if (this.command.hasAxiosEditor) {
-          // 如果是编辑现有配置
-          if (
-            this.command.argv &&
-            !this.command.argv.includes("axios.") &&
-            !this.command.argv.includes("fetch(")
-          ) {
-            try {
-              return JSON.parse(this.command.argv);
-            } catch (e) {
-              return {};
-            }
-          }
-          // 如果已经是格式化的代码，直接返回
-          return this.command.argv || {};
-        }
         return this.command.argv;
       },
       set(value) {
         const updatedCommand = {
           ...this.command,
-          argv: this.command.hasAxiosEditor
-            ? typeof value === "string"
-              ? value
-              : JSON.stringify(value)
-            : value,
+          argv: value,
         };
         this.$emit("update:command", updatedCommand);
       },

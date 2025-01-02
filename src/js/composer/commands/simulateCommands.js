@@ -10,7 +10,7 @@ export const simulateCommands = {
       component: "KeyEditor",
     },
     {
-      value: "utools",
+      value: "utools.simulateMouseClick",
       label: "鼠标点击",
       allowEmptyArgv: true,
       config: [
@@ -76,6 +76,13 @@ export const simulateCommands = {
       label: "获取鼠标坐标",
       config: [],
       allowEmptyArgv: true,
+    },
+    {
+      value: "quickcomposer.simulate.findImage",
+      label: "屏幕找图",
+      component: "ImageSearchEditor",
+      config: [],
+      isAsync: true,
     },
   ],
 };

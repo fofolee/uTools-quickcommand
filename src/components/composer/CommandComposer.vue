@@ -85,7 +85,6 @@ export default defineComponent({
         ...action,
         id: this.nextId++,
         argv: "",
-        argvType: "string",
         saveOutput: false,
         outputVariable: null,
         cmd: action.value || action.cmd,
