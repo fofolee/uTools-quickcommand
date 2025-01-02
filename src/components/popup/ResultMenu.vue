@@ -16,7 +16,6 @@
     >
     <q-btn
       icon="close"
-      class="text-negative"
       v-close-popup
       v-show="closebtn"
       dense

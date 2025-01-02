@@ -8,6 +8,7 @@ const electron = require("electron");
 const path = require("path");
 const axios = require("axios");
 const http = require("http");
+const https = require("https");
 const url = require("url");
 const crypto = require("crypto");
 require("ses");
@@ -79,7 +80,18 @@ window.multiProcessDetection = () => {
   return false;
 };
 
-// axios.defaults.adapter = require('axios/lib/adapters/http')
+/**
+ * 忘了为什么之前注释下面的语句了 -_-!，保留浏览器的 axios
+ * axios.defaults.adapter = require('axios/lib/adapters/http')
+ * 另外创建一个 node 的 axios
+ */
+const nodeAxios = axios.create({
+  httpAgent: new http.Agent(),
+  httpsAgent: new https.Agent({
+    rejectUnauthorized: false,
+  }),
+});
+nodeAxios.defaults.adapter = "http";
 
 if (!window.utools.isWindows())
   process.env.PATH = `/usr/local/bin:/usr/local/sbin:${process.env.PATH}`;
@@ -111,7 +123,7 @@ let getSandboxFuns = () => {
     fetch: fetch.bind(window),
     utools: window.getuToolsLite(),
     electron,
-    axios,
+    axios: nodeAxios,
     Audio,
     AbortController,
     AbortSignal,
