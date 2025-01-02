@@ -40,12 +40,11 @@
       </q-btn>
 
       <!-- 条件输入框 -->
-      <q-input
+      <ControlInput
         v-if="showCondition"
         v-model="conditionLocal"
-        dense
-        borderless
-        placeholder="输入条件表达式"
+        label="条件"
+        placeholder="表达式"
         class="condition-input"
       />
     </div>
@@ -54,9 +53,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import ControlInput from "../ui/ControlInput.vue";
 
 export default defineComponent({
   name: "ConditionalJudgment",
+  components: {
+    ControlInput,
+  },
   props: {
     modelValue: String,
     command: Object,
@@ -166,15 +169,6 @@ export default defineComponent({
 .condition-input {
   flex: 1;
   transition: all 0.3s ease;
-}
-
-.condition-input :deep(.q-field__control),
-.condition-input :deep(.q-field__native) {
-  padding: 1px;
-  height: 21px !important;
-  min-height: 21px;
-  border-radius: 4px;
-  font-size: 13px;
 }
 
 .control-btn {

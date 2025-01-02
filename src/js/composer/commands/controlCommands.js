@@ -16,5 +16,12 @@ export const controlCommands = {
       isControlFlow: true,
       commandChain: ["loop", "end"],
     },
+    {
+      value: "forEach",
+      label: "遍历数组",
+      component: "ForEachControl",
+      isControlFlow: true,
+      commandChain: ["forEach", "end"],
+    },
   ],
 };

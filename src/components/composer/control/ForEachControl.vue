@@ -3,28 +3,36 @@
     <div class="loop-control row items-center no-wrap">
       <!-- 类型标签和按钮区域 -->
       <div class="control-type-label q-mr-sm">
-        <template v-if="type === 'loop'">开始</template>
+        <template v-if="type === 'forEach'">开始</template>
         <template v-else-if="type === 'continue'">继续</template>
         <template v-else-if="type === 'break'">终止</template>
         <template v-else>结束</template>
       </div>
 
-      <!-- 循环设置区域 -->
-      <div v-if="type === 'loop'" class="loop-settings">
+      <!-- 遍历设置区域 -->
+      <div v-if="type === 'forEach'" class="loop-settings">
         <ControlInput
-          v-model="indexVar"
-          label="变量"
+          v-model="itemVar"
+          label="元素"
           :is-variable="true"
           class="loop-input"
         />
-        <ControlInput v-model="startValue" label="从" class="loop-input" />
-        <ControlInput v-model="endValue" label="到" class="loop-input" />
-        <ControlInput v-model="stepValue" label="步进" class="loop-input" />
+        <ControlInput
+          v-model="indexVar"
+          label="索引"
+          :is-variable="true"
+          class="loop-input"
+        />
+        <ControlInput
+          v-model="arrayVar"
+          label="数组"
+          class="loop-input array-input"
+        />
       </div>
 
       <!-- 只在循环开始时显示添加按钮 -->
       <q-btn-dropdown
-        v-if="type === 'loop'"
+        v-if="type === 'forEach'"
         flat
         dense
         dropdown-icon="add"
@@ -72,7 +80,7 @@ import { defineComponent } from "vue";
 import ControlInput from "../ui/ControlInput.vue";
 
 export default defineComponent({
-  name: "LoopControl",
+  name: "ForEachControl",
   components: {
     ControlInput,
   },
@@ -84,16 +92,15 @@ export default defineComponent({
       type: String,
       required: true,
       validator: (value) =>
-        ["loop", "continue", "break", "end"].includes(value),
+        ["forEach", "continue", "break", "end"].includes(value),
     },
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      indexVar: "i",
-      startValue: 0,
-      endValue: 10,
-      stepValue: 1,
+      itemVar: "item",
+      indexVar: "index",
+      arrayVar: "array",
     };
   },
   created() {
@@ -104,12 +111,11 @@ export default defineComponent({
   computed: {
     generatedCode() {
       switch (this.type) {
-        case "loop":
-          const index = this.indexVar || "i";
-          const start = this.startValue || 0;
-          const end = this.endValue || 10;
-          const step = this.stepValue || 1;
-          return `for(let ${index}=${start};${index}<${end};${index}+=${step}){`;
+        case "forEach":
+          const item = this.itemVar || "item";
+          const index = this.indexVar || "index";
+          const array = this.arrayVar || "array";
+          return `for(let [${index}, ${item}] of ${array}.entries()){`;
         case "continue":
           return "continue;";
         case "break":
@@ -122,6 +128,12 @@ export default defineComponent({
     },
   },
   watch: {
+    type: {
+      immediate: true,
+      handler(val) {
+        console.log("ForEachControl type:", val);
+      },
+    },
     modelValue: {
       immediate: true,
       handler(val) {
@@ -130,16 +142,13 @@ export default defineComponent({
         }
       },
     },
+    itemVar() {
+      this.updateValue();
+    },
     indexVar() {
       this.updateValue();
     },
-    startValue() {
-      this.updateValue();
-    },
-    endValue() {
-      this.updateValue();
-    },
-    stepValue() {
+    arrayVar() {
       this.updateValue();
     },
   },
@@ -149,15 +158,14 @@ export default defineComponent({
     },
     parseCodeString(val) {
       try {
-        if (this.type === "loop") {
+        if (this.type === "forEach") {
           const match = val.match(
-            /^for\(let\s+(\w+)=(\d+);(\w+)<(\d+);(\w+)\+=(\d+)\){$/
+            /^for\(let\s+\[(\w+),\s*(\w+)\]\s+of\s+(\w+|\$\{.+\})\.entries\(\)\){$/
           );
           if (match) {
             this.indexVar = match[1];
-            this.startValue = parseInt(match[2]);
-            this.endValue = parseInt(match[4]);
-            this.stepValue = parseInt(match[6]);
+            this.itemVar = match[2];
+            this.arrayVar = match[3];
           }
         }
       } catch (e) {
@@ -205,6 +213,10 @@ export default defineComponent({
 
 .loop-input {
   width: 80px;
+}
+
+.array-input {
+  width: 120px;
 }
 
 /* 暗色模式适配 */
