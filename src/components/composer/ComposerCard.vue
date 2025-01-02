@@ -28,6 +28,7 @@
               :command="command"
               v-bind="command.componentProps || {}"
               :type="command.commandType"
+              class="control-component"
               @addBranch="(chainInfo) => $emit('addBranch', chainInfo)"
             />
           </template>
@@ -67,11 +68,12 @@
 </template>
 
 <script>
-import { defineComponent, inject, defineAsyncComponent } from "vue";
+import { defineComponent, inject } from "vue";
 import { validateVariableName } from "js/common/variableValidator";
-import VariableInput from "components/composer/ui/VariableInput.vue";
-import MultiParamInput from "components/composer/ui/MultiParamInput.vue";
-import CommandHead from "components/composer/card/CommandHead.vue";
+import VariableInput from "./ui/VariableInput.vue";
+import MultiParamInput from "./ui/MultiParamInput.vue";
+import CommandHead from "./card/CommandHead.vue";
+import * as CardComponents from "js/composer/cardComponents";
 
 export default defineComponent({
   name: "ComposerCard",
@@ -79,33 +81,7 @@ export default defineComponent({
     VariableInput,
     MultiParamInput,
     CommandHead,
-    KeyEditor: defineAsyncComponent(() =>
-      import("components/composer/ui/KeyEditor.vue")
-    ),
-    UBrowserEditor: defineAsyncComponent(() =>
-      import("components/composer/ubrowser/UBrowserEditor.vue")
-    ),
-    AxiosConfigEditor: defineAsyncComponent(() =>
-      import("components/composer/http/AxiosConfigEditor.vue")
-    ),
-    SymmetricCryptoEditor: defineAsyncComponent(() =>
-      import("components/composer/crypto/SymmetricCryptoEditor.vue")
-    ),
-    AsymmetricCryptoEditor: defineAsyncComponent(() =>
-      import("components/composer/crypto/AsymmetricCryptoEditor.vue")
-    ),
-    FunctionSelector: defineAsyncComponent(() =>
-      import("components/composer/ui/FunctionSelector.vue")
-    ),
-    RegexEditor: defineAsyncComponent(() =>
-      import("components/composer/regex/RegexEditor.vue")
-    ),
-    ConditionalJudgment: defineAsyncComponent(() =>
-      import("components/composer/control/ConditionalJudgment.vue")
-    ),
-    LoopControl: defineAsyncComponent(() =>
-      import("components/composer/control/LoopControl.vue")
-    ),
+    ...CardComponents,
   },
   props: {
     command: {
@@ -321,6 +297,14 @@ export default defineComponent({
   transform: translateY(0) scale(1);
   border-radius: inherit;
   position: relative;
+}
+
+/* 控制流程组件样式 */
+.control-component {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .composer-card,

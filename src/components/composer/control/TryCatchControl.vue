@@ -1,30 +1,29 @@
 <template>
-  <div class="loop-control-wrapper" v-bind="$attrs">
-    <div class="loop-control row items-center no-wrap">
-      <!-- 类型标签和按钮区域 -->
+  <div class="try-catch-wrapper">
+    <div class="try-catch">
+      <!-- 类型标签 -->
       <div class="control-type-label">
-        <template v-if="type === 'loop'">开始</template>
-        <template v-else-if="type === 'continue'">继续</template>
-        <template v-else-if="type === 'break'">终止</template>
+        <template v-if="type === 'try'">尝试</template>
+        <template v-else-if="type === 'catch'">捕获</template>
+        <template v-else-if="type === 'finally'">最后</template>
         <template v-else>结束</template>
       </div>
 
-      <!-- 循环设置区域 -->
-      <div v-if="type === 'loop'" class="loop-settings">
-        <ControlInput
-          v-model="indexVar"
-          label="变量"
-          :is-variable="true"
-          class="loop-input"
-        />
-        <ControlInput v-model="startValue" label="从" class="loop-input" />
-        <ControlInput v-model="endValue" label="到" class="loop-input" />
-        <ControlInput v-model="stepValue" label="步进" class="loop-input" />
+      <!-- 错误变量输入区域 -->
+      <div class="try-catch-settings">
+        <template v-if="type === 'catch'">
+          <ControlInput
+            v-model="errorVar"
+            label="错误"
+            placeholder="错误变量名"
+            class="error-input"
+          />
+        </template>
       </div>
 
-      <!-- 只在循环开始时显示添加按钮 -->
+      <!-- 只在try开始时显示添加按钮 -->
       <q-btn-dropdown
-        v-if="type === 'loop'"
+        v-if="type === 'try'"
         flat
         dense
         dropdown-icon="add"
@@ -39,12 +38,12 @@
             @click="
               $emit('addBranch', {
                 chainId: command.chainId,
-                commandType: 'continue',
+                commandType: 'catch',
               })
             "
           >
             <q-item-section>
-              <q-item-label>添加继续循环</q-item-label>
+              <q-item-label>添加捕获分支</q-item-label>
             </q-item-section>
           </q-item>
           <q-item
@@ -53,12 +52,12 @@
             @click="
               $emit('addBranch', {
                 chainId: command.chainId,
-                commandType: 'break',
+                commandType: 'finally',
               })
             "
           >
             <q-item-section>
-              <q-item-label>添加终止循环</q-item-label>
+              <q-item-label>添加最后分支</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -72,7 +71,7 @@ import { defineComponent } from "vue";
 import ControlInput from "../ui/ControlInput.vue";
 
 export default defineComponent({
-  name: "LoopControl",
+  name: "TryCatchControl",
   components: {
     ControlInput,
   },
@@ -83,17 +82,13 @@ export default defineComponent({
     type: {
       type: String,
       required: true,
-      validator: (value) =>
-        ["loop", "continue", "break", "end"].includes(value),
+      validator: (value) => ["try", "catch", "finally", "end"].includes(value),
     },
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      indexVar: "i",
-      startValue: 0,
-      endValue: 10,
-      stepValue: 1,
+      errorVar: "error",
     };
   },
   created() {
@@ -104,16 +99,12 @@ export default defineComponent({
   computed: {
     generatedCode() {
       switch (this.type) {
-        case "loop":
-          const index = this.indexVar || "i";
-          const start = this.startValue || 0;
-          const end = this.endValue || 10;
-          const step = this.stepValue || 1;
-          return `for(let ${index}=${start};${index}<${end};${index}+=${step}){`;
-        case "continue":
-          return "continue;";
-        case "break":
-          return "break;";
+        case "try":
+          return "try{";
+        case "catch":
+          return `}catch(${this.errorVar}){`;
+        case "finally":
+          return "}finally{";
         case "end":
           return "}";
         default:
@@ -130,16 +121,7 @@ export default defineComponent({
         }
       },
     },
-    indexVar() {
-      this.updateValue();
-    },
-    startValue() {
-      this.updateValue();
-    },
-    endValue() {
-      this.updateValue();
-    },
-    stepValue() {
+    errorVar() {
       this.updateValue();
     },
   },
@@ -149,15 +131,10 @@ export default defineComponent({
     },
     parseCodeString(val) {
       try {
-        if (this.type === "loop") {
-          const match = val.match(
-            /^for\(let\s+(\w+)=(\d+);(\w+)<(\d+);(\w+)\+=(\d+)\){$/
-          );
+        if (this.type === "catch") {
+          const match = val.match(/^}catch\((.*)\){$/);
           if (match) {
-            this.indexVar = match[1];
-            this.startValue = parseInt(match[2]);
-            this.endValue = parseInt(match[4]);
-            this.stepValue = parseInt(match[6]);
+            this.errorVar = match[1];
           }
         }
       } catch (e) {
@@ -169,12 +146,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.loop-control-wrapper {
+.try-catch-wrapper {
   width: 100%;
   display: flex;
 }
 
-.loop-control {
+.try-catch {
   width: 100%;
   display: flex;
   align-items: center;
@@ -201,15 +178,16 @@ export default defineComponent({
   transform: scale(1.1);
 }
 
-.loop-settings {
+.try-catch-settings {
   display: flex;
   gap: 4px;
   flex: 1;
   min-width: 0;
 }
 
-.loop-input {
-  width: 80px;
+.error-input {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 暗色模式适配 */

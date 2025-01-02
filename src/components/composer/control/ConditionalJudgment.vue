@@ -1,6 +1,6 @@
 <template>
-  <div class="conditional-judgment">
-    <div class="row items-end no-wrap">
+  <div class="conditional-judgment-wrapper">
+    <div class="conditional-judgment">
       <!-- 类型标签 -->
       <div class="control-type-label">
         <template v-if="type === 'if'">如果</template>
@@ -8,14 +8,26 @@
         <template v-else>结束</template>
       </div>
 
+      <!-- 条件输入区域 -->
+      <div class="condition-settings">
+        <template v-if="showCondition">
+          <ControlInput
+            v-model="conditionLocal"
+            label="条件"
+            placeholder="表达式"
+            class="condition-input"
+          />
+        </template>
+      </div>
+
       <!-- if类型显示添加按钮 -->
       <q-btn
         v-if="type === 'if'"
         flat
         dense
-        size="sm"
         icon="add"
-        class="control-btn q-mx-xs"
+        size="sm"
+        class="control-btn"
         @click="
           $emit('addBranch', {
             chainId: command.chainId,
@@ -33,20 +45,11 @@
         dense
         size="sm"
         :icon="showCondition ? 'remove' : 'add'"
-        class="control-btn q-mx-xs"
+        class="control-btn"
         @click="toggleCondition"
       >
         <q-tooltip>{{ showCondition ? "隐藏条件" : "显示条件" }}</q-tooltip>
       </q-btn>
-
-      <!-- 条件输入框 -->
-      <ControlInput
-        v-if="showCondition"
-        v-model="conditionLocal"
-        label="条件"
-        placeholder="表达式"
-        class="condition-input"
-      />
     </div>
   </div>
 </template>
@@ -159,24 +162,43 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.conditional-judgment-wrapper {
+  width: 100%;
+  display: flex;
+}
+
+.conditional-judgment {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .control-type-label {
   font-size: 13px;
+  font-weight: 500;
   white-space: nowrap;
   opacity: 0.9;
   user-select: none;
 }
 
+.condition-settings {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
 .condition-input {
   flex: 1;
-  transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .control-btn {
   width: 21px;
   height: 21px;
-  min-height: 21px;
   opacity: 0.7;
-  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .control-btn:hover {

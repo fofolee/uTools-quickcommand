@@ -3,28 +3,36 @@
     <div class="loop-control row items-center no-wrap">
       <!-- 类型标签和按钮区域 -->
       <div class="control-type-label">
-        <template v-if="type === 'loop'">开始</template>
+        <template v-if="type === 'forIn'">开始</template>
         <template v-else-if="type === 'continue'">继续</template>
         <template v-else-if="type === 'break'">终止</template>
         <template v-else>结束</template>
       </div>
 
-      <!-- 循环设置区域 -->
-      <div v-if="type === 'loop'" class="loop-settings">
+      <!-- 遍历设置区域 -->
+      <div v-if="type === 'forIn'" class="loop-settings">
         <ControlInput
-          v-model="indexVar"
-          label="变量"
+          v-model="keyVar"
+          label="键名"
           :is-variable="true"
           class="loop-input"
         />
-        <ControlInput v-model="startValue" label="从" class="loop-input" />
-        <ControlInput v-model="endValue" label="到" class="loop-input" />
-        <ControlInput v-model="stepValue" label="步进" class="loop-input" />
+        <ControlInput
+          v-model="valueVar"
+          label="值"
+          :is-variable="true"
+          class="loop-input"
+        />
+        <ControlInput
+          v-model="objectVar"
+          label="对象"
+          class="loop-input object-input"
+        />
       </div>
 
       <!-- 只在循环开始时显示添加按钮 -->
       <q-btn-dropdown
-        v-if="type === 'loop'"
+        v-if="type === 'forIn'"
         flat
         dense
         dropdown-icon="add"
@@ -72,7 +80,7 @@ import { defineComponent } from "vue";
 import ControlInput from "../ui/ControlInput.vue";
 
 export default defineComponent({
-  name: "LoopControl",
+  name: "ForInControl",
   components: {
     ControlInput,
   },
@@ -84,16 +92,15 @@ export default defineComponent({
       type: String,
       required: true,
       validator: (value) =>
-        ["loop", "continue", "break", "end"].includes(value),
+        ["forIn", "continue", "break", "end"].includes(value),
     },
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      indexVar: "i",
-      startValue: 0,
-      endValue: 10,
-      stepValue: 1,
+      keyVar: "key",
+      valueVar: "value",
+      objectVar: "obj",
     };
   },
   created() {
@@ -104,12 +111,11 @@ export default defineComponent({
   computed: {
     generatedCode() {
       switch (this.type) {
-        case "loop":
-          const index = this.indexVar || "i";
-          const start = this.startValue || 0;
-          const end = this.endValue || 10;
-          const step = this.stepValue || 1;
-          return `for(let ${index}=${start};${index}<${end};${index}+=${step}){`;
+        case "forIn":
+          const key = this.keyVar || "key";
+          const value = this.valueVar || "value";
+          const obj = this.objectVar || "obj";
+          return `for(const ${key} in ${obj}){const ${value}=${obj}[${key}];`;
         case "continue":
           return "continue;";
         case "break":
@@ -122,6 +128,12 @@ export default defineComponent({
     },
   },
   watch: {
+    type: {
+      immediate: true,
+      handler(val) {
+        console.log("ForInControl type:", val);
+      },
+    },
     modelValue: {
       immediate: true,
       handler(val) {
@@ -130,16 +142,13 @@ export default defineComponent({
         }
       },
     },
-    indexVar() {
+    keyVar() {
       this.updateValue();
     },
-    startValue() {
+    valueVar() {
       this.updateValue();
     },
-    endValue() {
-      this.updateValue();
-    },
-    stepValue() {
+    objectVar() {
       this.updateValue();
     },
   },
@@ -149,15 +158,14 @@ export default defineComponent({
     },
     parseCodeString(val) {
       try {
-        if (this.type === "loop") {
+        if (this.type === "forIn") {
           const match = val.match(
-            /^for\(let\s+(\w+)=(\d+);(\w+)<(\d+);(\w+)\+=(\d+)\){$/
+            /^for\(const\s+(\w+)\s+in\s+(\w+|\$\{.+\})\){const\s+(\w+)=.*$/
           );
           if (match) {
-            this.indexVar = match[1];
-            this.startValue = parseInt(match[2]);
-            this.endValue = parseInt(match[4]);
-            this.stepValue = parseInt(match[6]);
+            this.keyVar = match[1];
+            this.objectVar = match[2];
+            this.valueVar = match[3];
           }
         }
       } catch (e) {
@@ -210,6 +218,10 @@ export default defineComponent({
 
 .loop-input {
   width: 80px;
+}
+
+.object-input {
+  width: 120px;
 }
 
 /* 暗色模式适配 */

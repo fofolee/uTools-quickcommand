@@ -11,7 +11,7 @@ export const controlCommands = {
     },
     {
       value: "loop",
-      label: "循环",
+      label: "循环执行",
       component: "LoopControl",
       isControlFlow: true,
       commandChain: ["loop", "end"],
@@ -22,6 +22,34 @@ export const controlCommands = {
       component: "ForEachControl",
       isControlFlow: true,
       commandChain: ["forEach", "end"],
+    },
+    {
+      value: "forIn",
+      label: "遍历对象",
+      component: "ForInControl",
+      isControlFlow: true,
+      commandChain: ["forIn", "end"],
+    },
+    {
+      value: "while",
+      label: "条件循环",
+      component: "WhileControl",
+      isControlFlow: true,
+      commandChain: ["while", "end"],
+    },
+    {
+      value: "switch",
+      label: "条件分支",
+      component: "SwitchControl",
+      isControlFlow: true,
+      commandChain: ["switch", "case", "end"],
+    },
+    {
+      value: "tryCatch",
+      label: "异常处理",
+      component: "TryCatchControl",
+      isControlFlow: true,
+      commandChain: ["try", "catch", "end"],
     },
   ],
 };

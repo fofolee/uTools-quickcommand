@@ -2,7 +2,7 @@
   <div class="loop-control-wrapper" v-bind="$attrs">
     <div class="loop-control row items-center no-wrap">
       <!-- 类型标签和按钮区域 -->
-      <div class="control-type-label q-mr-sm">
+      <div class="control-type-label">
         <template v-if="type === 'forEach'">开始</template>
         <template v-else-if="type === 'continue'">继续</template>
         <template v-else-if="type === 'break'">终止</template>
@@ -38,7 +38,7 @@
         dropdown-icon="add"
         no-icon-animation
         size="sm"
-        class="control-btn q-ml-sm"
+        class="control-btn"
       >
         <q-list>
           <q-item
@@ -128,12 +128,6 @@ export default defineComponent({
     },
   },
   watch: {
-    type: {
-      immediate: true,
-      handler(val) {
-        console.log("ForEachControl type:", val);
-      },
-    },
     modelValue: {
       immediate: true,
       handler(val) {
@@ -179,11 +173,14 @@ export default defineComponent({
 <style scoped>
 .loop-control-wrapper {
   width: 100%;
+  display: flex;
 }
 
 .loop-control {
+  width: 100%;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .control-type-label {
@@ -198,6 +195,7 @@ export default defineComponent({
   width: 21px;
   height: 21px;
   opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .control-btn:hover {
@@ -209,6 +207,7 @@ export default defineComponent({
   display: flex;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 
 .loop-input {

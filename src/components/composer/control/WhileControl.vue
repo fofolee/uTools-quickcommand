@@ -1,30 +1,29 @@
 <template>
-  <div class="loop-control-wrapper" v-bind="$attrs">
-    <div class="loop-control row items-center no-wrap">
-      <!-- 类型标签和按钮区域 -->
+  <div class="loop-control-wrapper">
+    <div class="loop-control">
+      <!-- 类型标签 -->
       <div class="control-type-label">
-        <template v-if="type === 'loop'">开始</template>
+        <template v-if="type === 'while'">满足</template>
         <template v-else-if="type === 'continue'">继续</template>
         <template v-else-if="type === 'break'">终止</template>
         <template v-else>结束</template>
       </div>
 
-      <!-- 循环设置区域 -->
-      <div v-if="type === 'loop'" class="loop-settings">
-        <ControlInput
-          v-model="indexVar"
-          label="变量"
-          :is-variable="true"
-          class="loop-input"
-        />
-        <ControlInput v-model="startValue" label="从" class="loop-input" />
-        <ControlInput v-model="endValue" label="到" class="loop-input" />
-        <ControlInput v-model="stepValue" label="步进" class="loop-input" />
+      <!-- 循环条件区域 -->
+      <div class="loop-settings">
+        <template v-if="type === 'while'">
+          <ControlInput
+            v-model="condition"
+            label="条件"
+            placeholder="表达式"
+            class="condition-input"
+          />
+        </template>
       </div>
 
       <!-- 只在循环开始时显示添加按钮 -->
       <q-btn-dropdown
-        v-if="type === 'loop'"
+        v-if="type === 'while'"
         flat
         dense
         dropdown-icon="add"
@@ -72,7 +71,7 @@ import { defineComponent } from "vue";
 import ControlInput from "../ui/ControlInput.vue";
 
 export default defineComponent({
-  name: "LoopControl",
+  name: "WhileControl",
   components: {
     ControlInput,
   },
@@ -84,16 +83,13 @@ export default defineComponent({
       type: String,
       required: true,
       validator: (value) =>
-        ["loop", "continue", "break", "end"].includes(value),
+        ["while", "continue", "break", "end"].includes(value),
     },
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      indexVar: "i",
-      startValue: 0,
-      endValue: 10,
-      stepValue: 1,
+      condition: "true",
     };
   },
   created() {
@@ -104,12 +100,8 @@ export default defineComponent({
   computed: {
     generatedCode() {
       switch (this.type) {
-        case "loop":
-          const index = this.indexVar || "i";
-          const start = this.startValue || 0;
-          const end = this.endValue || 10;
-          const step = this.stepValue || 1;
-          return `for(let ${index}=${start};${index}<${end};${index}+=${step}){`;
+        case "while":
+          return `while(${this.condition}){`;
         case "continue":
           return "continue;";
         case "break":
@@ -130,16 +122,7 @@ export default defineComponent({
         }
       },
     },
-    indexVar() {
-      this.updateValue();
-    },
-    startValue() {
-      this.updateValue();
-    },
-    endValue() {
-      this.updateValue();
-    },
-    stepValue() {
+    condition() {
       this.updateValue();
     },
   },
@@ -149,15 +132,10 @@ export default defineComponent({
     },
     parseCodeString(val) {
       try {
-        if (this.type === "loop") {
-          const match = val.match(
-            /^for\(let\s+(\w+)=(\d+);(\w+)<(\d+);(\w+)\+=(\d+)\){$/
-          );
+        if (this.type === "while") {
+          const match = val.match(/^while\((.*)\){$/);
           if (match) {
-            this.indexVar = match[1];
-            this.startValue = parseInt(match[2]);
-            this.endValue = parseInt(match[4]);
-            this.stepValue = parseInt(match[6]);
+            this.condition = match[1];
           }
         }
       } catch (e) {
@@ -208,8 +186,9 @@ export default defineComponent({
   min-width: 0;
 }
 
-.loop-input {
-  width: 80px;
+.condition-input {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 暗色模式适配 */
