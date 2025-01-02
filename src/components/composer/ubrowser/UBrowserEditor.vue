@@ -1,65 +1,51 @@
 <template>
   <div class="ubrowser-editor">
-    <q-stepper
+    <!-- 标签页导航 -->
+    <q-tabs
       v-model="step"
-      vertical
-      color="primary"
-      header-nav
-      animated
-      alternative-labels
-      flat
-      class="ubrowser-stepper"
+      class="ubrowser-tabs"
+      dense
+      align="left"
+      narrow-indicator
+      inline-label
     >
-      <!-- 基础参数步骤 -->
-      <q-step :name="1" title="基础参数" icon="settings" :done="step > 1">
-        <UBrowserBasic :configs="configs" @update:configs="updateConfigs" />
-      </q-step>
+      <q-tab name="1" icon="settings" label="基础参数" size="sm" />
+      <q-tab name="2" icon="touch_app" label="浏览器操作" size="sm" />
+      <q-tab name="3" icon="settings_applications" label="运行参数" size="sm" />
+    </q-tabs>
 
-      <!-- 浏览器操作步骤 -->
-      <q-step :name="2" title="浏览器操作" icon="touch_app" :done="step > 2">
+    <!-- 内容区域 -->
+    <q-tab-panels
+      v-model="step"
+      animated
+      swipeable
+      class="ubrowser-panels"
+    >
+      <q-tab-panel name="1" class="panel-content">
+        <UBrowserBasic
+          :configs="configs"
+          @update:configs="updateConfigs"
+        />
+      </q-tab-panel>
+
+      <q-tab-panel name="2" class="panel-content">
         <UBrowserOperations
           :configs="configs"
           @update:configs="updateConfigs"
           v-model:selected-actions="selectedActions"
           @remove-action="removeAction"
         />
-      </q-step>
+      </q-tab-panel>
 
-      <!-- 运行参数步骤 -->
-      <q-step
-        :name="3"
-        title="运行参数"
-        icon="settings_applications"
-        class="q-pb-md"
-      >
-        <UBrowserRun :configs="configs" @update:configs="updateConfigs" />
-      </q-step>
-    </q-stepper>
+      <q-tab-panel name="3" class="panel-content">
+        <UBrowserRun
+          :configs="configs"
+          @update:configs="updateConfigs"
+        />
+      </q-tab-panel>
+    </q-tab-panels>
   </div>
 </template>
-
-<style scoped>
-.ubrowser-editor {
-  width: 100%;
-}
-
-.ubrowser-stepper {
-  box-shadow: none;
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.body--dark .ubrowser-stepper {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.ubrowser-stepper :deep(.q-stepper__header) {
-  cursor: pointer;
-}
-
-.ubrowser-stepper :deep(.q-stepper__step-inner) {
-  padding-bottom: 5px;
-}
-</style>
 
 <script>
 import { defineComponent } from "vue";
@@ -85,7 +71,7 @@ export default defineComponent({
   emits: ["update:modelValue"],
   data() {
     return {
-      step: 1,
+      step: "1",
       selectedActions: [],
       configs: window.lodashM.cloneDeep(defaultUBrowserConfigs),
     };
@@ -133,11 +119,67 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.ubrowser-editor :deep(.q-stepper) {
-  padding: 0 !important;
+.ubrowser-editor {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
-.ubrowser-editor :deep(.q-stepper__tab) {
-  padding: 5px 25px;
+.ubrowser-tabs {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px 4px 0 0;
+  flex-shrink: 0;
+}
+
+.ubrowser-panels {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 0 0 4px 4px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 暗色模式 */
+.body--dark .ubrowser-tabs,
+.body--dark .ubrowser-panels {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 调整面板内边距和布局 */
+.ubrowser-panels :deep(.q-tab-panel) {
+  padding: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 面板内容区域 */
+.panel-content {
+  height: 100%;
+  overflow: auto;
+}
+
+/* 调整标签页样式 */
+.ubrowser-tabs :deep(.q-tab) {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.ubrowser-tabs :deep(.q-tab__content) {
+  min-width: 0;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.ubrowser-tabs :deep(.q-tab__label) {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.ubrowser-tabs :deep(.q-tab__icon) {
+  font-size: 16px;
+  margin: 0;
 }
 </style>

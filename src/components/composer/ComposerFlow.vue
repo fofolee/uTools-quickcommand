@@ -26,7 +26,8 @@
           group="commands"
           item-key="id"
           class="flow-list"
-          :animation="200"
+          :animation="0"
+          :delay="50"
           handle=".drag-handle"
           @start="onDragStart"
           @end="onDragEnd"
@@ -645,8 +646,6 @@ export default defineComponent({
 
 .flow-item.sortable-ghost {
   opacity: 0.5;
-  transform: scale(0.99);
   border: 1px solid var(--q-primary);
-  transition: all 0.3s ease;
 }
 </style>

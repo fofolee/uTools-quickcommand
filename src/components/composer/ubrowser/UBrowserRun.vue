@@ -140,7 +140,7 @@
 
     <!-- 透明度控制 -->
     <div class="col-12">
-      <div class="row items-center" style="height: 36px">
+      <div class="row items-center q-px-sm" style="height: 36px">
         <div class="q-mr-md" style="font-size: 12px">透明度</div>
         <q-slider
           class="col"
@@ -150,7 +150,6 @@
           :step="0.1"
           label
           color="primary"
-          switch-label-side
           dense
           @update:model-value="updateConfig('opacity', $event)"
         >
