@@ -20,7 +20,7 @@
     </div>
 
     <!-- 标题 -->
-    <div v-if="!isControlFlow" class="text-subtitle2 command-label">
+    <div class="text-subtitle2 command-label q-px-sm drag-handle">
       {{ command.label }}
     </div>
 
@@ -99,12 +99,7 @@ export default {
 .chain-icon {
   display: flex;
   align-items: center;
-  padding-right: 4px;
   transition: all 0.2s ease;
-}
-
-.chain-icon {
-  margin-right: 4px;
 }
 
 .collapse-btn :deep(.q-btn),
@@ -122,6 +117,13 @@ export default {
 
 .command-label {
   user-select: none;
-  pointer-events: none;
+  pointer-events: all;
+  cursor: grab;
+  transition: all 0.3s ease;
+}
+
+.command-label:hover {
+  color: var(--q-primary);
+  transition: all 0.3s ease;
 }
 </style>

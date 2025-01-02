@@ -3,10 +3,10 @@
     <div class="loop-control row">
       <!-- 类型标签和按钮区域 -->
       <div class="control-type-label">
-        <template v-if="type === 'loop'">循环</template>
-        <template v-else-if="type === 'continue'">继续循环</template>
-        <template v-else-if="type === 'break'">终止循环</template>
-        <template v-else>结束循环</template>
+        <template v-if="type === 'loop'">开始</template>
+        <template v-else-if="type === 'continue'">继续</template>
+        <template v-else-if="type === 'break'">终止</template>
+        <template v-else>结束</template>
       </div>
 
       <!-- 只在循环开始时显示添加按钮 -->
@@ -193,7 +193,7 @@ export default defineComponent({
 }
 
 .control-type-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
   opacity: 0.9;

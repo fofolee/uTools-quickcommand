@@ -3,12 +3,8 @@
     class="composer-card"
     :class="{
       collapsed: isCollapsed && !command.isControlFlow,
-      'drag-handle': !isLastCommandInChain,
-      'no-animation': isClickingControl,
     }"
     v-bind="$attrs"
-    @mousedown="handleMouseDown"
-    @mouseup="handleMouseUp"
   >
     <q-card class="command-item">
       <q-card-section
@@ -133,7 +129,6 @@ export default defineComponent({
     return {
       showKeyRecorder: false,
       isCollapsed: false,
-      isClickingControl: false,
     };
   },
   watch: {
@@ -313,19 +308,6 @@ export default defineComponent({
         this.isCollapsed = !this.isCollapsed;
       }
     },
-    handleMouseDown(event) {
-      // 检查点击的元素是否是控制元素（按钮、输入框等）
-      const isControlElement = event.target.closest(
-        ".q-btn, .q-field, .q-icon, button, input, .border-label"
-      );
-      this.isClickingControl = !!isControlElement;
-    },
-    handleMouseUp() {
-      // 延迟重置状态，以确保动画不会立即触发
-      setTimeout(() => {
-        this.isClickingControl = false;
-      }, 100);
-    },
   },
 });
 </script>
@@ -341,40 +323,12 @@ export default defineComponent({
   position: relative;
 }
 
-.composer-card.no-animation,
-.composer-card.no-animation::before,
-.composer-card.no-animation .command-item {
+.composer-card,
+.composer-card::before,
+.composer-card .command-item {
   transition: none !important;
   transform: none !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-}
-
-.composer-card.drag-handle {
-  cursor: grab;
-}
-
-.composer-card.no-animation.drag-handle {
-  cursor: default;
-}
-
-.composer-card.drag-handle:active {
-  cursor: grabbing;
-}
-
-.composer-card.drag-handle:hover::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--q-primary);
-  opacity: 0.03;
-  border-radius: inherit;
-  transition: all 0.3s ease;
-  pointer-events: none;
-}
-
-.composer-card.drag-handle:active::before {
-  opacity: 0.06;
-  transform: scale(0.99);
 }
 
 .command-item {
@@ -387,30 +341,9 @@ export default defineComponent({
   will-change: transform;
 }
 
-.drag-handle .command-item {
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.drag-handle:hover .command-item {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.drag-handle:active .command-item {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
 /* 暗色模式适配 */
 .body--dark .command-item {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.body--dark .drag-handle:hover .command-item {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.body--dark .drag-handle:active .command-item {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .body--dark .composer-card.drag-handle:hover::before {

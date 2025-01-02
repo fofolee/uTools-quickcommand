@@ -3,11 +3,9 @@
     <div class="row items-end no-wrap">
       <!-- 类型标签 -->
       <div class="control-type-label">
-        <template v-if="type === 'if'">如果满足</template>
-        <template v-else-if="type === 'else'">
-          {{ showCondition ? "否则满足" : "否则" }}
-        </template>
-        <template v-else>结束条件判断</template>
+        <template v-if="type === 'if'">如果</template>
+        <template v-else-if="type === 'else'"> 否则 </template>
+        <template v-else>结束</template>
       </div>
 
       <!-- if类型显示添加按钮 -->
@@ -159,7 +157,7 @@ export default defineComponent({
 
 <style scoped>
 .control-type-label {
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
   opacity: 0.9;
   user-select: none;

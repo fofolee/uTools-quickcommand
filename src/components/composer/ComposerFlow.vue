@@ -642,4 +642,11 @@ export default defineComponent({
 .flow-item.insert-before + .flow-item {
   transform: translateY(3px);
 }
+
+.flow-item.sortable-ghost {
+  opacity: 0.5;
+  transform: scale(0.99);
+  border: 1px solid var(--q-primary);
+  transition: all 0.3s ease;
+}
 </style>
