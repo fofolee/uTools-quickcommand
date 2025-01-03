@@ -56,7 +56,7 @@
                 </div>
                 <q-item-section>
                   <q-item-label
-                    class="text-weight-medium"
+                    class="text-weight-medium q-px-lg"
                     v-html="highlightText(command.label)"
                   />
                 </q-item-section>

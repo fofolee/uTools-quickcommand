@@ -4,8 +4,15 @@ export const fileCommands = {
   defaultOpened: true,
   commands: [
     {
-      value: "open",
-      label: "打开文件/文件夹/软件",
+      value: "quickcomposer.file.operation",
+      label: "文件/文件夹操作",
+      component: "FileOperationEditor",
+      desc: "文件和文件夹的读写、删除、重命名等操作",
+      isAsync: true,
+    },
+    {
+      value: "utools.shellOpenItem",
+      label: "默认程序打开",
       config: [
         {
           key: "path",
@@ -17,8 +24,8 @@ export const fileCommands = {
       ],
     },
     {
-      value: "locate",
-      label: "在文件管理器中定位文件",
+      value: "utools.shellShowItemInFolder",
+      label: "文件管理器中显示",
       config: [
         {
           key: "path",
@@ -26,6 +33,19 @@ export const fileCommands = {
           type: "input",
           defaultValue: "",
           icon: "location_on",
+        },
+      ],
+    },
+    {
+      value: "utools.getFileIcon",
+      label: "获取文件图标",
+      config: [
+        {
+          key: "path",
+          label: "文件或软件的绝对路径",
+          type: "input",
+          defaultValue: "",
+          icon: "folder_open",
         },
       ],
     },

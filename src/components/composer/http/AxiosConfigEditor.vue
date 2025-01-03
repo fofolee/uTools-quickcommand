@@ -467,9 +467,3 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.body--dark .q-tab,
-.body--dark .q-tab-panel {
-  background-color: #303133;
-}
-</style>

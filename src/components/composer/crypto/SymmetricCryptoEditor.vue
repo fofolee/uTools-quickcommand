@@ -448,11 +448,6 @@ export default defineComponent({
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.body--dark .q-tab,
-.body--dark .q-tab-panel {
-  background-color: #303133;
-}
-
 /* 确保下拉按钮内容垂直居中 */
 .codec-dropdown :deep(.q-btn__content) {
   min-height: unset;

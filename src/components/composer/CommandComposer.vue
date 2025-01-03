@@ -238,4 +238,14 @@ export default defineComponent({
 .command-composer :deep(.q-checkbox__inner) {
   font-size: 24px;
 }
+
+/* 暗黑模式下的标签栏背景颜色 */
+.body--dark .command-composer :deep(.q-tab),
+.body--dark .command-composer :deep(.q-tab-panel) {
+  background-color: #303133;
+}
+
+.body--dark .command-composer :deep(.q-tab--inactive) {
+  opacity: 2;
+}
 </style>

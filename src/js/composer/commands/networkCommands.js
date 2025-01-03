@@ -5,7 +5,7 @@ export const networkCommands = {
   commands: [
     {
       value: "visit",
-      label: "用默认浏览器打开网址",
+      label: "默认浏览器打开网址",
       config: [
         {
           key: "url",
@@ -18,7 +18,7 @@ export const networkCommands = {
     },
     {
       value: "utools.ubrowser.goto",
-      label: "用ubrowser打开网址",
+      label: "ubrowser打开网址",
       config: [
         {
           key: "url",

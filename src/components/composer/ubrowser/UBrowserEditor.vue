@@ -131,11 +131,6 @@ export default defineComponent({
   flex-direction: column;
 }
 
-/* 暗色模式 */
-.body--dark .q-tab,
-.body--dark .q-tab-panel {
-  background-color: #303133;
-}
 
 /* 调整面板内边距和布局 */
 .ubrowser-panels :deep(.q-tab-panel) {

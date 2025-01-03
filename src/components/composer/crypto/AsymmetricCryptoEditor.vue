@@ -415,10 +415,6 @@ export default defineComponent({
   }
 }
 
-.body--dark .q-tab,
-.body--dark .q-tab-panel {
-  background-color: #303133;
-}
 
 /* 确保下拉按钮内容垂直居中 */
 .codec-dropdown :deep(.q-btn__content) {
