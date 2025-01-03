@@ -343,6 +343,29 @@ interface quickcommandApi {
   runPowerShell(script: string): Promise<string>;
 
   /**
+   * 运行C#脚本，并返回运行结果 (Promise)
+   *
+   * 需要安装.NET Framework
+   *
+   * ```js
+   * const script = `using System;
+   * class Program {
+   *   static void Main(string[] args) {
+   *     Console.WriteLine("Hello, World!");
+   *   }
+   * }`
+   * quickcommand.runCsharp(script).then(res => {
+   *   console.log(res)
+   * }).catch(err => {
+   *   console.log(err)
+   * })
+   * ```
+   *
+   * @param script C# 脚本代码
+   */
+  runCsharp(script: string): Promise<string>;
+
+  /**
    * MacOS 下运行 AppleScript 脚本并返回运行结果 (Promise)
    *
    * ```js

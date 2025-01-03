@@ -3,6 +3,8 @@ const electron = require("electron");
 const fs = require("fs");
 const kill = require("tree-kill");
 const iconv = require("iconv-lite");
+const path = require("path");
+
 const getQuickcommandTempFile = require("./getQuickcommandTempFile");
 const getCommandToLaunchTerminal = require("./getCommandToLaunchTerminal");
 
@@ -179,7 +181,7 @@ if (process.platform === "win32") {
   quickcommand.runVbs = function (script) {
     return new Promise((reslove, reject) => {
       var tempfile = getQuickcommandTempFile("vbs", "TempVBSScript");
-      fs.writeFile(tempfile, iconv.encode(script, "gbk"), (err) => {
+      fs.writeFile(tempfile, iconv.encode(script, "gbk"), () => {
         child_process.exec(
           `cscript.exe /nologo "${tempfile}"`,
           {
@@ -189,6 +191,7 @@ if (process.platform === "win32") {
           (err, stdout, stderr) => {
             if (err) reject(iconv.decode(stderr, "gbk"));
             else reslove(iconv.decode(stdout, "gbk"));
+            fs.unlink(tempfile, () => {});
           }
         );
       });
@@ -209,6 +212,53 @@ if (process.platform === "win32") {
           else reslove(iconv.decode(stdout, "gbk"));
         }
       );
+    });
+  };
+
+  // 运行C#脚本
+  quickcommand.runCsharp = function (script) {
+    return new Promise((reslove, reject) => {
+      // 找到csc.exe
+      let cscPath = path.join(
+        process.env.WINDIR,
+        "Microsoft.NET",
+        "Framework",
+        "v4.0.30319",
+        "csc.exe"
+      );
+      if (!fs.existsSync(cscPath)) {
+        cscPath = path.join(
+          process.env.WINDIR,
+          "Microsoft.NET",
+          "Framework",
+          "v3.5",
+          "csc.exe"
+        );
+      }
+      if (!fs.existsSync(cscPath)) {
+        return reject("未安装.NET Framework");
+      }
+      // 写入临时文件
+      let tempCsharpFile = getQuickcommandTempFile("cs", "TempCsharpScript");
+      let tempBuildFile = getQuickcommandTempFile("exe", "TempCsharpBuildExe");
+
+      fs.writeFile(tempCsharpFile, iconv.encode(script, "gbk"), (err) => {
+        if (err) return reject(err.toString());
+        // 运行csc.exe
+        child_process.exec(
+          `${cscPath} /nologo /out:${tempBuildFile} ${tempCsharpFile} && ${tempBuildFile}`,
+          {
+            encoding: "buffer",
+            windowsHide: true,
+          },
+          (err, stdout) => {
+            if (err) reject(iconv.decode(stdout, "gbk"));
+            else reslove(iconv.decode(stdout, "gbk"));
+            fs.unlink(tempCsharpFile, () => {});
+            fs.unlink(tempBuildFile, () => {});
+          }
+        );
+      });
     });
   };
 }
