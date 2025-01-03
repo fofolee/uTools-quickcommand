@@ -1,0 +1,352 @@
+{
+  "项目结构说明": {
+    "src": {
+      "描述": "源代码目录",
+      "js": {
+        "描述": "存放JS代码",
+        "composer": {
+          "描述": "存放可视化编排相关的JS代码",
+          "commands": {
+            "描述": "存放生成组件的配置文件，一个分类一个文件",
+            "命令配置字段说明": {
+              "value": "必选，当使用MultiParams组件且未启用functionSelector时，表示生成代码时使用的函数名",
+              "label": "必选，命令的显示的名称",
+              "component": "可选，存在则表示使用自定义组件，否则根据config使用MultiParams组件",
+              "isControlFlow": "可选，是否是流程控制命令",
+              "commandChain": "可选，命令链，流程控制命令使用",
+              "allowEmptyArgv": "可选，是否允许空参数",
+              "config": {
+                "描述": "可选，命令的配置，用来在MultiParams组件中显示，是一个数组，每个元素是一个对象",
+                "配置项属性": {
+                  "key": "必选，键",
+                  "label": "必选，标签",
+                  "type": "必选，类型，input则使用VariableInput组件,其他类型则使用qurasr对应组件",
+                  "inputType": "可选，VariableInput组件的类型，用于指定VariableInput显示的类型",
+                  "defaultValue": "可选，默认值",
+                  "icon": "必选，图标",
+                  "width": "可选，flex布局的相对比例"
+                }
+              },
+              "functionSelector": {
+                "描述": "可选，函数选择器，用于选择函数，如果存在则使用MultiParams组件，用于一类参数类似，但函数名不同的命令",
+                "selectLabel": "必选，选择器的标签",
+                "options": {
+                  "描述": "必选，选项，一个数组，每个元素是一个对象，包含以下属性：",
+                  "配置项属性": {
+                    "label": "必选，显示的名称",
+                    "value": "必选，选择的值，作为生成代码时使用的函数名"
+                  }
+                }
+              }
+            }
+          },
+          "cardComponents.js": {
+            "描述": "自定义的组件要在这里导入",
+            "主要功能": {
+              "导入组件": "导入并注册自定义的命令卡片组件",
+              "导出组件": "导出所有注册的组件供CommandComposer使用"
+            }
+          },
+          "formatString.js": {
+            "描述": "处理JSON字符串中的值，主要处理来自VariableInput的字段，最后返回字符串",
+            "主要功能": {
+              "formatJsonVariables": {
+                "描述": "处理JSON字符串中的值，支持完整字段处理和指定路径处理",
+                "参数": {
+                  "jsonObj": "要处理的JSON对象",
+                  "variableFields": "可选，需要处理的字段列表，不传则处理所有字段",
+                  "excludeFields": "可选，需要排除的字段列表"
+                },
+                "处理方式": {
+                  "完整字段处理": "如 headers - 处理整个对象及其所有子字段",
+                  "指定路径处理": "如 data.headers.Referer - 只处理特定路径",
+                  "全字段处理": "不传递 variableFields 则处理所有字段",
+                  "排除字段": "通过 excludeFields 排除特定字段，即使匹配了处理条件也不处理"
+                }
+              }
+            }
+          }
+        }
+      },
+      "components": {
+        "描述": "存放Vue组件",
+        "composer": {
+          "描述": "存放可视化编排相关的组件",
+          "ui": {
+            "描述": "基础UI组件",
+            "组件列表": {
+              "VariableInput.vue": {
+                "描述": "统一处理变量输入和输出组件",
+                "主要功能": {
+                  "变量输入": "支持各种类型的变量输入",
+                  "引号处理": "自动处理返回值的引号",
+                  "类型转换": "支持不同类型间的转换"
+                }
+              },
+              "MultiParams.vue": {
+                "描述": "统一处理多参数输入和输出组件",
+                "主要功能": {
+                  "参数配置": "根据config配置显示不同的参数输入",
+                  "代码生成": "生成完整的命令代码",
+                  "参数验证": "验证参数的完整性和正确性"
+                }
+              },
+              "DictionaryEditor.vue": {
+                "描述": "统一处理字典输入和输出组件",
+                "主要功能": {
+                  "键值对编辑": "支持编辑字典的键值对",
+                  "对象转换": "自动处理对象的序列化和反序列化"
+                }
+              }
+            }
+          },
+          "control": {
+            "描述": "存放控制流程的组件",
+            "ConditionalJudgment.vue": "条件判断组件，用于if/else等流程控制",
+            "LoopControl.vue": "循环控制组件，用于for/while等循环控制",
+            "ForEachControl.vue": "foreach循环控制组件，用于foreach循环控制",
+            "ForInControl.vue": "forin循环控制组件，用于forin循环控制",
+            "WhileControl.vue": "while循环控制组件，用于while循环控制",
+            "SwitchControl.vue": "switch控制组件，用于switch控制"
+          },
+          "simulate": {
+            "描述": "存放模拟操作的组件",
+            "ImageSearchEditor.vue": "图片搜索组件，用于搜索图片"
+          },
+          "crypto": {
+            "描述": "存放加解密的组件",
+            "SymmetricCryptoEditor.vue": "对称加解密组件，用于对称加解密",
+            "AsymmetricCryptoEditor.vue": "非对称加解密组件，用于非对称加解密"
+          },
+          "card": {
+            "描述": "存放ComposerCard子组件",
+            "CommandHead.vue": "命令卡片的头部组件，包含命令名称、折叠、删除等功能",
+            "CommandButtons.vue": "命令卡片的按钮组件，包含运行、保存等功能"
+          },
+          "flow": {
+            "描述": "存放ComposerFlow子组件",
+            "ComposerButtons.vue": "流程操作按钮组件，包含运行、保存等功能",
+            "ChainStyles.vue": "控制流程链样式组件",
+            "DropArea.vue": "在命令流程下面显示一个拖拽区域，用于拖拽命令到流程编辑器",
+            "EmptyFlow.vue": "没有流程时显示的组件"
+          },
+          "http": {
+            "描述": "存放http请求的组件",
+            "AxiosConfigEditor.vue": "Axios请求配置编辑器"
+          },
+          "regex": {
+            "描述": "存放正则相关的组件"
+          },
+          "CommandComposer.vue": {
+            "描述": "命令编辑器主组件",
+            "主要功能": {
+              "变量管理": "管理命令间的变量传递",
+              "命令流程": "管理命令的执行顺序",
+              "代码生成": "生成最终的执行代码"
+            },
+            "子组件": {
+              "ComposerList": "左侧命令列表",
+              "ComposerFlow": "右侧流程编辑器"
+            }
+          },
+          "ComposerCard.vue": {
+            "描述": "命令卡片组件，用于显示和编辑单个命令",
+            "主要功能": {
+              "参数编辑": "根据命令配置显示不同的参数编辑器",
+              "变量输出": "管理命令的输出变量",
+              "折叠控制": "控制命令卡片的折叠状态"
+            }
+          },
+          "ComposerFlow.vue": {
+            "描述": "命令流程编辑器，管理命令的执行顺序",
+            "主要功能": {
+              "拖拽排序": "通过拖拽调整命令顺序",
+              "链式命令": "管理if/else等控制流程命令",
+              "折叠管理": "控制命令链的折叠状态"
+            }
+          },
+          "ComposerList.vue": {
+            "描述": "命令列表组件，显示可用的命令",
+            "主要功能": {
+              "命令分类": "按类别显示命令",
+              "搜索过滤": "支持拼音搜索命令",
+              "拖拽添加": "拖拽命令到流程编辑器"
+            }
+          }
+        },
+        "quickcommandUI": {
+          "描述": "存放quickcommand的UI组件，提供各种交互界面",
+          "组件列表": {
+            "QuickCommand.vue": {
+              "描述": "UI组件的主入口",
+              "主要功能": {
+                "对话框管理": {
+                  "showInputBox": "显示输入框对话框，支持多个输入框",
+                  "showButtonBox": "显示按钮对话框，支持多个按钮",
+                  "showConfirmBox": "显示确认对话框，支持HTML内容",
+                  "showMessageBox": "显示消息提示框，支持不同图标和位置",
+                  "showTextArea": "显示文本编辑框，支持大段文本输入",
+                  "showSelectList": "显示选择列表，支持搜索和快捷键"
+                },
+                "按钮管理": {
+                  "showWaitButton": "显示等待按钮",
+                  "closeWaitButton": "关闭等待按钮"
+                },
+                "事件管理": {
+                  "listenKeydown": "添加键盘事件监听",
+                  "removeListener": "移除键盘事件监听"
+                }
+              }
+            },
+            "子组件": {
+              "InputBox.vue": {
+                "描述": "输入框对话框组件",
+                "功能": {
+                  "多输入框": "支持显示多个输入框",
+                  "提示文本": "支持设置标签和提示文本",
+                  "默认值": "支持设置默认值"
+                }
+              },
+              "ButtonBox.vue": {
+                "描述": "按钮对话框组件",
+                "功能": {
+                  "多按钮": "支持显示多个按钮",
+                  "返回值": "返回点击的按钮索引和文本"
+                }
+              },
+              "ConfirmBox.vue": {
+                "描述": "确认对话框组件",
+                "功能": {
+                  "HTML内容": "支持显示HTML格式的内容",
+                  "自定义宽度": "支持设置对话框宽度"
+                }
+              },
+              "TextArea.vue": {
+                "描述": "文本编辑框组件",
+                "功能": {
+                  "大文本输入": "支持输入和编辑大段文本",
+                  "占位文本": "支持设置占位文本",
+                  "默认值": "支持设置默认值"
+                }
+              },
+              "SelectList.vue": {
+                "描述": "选择列表组件",
+                "功能": {
+                  "虚拟滚动": "使用虚拟滚动优化大量数据的显示",
+                  "拼音搜索": "支持拼音搜索过滤",
+                  "键盘导航": "支持键盘上下键导航",
+                  "快捷键选择": "支持Alt/Command+数字快速选择",
+                  "多种显示模式": {
+                    "plaintext": "纯文本模式",
+                    "json": "带图标和描述的JSON模式",
+                    "html": "HTML内容模式"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "plugin": {
+      "描述": "插件相关代码",
+      "lib": {
+        "描述": "存放核心功能代码",
+        "文件列表": {
+          "quickcomposer": {
+            "描述": "命令生成器的核心功能",
+            "命名规则": "quickcomposer.xxx.yyy.js 对应 quickcomposer.xxx.yyy 接口，xxx 为分类，和src/js/composer/commands里分类对应",
+            "功能分类": {
+              "系统命令": "系统相关的命令",
+              "控制命令": "流程控制相关的命令",
+              "模拟命令": "模拟操作相关的命令"
+            }
+          },
+          "quickcommand.js": {
+            "描述": "定义preload.js中quickcommand的接口，UI相关的接口在src/components/quickcommandUI中",
+            "主要功能": {
+              "模拟操作": {
+                "simulateCopy": "模拟复制操作",
+                "simulatePaste": "模拟粘贴操作"
+              },
+              "剪贴板": {
+                "readClipboard": "读取剪贴板文本",
+                "writeClipboard": "写入剪贴板文本",
+                "readClipboardImage": "读取剪贴板图片"
+              },
+              "文件操作": {
+                "downloadFile": "下载文件",
+                "uploadFile": "上传文件",
+                "loadRemoteScript": "载入在线资源"
+              },
+              "系统操作": {
+                "sleep": "同步延时",
+                "setTimeout": "异步延时",
+                "kill": "关闭进程",
+                "wakeUtools": "唤醒uTools",
+                "runInTerminal": "在终端中执行命令(非Linux)"
+              },
+              "平台特定": {
+                "Windows": {
+                  "runVbs": "运行VBS脚本",
+                  "runPowerShell": "运行PowerShell脚本",
+                  "runCsharp": "运行C#脚本"
+                },
+                "MacOS": {
+                  "runAppleScript": "运行AppleScript脚本"
+                }
+              }
+            }
+          },
+          "getQuickcommandTempFile.js": {
+            "描述": "获取临时文件路径",
+            "参数": {
+              "ext": "文件扩展名",
+              "name": "可选，文件名，默认为时间戳",
+              "dir": "可选，临时目录名，默认为quickcommandTempDir"
+            }
+          },
+          "lodashMini.js": {
+            "描述": "lodash的精简版，提供常用的工具函数",
+            "主要函数": {
+              "数组操作": {
+                "concat": "连接数组",
+                "pull": "移除数组中的指定值",
+                "union": "创建去重数组",
+                "without": "创建不包含指定值的数组"
+              },
+              "对象操作": {
+                "cloneDeep": "深拷贝",
+                "pick": "选取对象属性",
+                "omitBy": "过滤对象属性",
+                "values": "获取对象的所有值"
+              },
+              "集合操作": {
+                "filter": "过滤集合",
+                "forIn": "遍历对象的可枚举属性"
+              },
+              "类型判断": {
+                "isArray": "是否为数组",
+                "isBuffer": "是否为Buffer",
+                "isEmpty": "是否为空",
+                "isNil": "是否为null或undefined",
+                "isObject": "是否为对象"
+              },
+              "字符串操作": {
+                "truncate": "截断字符串"
+              }
+            }
+          }
+        }
+      },
+      "preload.js": {
+        "描述": "预加载脚本",
+        "主要功能": {
+          "接口暴露": "暴露接口给渲染进程",
+          "沙箱环境": "提供安全的代码执行环境",
+          "全局变量": "管理全局变量和工具函数"
+        }
+      }
+    }
+  }
+}
