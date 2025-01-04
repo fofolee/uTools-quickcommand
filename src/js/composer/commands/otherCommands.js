@@ -10,8 +10,7 @@ export const otherCommands = {
         {
           key: "pluginName",
           label: "要跳转至的插件名称",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "alt_route",
         },
       ],
@@ -23,10 +22,9 @@ export const otherCommands = {
         {
           key: "ms",
           label: "延迟的毫秒数",
-          type: "input",
-          inputType: "number",
-          defaultValue: "",
+          type: "numInput",
           icon: "schedule",
+          defaultValue: 500,
         },
       ],
     },

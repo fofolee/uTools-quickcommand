@@ -24,17 +24,11 @@
 import { defineComponent, provide, ref } from "vue";
 import ComposerList from "./ComposerList.vue";
 import ComposerFlow from "./ComposerFlow.vue";
-import { commandCategories } from "js/composer/composerConfig";
+import {
+  availableCommands,
+  findCommandByValue,
+} from "js/composer/composerConfig";
 import { generateCode } from "js/composer/generateCode";
-// 从commandCategories中提取所有命令
-const availableCommands = commandCategories.reduce((commands, category) => {
-  return commands.concat(
-    category.commands.map((cmd) => ({
-      type: category.label,
-      ...cmd,
-    }))
-  );
-}, []);
 
 export default defineComponent({
   name: "CommandComposer",
@@ -74,30 +68,53 @@ export default defineComponent({
   data() {
     return {
       commandFlow: [],
-      nextId: 1,
       availableCommands,
     };
   },
   emits: ["use-composer", "update:modelValue"],
   methods: {
     addCommand(action) {
+      let newAction = window.lodashM.cloneDeep(action);
       this.commandFlow.push({
-        ...action,
-        id: this.nextId++,
-        argv: "",
+        ...newAction,
+        id: this.$root.getUniqueId(),
         saveOutput: false,
         outputVariable: null,
-        cmd: action.value || action.cmd,
-        value: action.value || action.cmd,
       });
     },
     generateFlowCode() {
       return generateCode(this.commandFlow);
     },
     handleComposer(type, flow) {
+      if (type === "save") return this.saveFlow();
+      if (type === "load") return this.loadFlow();
       const code = flow ? generateCode(flow) : generateCode(this.commandFlow);
       this.$emit("use-composer", { type, code });
       if (type !== "run") this.$emit("update:modelValue", false);
+    },
+    saveFlow() {
+      const flow = window.lodashM.cloneDeep(this.commandFlow);
+      const uselessProps = ["config", "argvs", "label", "type"];
+      // 移除不必要属性
+      flow.forEach((cmd) => {
+        for (const props of uselessProps) {
+          delete cmd[props];
+        }
+      });
+      localStorage.setItem("quickcomposer.flow", JSON.stringify(flow));
+      quickcommand.showMessageBox("保存成功");
+    },
+    loadFlow() {
+      const savedFlow = localStorage.getItem("quickcomposer.flow");
+      if (!savedFlow) return;
+      this.commandFlow = JSON.parse(savedFlow).map((cmd) => {
+        // 获取完整命令
+        const command = findCommandByValue(cmd.value);
+        return {
+          ...command,
+          ...cmd,
+        };
+      });
     },
   },
 });

@@ -25,12 +25,21 @@
       <q-btn icon="logout" dense flat v-close-popup>
         <q-tooltip>退出可视化编排</q-tooltip>
       </q-btn>
+      <q-separator vertical />
       <q-btn dense icon="publish" flat @click="$emit('action', 'insert')">
         <q-tooltip>插入到编辑器光标处</q-tooltip>
       </q-btn>
       <q-btn dense flat icon="done_all" @click="$emit('action', 'apply')">
         <q-tooltip>清空编辑器内容并插入</q-tooltip>
       </q-btn>
+      <q-separator vertical />
+      <q-btn dense flat icon="save" @click="$emit('action', 'save')">
+        <q-tooltip>保存</q-tooltip>
+      </q-btn>
+      <q-btn dense flat icon="history" @click="$emit('action', 'load')">
+        <q-tooltip>载入</q-tooltip>
+      </q-btn>
+      <q-separator vertical />
       <q-btn
         flat
         dense

@@ -5,14 +5,14 @@
       <div class="row q-col-gutter-sm">
         <div class="col-3">
           <q-select
-            v-model="localConfig.method"
+            v-model="argvs.method"
             :options="methods"
             label="请求方法"
             dense
             filled
             emit-value
             map-options
-            @update:model-value="updateConfig"
+            @update:model-value="updateArgvs('method', $event)"
           >
             <template v-slot:prepend>
               <q-icon name="send" />
@@ -21,10 +21,11 @@
         </div>
         <div class="col">
           <VariableInput
-            v-model="localConfig.url"
+            :model-value="argvs.url"
+            @update:model-value="updateArgvs('url', $event)"
             label="请求地址"
-            :command="{ icon: 'link' }"
-            @update:model-value="updateConfig"
+            icon="link"
+            class="col-grow"
           />
         </div>
       </div>
@@ -67,14 +68,16 @@
           <div class="row q-col-gutter-sm">
             <div class="col-12">
               <q-select
-                v-model="localConfig.headers['Content-Type']"
+                v-model="argvs.headers['Content-Type']"
                 label="Content-Type"
                 dense
                 filled
                 emit-value
                 map-options
                 :options="contentTypes"
-                @update:model-value="updateConfig"
+                @update:model-value="
+                  updateArgvs('headers.Content-Type', $event)
+                "
               >
                 <template v-slot:prepend>
                   <q-icon name="data_object" />
@@ -84,10 +87,11 @@
 
             <div class="col">
               <VariableInput
-                v-model="localConfig.headers['User-Agent']"
+                :model-value="argvs.headers['User-Agent']"
+                @update:model-value="updateArgvs('headers.User-Agent', $event)"
                 label="User Agent"
-                :command="{ icon: 'devices' }"
-                @update:model-value="updateConfig"
+                icon="devices"
+                class="col-grow"
               />
             </div>
             <div class="col-auto flex items-center">
@@ -110,7 +114,7 @@
 
             <div class="col-12">
               <DictEditor
-                v-model="otherHeaders"
+                v-model="argvs.otherHeaders"
                 :options="{
                   items: commonHeaderOptions,
                 }"
@@ -123,15 +127,15 @@
         <!-- 请求体和URL参数 tabs -->
         <q-tab-panel v-if="hasRequestData" name="data" class="q-pa-sm">
           <DictEditor
-            v-model="localConfig.data"
-            @update:model-value="updateConfig"
+            v-model="argvs.data"
+            @update:model-value="updateArgvs('data', $event)"
           />
         </q-tab-panel>
 
         <q-tab-panel name="params" class="q-pa-sm">
           <DictEditor
-            v-model="localConfig.params"
-            @update:model-value="updateConfig"
+            v-model="argvs.params"
+            @update:model-value="updateArgvs('params', $event)"
           />
         </q-tab-panel>
 
@@ -146,9 +150,9 @@
               >
                 <component
                   :is="field.component"
-                  :modelValue="getFieldValue(field.key)"
+                  :model-value="getFieldValue(field.key)"
                   v-bind="field.props"
-                  @update:modelValue="(val) => setFieldValue(field.key, val)"
+                  @update:model-value="(val) => setFieldValue(field.key, val)"
                 />
               </div>
             </div>
@@ -162,8 +166,13 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
+import NumberInput from "components/composer/ui/NumberInput.vue";
 import DictEditor from "components/composer/ui/DictEditor.vue";
-import { formatJsonVariables } from "js/composer/formatString";
+import {
+  stringifyObject,
+  stringifyWithType,
+  parseFunction,
+} from "js/composer/formatString";
 import {
   userAgent,
   commonHeaders,
@@ -177,69 +186,78 @@ export default defineComponent({
   components: {
     VariableInput,
     DictEditor,
+    NumberInput,
   },
   props: {
     modelValue: {
-      type: [Object, String],
-      default: () => ({}),
-    },
-    command: {
       type: Object,
+      required: true,
     },
   },
   emits: ["update:modelValue"],
   data() {
-    let initialConfig = {};
-    if (typeof this.modelValue === "string") {
-      try {
-        const match = this.modelValue.match(
-          /axios\.\w+\([^{]*({\s*[^]*})\s*\)/
-        );
-        if (match) {
-          initialConfig = JSON.parse(match[1]);
-        }
-      } catch (e) {
-        console.warn("Failed to parse config from code string");
-      }
-    } else {
-      initialConfig = this.modelValue;
-    }
-
     return {
-      localConfig: {
-        url: "",
-        method: "GET",
-        headers: {
-          "User-Agent": userAgent[0].value,
-          "Content-Type": contentTypes[0].value,
-        },
-        params: {},
-        data: {},
-        timeout: 0,
-        maxRedirects: 5,
-        responseType: "json",
-        auth: {
-          username: "",
-          password: "",
-        },
-        proxy: {
-          host: "",
-          port: "",
-          auth: {
-            username: "",
-            password: "",
-          },
-        },
-        ...initialConfig,
-      },
       methods,
       userAgentOptions: userAgent,
       contentTypes,
       commonHeaderOptions: commonHeaders
         .filter((h) => !["User-Agent", "Content-Type"].includes(h.value))
         .map((h) => h.value),
-      otherHeaders: {},
       activeTab: "headers",
+      defaultArgvs: {
+        url: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        method: "GET",
+        headers: {
+          "User-Agent": {
+            value: userAgent[0].value,
+            isString: true,
+            __varInputVal__: true,
+          },
+          "Content-Type": contentTypes[0].value,
+        },
+        otherHeaders: {},
+        params: {},
+        data: {},
+        timeout: 0,
+        maxRedirects: 5,
+        responseType: "json",
+        auth: {
+          username: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          password: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+        },
+        proxy: {
+          host: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          port: null,
+          auth: {
+            username: {
+              value: "",
+              isString: true,
+              __varInputVal__: true,
+            },
+            password: {
+              value: "",
+              isString: true,
+              __varInputVal__: true,
+            },
+          },
+        },
+      },
       commonPanels: [
         {
           name: "response",
@@ -259,18 +277,18 @@ export default defineComponent({
             },
             {
               key: "maxRedirects",
-              component: "VariableInput",
+              component: "NumberInput",
               props: {
                 label: "最大重定向次数",
-                command: { icon: "repeat", inputType: "number" },
+                icon: "repeat",
               },
             },
             {
               key: "timeout",
-              component: "VariableInput",
+              component: "NumberInput",
               props: {
                 label: "超时时间(ms)",
-                command: { icon: "timer", inputType: "number" },
+                icon: "timer",
               },
             },
           ],
@@ -284,7 +302,8 @@ export default defineComponent({
               colClass: "col-6",
               props: {
                 label: "用户名",
-                command: { icon: "person" },
+                icon: "person",
+                class: "col-grow",
               },
             },
             {
@@ -293,7 +312,8 @@ export default defineComponent({
               colClass: "col-6",
               props: {
                 label: "密码",
-                command: { icon: "password" },
+                icon: "password",
+                class: "col-grow",
               },
             },
           ],
@@ -307,16 +327,18 @@ export default defineComponent({
               colClass: "col-6",
               props: {
                 label: "主机",
-                command: { icon: "dns" },
+                icon: "dns",
+                class: "col-grow",
               },
             },
             {
               key: "proxy.port",
-              component: "VariableInput",
+              component: "NumberInput",
               colClass: "col-6",
               props: {
                 label: "端口",
-                command: { icon: "router", inputType: "number" },
+                icon: "router",
+                class: "col-grow",
               },
             },
             {
@@ -325,7 +347,8 @@ export default defineComponent({
               colClass: "col-6",
               props: {
                 label: "用户名",
-                command: { icon: "person" },
+                icon: "person",
+                class: "col-grow",
               },
             },
             {
@@ -334,7 +357,8 @@ export default defineComponent({
               colClass: "col-6",
               props: {
                 label: "密码",
-                command: { icon: "password" },
+                icon: "password",
+                class: "col-grow",
               },
             },
           ],
@@ -375,95 +399,151 @@ export default defineComponent({
       ],
     };
   },
-  created() {
-    // 将headers对象转换为数组形式
-    this.headers = Object.entries(this.localConfig.headers || {}).map(
-      ([name, value]) => ({ name, value })
-    );
-  },
   computed: {
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
     hasRequestData() {
-      return ["PUT", "POST", "PATCH"].includes(this.localConfig.method);
+      return ["PUT", "POST", "PATCH"].includes(this.argvs.method);
     },
     visibleTabs() {
       return this.tabs.filter((tab) => !tab.condition || tab.condition());
     },
   },
   methods: {
-    updateConfig() {
-      // 生成代码
-      const { method = "GET", url, data, ...restConfig } = this.localConfig;
+    // 解析代码为参数
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+      const method = code.match(/axios\.(\w+)/)?.[1].toUpperCase();
+      const hasData = ["PUT", "POST", "PATCH"].includes(method);
+      // 有请求体时，config 是第三个参数
+      const configIndex = hasData ? 2 : 1;
+      try {
+        // 定义需要使用 variableInput 格式的路径
+        const variableFormatPaths = [
+          "arg0", // url参数
+          `arg${configIndex}.params.**`, // 所有params对象下的字段
+          `arg${configIndex}.headers.**`, // 所有headers对象下的字段
+          `arg${configIndex}.auth.**`, // 所有认证相关字段
+          `arg${configIndex}.proxy.host`, // 代理主机
+          `arg${configIndex}.proxy.auth.**`, // 代理认证字段
+          `!arg${configIndex}.headers.Content-Type`, // ontent-Type
+        ];
+        if (hasData) variableFormatPaths.push(`arg1.**`);
+        // 返回所有解析出来的参数组成的数组
+        const result = parseFunction(code, {
+          variableFormatPaths,
+        });
+        if (!result) {
+          console.warn("axios 参数解析失败:", code);
+          return argvs;
+        }
+        const url = result.args[0] || "";
+        const data = hasData ? result.args[1] : {};
+        const config = result.args[hasData ? 2 : 1] || {};
+        const {
+          "Content-Type": contentType,
+          "User-Agent": userAgent,
+          ...otherHeaders
+        } = config.headers;
+        config.headers = {
+          "Content-Type": contentType,
+          "User-Agent": userAgent,
+        };
+        Object.assign(argvs, { url, data, method, otherHeaders, ...config });
+      } catch (e) {
+        console.warn("axios 参数解析失败:", code);
+      }
+      return argvs;
+    },
+    // 从参数生成代码
+    generateCode(argvs = this.argvs) {
+      const { url, method, data, otherHeaders, ...restConfig } = argvs;
+      restConfig.headers = {
+        ...restConfig.headers,
+        ...otherHeaders,
+      };
       if (!url) return;
 
-      // 这两个字段非VariableInput获取，不进行处理
-      const excludeFields = ["headers.Content-Type", "responseType"];
       const configStr = Object.keys(restConfig).length
-        ? `, ${formatJsonVariables(restConfig, null, excludeFields)}`
+        ? `, ${stringifyObject(restConfig)}`
         : "";
 
-      const code = `${this.command.value}(${url}${
-        this.hasRequestData ? `, ${formatJsonVariables(data)}` : ""
+      return `axios.${method.toLowerCase()}(${stringifyWithType(url)}${
+        this.hasRequestData ? `, ${stringifyObject(data)}` : ""
       }${configStr})`;
+    },
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs };
+      const keys = key.split(".");
+      const lastKey = keys.pop();
+      const target = keys.reduce((obj, key) => obj[key], argvs);
+      target[lastKey] = value;
 
-      this.$emit("update:modelValue", code);
+      // 特殊处理
+      if (key === "method") {
+        if (!this.hasRequestData) {
+          argvs.data = {};
+        }
+      }
+
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
     },
     updateHeaders(headers) {
       // 保留 Content-Type 和 User-Agent
       const { "Content-Type": contentType, "User-Agent": userAgent } =
-        this.localConfig.headers;
+        this.argvs.headers;
+
+      // 将普通字符串值转换为对象格式
+      const formattedHeaders = Object.entries(headers).reduce(
+        (acc, [key, value]) => {
+          acc[key] =
+            typeof value === "string"
+              ? { value, isString: true, __varInputVal__: true }
+              : value;
+          return acc;
+        },
+        {}
+      );
+
       // 重置 headers，只保留特殊字段
-      this.localConfig.headers = {
+      const newHeaders = {
         "Content-Type": contentType,
         ...(userAgent ? { "User-Agent": userAgent } : {}),
-        ...headers,
+        ...formattedHeaders,
       };
-      this.updateConfig();
+
+      this.updateArgvs("headers", newHeaders);
     },
     setUserAgent(value) {
-      this.localConfig.headers["User-Agent"] = value;
-      this.updateConfig();
+      this.updateArgvs("headers.User-Agent", {
+        value,
+        isString: true,
+        __varInputVal__: true,
+      });
     },
     getFieldValue(path) {
-      return path.split(".").reduce((obj, key) => obj?.[key], this.localConfig);
+      return path.split(".").reduce((obj, key) => obj?.[key], this.argvs);
     },
     setFieldValue(path, value) {
-      const keys = path.split(".");
-      const lastKey = keys.pop();
-      const target = keys.reduce((obj, key) => obj[key], this.localConfig);
-      target[lastKey] = value;
-      this.updateConfig();
+      this.updateArgvs(path, value);
     },
   },
-  watch: {
-    modelValue: {
-      deep: true,
-      handler(newValue) {
-        if (typeof newValue === "string") {
-          // 如果是字符串，说明是编辑现有的配置
-          try {
-            const config = JSON.parse(newValue);
-            this.localConfig = {
-              ...this.localConfig,
-              ...config,
-            };
-            this.headers = Object.entries(config.headers || {}).map(
-              ([name, value]) => ({ name, value })
-            );
-          } catch (e) {
-            // 如果解析失败，保持当前状态
-          }
-        } else {
-          this.localConfig = {
-            ...this.localConfig,
-            ...newValue,
-          };
-          this.headers = Object.entries(this.localConfig.headers || {}).map(
-            ([name, value]) => ({ name, value })
-          );
-        }
-      },
-    },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>
-

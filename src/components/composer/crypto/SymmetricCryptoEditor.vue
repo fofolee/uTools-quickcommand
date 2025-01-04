@@ -3,7 +3,8 @@
     <!-- 加密/解密切换 -->
     <div class="tabs-container">
       <q-tabs
-        v-model="operation"
+        :model-value="argvs.operation"
+        @update:model-value="updateArgvs('operation', $event)"
         dense
         class="text-grey"
         active-color="primary"
@@ -31,18 +32,17 @@
     <!-- 文本输入 -->
     <div class="row q-mt-xs">
       <VariableInput
-        v-model="text"
-        :label="operation === 'encrypt' ? '要加密的文本' : '要解密的文本'"
-        :command="{
-          icon: operation === 'encrypt' ? 'text_fields' : 'password',
-        }"
+        :model-value="argvs.text"
+        @update:model-value="updateArgvs('text', $event)"
+        :label="argvs.operation === 'encrypt' ? '要加密的文本' : '要解密的文本'"
+        :icon="argvs.operation === 'encrypt' ? 'text_fields' : 'password'"
         class="col-8"
-        @update:model-value="updateConfig"
       />
       <q-select
-        v-model="format"
-        :options="operation === 'encrypt' ? outputFormats : inputFormats"
-        :label="operation === 'encrypt' ? '输出格式' : '输入格式'"
+        :model-value="argvs.format"
+        @update:model-value="updateArgvs('format', $event)"
+        :options="argvs.operation === 'encrypt' ? outputFormats : inputFormats"
+        :label="argvs.operation === 'encrypt' ? '输出格式' : '输入格式'"
         dense
         filled
         class="col-4"
@@ -54,7 +54,8 @@
     <div class="row">
       <!-- 算法选择 -->
       <q-select
-        v-model="algorithm"
+        :model-value="argvs.algorithm"
+        @update:model-value="updateArgvs('algorithm', $event)"
         :options="algorithms"
         label="加密算法"
         dense
@@ -66,7 +67,8 @@
       <!-- AES密钥长度选择 -->
       <q-select
         v-if="showKeyLength"
-        v-model="keyLength"
+        :model-value="argvs.keyLength"
+        @update:model-value="updateArgvs('keyLength', $event)"
         :options="[
           { label: '128位', value: 128 },
           { label: '192位', value: 192 },
@@ -81,7 +83,8 @@
       />
       <!-- 模式选择 -->
       <q-select
-        v-model="mode"
+        :model-value="argvs.mode"
+        @update:model-value="updateArgvs('mode', $event)"
         :options="modes"
         label="加密模式"
         dense
@@ -92,7 +95,8 @@
       />
       <!-- Padding选择 -->
       <q-select
-        v-model="padding"
+        :model-value="argvs.padding"
+        @update:model-value="updateArgvs('padding', $event)"
         :options="paddings"
         label="填充方式"
         dense
@@ -108,20 +112,29 @@
       <div class="col-grow key-input">
         <div class="key-wrapper">
           <q-input
-            v-model="key"
+            :model-value="argvs.key.value"
+            @update:model-value="
+              updateArgvs('key', { ...argvs.key, value: $event })
+            "
             filled
             label="密钥"
             class="key-input"
-            @update:model-value="updateConfig"
           />
-          <q-btn-dropdown flat dense :label="keyCodec" class="codec-dropdown">
+          <q-btn-dropdown
+            flat
+            dense
+            :label="argvs.key.codec"
+            class="codec-dropdown"
+          >
             <q-list>
               <q-item
                 v-for="codec in keyCodecs"
                 :key="codec.value"
                 clickable
                 v-close-popup
-                @click="keyCodec = codec.value"
+                @click="
+                  updateArgvs('key', { ...argvs.key, codec: codec.value })
+                "
               >
                 <q-item-section>
                   <q-item-label>{{ codec.label }}</q-item-label>
@@ -135,20 +148,27 @@
       <div v-if="showIV" class="col-grow key-input">
         <div class="key-wrapper">
           <q-input
-            v-model="iv"
+            :model-value="argvs.iv.value"
+            @update:model-value="
+              updateArgvs('iv', { ...argvs.iv, value: $event })
+            "
             filled
             label="IV"
             class="key-input"
-            @update:model-value="updateConfig"
           />
-          <q-btn-dropdown flat dense :label="ivCodec" class="codec-dropdown">
+          <q-btn-dropdown
+            flat
+            dense
+            :label="argvs.iv.codec"
+            class="codec-dropdown"
+          >
             <q-list>
               <q-item
                 v-for="codec in keyCodecs"
                 :key="codec.value"
                 clickable
                 v-close-popup
-                @click="ivCodec = codec.value"
+                @click="updateArgvs('iv', { ...argvs.iv, codec: codec.value })"
               >
                 <q-item-section>
                   <q-item-label>{{ codec.label }}</q-item-label>
@@ -165,7 +185,7 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
-import { formatJsonVariables } from "js/composer/formatString";
+import { stringifyObject, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
   name: "SymmetricCryptoEditor",
@@ -173,56 +193,76 @@ export default defineComponent({
     VariableInput,
   },
   props: {
-    modelValue: {
-      type: [String, Object],
-      default: "",
-    },
-    command: {
-      type: Object,
-    },
+    modelValue: Object,
   },
+  emits: ["update:modelValue"],
   data() {
     return {
-      operation: "encrypt",
-      text: "",
-      algorithm: "AES",
-      keyLength: 128,
-      mode: "CBC",
-      padding: "Pkcs7",
-      key: "",
-      keyCodec: "Utf8",
-      iv: "",
-      ivCodec: "Utf8",
-      format: "Base64",
-      keyCodecs: [
-        { label: "UTF-8", value: "Utf8" },
-        { label: "Base64", value: "Base64" },
-        { label: "Hex", value: "Hex" },
-      ],
-      algorithms: [
-        { label: "AES", value: "AES" },
-        { label: "SM4", value: "SM4" },
-      ],
-      outputFormats: [
-        { label: "Base64", value: "Base64" },
-        { label: "Hex", value: "Hex" },
-      ],
-      inputFormats: [
-        { label: "Base64", value: "Base64" },
-        { label: "Hex", value: "Hex" },
-      ],
+      defaultArgvs: {
+        operation: "encrypt",
+        text: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        algorithm: "AES",
+        keyLength: 128,
+        mode: "CBC",
+        padding: "Pkcs7",
+        key: {
+          value: "",
+          codec: "Utf8",
+        },
+        iv: {
+          value: "",
+          codec: "Utf8",
+        },
+        format: "Base64",
+      },
     };
   },
   computed: {
+    argvs() {
+      if (this.modelValue.argvs) {
+        return this.modelValue.argvs;
+      }
+      if (!this.modelValue.code) {
+        return window.lodashM.cloneDeep(this.defaultArgvs);
+      }
+      return this.parseCodeToArgvs(this.modelValue.code);
+    },
+    keyCodecs() {
+      return [
+        { label: "UTF-8", value: "Utf8" },
+        { label: "Base64", value: "Base64" },
+        { label: "Hex", value: "Hex" },
+      ];
+    },
+    algorithms() {
+      return [
+        { label: "AES", value: "AES" },
+        { label: "SM4", value: "SM4" },
+      ];
+    },
+    outputFormats() {
+      return [
+        { label: "Base64", value: "Base64" },
+        { label: "Hex", value: "Hex" },
+      ];
+    },
+    inputFormats() {
+      return [
+        { label: "Base64", value: "Base64" },
+        { label: "Hex", value: "Hex" },
+      ];
+    },
     modes() {
-      // SM4 只支持 ECB/CBC
-      if (this.algorithm === "SM4") {
+      if (this.argvs.algorithm === "SM4") {
         return [
           { label: "ECB", value: "ECB" },
           { label: "CBC", value: "CBC" },
         ];
       }
-      // AES/DES/3DES 支持更多模式
       return [
         { label: "ECB", value: "ECB" },
         { label: "CBC", value: "CBC" },
@@ -233,14 +273,12 @@ export default defineComponent({
       ];
     },
     paddings() {
-      // SM4 支持的填充方式
-      if (this.algorithm === "SM4") {
+      if (this.argvs.algorithm === "SM4") {
         return [
           { label: "PKCS#7", value: "pkcs#7" },
           { label: "None", value: "none" },
         ];
       }
-      // AES/DES/3DES 支持的填充方式
       return [
         { label: "PKCS7", value: "Pkcs7" },
         { label: "Zero Padding", value: "ZeroPadding" },
@@ -251,79 +289,68 @@ export default defineComponent({
       ];
     },
     showIV() {
-      return this.mode !== "ECB";
+      return this.argvs.mode !== "ECB";
     },
     showKeyLength() {
-      return this.algorithm === "AES";
+      return this.argvs.algorithm === "AES";
     },
   },
   methods: {
-    updateConfig() {
-      const code = `${this.command.value}(${formatJsonVariables(
-        {
-          text: this.text,
-          algorithm: this.algorithm,
-          mode: this.mode,
-          padding: this.padding,
-          key: {
-            value: this.key,
-            codec: this.keyCodec,
-          },
-          keyLength: this.keyLength,
-          operation: this.operation,
-          format: this.format,
-          iv:
-            this.mode !== "ECB"
-              ? {
-                  value: this.iv,
-                  codec: this.ivCodec,
-                }
-              : undefined,
-        },
-        ["text"]
-      )})`;
+    generateCode(argvs = this.argvs) {
+      return `${this.modelValue.value}(${stringifyObject({
+        text: argvs.text,
+        algorithm: argvs.algorithm,
+        mode: argvs.mode,
+        padding: argvs.padding,
+        key: argvs.key,
+        keyLength: argvs.keyLength,
+        operation: argvs.operation,
+        format: argvs.format,
+        iv: argvs.mode !== "ECB" ? argvs.iv : undefined,
+      })})`;
+    },
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
 
-      this.$emit("update:model-value", code);
+      if (key === "operation") {
+        argvs.format = "Base64";
+      } else if (key === "algorithm") {
+        if (value === "SM4") {
+          argvs.mode = "ECB";
+          argvs.padding = "pkcs#7";
+        } else {
+          argvs.mode = "CBC";
+          argvs.padding = "Pkcs7";
+        }
+      }
+
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+      try {
+        const variableFormatPaths = ["arg0.text"];
+        const params = parseFunction(code, { variableFormatPaths });
+        return params.args[0];
+      } catch (e) {
+        console.error("解析加密参数失败:", e);
+      }
+      return argvs;
     },
   },
-  watch: {
-    operation() {
-      // 切换操作时重置格式为默认值
-      this.format = "Base64";
-      this.updateConfig();
-    },
-    text() {
-      this.updateConfig();
-    },
-    algorithm() {
-      // 切换算法时重置模式和填充
-      if (this.algorithm === "SM4") {
-        this.mode = "ECB";
-        this.padding = "pkcs#7";
-      } else {
-        this.mode = "CBC";
-        this.padding = "Pkcs7";
-      }
-      this.updateConfig();
-    },
-    mode() {
-      this.updateConfig();
-    },
-    padding() {
-      this.updateConfig();
-    },
-    format() {
-      this.updateConfig();
-    },
-    keyLength() {
-      this.updateConfig();
-    },
-    key() {
-      this.updateConfig();
-    },
-    iv() {
-      this.updateConfig();
-    },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

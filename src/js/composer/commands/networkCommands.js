@@ -10,8 +10,7 @@ export const networkCommands = {
         {
           key: "url",
           label: "要访问的网址链接",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "language",
         },
       ],
@@ -23,8 +22,7 @@ export const networkCommands = {
         {
           key: "url",
           label: "要访问的网址链接",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "public",
         },
       ],

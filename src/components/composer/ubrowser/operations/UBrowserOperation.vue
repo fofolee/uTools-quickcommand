@@ -24,7 +24,7 @@
         </template>
 
         <!-- 基本输入类型的处理 -->
-        <template v-if="field.type === 'input'">
+        <template v-if="field.type === 'varInput'">
           <!-- 设备名称特殊处理 -->
           <template v-if="field.key === 'deviceName'">
             <UBrowserDeviceName
@@ -46,6 +46,16 @@
               @update:model-value="updateValue(field.key, $event)"
             />
           </template>
+        </template>
+
+        <!-- 数字输入框 -->
+        <template v-else-if="field.type === 'numInput'">
+          <NumberInput
+            v-model="fieldValue[field.key]"
+            :label="field.label"
+            :command="{ icon: field.icon }"
+            @update:model-value="updateValue(field.key, $event)"
+          />
         </template>
 
         <!-- 文本区域 -->
@@ -143,7 +153,7 @@ import UBrowserDeviceName from "./UBrowserDeviceName.vue";
 import UBrowserTextarea from "./UBrowserTextarea.vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import UBrowserCheckboxGroup from "./UBrowserCheckboxGroup.vue";
-
+import NumberInput from "components/composer/ui/NumberInput.vue";
 export default defineComponent({
   name: "UBrowserOperation",
   components: {
@@ -159,6 +169,7 @@ export default defineComponent({
     UBrowserTextarea,
     VariableInput,
     UBrowserCheckboxGroup,
+    NumberInput,
   },
   props: {
     configs: {

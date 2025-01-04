@@ -3,35 +3,44 @@
     <div
       v-if="hasFunctionSelector"
       class="flex-item"
-      :style="{ flex: command.functionSelector.width || 3 }"
+      :style="{ flex: localCommand.functionSelector.width || 3 }"
     >
       <q-select
-        v-model="selectedFunction"
-        :options="command.functionSelector.options"
-        :label="command.functionSelector.selectLabel"
+        v-model="functionName"
+        :options="localCommand.functionSelector.options"
+        :label="localCommand.functionSelector.selectLabel"
         dense
         filled
         emit-value
         map-options
-        @update:model-value="handleFunctionChange"
       >
         <template v-slot:prepend>
-          <q-icon :name="command.icon || 'functions'" />
+          <q-icon :name="localCommand.icon || 'functions'" />
         </template>
       </q-select>
     </div>
     <div
-      v-for="item in config"
-      :key="item.key"
+      v-for="(item, index) in localConfig"
+      :key="index"
       class="flex-item"
       :style="{ flex: item.width || 12 }"
     >
-      <VariableInput
-        v-model="item.value"
-        :label="item.label"
-        :command="item"
-        @update:model-value="handleArgvChange(item.key, $event)"
-      />
+      <div v-if="item.type === 'varInput'">
+        <VariableInput
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+        />
+      </div>
+      <div v-else-if="item.type === 'numInput'">
+        <NumberInput
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -39,74 +48,149 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "./VariableInput.vue";
+import NumberInput from "./NumberInput.vue";
+import { stringifyWithType, parseToHasType } from "js/composer/formatString";
 
 export default defineComponent({
   name: "MultiParams",
   components: {
     VariableInput,
+    NumberInput,
   },
   props: {
     modelValue: {
-      type: String,
-      default: "",
-    },
-    command: {
       type: Object,
+      default: () => ({}),
       required: true,
     },
   },
   emits: ["update:modelValue"],
-  data() {
-    return {
-      selectedFunction: this.command.functionSelector?.options[0]?.value || "",
-      localConfig: (this.command.config || []).map((item) => ({
-        ...item,
-        value: item.defaultValue ?? "",
-      })),
-    };
-  },
   computed: {
-    config() {
-      return this.localConfig;
+    localCommand() {
+      return this.modelValue;
+    },
+    localConfig() {
+      return (this.modelValue.config || []).map((item) => {
+        return {
+          ...item,
+          value: item.defaultValue,
+        };
+      });
+    },
+    defaultArgvs() {
+      return this.localConfig.map((item) => item.value);
+    },
+    functionName: {
+      get() {
+        return (
+          this.modelValue.functionName ||
+          this.modelValue.functionSelector?.options[0]?.value ||
+          this.modelValue.value
+        );
+      },
+      set(value) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          functionName: value,
+          code: this.generateCode(value, this.argvs),
+        });
+      },
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
     },
     hasFunctionSelector() {
-      return !!this.command.functionSelector;
+      return !!this.localCommand.functionSelector;
     },
   },
   methods: {
-    generateCode() {
-      const functionName = this.hasFunctionSelector
-        ? this.selectedFunction
-        : this.command.value;
-      const args = this.config
-        .map((item) => item.value)
-        .filter((val) => val !== undefined && val !== "")
-        .join(",");
-      return `${functionName}(${args})`;
-    },
-    handleArgvChange(key, value) {
-      const item = this.localConfig.find((item) => item.key === key);
-      if (item) {
-        item.value = value;
-      }
+    updateArgv(index, value) {
+      const newArgvs = [...this.argvs];
+      newArgvs[index] = value;
 
-      this.$emit("update:modelValue", this.generateCode());
+      const newCode = this.generateCode(this.functionName, newArgvs);
+
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: newArgvs,
+        code: newCode,
+      });
     },
-    handleFunctionChange(value) {
-      this.selectedFunction = value;
-      this.$emit("update:modelValue", this.generateCode());
+    generateCode(functionName, argvs) {
+      const newArgvs = argvs.map((argv) => stringifyWithType(argv));
+      return `${functionName}(${newArgvs.join(",")})`;
+    },
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      // 匹配函数名和参数
+      const pattern = new RegExp(`^${this.functionName}\\((.*?)\\)$`);
+      const match = code.match(pattern);
+      if (match) {
+        try {
+          const paramStr = match[1].trim();
+          if (!paramStr) return argvs;
+
+          // 分割参数，考虑括号嵌套
+          let params = [];
+          let bracketCount = 0;
+          let currentParam = "";
+
+          for (let i = 0; i < paramStr.length; i++) {
+            const char = paramStr[i];
+            if (char === "," && bracketCount === 0) {
+              params.push(currentParam.trim());
+              currentParam = "";
+              continue;
+            }
+            if (char === "{") bracketCount++;
+            if (char === "}") bracketCount--;
+            currentParam += char;
+          }
+          if (currentParam) {
+            params.push(currentParam.trim());
+          }
+
+          // 根据配置处理每个参数
+          params.forEach((param, index) => {
+            if (index >= this.localConfig.length) return;
+
+            const config = this.localConfig[index];
+            if (config.type === "varInput") {
+              // 对于 VariableInput 类型，解析为带有 __varInputVal__ 标记的对象
+              argvs[index] = parseToHasType(param);
+            } else if (config.type === "numInput") {
+              // 对于 NumberInput 类型，转换为数字
+              argvs[index] = Number(param) || 0;
+            } else {
+              // 其他类型直接使用值
+              argvs[index] = param;
+            }
+          });
+
+          return argvs;
+        } catch (e) {
+          console.error("解析参数失败:", e);
+        }
+      }
+      return argvs;
     },
   },
   mounted() {
-    if (this.command.allowEmptyArgv) {
-      this.$emit("update:modelValue", this.generateCode());
-    } else {
-      const hasDefaultValues = this.localConfig.some(
-        (item) => item.defaultValue !== undefined && item.defaultValue !== ""
-      );
-      if (hasDefaultValues) {
-        this.$emit("update:modelValue", this.generateCode());
-      }
+    if (
+      !this.modelValue.argvs &&
+      !this.modelValue.code &&
+      !this.modelValue.functionName
+    ) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        functionName: this.functionName,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.functionName, this.defaultArgvs),
+      });
     }
   },
 });

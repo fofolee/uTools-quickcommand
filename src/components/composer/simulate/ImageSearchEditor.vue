@@ -5,13 +5,13 @@
       <div class="col-12 col-sm-8">
         <div
           class="image-preview q-pa-md"
-          :class="{ 'has-image': !!imagePreview }"
+          :class="{ 'has-image': !!argvs.imagePreview }"
           @click="triggerImageUpload"
           @paste="handlePaste"
           tabindex="0"
         >
-          <template v-if="imagePreview">
-            <img :src="imagePreview" class="preview-image" />
+          <template v-if="argvs.imagePreview">
+            <img :src="argvs.imagePreview" class="preview-image" />
             <q-btn
               round
               flat
@@ -52,12 +52,11 @@
 
           <!-- 匹配阈值设置 -->
           <div class="col-12">
-            <VariableInput
-              v-model="threshold"
+            <NumberInput
+              v-model="argvs.threshold"
               label="匹配阈值"
               class="border-primary"
               :command="{
-                inputType: 'number',
                 icon: 'tune',
               }"
             />
@@ -66,7 +65,7 @@
           <!-- 鼠标动作选择 -->
           <div class="col-12">
             <q-select
-              v-model="mouseAction"
+              v-model="argvs.mouseAction"
               :options="mouseActionOptions"
               label="找到后"
               class="border-primary"
@@ -97,18 +96,18 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "../ui/VariableInput.vue";
+import NumberInput from "../ui/NumberInput.vue";
 
 export default defineComponent({
   name: "ImageSearchEditor",
   components: {
-    VariableInput,
+    NumberInput,
   },
 
   props: {
     modelValue: {
-      type: String,
-      default: "",
+      type: Object,
+      default: () => ({}),
     },
   },
 
@@ -116,56 +115,25 @@ export default defineComponent({
 
   data() {
     return {
-      imagePreview: "",
-      threshold: 0.9,
-      mouseAction: "none",
       mouseActionOptions: [
         { label: "不处理", value: "none" },
         { label: "单击", value: "click" },
         { label: "双击", value: "dblclick" },
         { label: "右击", value: "rightclick" },
       ],
+      defaultArgvs: {
+        imagePreview: "",
+        threshold: 0.9,
+        mouseAction: "none",
+      },
     };
   },
 
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (!val) {
-          // 如果是空字符串，初始化为默认值
-          this.imagePreview = "";
-          this.threshold = 0.9;
-          this.mouseAction = "none";
-          this.updateValue();
-          return;
-        }
-
-        // 从代码字符串解析配置
-        try {
-          const imageDataMatch = val.match(/"data:image\/png;base64,([^"]+)"/);
-          const thresholdMatch = val.match(/threshold:\s*([\d.]+)/);
-          const mouseActionMatch = val.match(/mouseAction:\s*"([^"]+)"/);
-
-          if (imageDataMatch) {
-            this.imagePreview = `data:image/png;base64,${imageDataMatch[1]}`;
-          }
-          if (thresholdMatch) {
-            this.threshold = parseFloat(thresholdMatch[1]);
-          }
-          if (mouseActionMatch) {
-            this.mouseAction = mouseActionMatch[1];
-          }
-        } catch (e) {
-          console.warn("Failed to parse config from code string");
-        }
-      },
-    },
-    threshold(val) {
-      this.updateValue();
-    },
-    mouseAction(val) {
-      this.updateValue();
+  computed: {
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
     },
   },
 
@@ -175,6 +143,15 @@ export default defineComponent({
       this.$refs.fileInput.click();
     },
 
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+
     // 处理文件上传
     async handleFileUpload(event) {
       const file = event.target.files[0];
@@ -182,8 +159,8 @@ export default defineComponent({
         try {
           const reader = new FileReader();
           reader.onload = (e) => {
-            this.imagePreview = e.target.result;
-            this.updateValue();
+            this.argvs.imagePreview = e.target.result;
+            this.updateArgvs("imagePreview", e.target.result);
           };
           reader.readAsDataURL(file);
         } catch (error) {
@@ -201,8 +178,8 @@ export default defineComponent({
           const blob = item.getAsFile();
           const reader = new FileReader();
           reader.onload = (e) => {
-            this.imagePreview = e.target.result;
-            this.updateValue();
+            this.argvs.imagePreview = e.target.result;
+            this.updateArgvs("imagePreview", e.target.result);
           };
           reader.readAsDataURL(blob);
           break;
@@ -215,29 +192,67 @@ export default defineComponent({
       const clipboardImage = quickcommand.readClipboardImage();
       if (!clipboardImage)
         return quickcommand.showMessageBox("剪贴板中没有图片", "warning");
-      this.imagePreview = clipboardImage;
-      this.updateValue();
+      this.argvs.imagePreview = clipboardImage;
+      this.updateArgvs("imagePreview", clipboardImage);
     },
 
     // 清除图片
     clearImage() {
-      this.imagePreview = "";
-      this.updateValue();
+      this.argvs.imagePreview = "";
+      this.updateArgvs("imagePreview", "");
     },
 
     // 更新值
-    updateValue() {
-      const imageData = this.imagePreview.split(",")[1] || "";
+    generateCode(argvs = this.argvs) {
+      const imageData = argvs.imagePreview.split(",")[1] || "";
       const config = {
         imageData,
-        threshold: this.threshold,
-        mouseAction: this.mouseAction,
+        threshold: argvs.threshold,
+        mouseAction: argvs.mouseAction,
       };
 
       // 生成代码
-      const code = `quickcomposer.simulate.findImage("data:image/png;base64,${config.imageData}", { threshold: ${config.threshold}, mouseAction: "${config.mouseAction}" })`;
-      this.$emit("update:modelValue", code);
+      return `quickcomposer.simulate.findImage("data:image/png;base64,${config.imageData}", { threshold: ${config.threshold}, mouseAction: "${config.mouseAction}" })`;
     },
+
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      // 从代码字符串解析配置
+      try {
+        const imageDataMatch = code.match(/"data:image\/png;base64,([^"]+)"/);
+        const thresholdMatch = code.match(/threshold:\s*([\d.]+)/);
+        const mouseActionMatch = code.match(/mouseAction:\s*"([^"]+)"/);
+        let { imagePreview, threshold, mouseAction } = argvs;
+
+        if (imageDataMatch) {
+          imagePreview = `data:image/png;base64,${imageDataMatch[1]}`;
+        }
+        if (thresholdMatch) {
+          threshold = parseFloat(thresholdMatch[1]);
+        }
+        if (mouseActionMatch) {
+          mouseAction = mouseActionMatch[1];
+        }
+        return {
+          imagePreview,
+          threshold,
+          mouseAction,
+        };
+      } catch (e) {
+        return argvs;
+      }
+    },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

@@ -12,14 +12,30 @@
       <!-- 循环设置区域 -->
       <div v-if="type === 'loop'" class="loop-settings">
         <ControlInput
-          v-model="indexVar"
+          :model-value="argvs.indexVar"
+          @update:model-value="updateArgvs('indexVar', $event)"
           label="变量"
           :is-variable="true"
           class="loop-input"
         />
-        <ControlInput v-model="startValue" label="从" class="loop-input" />
-        <ControlInput v-model="endValue" label="到" class="loop-input" />
-        <ControlInput v-model="stepValue" label="步进" class="loop-input" />
+        <ControlInput
+          :model-value="argvs.startValue"
+          @update:model-value="updateArgvs('startValue', $event)"
+          label="从"
+          class="loop-input"
+        />
+        <ControlInput
+          :model-value="argvs.endValue"
+          @update:model-value="updateArgvs('endValue', $event)"
+          label="到"
+          class="loop-input"
+        />
+        <ControlInput
+          :model-value="argvs.stepValue"
+          @update:model-value="updateArgvs('stepValue', $event)"
+          label="步进"
+          class="loop-input"
+        />
       </div>
 
       <!-- 只在循环开始时显示添加按钮 -->
@@ -38,8 +54,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'continue',
+                value: this.modelValue.value,
               })
             "
           >
@@ -52,8 +69,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'break',
+                value: this.modelValue.value,
               })
             "
           >
@@ -78,37 +96,45 @@ export default defineComponent({
   },
   inheritAttrs: false,
   props: {
-    modelValue: String,
-    command: Object,
-    type: {
-      type: String,
-      required: true,
-      validator: (value) =>
-        ["loop", "continue", "break", "end"].includes(value),
-    },
+    modelValue: Object,
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      indexVar: "i",
-      startValue: 0,
-      endValue: 10,
-      stepValue: 1,
+      defaultArgvs: {
+        indexVar: "i",
+        startValue: 0,
+        endValue: 10,
+        stepValue: 1,
+      },
     };
   },
-  created() {
-    if (!this.modelValue) {
-      this.updateValue();
-    }
-  },
   computed: {
-    generatedCode() {
+    type() {
+      return this.modelValue.commandType;
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+  },
+  methods: {
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs = this.argvs) {
       switch (this.type) {
         case "loop":
-          const index = this.indexVar || "i";
-          const start = this.startValue || 0;
-          const end = this.endValue || 10;
-          const step = this.stepValue || 1;
+          const index = argvs.indexVar || "i";
+          const start = argvs.startValue || 0;
+          const end = argvs.endValue || 10;
+          const step = argvs.stepValue || 1;
           return `for(let ${index}=${start};${index}<${end};${index}+=${step}){`;
         case "continue":
           return "continue;";
@@ -120,50 +146,32 @@ export default defineComponent({
           return "";
       }
     },
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseCodeString(val);
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      if (this.type === "loop") {
+        const match = code.match(
+          /^for\(let\s+(\w+)=(\d+);.*?<(\d+);.*?\+=(\d+)\)\{$/
+        );
+        if (match) {
+          argvs.indexVar = match[1];
+          argvs.startValue = parseInt(match[2]);
+          argvs.endValue = parseInt(match[3]);
+          argvs.stepValue = parseInt(match[4]);
         }
-      },
-    },
-    indexVar() {
-      this.updateValue();
-    },
-    startValue() {
-      this.updateValue();
-    },
-    endValue() {
-      this.updateValue();
-    },
-    stepValue() {
-      this.updateValue();
-    },
-  },
-  methods: {
-    updateValue() {
-      this.$emit("update:modelValue", this.generatedCode);
-    },
-    parseCodeString(val) {
-      try {
-        if (this.type === "loop") {
-          const match = val.match(
-            /^for\(let\s+(\w+)=(\d+);(\w+)<(\d+);(\w+)\+=(\d+)\){$/
-          );
-          if (match) {
-            this.indexVar = match[1];
-            this.startValue = parseInt(match[2]);
-            this.endValue = parseInt(match[4]);
-            this.stepValue = parseInt(match[6]);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse code string:", e);
       }
+      return argvs;
     },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

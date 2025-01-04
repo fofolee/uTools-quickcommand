@@ -10,8 +10,7 @@ export const notifyCommands = {
         {
           key: "message",
           label: "要打印的消息文本",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "info",
         },
       ],
@@ -23,8 +22,7 @@ export const notifyCommands = {
         {
           key: "message",
           label: "要发送的系统消息文本",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "message",
         },
       ],
@@ -36,8 +34,7 @@ export const notifyCommands = {
         {
           key: "text",
           label: "要发送到窗口的文本内容",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "send",
         },
       ],

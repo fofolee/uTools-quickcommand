@@ -58,10 +58,6 @@ export default {
       type: Object,
       required: true,
     },
-    isCollapsed: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: [
     "update:outputVariable",
@@ -89,6 +85,9 @@ export default {
       return (
         this.command.commandType === this.command.commandChain?.slice(-1)[0]
       );
+    },
+    isCollapsed() {
+      return this.command.isCollapsed;
     },
   },
 };

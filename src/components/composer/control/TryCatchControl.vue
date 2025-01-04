@@ -13,7 +13,8 @@
       <div class="try-catch-settings">
         <template v-if="type === 'catch'">
           <ControlInput
-            v-model="errorVar"
+            :model-value="argvs.errorVar"
+            @update:model-value="updateArgvs('errorVar', $event)"
             label="错误"
             placeholder="错误变量名"
             class="error-input"
@@ -37,8 +38,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'catch',
+                value: this.modelValue.value,
               })
             "
           >
@@ -51,8 +53,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'finally',
+                value: this.modelValue.value,
               })
             "
           >
@@ -77,32 +80,41 @@ export default defineComponent({
   },
   inheritAttrs: false,
   props: {
-    modelValue: String,
-    command: Object,
-    type: {
-      type: String,
-      required: true,
-      validator: (value) => ["try", "catch", "finally", "end"].includes(value),
-    },
+    modelValue: Object,
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      errorVar: "error",
+      defaultArgvs: {
+        errorVar: "error",
+      },
     };
   },
-  created() {
-    if (!this.modelValue) {
-      this.updateValue();
-    }
-  },
   computed: {
-    generatedCode() {
+    type() {
+      return this.modelValue.commandType;
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+  },
+  methods: {
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs = this.argvs) {
       switch (this.type) {
         case "try":
           return "try{";
         case "catch":
-          return `}catch(${this.errorVar}){`;
+          return `}catch(${argvs.errorVar || "error"}){`;
         case "finally":
           return "}finally{";
         case "end":
@@ -111,36 +123,27 @@ export default defineComponent({
           return "";
       }
     },
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseCodeString(val);
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      if (this.type === "catch") {
+        const match = code.match(/^\}catch\((\w+)\)\{$/);
+        if (match) {
+          argvs.errorVar = match[1];
         }
-      },
-    },
-    errorVar() {
-      this.updateValue();
-    },
-  },
-  methods: {
-    updateValue() {
-      this.$emit("update:modelValue", this.generatedCode);
-    },
-    parseCodeString(val) {
-      try {
-        if (this.type === "catch") {
-          const match = val.match(/^}catch\((.*)\){$/);
-          if (match) {
-            this.errorVar = match[1];
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse code string:", e);
       }
+      return argvs;
     },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

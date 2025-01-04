@@ -1,0 +1,118 @@
+<template>
+  <q-input
+    type="number"
+    v-model.number="localValue"
+    dense
+    filled
+    :label="label"
+    class="number-input"
+  >
+    <template v-slot:prepend>
+      <q-icon v-if="icon" :name="icon" />
+    </template>
+    <template v-slot:append>
+      <!-- <q-icon name="pin" size="xs" /> -->
+      <div class="column items-center number-controls">
+        <q-btn
+          flat
+          dense
+          icon="keyboard_arrow_up"
+          size="xs"
+          class="number-btn"
+          @click="updateNumber(100)"
+        />
+        <q-btn
+          flat
+          dense
+          icon="keyboard_arrow_down"
+          size="xs"
+          class="number-btn"
+          @click="updateNumber(-100)"
+        />
+      </div>
+    </template>
+  </q-input>
+</template>
+
+<script>
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "NumberInput",
+  props: {
+    modelValue: {
+      type: Number,
+    },
+    label: {
+      type: String,
+      default: "",
+    },
+    icon: {
+      type: String,
+      default: "pin",
+    },
+  },
+  emits: ["update:modelValue"],
+  computed: {
+    localValue: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit("update:modelValue", value);
+      },
+    },
+  },
+  methods: {
+    updateNumber(delta) {
+      this.$emit("update:modelValue", this.localValue + delta);
+    },
+  },
+});
+</script>
+
+<style scoped>
+/* 数字输入框样式 */
+.number-input {
+  width: 100%;
+}
+
+/* 隐藏默认的数字输入框箭头 - Chrome, Safari, Edge, Opera */
+.number-input :deep(input[type="number"]::-webkit-outer-spin-button),
+.number-input :deep(input[type="number"]::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-input :deep(.q-field__control) {
+  padding-left: 8px;
+  padding-right: 4px;
+}
+
+.number-controls {
+  height: 100%;
+  display: flex;
+  width: 32px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.number-btn {
+  opacity: 0.7;
+  font-size: 12px;
+  padding: 0;
+  margin: 0;
+  min-height: 16px;
+  height: 16px;
+  width: 20px;
+}
+
+.number-btn :deep(.q-icon) {
+  font-size: 12px;
+}
+
+.number-btn:hover {
+  opacity: 1;
+  color: var(--q-primary);
+}
+</style>

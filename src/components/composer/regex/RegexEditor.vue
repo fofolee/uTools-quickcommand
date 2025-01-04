@@ -1,40 +1,40 @@
 <template>
   <div class="regex-editor">
     <div class="row q-col-gutter-xs">
-      <div :class="mode === 'replace' ? 'col-6' : 'col-12'">
+      <div :class="argvs.isReplace ? 'col-6' : 'col-12'">
         <div class="row items-center q-col-gutter-xs">
           <div class="col-auto">
             <q-btn
               flat
               dense
               color="grey"
-              :icon="mode === 'extract' ? 'content_cut' : 'find_replace'"
-              @click="mode = mode === 'extract' ? 'replace' : 'extract'"
+              :icon="argvs.isReplace ? 'content_cut' : 'find_replace'"
+              @click="handleModeChange"
             >
               <q-tooltip>{{
-                mode === "extract" ? "提取模式" : "替换模式"
+                argvs.isReplace ? "提取模式" : "替换模式"
               }}</q-tooltip>
             </q-btn>
           </div>
           <div class="col">
             <!-- 输入文本区域 -->
             <VariableInput
-              v-model="textValue"
+              :model-value="argvs.textValue"
+              @update:model-value="updateArgvs('textValue', $event)"
+              icon="text_fields"
               label="要处理的文本"
-              :command="command"
-              @update:model-value="updateValue"
             />
           </div>
         </div>
       </div>
 
-      <div class="col-6" v-if="mode === 'replace'">
+      <div class="col-6" v-if="argvs.isReplace">
         <!-- 替换文本区域 -->
         <VariableInput
-          v-model="replaceValue"
+          :model-value="argvs.replaceValue"
+          @update:model-value="updateArgvs('replaceValue', $event)"
           label="替换为"
-          :command="command"
-          @update:model-value="updateValue"
+          icon="text_fields"
         />
       </div>
     </div>
@@ -47,7 +47,10 @@
             flat
             dense
             icon="auto_fix_high"
-            @click="showBuilder = !showBuilder"
+            @click="
+              showBuilder = !showBuilder;
+              updateArgvs('showBuilder', showBuilder);
+            "
             :color="showBuilder ? 'primary' : 'grey'"
           >
             <q-tooltip>正则表达式构建工具</q-tooltip>
@@ -55,10 +58,10 @@
         </div>
         <div class="col">
           <RegexInput
-            v-model="regexValue"
-            @update:model-value="updateValue"
-            :flags="flags"
-            @update:flags="updateFlags"
+            :model-value="argvs.regexValue"
+            @update:model-value="updateArgvs('regexValue', $event)"
+            :flags="argvs.flags"
+            @update:flags="updateArgvs('flags', $event)"
             ref="regexInput"
           />
         </div>
@@ -67,10 +70,11 @@
 
     <!-- 测试预览 -->
     <RegexTester
-      :text="textValue"
-      :regex="regexValue"
-      :flags="flags"
-      :replace="replaceValue"
+      :text="argvs.textValue"
+      :regex="argvs.regexValue"
+      :flags="argvs.flags"
+      :replace="argvs.replaceValue"
+      :is-replace="argvs.isReplace"
     />
 
     <!-- 正则表达式构建工具 -->
@@ -93,6 +97,7 @@ import VariableInput from "../ui/VariableInput.vue";
 import RegexInput from "./RegexInput.vue";
 import RegexBuilder from "./RegexBuilder.vue";
 import RegexTester from "./RegexTester.vue";
+import { parseToHasType } from "js/composer/formatString";
 
 export default defineComponent({
   name: "RegexEditor",
@@ -104,10 +109,6 @@ export default defineComponent({
   },
   props: {
     modelValue: {
-      type: String,
-      default: "",
-    },
-    command: {
       type: Object,
       required: true,
     },
@@ -115,40 +116,83 @@ export default defineComponent({
   emits: ["update:modelValue"],
   data() {
     return {
-      textValue: "",
-      regexValue: "",
-      replaceValue: "",
-      mode: "extract",
-      showBuilder: false,
-      flags: {
-        ignoreCase: false,
-        multiline: false,
-        global: true,
-      },
       selection: {
         start: 0,
         end: 0,
       },
+      showBuilder: false,
+      defaultArgvs: {
+        textValue: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        regexValue: "",
+        replaceValue: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        isReplace: false,
+        flags: {
+          ignoreCase: false,
+          multiline: false,
+          global: true,
+        },
+      },
     };
   },
+  computed: {
+    command() {
+      return this.modelValue;
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+  },
   methods: {
-    updateValue() {
-      const flagStr = Object.entries(this.flags)
+    handleModeChange() {
+      this.argvs.isReplace = !this.argvs.isReplace;
+      if (!this.argvs.isReplace) {
+        this.argvs.replaceValue = "";
+      }
+      const argvs = {
+        ...this.argvs,
+        isReplace: this.argvs.isReplace,
+        replaceValue: this.argvs.replaceValue,
+      };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs) {
+      const flagStr = Object.entries(argvs.flags)
         .filter(([_, value]) => value)
         .map(([key]) => key.charAt(0))
         .join("");
-      const output = [this.textValue, `/${this.regexValue}/${flagStr}`];
-      if (this.mode === "replace") {
-        output.push(this.replaceValue || '""');
+      const text = argvs.textValue.isString
+        ? `"${argvs.textValue.value}"`
+        : argvs.textValue.value;
+      const output = [text, `/${argvs.regexValue}/${flagStr}`];
+      if (argvs.isReplace) {
+        const replace = argvs.replaceValue.isString
+          ? `"${argvs.replaceValue.value}"`
+          : argvs.replaceValue.value;
+        output.push(replace);
       }
-      this.$emit(
-        "update:modelValue",
-        `${this.command.value}(${output.join(",")})`
-      );
-    },
-    updateFlags(newFlags) {
-      this.flags = newFlags;
-      this.updateValue();
+      return `${this.command.value}(${output.join(",")})`;
     },
     insertPattern(pattern) {
       // 获取 RegexInput 组件实例
@@ -198,44 +242,43 @@ export default defineComponent({
         });
 
         // 触发更新
-        this.updateValue();
+        this.updateArgvs("regexValue", newContent);
+      }
+    },
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+      const match = code.match(/^.*?\((.*)\)$/);
+      if (!match) return argvs;
+      const params = match[1];
+      const parts = params.split(",");
+      const text = parts[0];
+      const regexPart = parts[1];
+      const replace = parts[2];
+      if (regexPart) {
+        const [_, pattern, flags] = regexPart.match(/\/(.*?)\/(.*)/) || [];
+        return {
+          textValue: parseToHasType(text),
+          regexValue: pattern,
+          replaceValue: parseToHasType(replace),
+          flags: {
+            ignoreCase: flags.includes("i"),
+            multiline: flags.includes("m"),
+            global: flags.includes("g"),
+          },
+          isReplace: !!replace,
+        };
       }
     },
   },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          // 从函数调用格式中提取参数
-          const match = val.match(/^.*?\((.*)\)$/);
-          if (!match) return;
-          const params = match[1];
-          const parts = params.split(",");
-          const text = parts[0];
-          const regexPart = parts[1];
-          const replace = parts[2];
-          if (regexPart) {
-            const [_, pattern, flags] = regexPart.match(/\/(.*?)\/(.*)/) || [];
-            this.textValue = text;
-            this.regexValue = pattern;
-            this.replaceValue = replace || "";
-            this.flags = {
-              ignoreCase: flags.includes("i"),
-              multiline: flags.includes("m"),
-              global: flags.includes("g"),
-            };
-          }
-        }
-      },
-    },
-    mode() {
-      // 切换到提取模式时清空替换值
-      if (this.mode === "extract") {
-        this.replaceValue = "";
-      }
-      this.updateValue();
-    },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

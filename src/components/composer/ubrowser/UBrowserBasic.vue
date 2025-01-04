@@ -5,7 +5,7 @@
       <VariableInput
         v-model="localConfigs.goto.url"
         label="网址"
-        :command="{ icon: 'link' }"
+        icon="link"
         @update:model-value="updateConfigs"
       />
     </div>
@@ -17,7 +17,7 @@
           <VariableInput
             v-model="localConfigs.goto.headers.Referer"
             label="Referer"
-            :command="{ icon: 'link' }"
+            icon="link"
             @update:model-value="updateConfigs"
           />
         </div>
@@ -27,7 +27,7 @@
               <VariableInput
                 v-model="localConfigs.goto.headers.userAgent"
                 label="User-Agent"
-                :command="{ icon: 'devices' }"
+                icon="devices"
                 @update:model-value="updateConfigs"
               />
             </div>
@@ -55,9 +55,9 @@
 
     <!-- 超时配置 -->
     <div class="col-12">
-      <VariableInput
+      <NumberInput
         v-model="localConfigs.goto.timeout"
-        :command="{ icon: 'timer', inputType: 'number' }"
+        icon="timer"
         label="超时时间(ms)"
         @update:model-value="updateConfigs"
       />
@@ -67,13 +67,15 @@
 
 <script>
 import { defineComponent } from "vue";
+import { defaultUBrowserConfigs } from "js/composer/ubrowserConfig";
 import { userAgent } from "js/options/httpOptions";
 import VariableInput from "components/composer/ui/VariableInput.vue";
-
+import NumberInput from "components/composer/ui/NumberInput.vue";
 export default defineComponent({
   name: "UBrowserBasic",
   components: {
     VariableInput,
+    NumberInput,
   },
   props: {
     configs: {
@@ -84,20 +86,7 @@ export default defineComponent({
   data() {
     return {
       selectedUA: null,
-      localConfigs: {
-        useragent: {
-          preset: null,
-          value: "",
-        },
-        goto: {
-          url: "",
-          headers: {
-            Referer: "",
-            userAgent: "",
-          },
-          timeout: 60000,
-        },
-      },
+      localConfigs: defaultUBrowserConfigs.goto,
       userAgentOptions: userAgent,
     };
   },
@@ -119,7 +108,8 @@ export default defineComponent({
     },
     selectedUA(value) {
       if (value) {
-        this.localConfigs.goto.headers.userAgent = value;
+        this.localConfigs.goto.headers.userAgent.value = value;
+        this.localConfigs.goto.headers.userAgent.isString = true;
         this.updateConfigs();
         this.selectedUA = null;
       }

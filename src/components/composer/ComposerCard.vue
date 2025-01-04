@@ -2,18 +2,19 @@
   <div
     class="composer-card"
     :class="{
-      collapsed: isCollapsed && !command.isControlFlow,
+      collapsed: localCommand.isCollapsed && !localCommand.isControlFlow,
     }"
     v-bind="$attrs"
   >
     <q-card class="command-item">
       <q-card-section
         class="card-section"
-        :class="{ collapsed: isCollapsed || command.isControlFlow }"
+        :class="{
+          collapsed: localCommand.isCollapsed || localCommand.isControlFlow,
+        }"
       >
         <CommandHead
-          :command="command"
-          :is-collapsed="isCollapsed"
+          :command="localCommand"
           @update:outputVariable="handleOutputVariableUpdate"
           @toggle-output="handleToggleOutput"
           @toggle-collapse="handleToggleCollapse"
@@ -21,15 +22,13 @@
           @remove="$emit('remove')"
         >
           <!-- 控制流程组件，直接把组件放在head中 -->
-          <template v-if="command.isControlFlow">
+          <template v-if="localCommand.isControlFlow">
             <component
-              :is="command.component"
-              v-model="argvLocal"
-              :command="command"
-              v-bind="command.componentProps || {}"
-              :type="command.commandType"
+              :is="localCommand.component"
+              v-model="localCommand"
+              v-bind="localCommand.componentProps || {}"
               class="control-component"
-              @addBranch="(chainInfo) => $emit('addBranch', chainInfo)"
+              @addBranch="(event) => $emit('addBranch', event)"
             />
           </template>
 
@@ -41,24 +40,22 @@
 
         <!-- 非控制流程组件的参数输入 -->
         <div
-          v-if="!command.isControlFlow"
+          v-if="!localCommand.isControlFlow"
           class="command-content-wrapper"
-          :class="{ collapsed: isCollapsed }"
+          :class="{ collapsed: localCommand.isCollapsed }"
         >
           <div class="command-content">
             <component
-              v-if="!!command.component"
-              :is="command.component"
-              v-model="argvLocal"
-              :command="command"
+              v-if="!!localCommand.component"
+              :is="localCommand.component"
+              v-model="localCommand"
               class="col q-mt-sm"
-              v-bind="command.componentProps || {}"
+              v-bind="localCommand.componentProps || {}"
             />
             <MultiParams
               v-else
-              v-model="argvLocal"
-              :command="command"
-              :class="command.config?.length ? 'col q-mt-sm' : 'col'"
+              v-model="localCommand"
+              :class="localCommand.config?.length ? 'col q-mt-sm' : 'col'"
             />
           </div>
         </div>
@@ -84,67 +81,19 @@ export default defineComponent({
     ...CardComponents,
   },
   props: {
-    command: {
+    modelValue: {
       type: Object,
       required: true,
     },
-    availableOutputs: {
-      type: Array,
-      default: () => [],
-    },
-    placeholder: {
-      type: String,
-      default: "",
-    },
-    isDragging: {
-      type: Boolean,
-      default: false,
-    },
   },
-  data() {
-    return {
-      showKeyRecorder: false,
-      isCollapsed: false,
-    };
-  },
-  watch: {
-    "command.isCollapsed": {
-      immediate: true,
-      handler(val) {
-        if (val !== undefined) {
-          this.isCollapsed = val;
-        }
-      },
-    },
-  },
-  emits: [
-    "remove",
-    "toggle-output",
-    "update:argv",
-    "update:command",
-    "run",
-    "addBranch",
-    "toggle-collapse",
-  ],
+  emits: ["remove", "run", "addBranch", "toggle-collapse", "update:modelValue"],
   computed: {
-    saveOutputLocal: {
+    localCommand: {
       get() {
-        return this.command.saveOutput;
+        return this.modelValue || {};
       },
       set(value) {
-        this.$emit("toggle-output");
-      },
-    },
-    argvLocal: {
-      get() {
-        return this.command.argv;
-      },
-      set(value) {
-        const updatedCommand = {
-          ...this.command,
-          argv: value,
-        };
-        this.$emit("update:command", updatedCommand);
+        this.$emit("update:modelValue", value);
       },
     },
     showRunBtn() {
@@ -172,22 +121,6 @@ export default defineComponent({
     };
   },
   methods: {
-    handleKeyRecord(keys) {
-      this.showKeyRecorder = false;
-      // 从keyTap("a","control")格式中提取参数
-      const matches = keys.match(/keyTap\((.*)\)/);
-      if (matches && matches[1]) {
-        this.$emit("update:argv", matches[1]);
-      }
-    },
-    handleOutputVariableChange(value) {
-      if (this.command.outputVariable) {
-        this.removeVariable(this.command.outputVariable);
-      }
-      if (value) {
-        this.addVariable(value, this.command);
-      }
-    },
     handleOutputVariableUpdate(value) {
       // 检查变量名是否合法
       const validation = validateVariableName(value);
@@ -202,66 +135,44 @@ export default defineComponent({
         return;
       }
 
-      // 创建命令的副本并更新
-      const updatedCommand = {
-        ...this.command,
-        outputVariable: value,
-      };
-      // 发出更新事件
-      this.$emit("update:command", updatedCommand);
       // 处理变量管理
-      this.handleOutputVariableChange(value);
+      if (this.localCommand.outputVariable) {
+        this.removeVariable(this.localCommand.outputVariable);
+      }
+      if (value) {
+        this.addVariable(value, this.localCommand);
+      }
+      this.localCommand.outputVariable = value;
     },
     handleToggleOutput() {
-      // 创建命令的副本
-      const updatedCommand = {
-        ...this.command,
-        saveOutput: !this.command.saveOutput,
-      };
+      this.localCommand.saveOutput = !this.localCommand.saveOutput;
 
       // 如果关闭输出，清空变量名
-      if (!updatedCommand.saveOutput && updatedCommand.outputVariable) {
-        this.removeVariable(updatedCommand.outputVariable);
-        updatedCommand.outputVariable = null;
+      if (!this.localCommand.saveOutput && this.localCommand.outputVariable) {
+        this.removeVariable(this.localCommand.outputVariable);
+        this.localCommand.outputVariable = null;
       }
-
-      // 发出更新事件
-      this.$emit("update:command", updatedCommand);
-    },
-    handleArgvChange(key, value) {
-      // 收集所有参数的当前值
-      const args = this.command.config.reduce((acc, item) => {
-        acc[item.key] = item.key === key ? value : item.value || "";
-        return acc;
-      }, {});
-
-      // 按照配置顺序拼接参数值
-      const argv = this.command.config
-        .map((item) => args[item.key])
-        .filter(Boolean)
-        .join(",");
-
-      this.$emit("update:argv", argv);
     },
     runCommand() {
       // 创建一个带临时变量的命令副本
       const tempCommand = {
-        ...this.command,
-        outputVariable: this.command.outputVariable || `temp_${Date.now()}`,
+        ...this.localCommand,
+        outputVariable:
+          this.localCommand.outputVariable || `temp_${Date.now()}`,
         saveOutput: true,
       };
       this.$emit("run", tempCommand);
     },
     handleToggleCollapse() {
-      if (this.command.isControlFlow) {
+      if (this.localCommand.isControlFlow) {
         // 控制命令的折叠，直接传递给父组件处理
         this.$emit("toggle-collapse", {
-          isCollapsed: this.isCollapsed,
-          chainId: this.command.chainId,
+          isCollapsed: this.localCommand.isCollapsed,
+          chainId: this.localCommand.chainId,
         });
       } else {
         // 非控制命令的折叠，更新自身状态
-        this.isCollapsed = !this.isCollapsed;
+        this.localCommand.isCollapsed = !this.localCommand.isCollapsed;
       }
     },
   },

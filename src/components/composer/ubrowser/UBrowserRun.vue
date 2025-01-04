@@ -35,34 +35,30 @@
     <div class="col-12">
       <div class="row q-col-gutter-sm">
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.width"
             label="窗口宽度"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('width', $event)"
           />
         </div>
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.height"
             label="窗口高度"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('height', $event)"
           />
         </div>
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.x"
             label="X坐标"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('x', $event)"
           />
         </div>
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.y"
             label="Y坐标"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('y', $event)"
           />
         </div>
@@ -73,34 +69,30 @@
     <div class="col-12">
       <div class="row q-col-gutter-sm">
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.minWidth"
             label="最小宽度"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('minWidth', $event)"
           />
         </div>
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.minHeight"
             label="最小高度"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('minHeight', $event)"
           />
         </div>
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.maxWidth"
             label="最大宽度"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('maxWidth', $event)"
           />
         </div>
         <div class="col-3">
-          <VariableInput
+          <NumberInput
             v-model="localConfigs.run.maxHeight"
             label="最大高度"
-            :command="{ inputType: 'number' }"
             @update:model-value="updateConfig('maxHeight', $event)"
           />
         </div>
@@ -164,12 +156,12 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "components/composer/ui/VariableInput.vue";
+import NumberInput from "components/composer/ui/NumberInput.vue";
 
 export default defineComponent({
   name: "UBrowserRun",
   components: {
-    VariableInput,
+    NumberInput,
   },
   props: {
     configs: {

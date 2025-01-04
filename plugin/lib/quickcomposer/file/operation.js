@@ -17,18 +17,34 @@ async function read(config) {
 
   if (readMode === "all") {
     return await fs.readFile(filePath, { encoding, flag });
-  } else {
+  } else if (
+    readMode === "start" &&
+    typeof start === "number" &&
+    typeof length === "number"
+  ) {
     // 指定位置读取
-    const fileHandle = await fs.open(filePath, flag);
+    const fileHandle = await fs.open(filePath, flag || "r");
     try {
       const buffer = Buffer.alloc(length);
-      await fileHandle.read(buffer, 0, length, start);
+      const { bytesRead } = await fileHandle.read(buffer, 0, length, start);
       await fileHandle.close();
-      return encoding ? buffer.toString(encoding) : buffer;
+      return encoding
+        ? buffer.slice(0, bytesRead).toString(encoding)
+        : buffer.slice(0, bytesRead);
     } catch (error) {
       await fileHandle.close();
       throw error;
     }
+  } else if (readMode === "line") {
+    // 按行读取，暂时使用全部读取然后分行的方式
+    const content = await fs.readFile(filePath, {
+      encoding: encoding || "utf8",
+      flag,
+    });
+    return content.split(/\r?\n/);
+  } else {
+    // 默认使用全部读取
+    return await fs.readFile(filePath, { encoding, flag });
   }
 }
 
@@ -38,18 +54,31 @@ async function read(config) {
  * @param {string} config.filePath 文件路径
  * @param {string} config.content 写入内容
  * @param {string} config.encoding 编码方式
- * @param {string} config.flag 写入标志
- * @param {string|number} config.mode 文件权限
+ * @param {string} config.flag 写入标志 ('w'=覆盖写入, 'a'=追加写入)
+ * @param {string|number} config.mode 文件权限 (例如: '666', '644', '755')
  * @returns {Promise<void>}
  */
 async function write(config) {
-  const { filePath, content, encoding, flag, mode } = config;
+  const { filePath, content, encoding, flag = "w", mode } = config;
 
-  // 确保目录存在
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  // 将字符串模式转换为八进制数字
-  const modeNum = parseInt(mode, 8);
-  await fs.writeFile(filePath, content, { encoding, flag, mode: modeNum });
+  try {
+    // 确保目录存在
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+
+    // 写入文件
+    const options = {
+      encoding,
+      flag,
+      mode: mode ? parseInt(mode, 8) : undefined,
+    };
+
+    await fs.writeFile(filePath, content, options);
+  } catch (error) {
+    if (error.code === "EPERM") {
+      throw new Error("没有写入权限");
+    }
+    throw error;
+  }
 }
 
 /**
@@ -248,22 +277,30 @@ async function stat(config) {
         isFile: stats.isFile(),
         isDirectory: stats.isDirectory(),
       };
+    } else if (statMode === "status") {
+      return {
+        exists: true,
+        isFile: stats.isFile(),
+        isDirectory: stats.isDirectory(),
+        isSymbolicLink: stats.isSymbolicLink(),
+        size: stats.size,
+        mode: stats.mode,
+        uid: stats.uid,
+        gid: stats.gid,
+        accessTime: stats.atime,
+        modifyTime: stats.mtime,
+        changeTime: stats.ctime,
+        birthTime: stats.birthtime,
+      };
+    } else {
+      // 默认返回基本信息
+      return {
+        exists: true,
+        isFile: stats.isFile(),
+        isDirectory: stats.isDirectory(),
+        isSymbolicLink: stats.isSymbolicLink(),
+      };
     }
-
-    return {
-      exists: true,
-      isFile: stats.isFile(),
-      isDirectory: stats.isDirectory(),
-      isSymbolicLink: stats.isSymbolicLink(),
-      size: stats.size,
-      mode: stats.mode,
-      uid: stats.uid,
-      gid: stats.gid,
-      accessTime: stats.atime,
-      modifyTime: stats.mtime,
-      changeTime: stats.ctime,
-      birthTime: stats.birthtime,
-    };
   } catch (error) {
     if (error.code === "ENOENT") {
       return {

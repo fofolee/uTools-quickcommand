@@ -1,30 +1,26 @@
-/**
- * 处理来自VariableInput的值
- * @param {string} value JSON.stringify后的值
- * @returns {string} 处理后的值（包含外层引号）
- */
-const processVariableValue = (value) => {
-  // 处理字符串模式：\"xxx\" -> "xxx"
-  if (value.startsWith('"\\"') && value.endsWith('\\""')) {
-    return `"${value.slice(3, -3)}"`;
-  }
-  // 处理非字符串模式：直接去掉外层引号
-  return value.slice(1, -1);
-};
+import { parse } from "@babel/parser";
 
 /**
- * 检查路径是否匹配或是目标路径的父路径
- * @param {string} currentPath 当前路径
- * @param {string[]} targetPaths 目标路径列表
- * @returns {boolean} 是否匹配
+ * 根据值的类型和属性将其转换为字符串
+ * 1. 对于带有 __varInputVal__ 属性的对象，根据该属性决定是否添加引号
+ * 2. 对于普通字符串，自动添加引号
+ * 3. 对于其他类型(数字、布尔等)，直接转换
+ * @param {Object|string|number|boolean} argv 要转换的值
+ * @returns {string} 转换后的字符串
  */
-const isPathMatched = (currentPath, targetPaths) => {
-  if (!targetPaths) return false;
-  return targetPaths.some(
-    (path) =>
-      path === currentPath || // 精确匹配
-      path.startsWith(currentPath + ".") // 是父路径
-  );
+export const stringifyWithType = (argv) => {
+  // 处理带有类型标记的对象
+  if (typeof argv === "object" && argv.hasOwnProperty("__varInputVal__")) {
+    return argv.isString ? `"${argv.value}"` : argv.value;
+  }
+
+  // 处理普通字符串
+  if (typeof argv === "string") {
+    return `"${argv}"`;
+  }
+
+  // 处理其他类型
+  return argv;
 };
 
 /**
@@ -34,7 +30,12 @@ const isPathMatched = (currentPath, targetPaths) => {
  */
 const removeEmptyValues = (obj) => {
   return window.lodashM.omitBy(obj, (value) => {
-    if (window.lodashM.isNil(value) || value === "") return true;
+    if (
+      window.lodashM.isNil(value) ||
+      value === "" ||
+      (value.isString && value.value === "")
+    )
+      return true;
     if (typeof value === "object")
       return window.lodashM.isEmpty(removeEmptyValues(value));
     return false;
@@ -42,50 +43,37 @@ const removeEmptyValues = (obj) => {
 };
 
 /**
- * 递归处理对象的值
+ * 递归处理对象的值并格式化成字符串
  * @param {Object} obj 要处理的对象
- * @param {string} parentPath 父路径
- * @param {string[]|null} variableFields 需要处理的字段列表，null表示处理所有字段
- * @param {string[]|null} excludeFields 需要排除的字段列表，即使匹配了处理条件也不处理
+ * @param {string} parentPath 父路径(用于缩进)
  * @returns {string} 处理后的字符串
  */
-const processObject = (obj, parentPath = "", variableFields, excludeFields) => {
+const processObject = (obj, parentPath = "") => {
   // 移除空值
   obj = removeEmptyValues(obj);
+  // 如果是 VariableInput 的输出，直接用 stringifyWithType 处理
+  if (obj && typeof obj === "object" && obj.hasOwnProperty("__varInputVal__")) {
+    return stringifyWithType(obj);
+  }
+
   let result = "{\n";
   const entries = Object.entries(obj);
 
   entries.forEach(([key, value], index) => {
-    const currentPath = parentPath ? `${parentPath}.${key}` : key;
     let valueStr = "";
 
-    // 检查是否需要处理当前字段
-    const isIncluded =
-      !variableFields || isPathMatched(currentPath, variableFields);
-    const isExcluded =
-      excludeFields && isPathMatched(currentPath, excludeFields);
-    const shouldProcess = isIncluded && !isExcluded;
-
     // 处理对象类型
-    if (typeof value === "object" && value !== null) {
-      valueStr = processObject(
-        value,
-        currentPath,
-        variableFields,
-        excludeFields
-      );
-    }
-    // 处理字符串类型
-    else if (typeof value === "string") {
-      if (shouldProcess) {
-        valueStr = processVariableValue(JSON.stringify(value));
+    if (value && typeof value === "object") {
+      // 如果是 VariableInput 的输出，直接用 stringifyWithType 处理
+      if (value.hasOwnProperty("__varInputVal__")) {
+        valueStr = stringifyWithType(value);
       } else {
-        valueStr = JSON.stringify(value);
+        valueStr = processObject(value, parentPath + "  ");
       }
     }
-    // 其他类型直接 stringify
+    // 处理其他类型
     else {
-      valueStr = JSON.stringify(value);
+      valueStr = stringifyWithType(value);
     }
 
     // 添加缩进
@@ -102,26 +90,192 @@ const processObject = (obj, parentPath = "", variableFields, excludeFields) => {
 };
 
 /**
- * 处理JSON字符串中的值
- * 只处理来自VariableInput的字段，支持完整字段处理和指定路径处理
- * 1. 完整字段处理：如 headers - 处理整个对象及其所有子字段
- * 2. 指定路径处理：如 data.headers.Referer - 只处理特定路径
- * 3. 不传递 variableFields 则处理所有字段
- * 4. 可以通过 excludeFields 排除特定字段，即使匹配了处理条件也不处理
- * @param {string} jsonStr JSON字符串
- * @param {string[]|null} [variableFields] 需要处理的字段列表，包括完整字段和指定路径。不传则处理所有字段
- * @param {string[]|null} [excludeFields] 需要排除的字段列表，即使匹配了处理条件也不处理
- * @returns {string} 处理后的字符串
+ * 格式化对象为JSON字符串,根据值的类型决定是否添加引号
+ * @param {Object} jsonObj 要格式化的对象
+ * @returns {string} 格式化后的JSON字符串
  */
-export const formatJsonVariables = (
-  jsonObj,
-  variableFields = null,
-  excludeFields = null
-) => {
+export const stringifyObject = (jsonObj) => {
   try {
-    return processObject(jsonObj, "", variableFields, excludeFields);
+    return processObject(jsonObj);
   } catch (e) {
-    console.warn("Failed to process JSON variables:", e);
+    console.warn("Failed to stringify object:", e);
     return JSON.stringify(jsonObj, null, 2);
+  }
+};
+
+/**
+ * 解析字符串为variableInput对象
+ * @param {string} str 要解析的字符串
+ * @returns {Object} 解析后的对象
+ */
+export const parseToHasType = (str) => {
+  if (!str) {
+    return {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    };
+  }
+  return str.startsWith('"') && str.endsWith('"')
+    ? {
+        value: str.slice(1, -1),
+        isString: true,
+        __varInputVal__: true,
+      }
+    : {
+        value: str,
+        isString: false,
+        __varInputVal__: true,
+      };
+};
+
+/**
+ * 检查路径是否匹配模式
+ * @param {string} path 当前路径
+ * @param {string[]} patterns 路径模式数组
+ * @returns {boolean} 是否匹配
+ */
+const isPathMatched = (path, patterns) => {
+  // 先检查包含模式
+  const includedPatterns = patterns.filter((p) => !p.startsWith("!"));
+  const excludedPatterns = patterns
+    .filter((p) => p.startsWith("!"))
+    .map((p) => p.slice(1));
+
+  const matchPattern = (path, pattern) => {
+    // 将模式转换为正则表达式
+    const regexPattern = pattern
+      // 先处理 **，将其转换为特殊标记
+      .replace(/\*\*/g, "###DOUBLEWILDCARD###")
+      // 处理普通的 *
+      .replace(/\*/g, "[^/.]+")
+      // 转义特殊字符
+      .replace(/[.]/g, "\\$&")
+      // 还原 ** 为正则表达式
+      .replace(/###DOUBLEWILDCARD###/g, ".*");
+
+    const regex = new RegExp(`^${regexPattern}$`);
+    return regex.test(path);
+  };
+
+  // 如果有包含模式，必须匹配其中之一
+  const includeMatch =
+    !includedPatterns.length ||
+    includedPatterns.some((p) => matchPattern(path, p));
+
+  // 检查是否被排除
+  const excludeMatch = excludedPatterns.some((p) => matchPattern(path, p));
+
+  return includeMatch && !excludeMatch;
+};
+
+/**
+ * 解析函数调用字符串，返回函数名和参数
+ * @param {string} functionStr 要解析的函数字符串
+ * @param {Object} options 解析选项
+ * @param {string[]} options.variableFormatPaths 需要使用variable格式的路径模式数组
+ *
+ * 路径匹配规则说明：
+ * 1. 参数位置：
+ *    - arg0, arg1, arg2... - 匹配具体位置的参数
+ *    - arg* - 匹配任意位置的参数
+ *
+ * 2. 对象属性：
+ *    - arg0.headers - 精确匹配headers属性
+ *    - arg1.data.* - 匹配data下的所有直接子属性
+ *    - arg2.params.** - 匹配params下的所有属性（包括嵌套）
+ *
+ * 3. 通配符：
+ *    - * - 匹配单个层级的任意字符（不包含点号）
+ *    - ** - 匹配任意层级（包含点号）
+ *
+ * 4. 排除规则：
+ *    - !pattern - 排除匹配的路径
+ *    - 排除优先级高于包含
+ *
+ * 5. 示例：
+ *    - arg0 - 匹配第一个参数
+ *    - arg*.headers.** - 匹配任意参数中headers下的所有属性
+ *    - arg*.data.* - 匹配任意参数中data下的直接子属性
+ *    - !arg*.headers.Content-Type - 排除所有参数中的Content-Type头
+ *    - arg*.headers.Accept* - 匹配所有以Accept开头的头部
+ *
+ * 6. 使用建议：
+ *    - 优先使用精确匹配（arg0, arg1.data）
+ *    - 使用通配符时注意层级（* vs **）
+ *    - 合理使用排除规则避免过度匹配
+ *
+ * @returns {Object} 解析结果，包含函数名和参数数组
+ */
+export const parseFunction = (functionStr, options = {}) => {
+  try {
+    const ast = parse(functionStr, {
+      sourceType: "module",
+      plugins: ["jsx"],
+    });
+
+    const callExpression = ast.program.body[0].expression;
+    if (callExpression.type !== "CallExpression") {
+      throw new Error("Not a valid function call");
+    }
+
+    const functionName = callExpression.callee.name;
+
+    // 递归处理AST节点
+    const processNode = (node, currentPath = "") => {
+      if (!node) return null;
+
+      const shouldUseVariableFormat =
+        currentPath &&
+        options.variableFormatPaths?.length > 0 &&
+        isPathMatched(currentPath, options.variableFormatPaths);
+
+      switch (node.type) {
+        case "StringLiteral":
+          // 字符串字面量总是带引号的
+          return shouldUseVariableFormat
+            ? { value: node.value, isString: true, __varInputVal__: true }
+            : node.value;
+        case "NumericLiteral":
+          return node.value;
+        case "BooleanLiteral":
+          return node.value;
+        case "NullLiteral":
+          return null;
+        case "Identifier":
+          // 标识符（变量）总是不带引号的
+          return shouldUseVariableFormat
+            ? { value: node.name, isString: false, __varInputVal__: true }
+            : node.name;
+        case "ObjectExpression":
+          return node.properties.reduce((obj, prop) => {
+            const key = prop.key.name || prop.key.value;
+            const newPath = currentPath ? `${currentPath}.${key}` : key;
+            obj[key] = processNode(prop.value, newPath);
+            return obj;
+          }, {});
+        case "ArrayExpression":
+          return node.elements.map((element, index) =>
+            processNode(element, `${currentPath}[${index}]`)
+          );
+        case "ObjectProperty":
+          return processNode(node.value, currentPath);
+        default:
+          console.warn("Unhandled node type:", node.type);
+          return null;
+      }
+    };
+
+    const args = callExpression.arguments.map((arg, index) =>
+      processNode(arg, `arg${index}`)
+    );
+
+    return {
+      functionName,
+      args,
+    };
+  } catch (e) {
+    console.warn("Failed to parse function:", e);
+    return null;
   }
 };

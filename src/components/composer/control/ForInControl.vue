@@ -12,19 +12,22 @@
       <!-- 遍历设置区域 -->
       <div v-if="type === 'forIn'" class="loop-settings">
         <ControlInput
-          v-model="keyVar"
+          :model-value="argvs.keyVar"
+          @update:model-value="updateArgvs('keyVar', $event)"
           label="键名"
           :is-variable="true"
           class="loop-input"
         />
         <ControlInput
-          v-model="valueVar"
+          :model-value="argvs.valueVar"
+          @update:model-value="updateArgvs('valueVar', $event)"
           label="值"
           :is-variable="true"
           class="loop-input"
         />
         <ControlInput
-          v-model="objectVar"
+          :model-value="argvs.objectVar"
+          @update:model-value="updateArgvs('objectVar', $event)"
           label="对象"
           class="loop-input object-input"
         />
@@ -46,8 +49,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'continue',
+                value: this.modelValue.value,
               })
             "
           >
@@ -60,8 +64,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'break',
+                value: this.modelValue.value,
               })
             "
           >
@@ -86,35 +91,43 @@ export default defineComponent({
   },
   inheritAttrs: false,
   props: {
-    modelValue: String,
-    command: Object,
-    type: {
-      type: String,
-      required: true,
-      validator: (value) =>
-        ["forIn", "continue", "break", "end"].includes(value),
-    },
+    modelValue: Object,
   },
-  emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      keyVar: "key",
-      valueVar: "value",
-      objectVar: "obj",
+      defaultArgvs: {
+        keyVar: "key",
+        valueVar: "value",
+        objectVar: "obj",
+      },
     };
   },
-  created() {
-    if (!this.modelValue) {
-      this.updateValue();
-    }
-  },
+  emits: ["update:modelValue", "addBranch"],
   computed: {
-    generatedCode() {
+    type() {
+      return this.modelValue.commandType;
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+  },
+  methods: {
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs = this.argvs) {
       switch (this.type) {
         case "forIn":
-          const key = this.keyVar || "key";
-          const value = this.valueVar || "value";
-          const obj = this.objectVar || "obj";
+          const key = argvs.keyVar || "key";
+          const value = argvs.valueVar || "value";
+          const obj = argvs.objectVar || "obj";
           return `for(const ${key} in ${obj}){const ${value}=${obj}[${key}];`;
         case "continue":
           return "continue;";
@@ -126,52 +139,28 @@ export default defineComponent({
           return "";
       }
     },
-  },
-  watch: {
-    type: {
-      immediate: true,
-      handler(val) {
-        console.log("ForInControl type:", val);
-      },
-    },
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseCodeString(val);
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      if (this.type === "forIn") {
+        const match = code.match(/^for\(const\s+(\w+)\s+in\s+(\w+)\)\{$/);
+        if (match) {
+          argvs.keyVar = match[1];
+          argvs.objectVar = match[2];
         }
-      },
-    },
-    keyVar() {
-      this.updateValue();
-    },
-    valueVar() {
-      this.updateValue();
-    },
-    objectVar() {
-      this.updateValue();
-    },
-  },
-  methods: {
-    updateValue() {
-      this.$emit("update:modelValue", this.generatedCode);
-    },
-    parseCodeString(val) {
-      try {
-        if (this.type === "forIn") {
-          const match = val.match(
-            /^for\(const\s+(\w+)\s+in\s+(\w+|\$\{.+\})\){const\s+(\w+)=.*$/
-          );
-          if (match) {
-            this.keyVar = match[1];
-            this.objectVar = match[2];
-            this.valueVar = match[3];
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse code string:", e);
       }
+      return argvs;
     },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

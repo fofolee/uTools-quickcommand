@@ -3,7 +3,8 @@
     <!-- 操作类型选择 -->
     <div class="tabs-container">
       <q-tabs
-        v-model="operation"
+        :model-value="argvs.operation"
+        @update:model-value="updateArgvs('operation', $event)"
         dense
         class="text-grey"
         active-color="primary"
@@ -55,11 +56,11 @@
     <!-- 文件路径输入 -->
     <div class="row q-gutter-sm">
       <VariableInput
-        v-model="filePath"
+        :model-value="argvs.filePath"
+        @update:model-value="updateArgvs('filePath', $event)"
         label="文件路径"
-        :command="{ icon: 'folder' }"
+        icon="folder"
         class="col-grow"
-        @update:model-value="updateConfig"
       />
       <q-btn
         flat
@@ -74,10 +75,10 @@
     </div>
 
     <!-- 读取操作配置 -->
-    <template v-if="operation === 'read'">
+    <template v-if="argvs.operation === 'read'">
       <div class="row q-gutter-sm">
         <q-select
-          v-model="encoding"
+          v-model="argvs.encoding"
           :options="encodingOptions"
           label="编码"
           dense
@@ -85,9 +86,10 @@
           class="col-grow"
           emit-value
           map-options
+          @update:model-value="updateArgvs('encoding', $event)"
         />
         <q-select
-          v-model="readMode"
+          v-model="argvs.readMode"
           :options="readModeOptions"
           label="读取模式"
           dense
@@ -95,9 +97,10 @@
           class="col-grow"
           emit-value
           map-options
+          @update:model-value="updateArgvs('readMode', $event)"
         />
         <q-select
-          v-model="readFlag"
+          v-model="argvs.readFlag"
           :options="readFlagOptions"
           label="读取标志"
           dense
@@ -105,30 +108,32 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
+          @update:model-value="updateArgvs('readFlag', $event)"
         />
-        <VariableInput
-          v-if="readMode === 'start'"
-          v-model="start"
+        <NumberInput
+          v-if="argvs.readMode === 'start'"
+          :model-value="argvs.start"
+          @update:model-value="updateArgvs('start', $event)"
           label="起始位置"
-          :command="{ icon: 'first_page', inputType: 'number' }"
+          icon="first_page"
           class="col-grow"
         />
-        <VariableInput
-          v-if="readMode === 'start'"
-          v-model="length"
+        <NumberInput
+          v-if="argvs.readMode === 'start'"
+          :model-value="argvs.length"
+          @update:model-value="updateArgvs('length', $event)"
           label="读取长度"
-          :command="{ icon: 'last_page', inputType: 'number' }"
+          icon="last_page"
           class="col-grow"
         />
       </div>
     </template>
 
     <!-- 写入操作配置 -->
-    <template v-if="operation === 'write'">
+    <template v-if="argvs.operation === 'write'">
       <div class="row q-gutter-sm">
         <q-select
-          v-model="encoding"
+          v-model="argvs.encoding"
           :options="encodingOptions"
           label="编码"
           dense
@@ -136,9 +141,10 @@
           class="col-grow"
           emit-value
           map-options
+          @update:model-value="updateArgvs('encoding', $event)"
         />
         <q-select
-          v-model="writeMode"
+          v-model="argvs.writeMode"
           :options="writeModeOptions"
           label="写入模式"
           dense
@@ -146,10 +152,10 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
+          @update:model-value="updateArgvs('writeMode', $event)"
         />
         <q-select
-          v-model="writeFlag"
+          v-model="argvs.writeFlag"
           :options="writeFlagOptions"
           label="文件权限"
           dense
@@ -157,25 +163,34 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
-        />
+          @update:model-value="updateArgvs('writeFlag', $event)"
+        >
+          <template v-slot:option="scope">
+            <q-item v-bind="scope.itemProps">
+              <q-item-section>
+                <q-item-label>{{ scope.opt.label }}</q-item-label>
+                <q-item-label caption>{{ scope.opt.hint }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
       </div>
       <div class="row q-gutter-sm">
         <VariableInput
-          v-model="content"
+          :model-value="argvs.content"
+          @update:model-value="updateArgvs('content', $event)"
           label="写入内容"
-          :command="{ icon: 'edit' }"
+          icon="edit"
           class="col-12"
-          @update:model-value="updateConfig"
         />
       </div>
     </template>
 
     <!-- 删除操作配置 -->
-    <template v-if="operation === 'delete'">
+    <template v-if="argvs.operation === 'delete'">
       <div class="row q-gutter-sm">
         <q-select
-          v-model="targetType"
+          v-model="argvs.targetType"
           :options="targetTypeOptions"
           label="目标类型"
           dense
@@ -183,24 +198,31 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
+          @update:model-value="updateArgvs('targetType', $event)"
         />
         <q-checkbox
-          v-model="recursive"
+          v-model="argvs.recursive"
           label="递归删除"
-          v-if="targetType === 'directory'"
+          v-if="argvs.targetType === 'directory'"
           dense
           class="col-grow"
+          @update:model-value="updateArgvs('recursive', $event)"
         />
-        <q-checkbox v-model="force" label="强制删除" dense class="col-grow" />
+        <q-checkbox
+          v-model="argvs.force"
+          label="强制删除"
+          dense
+          class="col-grow"
+          @update:model-value="updateArgvs('force', $event)"
+        />
       </div>
     </template>
 
     <!-- 管理操作配置 -->
-    <template v-if="operation === 'manage'">
+    <template v-if="argvs.operation === 'manage'">
       <div class="row q-gutter-sm">
         <q-select
-          v-model="targetType"
+          v-model="argvs.targetType"
           :options="targetTypeOptions"
           label="目标类型"
           dense
@@ -208,135 +230,122 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
+          @update:model-value="updateArgvs('targetType', $event)"
         />
         <q-select
-          v-model="manageOperation"
+          v-model="argvs.manageOperation"
           :options="manageOperationOptions"
-          label="操作类型"
+          label="管理操作"
           dense
           filled
           class="col-grow"
           emit-value
           map-options
+          @update:model-value="updateArgvs('manageOperation', $event)"
         />
       </div>
 
       <!-- 重命名操作 -->
-      <template v-if="manageOperation === 'rename'">
+      <template v-if="argvs.manageOperation === 'rename'">
         <div class="row q-gutter-sm">
           <VariableInput
-            v-model="newPath"
+            :model-value="argvs.newPath"
+            @update:model-value="updateArgvs('newPath', $event)"
             label="新路径"
-            :command="{ icon: 'drive_file_rename_outline' }"
+            icon="drive_file_rename_outline"
             class="col-grow"
-            @update:model-value="updateConfig"
           />
         </div>
       </template>
 
       <!-- 修改权限操作 -->
-      <template v-if="manageOperation === 'chmod'">
-        <div class="row q-col-gutter-md">
-          <div class="col-12">
-            <div class="row q-col-gutter-sm">
-              <div class="col-4">
-                <div class="text-caption q-mb-xs">所有者</div>
-                <q-option-group
-                  v-model="ownerMode"
-                  :options="permissionOptions"
-                  type="checkbox"
-                  inline
-                  dense
-                  @update:model-value="updateMode"
-                />
-              </div>
-              <div class="col-4">
-                <div class="text-caption q-mb-xs">用户组</div>
-                <q-option-group
-                  v-model="groupMode"
-                  :options="permissionOptions"
-                  type="checkbox"
-                  inline
-                  dense
-                  @update:model-value="updateMode"
-                />
-              </div>
-              <div class="col-4">
-                <div class="text-caption q-mb-xs">其他用户</div>
-                <q-option-group
-                  v-model="otherMode"
-                  :options="permissionOptions"
-                  type="checkbox"
-                  inline
-                  dense
-                  @update:model-value="updateMode"
-                />
-              </div>
-            </div>
-            <div class="row q-col-gutter-md items-center q-mt-xs">
-              <div style="font-size: 12px">权限值: {{ mode }}</div>
-              <q-checkbox
-                v-model="recursive"
-                label="递归修改"
-                v-if="targetType === 'directory'"
-                dense
-                class="col-grow"
-              />
-            </div>
-          </div>
+      <template v-if="argvs.manageOperation === 'chmod'">
+        <div class="row q-gutter-sm">
+          <q-select
+            v-model="argvs.mode"
+            :options="writeFlagOptions"
+            label="文件权限"
+            dense
+            filled
+            class="col-grow"
+            emit-value
+            map-options
+            @update:model-value="updateArgvs('mode', $event)"
+          >
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label caption>{{ scope.opt.hint }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <q-checkbox
+            v-model="argvs.recursive"
+            label="递归修改"
+            v-if="argvs.targetType === 'directory'"
+            dense
+            class="col-grow"
+            @update:model-value="updateArgvs('recursive', $event)"
+          />
         </div>
       </template>
 
       <!-- 修改所有者操作 -->
-      <template v-if="manageOperation === 'chown'">
-        <div class="row q-col-gutter-sm">
-          <VariableInput
-            v-model="uid"
+      <template v-if="argvs.manageOperation === 'chown'">
+        <div class="row q-gutter-sm">
+          <NumberInput
+            :model-value="argvs.uid"
+            @update:model-value="updateArgvs('uid', $event)"
             label="用户ID"
-            :command="{ icon: 'person', inputType: 'number' }"
+            icon="person"
             class="col-grow"
           />
-          <VariableInput
-            v-model="gid"
+          <NumberInput
+            :model-value="argvs.gid"
+            @update:model-value="updateArgvs('gid', $event)"
             label="组ID"
-            :command="{ icon: 'group', inputType: 'number' }"
+            icon="group"
             class="col-grow"
           />
           <q-checkbox
-            v-model="recursive"
+            v-model="argvs.recursive"
             label="递归修改"
-            v-if="targetType === 'directory'"
+            v-if="argvs.targetType === 'directory'"
             dense
             class="col-grow"
+            @update:model-value="updateArgvs('recursive', $event)"
           />
         </div>
       </template>
     </template>
 
     <!-- 列目录操作配置 -->
-    <template v-if="operation === 'list'">
+    <template v-if="argvs.operation === 'list'">
       <div class="row q-gutter-sm q-px-xs">
         <q-checkbox
-          v-model="recursive"
+          v-model="argvs.recursive"
           label="递归列出子目录"
           dense
           class="col-grow"
+          @update:model-value="updateArgvs('recursive', $event)"
         />
         <q-checkbox
-          v-model="showHidden"
+          v-model="argvs.showHidden"
           label="显示隐藏文件"
           dense
           class="col-grow"
+          @update:model-value="updateArgvs('showHidden', $event)"
         />
       </div>
     </template>
 
     <!-- 状态操作配置 -->
-    <template v-if="operation === 'stat'">
+    <template v-if="argvs.operation === 'stat'">
       <div class="row q-gutter-sm">
         <q-select
-          v-model="targetType"
+          v-model="argvs.targetType"
           :options="targetTypeOptions"
           label="目标类型"
           dense
@@ -344,10 +353,10 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
+          @update:model-value="updateArgvs('targetType', $event)"
         />
         <q-select
-          v-model="statMode"
+          v-model="argvs.statMode"
           :options="statModeOptions"
           label="检查类型"
           dense
@@ -355,12 +364,13 @@
           class="col-grow"
           emit-value
           map-options
-          @update:model-value="updateConfig"
+          @update:model-value="updateArgvs('statMode', $event)"
         />
         <q-checkbox
-          v-model="followSymlinks"
+          v-model="argvs.followSymlinks"
           label="跟随符号链接"
-          v-if="statMode === 'status'"
+          v-if="argvs.statMode === 'status'"
+          @update:model-value="updateArgvs('followSymlinks', $event)"
           dense
           class="col-grow"
         />
@@ -371,233 +381,237 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "../ui/VariableInput.vue";
-import { formatJsonVariables } from "js/composer/formatString";
+import VariableInput from "components/composer/ui/VariableInput.vue";
+import NumberInput from "components/composer/ui/NumberInput.vue";
+import { stringifyObject, parseFunction } from "js/composer/formatString";
+
+// 静态选项数据
+const ENCODING_OPTIONS = [
+  { label: "UTF-8", value: "utf8" },
+  { label: "UTF-16", value: "utf16le" },
+  { label: "GB2312", value: "gb2312" },
+  { label: "GBK", value: "gbk" },
+  { label: "GB18030", value: "gb18030" },
+  { label: "Big5", value: "big5" },
+  { label: "ASCII", value: "ascii" },
+  { label: "Latin1", value: "latin1" },
+  { label: "Base64", value: "base64" },
+  { label: "Hex", value: "hex" },
+];
+
+const READ_MODE_OPTIONS = [
+  { label: "全部读取", value: "all" },
+  { label: "指定位置", value: "start" },
+  { label: "按行读取", value: "line" },
+];
+
+const READ_FLAG_OPTIONS = [
+  { label: "同步读取", value: "sync" },
+  { label: "异步读取", value: "async" },
+];
+
+const WRITE_MODE_OPTIONS = [
+  { label: "覆盖写入", value: "write" },
+  { label: "追加写入", value: "append" },
+];
+
+const WRITE_FLAG_OPTIONS = [
+  { label: "644", value: "644", hint: "用户读写，组读，其他读" },
+  { label: "666", value: "666", hint: "所有人读写" },
+  { label: "755", value: "755", hint: "用户读写执行，组和其他读执行" },
+  { label: "777", value: "777", hint: "所有人读写执行" },
+];
+
+const STAT_MODE_OPTIONS = [
+  { label: "检查存在", value: "exists" },
+  { label: "完整状态", value: "status" },
+];
+
+const TARGET_TYPE_OPTIONS = [
+  { label: "文件", value: "file" },
+  { label: "目录", value: "directory" },
+];
+
+const MANAGE_OPERATION_OPTIONS = [
+  { label: "重命名", value: "rename" },
+  { label: "修改权限", value: "chmod" },
+  { label: "修改所有者", value: "chown" },
+];
 
 export default defineComponent({
   name: "FileOperationEditor",
-  components: { VariableInput },
-
+  components: {
+    VariableInput,
+    NumberInput,
+  },
+  props: {
+    modelValue: {
+      type: Object,
+      required: true,
+    },
+  },
+  emits: ["update:modelValue"],
   data() {
     return {
-      operation: "read",
-      filePath: "",
-      encoding: "utf8",
-      readMode: "all",
-      writeMode: "w",
-      content: "",
-      start: 0,
-      length: 1024,
-      recursive: false,
-      force: false,
-      showHidden: false,
-      followSymlinks: false,
-      manageOperation: "rename",
-      newPath: "",
-      mode: "644",
-      uid: "",
-      gid: "",
-      readFlag: "r",
-      writeFlag: "666",
-      ownerMode: ["read", "write"],
-      groupMode: ["read"],
-      otherMode: ["read"],
-      permissionOptions: [
-        { label: "读取(r)", value: "read" },
-        { label: "写入(w)", value: "write" },
-        { label: "执行(x)", value: "execute" },
-      ],
-
-      encodingOptions: [
-        { label: "UTF-8", value: "utf8" },
-        { label: "ASCII", value: "ascii" },
-        { label: "Base64", value: "base64" },
-        { label: "二进制", value: "binary" },
-        { label: "十六进制", value: "hex" },
-      ],
-      readModeOptions: [
-        { label: "全部读取", value: "all" },
-        { label: "指定位置读取", value: "start" },
-      ],
-      writeModeOptions: [
-        { label: "覆盖写入", value: "w" },
-        { label: "追加写入", value: "a" },
-        { label: "读写", value: "w+" },
-        { label: "追加读写", value: "a+" },
-      ],
-      manageOperationOptions: [
-        { label: "重命名/移动", value: "rename" },
-        { label: "修改权限", value: "chmod" },
-        { label: "修改所有者", value: "chown" },
-      ],
-      readFlagOptions: [
-        { label: "只读", value: "r" },
-        { label: "读写", value: "r+" },
-        { label: "同步读取", value: "rs" },
-        { label: "同步读写", value: "rs+" },
-      ],
-      writeFlagOptions: [
-        { label: "默认权限", value: "666" },
-        { label: "只读", value: "444" },
-        { label: "可执行", value: "755" },
-        { label: "完全控制", value: "777" },
-      ],
-      targetType: "",
-      targetTypeOptions: [
-        { label: "文件", value: "file" },
-        { label: "文件夹", value: "directory" },
-      ],
-      statMode: "exists",
-      statModeOptions: [
-        { label: "检查是否存在", value: "exists" },
-        { label: "获取详细状态", value: "status" },
-      ],
+      encodingOptions: ENCODING_OPTIONS,
+      readModeOptions: READ_MODE_OPTIONS,
+      readFlagOptions: READ_FLAG_OPTIONS,
+      writeModeOptions: WRITE_MODE_OPTIONS,
+      writeFlagOptions: WRITE_FLAG_OPTIONS,
+      statModeOptions: STAT_MODE_OPTIONS,
+      targetTypeOptions: TARGET_TYPE_OPTIONS,
+      manageOperationOptions: MANAGE_OPERATION_OPTIONS,
+      defaultArgvs: {
+        operation: "read",
+        filePath: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        encoding: "utf8",
+        readMode: "all",
+        readFlag: "async",
+        start: 0,
+        length: 100,
+        targetType: "file",
+        writeMode: "write",
+        writeFlag: "644",
+        statMode: "exists",
+        followSymlinks: false,
+        recursive: false,
+        force: false,
+        showHidden: false,
+        manageOperation: "rename",
+      },
     };
   },
-
-  created() {
-    switch (this.operation) {
-      case "list":
-        this.targetType = "directory";
-        break;
-      case "stat":
-      case "delete":
-      case "manage":
-        this.targetType = "file";
-        break;
-    }
+  computed: {
+    argvs: {
+      get() {
+        return (
+          this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        );
+      },
+      set(value) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          argvs: value,
+        });
+      },
+    },
+    shouldSelectDirectory() {
+      return (
+        this.argvs.operation === "list" ||
+        (this.argvs.targetType === "directory" &&
+          ["delete", "manage", "stat"].includes(this.argvs.operation))
+      );
+    },
   },
-
   methods: {
-    updateConfig() {
-      let config = {
-        operation: this.operation,
-        filePath: this.filePath,
+    generateCode(argvs = this.argvs) {
+      const params = {
+        operation: argvs.operation,
+        filePath: argvs.filePath,
       };
 
-      // 定义需要处理的变量字段
-      const variableFields = [
-        "filePath",
-        ...(this.operation === "read" && this.readMode === "start"
-          ? ["start", "length"]
-          : []),
-        ...(this.operation === "write" ? ["content"] : []),
-        ...(this.operation === "manage" && this.manageOperation === "rename"
-          ? ["newPath"]
-          : []),
-        ...(this.operation === "manage" && this.manageOperation === "chmod"
-          ? ["mode"]
-          : []),
-        ...(this.operation === "manage" && this.manageOperation === "chown"
-          ? ["uid", "gid"]
-          : []),
-      ];
-
-      let code = "";
-      switch (this.operation) {
+      // 根据不同操作类型添加特定参数
+      switch (argvs.operation) {
         case "read":
-          config = {
-            ...config,
-            encoding: this.encoding,
-            readMode: this.readMode,
-            flag: this.readFlag,
-            ...(this.readMode === "start" && {
-              start: this.start,
-              length: this.length,
-            }),
-          };
-          code = `quickcomposer.file.operation(${formatJsonVariables(
-            config,
-            variableFields
-          )})`;
+          params.encoding = argvs.encoding;
+          params.readFlag = argvs.readFlag;
+          params.readMode = argvs.readMode;
+          if (argvs.readMode === "start") {
+            params.start = Number(argvs.start) || 0;
+            params.length = Number(argvs.length) || 100;
+          }
           break;
 
         case "write":
-          config = {
-            ...config,
-            encoding: this.encoding,
-            flag: this.writeMode,
-            mode: this.writeFlag,
-            content: this.content,
-          };
-          code = `quickcomposer.file.operation(${formatJsonVariables(
-            config,
-            variableFields
-          )})`;
+          params.encoding = argvs.encoding;
+          params.content = argvs.content;
+          params.flag = argvs.writeMode === "append" ? "a" : "w";
+          params.mode = argvs.writeFlag;
+          break;
+
+        case "list":
+          params.targetType = "directory";
+          params.recursive = argvs.recursive;
           break;
 
         case "delete":
-          config = {
-            ...config,
-            recursive: this.recursive,
-            force: this.force,
-          };
-          code = `quickcomposer.file.operation(${formatJsonVariables(
-            config,
-            variableFields
-          )})`;
+          params.targetType = argvs.targetType;
+          params.force = argvs.force;
+          params.recursive =
+            argvs.recursive && argvs.targetType === "directory";
           break;
 
         case "manage":
-          config = {
-            ...config,
-            manageOperation: this.manageOperation,
-            ...(this.manageOperation === "rename" && { newPath: this.newPath }),
-            ...(this.manageOperation === "chmod" && {
-              mode: this.mode,
-              recursive: this.recursive,
-            }),
-            ...(this.manageOperation === "chown" && {
-              uid: this.uid,
-              gid: this.gid,
-              recursive: this.recursive,
-            }),
-          };
-          code = `quickcomposer.file.operation(${formatJsonVariables(
-            config,
-            variableFields
-          )})`;
+          params.targetType = argvs.targetType;
+          params.manageOperation = argvs.manageOperation;
+          if (argvs.manageOperation === "rename") {
+            params.newPath = argvs.newPath;
+          } else {
+            if (argvs.mode) params.mode = argvs.mode;
+            if (argvs.uid) params.uid = argvs.uid;
+            if (argvs.gid) params.gid = argvs.gid;
+          }
           break;
 
         case "stat":
-          config = {
-            ...config,
-            targetType: this.targetType,
-            statMode: this.statMode,
-            ...(this.statMode === "status" && {
-              followSymlinks: this.followSymlinks,
-            }),
-          };
-          code = `quickcomposer.file.operation(${formatJsonVariables(
-            config,
-            variableFields
-          )})`;
+          params.targetType = argvs.targetType;
+          params.statMode = argvs.statMode;
+          params.followSymlinks = argvs.followSymlinks;
           break;
       }
 
-      this.$emit("update:modelValue", code);
+      return `quickcomposer.file.operation(${stringifyObject(params)})`;
     },
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs };
+      // 确保数字类型字段的值为数字
+      if (key === "start" || key === "length") {
+        argvs[key] = Number(value) || 0;
+      } else {
+        argvs[key] = value;
+      }
 
+      // 特殊处理
+      if (key === "operation") {
+        switch (value) {
+          case "list":
+            argvs.targetType = "directory";
+            break;
+          case "stat":
+          case "delete":
+          case "manage":
+            argvs.targetType = "file";
+            break;
+        }
+      }
+
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
     async selectFile() {
       const result = window.utools.showOpenDialog({
         title: "选择文件",
         properties: [
-          this.operation === "list" ||
-          (["delete", "manage", "stat"].includes(this.operation) &&
-            this.targetType === "directory")
-            ? "openDirectory"
-            : "openFile",
+          this.shouldSelectDirectory ? "openDirectory" : "openFile",
           "showHiddenFiles",
         ],
         buttonLabel: "选择",
       });
-      console.log(result);
       if (result && result[0]) {
-        this.filePath = result[0];
-        this.updateConfig();
+        this.updateArgvs("filePath", {
+          value: result[0],
+          isString: true,
+          __varInputVal__: true,
+        });
       }
     },
-
     updateMode() {
       const modeMap = {
         read: 4,
@@ -609,58 +623,68 @@ export default defineComponent({
         return perms.reduce((sum, perm) => sum + modeMap[perm], 0);
       };
 
-      const ownerValue = calculateMode(this.ownerMode);
-      const groupValue = calculateMode(this.groupMode);
-      const otherValue = calculateMode(this.otherMode);
+      const ownerValue = calculateMode(this.argvs.ownerMode);
+      const groupValue = calculateMode(this.argvs.groupMode);
+      const otherValue = calculateMode(this.argvs.otherMode);
 
-      this.mode = `${ownerValue}${groupValue}${otherValue}`;
-      this.updateConfig();
+      this.argvs.mode = `${ownerValue}${groupValue}${otherValue}`;
+      this.updateArgvs();
+    },
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      try {
+        const variableFormatPaths = [
+          "arg0.filePath",
+          "arg0.content",
+          "arg0.newPath",
+        ];
+        const result = parseFunction(code, { variableFormatPaths });
+        let params = result.args[0];
+
+        // 根据不同操作类型处理特定参数
+        switch (params.operation) {
+          case "read":
+            if (params.readMode === "start") {
+              params.start = Number(params.start) || 0;
+              params.length = Number(params.length) || 100;
+            }
+            break;
+
+          case "write":
+            // 将 flag 转换回 writeMode
+            params.writeMode = params.flag === "a" ? "append" : "write";
+            // 将 mode 转换回 writeFlag
+            params.writeFlag = params.mode;
+            break;
+
+          case "list":
+            params.targetType = "directory";
+            break;
+
+          case "delete":
+          case "manage":
+          case "stat":
+            // 这些操作的参数可以直接使用
+            break;
+        }
+
+        return params;
+      } catch (e) {
+        console.error("解析文件操作参数失败:", e);
+      }
+      return argvs;
     },
   },
-
-  watch: {
-    operation() {
-      this.updateConfig();
-    },
-    encoding() {
-      this.updateConfig();
-    },
-    readMode() {
-      this.updateConfig();
-    },
-    writeMode() {
-      this.updateConfig();
-    },
-    recursive() {
-      this.updateConfig();
-    },
-    force() {
-      this.updateConfig();
-    },
-    manageOperation() {
-      this.updateConfig();
-    },
-    start() {
-      this.updateConfig();
-    },
-    length() {
-      this.updateConfig();
-    },
-    mode() {
-      this.updateConfig();
-    },
-    uid() {
-      this.updateConfig();
-    },
-    gid() {
-      this.updateConfig();
-    },
-    targetType: {
-      handler(newType) {
-        this.filePath = "";
-        this.updateConfig();
-      },
-    },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

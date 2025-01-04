@@ -42,7 +42,8 @@
         <VariableInput
           :model-value="item.value"
           :label="item.key || '值'"
-          :command="{ icon: 'code' }"
+          icon="code"
+          class="col-grow"
           @update:model-value="(val) => updateItemValue(val, index)"
         />
       </div>
@@ -104,7 +105,7 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Object,
-      default: () => ({}),
+      required: true,
     },
     options: {
       type: Object,
@@ -116,11 +117,17 @@ export default defineComponent({
     const modelEntries = Object.entries(this.modelValue || {});
     return {
       localItems: modelEntries.length
-        ? modelEntries.map(([key, value]) => ({
-            key,
-            value: typeof value === "string" ? value : JSON.stringify(value),
-          }))
-        : [{ key: "", value: "" }],
+        ? modelEntries.map(([key, value]) => ({ key, value }))
+        : [
+            {
+              key: "",
+              value: {
+                value: "",
+                isString: true,
+                __varInputVal__: true,
+              },
+            },
+          ],
       filterOptions: this.options?.items || [],
       inputValue: "",
     };
@@ -134,7 +141,7 @@ export default defineComponent({
         this.localItems = newItems;
         const dict = {};
         newItems.forEach((item) => {
-          if (item.key && item.value) {
+          if (item.key) {
             dict[item.key] = item.value;
           }
         });
@@ -144,22 +151,24 @@ export default defineComponent({
   },
   methods: {
     addItem() {
-      this.items = [...this.items, { key: "", value: "" }];
+      this.items = [
+        ...this.items,
+        {
+          key: "",
+          value: { value: "", isString: true, __varInputVal__: true },
+        },
+      ];
     },
     removeItem(index) {
       const newItems = [...this.items];
       newItems.splice(index, 1);
       if (newItems.length === 0) {
-        newItems.push({ key: "", value: "" });
+        newItems.push({
+          key: "",
+          value: { value: "", isString: true, __varInputVal__: true },
+        });
       }
       this.items = newItems;
-      const dict = {};
-      newItems.forEach((item) => {
-        if (item.key && item.value) {
-          dict[item.key] = item.value;
-        }
-      });
-      this.$emit("update:modelValue", dict);
     },
     updateItemKey(val, index) {
       const newItems = [...this.items];

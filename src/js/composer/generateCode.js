@@ -6,6 +6,7 @@ export function generateCode(commandFlow) {
   const indent = hasAsyncFunction ? "  " : "";
 
   commandFlow.forEach((cmd) => {
+    if (!cmd.code) return;
     let line = indent;
 
     if (cmd.outputVariable) {
@@ -13,8 +14,7 @@ export function generateCode(commandFlow) {
     }
 
     let awaitCmd = cmd.isAsync ? "await " : "";
-    line += `${awaitCmd} ${cmd.argv}`;
-
+    line += `${awaitCmd} ${cmd.code}`;
     code.push(line);
   });
 

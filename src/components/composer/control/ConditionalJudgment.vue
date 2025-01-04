@@ -12,7 +12,8 @@
       <div class="condition-settings">
         <template v-if="showCondition">
           <ControlInput
-            v-model="conditionLocal"
+            :model-value="argvs.condition"
+            @update:model-value="updateArgvs('condition', $event)"
             label="条件"
             placeholder="表达式"
             class="condition-input"
@@ -30,8 +31,9 @@
         class="control-btn"
         @click="
           $emit('addBranch', {
-            chainId: command.chainId,
+            chainId: this.modelValue.chainId,
             commandType: 'else',
+            value: this.modelValue.value,
           })
         "
       >
@@ -44,11 +46,13 @@
         flat
         dense
         size="sm"
-        :icon="showCondition ? 'remove' : 'add'"
+        :icon="argvs.showMidCondition ? 'remove' : 'add'"
         class="control-btn"
         @click="toggleCondition"
       >
-        <q-tooltip>{{ showCondition ? "隐藏条件" : "显示条件" }}</q-tooltip>
+        <q-tooltip>{{
+          argvs.showMidCondition ? "隐藏条件" : "显示条件"
+        }}</q-tooltip>
       </q-btn>
     </div>
   </div>
@@ -64,47 +68,58 @@ export default defineComponent({
     ControlInput,
   },
   props: {
-    modelValue: String,
-    command: Object,
-    type: {
-      type: String,
-      required: true,
-      validator: (value) => ["if", "else", "end"].includes(value),
-    },
+    modelValue: Object,
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      showMidCondition: false,
-      condition: "",
+      defaultArgvs: {
+        condition: "",
+        showMidCondition: false,
+      },
     };
   },
-  created() {
-    // 组件创建时生成初始代码
-    this.updateValue();
-  },
   computed: {
-    showCondition() {
+    type() {
+      return this.modelValue.commandType;
+    },
+    argvs() {
       return (
-        this.type === "if" || (this.type === "else" && this.showMidCondition)
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
       );
     },
-    conditionLocal: {
-      get() {
-        return this.condition;
-      },
-      set(value) {
-        this.condition = value;
-        this.updateValue();
-      },
+    showCondition() {
+      return (
+        this.type === "if" ||
+        (this.type === "else" && this.argvs.showMidCondition)
+      );
     },
-    generatedCode() {
+  },
+  methods: {
+    toggleCondition() {
+      this.argvs.showMidCondition = !this.argvs.showMidCondition;
+      if (this.argvs.showMidCondition === false) this.argvs.condition = "";
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.argvs,
+        code: this.generateCode(this.argvs),
+      });
+    },
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs) {
       switch (this.type) {
         case "if":
-          return `if(${this.condition || "true"}){`;
+          return `if(${argvs.condition || "true"}){`;
         case "else":
-          return this.showMidCondition && this.condition
-            ? `}else if(${this.condition}){`
+          return argvs.showMidCondition && argvs.condition
+            ? `}else if(${argvs.condition}){`
             : "}else{";
         case "end":
           return "}";
@@ -112,51 +127,36 @@ export default defineComponent({
           return "";
       }
     },
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseCodeString(val);
-        }
-      },
-    },
-  },
-  methods: {
-    toggleCondition() {
-      this.showMidCondition = !this.showMidCondition;
-      if (!this.showMidCondition) {
-        this.condition = "";
-        this.updateValue();
-      }
-    },
-    updateValue() {
-      this.$emit("update:modelValue", this.generatedCode);
-    },
-    parseCodeString(val) {
-      try {
-        if (this.type === "if") {
-          const match = val.match(/^if\((.*)\){$/);
-          if (match) {
-            this.condition = match[1] === "true" ? "" : match[1];
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      switch (this.type) {
+        case "if":
+          const ifMatch = code.match(/^if\((.*?)\)\{$/);
+          if (ifMatch) {
+            argvs.condition = ifMatch[1] === "true" ? "" : ifMatch[1];
           }
-        } else if (this.type === "else") {
-          if (val === "}else{") {
-            this.showMidCondition = false;
-            this.condition = "";
-          } else {
-            const match = val.match(/^}else if\((.*)\){$/);
-            if (match) {
-              this.showMidCondition = true;
-              this.condition = match[1];
-            }
+          break;
+        case "else":
+          const elseIfMatch = code.match(/^}else if\((.*?)\)\{$/);
+          if (elseIfMatch) {
+            argvs.condition = elseIfMatch[1];
+            argvs.showMidCondition = true;
           }
-        }
-      } catch (e) {
-        console.error("Failed to parse code string:", e);
+          break;
       }
+      return argvs;
     },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

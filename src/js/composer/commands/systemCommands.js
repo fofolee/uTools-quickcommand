@@ -10,8 +10,7 @@ export const systemCommands = {
         {
           key: "command",
           label: "要执行的命令行",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "terminal",
         },
       ],
@@ -23,8 +22,7 @@ export const systemCommands = {
         {
           key: "content",
           label: "要写入剪切板的内容",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "content_copy",
         },
       ],

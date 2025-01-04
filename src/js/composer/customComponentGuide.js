@@ -36,55 +36,183 @@ const customComponentGuide = {
         style: "组件样式，建议使用scoped",
       },
       keyPoints: {
-        variableInput: {
-          scenarios: [
-            "需要支持变量输入的文本框",
-            "数字输入框（设置inputType='number'）",
-            "需要自动处理引号的输入",
-          ],
-          props: {
-            vModel: "双向绑定值",
-            command: "配置图标和输入类型",
-            label: "输入框标签",
-          },
-          events: {
-            description: "需要监听的事件",
-            list: ["@update:model-value='updateConfig' - 监听值变化并更新代码"],
+        props: {
+          modelValue: {
+            description: "必需的属性，包含组件的完整配置",
+            type: "Object",
+            required: true,
+            structure: {
+              value: "组件对应的函数名",
+              code: "生成的代码字符串",
+              argvs: "解析后的参数对象",
+            },
           },
         },
-        selectInput: {
-          description: "选择框组件",
-          component: "q-select",
-          props: {
-            "v-model": "双向绑定值",
-            options: "选项列表",
-            label: "标签文本",
-            "emit-value": "true - 使用选项的value作为值",
-            "map-options": "true - 启用选项映射",
+        computed: {
+          argvs: {
+            description: "处理参数的计算属性",
+            implementation: `
+              return this.modelValue.argvs ||
+                     this.parseCodeToArgvs(this.modelValue.code) ||
+                     this.defaultArgvs;
+            `,
           },
-          events: {
-            "@update:model-value": "必须监听此事件以触发代码更新",
-          },
-          tips: "所有影响代码生成的输入组件都必须在值变化时触发updateConfig",
         },
-        codeGeneration: {
-          tool: "使用formatJsonVariables处理变量",
-          params: {
-            config: "完整的配置对象",
-            variableFields: "需要处理的字段列表",
+        data: {
+          defaultArgvs: {
+            description: "定义组件的默认参数结构",
+            example: `{
+              key: "",
+              modifiers: {
+                control: false,
+                alt: false,
+                shift: false,
+                command: false,
+              }
+            }`,
           },
-          formats: {
-            objectParams: {
-              description: "当参数是对象时的处理方式",
-              example:
-                "`quickcomposer.xxx.yyy(${formatJsonVariables(config, variableFields)})`",
-              reference: "参考 AxiosConfigEditor.vue",
+        },
+        methods: {
+          generateCode: {
+            description: "生成代码字符串的方法",
+            parameters: "argvs - 当前参数对象",
+            implementation: {
+              simpleCase: `
+                // 简单参数的情况
+                const args = [value, ...modifiers];
+                return \`functionName("\${args.join('","')})\`;
+              `,
+              objectCase: `
+                // 对象参数的情况
+                const formattedConfig = stringifyObject(config);
+                return \`functionName(\${formattedConfig})\`;
+              `,
             },
-            simpleParams: {
-              description: "当参数是简单值时的处理方式",
-              example: "`${functionName}(${args.join(',')})`",
-              reference: "参考 MultiParams.vue",
+          },
+          parseCodeToArgvs: {
+            description: "解析代码字符串为参数对象",
+            parameters: "code - 要解析的代码字符串",
+            implementation: {
+              steps: [
+                "1. 检查代码是否存在",
+                "2. 定义需要使用variable格式的路径",
+                "3. 使用parseFunction解析代码",
+                "4. 处理解析结果并返回参数对象",
+              ],
+              example: `
+                // 定义需要使用variable格式的路径
+                const variableFormatPaths = [
+                  'arg0', // url参数
+                  'arg*.headers.**', // 所有headers字段
+                  '!arg*.headers.Content-Type' // 排除Content-Type
+                ];
+
+                // 解析代码
+                const result = parseFunction(code, { variableFormatPaths });
+                if (!result) return this.defaultArgvs;
+
+                // 处理解析结果
+                const [url, config] = result.args;
+
+                // 返回处理后的参数对象
+                return {
+                  ...this.defaultArgvs,
+                  url,
+                  ...config
+                };
+              `,
             },
+          },
+        },
+        mounted: {
+          description: "组件初始化时的处理",
+          implementation: `
+            // 如果没有 argvs 和 code，使用默认值初始化
+            if (!this.modelValue.argvs && !this.modelValue.code) {
+              this.$emit("update:modelValue", {
+                ...this.modelValue,
+                argvs: this.defaultArgvs,
+                code: this.generateCode(this.defaultArgvs)
+              });
+            }
+          `,
+        },
+        stringHandling: {
+          stringifyObject: {
+            description: "将对象转换为代码字符串",
+            usage: "用于生成包含对象参数的代码",
+            example: "将 {key: 'value'} 转换为 '{key:\"value\"}'",
+          },
+          parseFunction: {
+            description: "解析函数调用代码为对象",
+            usage: "用于解析函数调用代码，支持变量格式的路径匹配",
+            parameters: {
+              functionStr: "要解析的函数调用代码字符串",
+              options: {
+                variableFormatPaths: "需要使用variable格式的路径模式数组",
+              },
+            },
+            pathPatterns: {
+              paramPosition: {
+                description: "参数位置匹配",
+                examples: [
+                  "arg0 - 第一个参数",
+                  "arg1 - 第二个参数",
+                  "arg* - 任意参数",
+                ],
+              },
+              objectProps: {
+                description: "对象属性匹配",
+                examples: [
+                  "arg0.headers - 精确匹配",
+                  "arg1.data.* - 直接子属性",
+                  "arg2.params.** - 所有嵌套属性",
+                ],
+              },
+              wildcards: {
+                description: "通配符使用",
+                examples: [
+                  "* - 单层匹配",
+                  "** - 多层匹配",
+                  "Accept* - 前缀匹配",
+                ],
+              },
+              exclusions: {
+                description: "排除规则",
+                examples: [
+                  "!arg*.headers.Content-Type",
+                  "!arg*.headers.Cookie",
+                ],
+              },
+            },
+            example: `
+              const result = parseFunction(
+                'axios(url, { headers: { "User-Agent": ua } })',
+                {
+                  variableFormatPaths: [
+                    'arg0',
+                    'arg*.headers.**',
+                    '!arg*.headers.Content-Type'
+                  ]
+                }
+              );
+            `,
+            returns: {
+              functionName: "函数名称",
+              args: "解析后的参数数组，根据路径规则处理变量格式",
+            },
+          },
+          stringifyWithType: {
+            description: "将带类型的值转换为字符串",
+            usage: "用于处理 VariableInput 类型的值",
+            example:
+              "将 {value: 'text', isString: true, __varInputVal__: true,} 转换为 '\"text\"'",
+          },
+          parseToHasType: {
+            description: "将字符串解析为带类型的值",
+            usage: "用于解析 VariableInput 类型的值",
+            example:
+              "将 '\"text\"' 解析为 {value: 'text', isString: true, __varInputVal__: true,}",
           },
         },
       },
@@ -124,6 +252,41 @@ const customComponentGuide = {
     componentStructure: "参考现有组件的实现方式，保持一致的代码风格",
     errorHandling: "前后端都需要适当的错误处理和提示",
     typeChecking: "确保所有参数都有适当的类型检查",
+    codeGeneration: {
+      description: "代码生成的关键点",
+      points: [
+        "1. 使用 generateCode 方法生成标准格式的代码",
+        "2. 确保生成的代码可以被正确解析回参数",
+        "3. 处理特殊字符和引号",
+        "4. 考虑不同类型参数的处理方式",
+      ],
+    },
+    codeParsing: {
+      description: "代码解析的关键点",
+      points: [
+        "1. 使用 parseCodeToArgvs 方法解析代码为参数",
+        "2. 处理参数中的特殊字符和引号",
+        "3. 正确识别参数类型",
+        "4. 处理解析失败的情况",
+      ],
+    },
+    componentLifecycle: {
+      description: "组件生命周期管理",
+      points: [
+        "1. mounted 中初始化默认值",
+        "2. 清理事件监听器",
+        "3. 处理组件销毁",
+      ],
+    },
+    codeStyle: {
+      description: "代码风格规范",
+      points: [
+        "1. 保持代码结构清晰",
+        "2. 使用有意义的变量名",
+        "3. 添加必要的注释",
+        "4. 遵循 Vue 组件命名规范",
+      ],
+    },
   },
   examples: {
     simpleComponent: "RegexEditor - 单一功能的组件",

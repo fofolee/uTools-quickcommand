@@ -48,14 +48,10 @@
                 }"
               >
                 <ComposerCard
-                  :command="element"
-                  :placeholder="getPlaceholder(element, index)"
+                  v-model="commands[index]"
                   @remove="removeCommand(index)"
-                  @toggle-output="toggleSaveOutput(index)"
-                  @update:argv="(val) => handleArgvChange(index, val)"
-                  @update:command="(val) => updateCommand(index, val)"
                   @run="handleRunCommand"
-                  @add-branch="(chainInfo) => addBranch(index, chainInfo)"
+                  @add-branch="addBranch"
                   @toggle-collapse="(event) => handleControlFlowCollapse(event)"
                 />
               </div>
@@ -77,6 +73,7 @@ import ComposerButtons from "./flow/ComposerButtons.vue";
 import ChainStyles from "./flow/ChainStyles.vue";
 import EmptyFlow from "./flow/EmptyFlow.vue";
 import DropArea from "./flow/DropArea.vue";
+import { findCommandByValue } from "js/composer/composerConfig";
 
 export default defineComponent({
   name: "ComposerFlow",
@@ -92,6 +89,7 @@ export default defineComponent({
     modelValue: {
       type: Array,
       required: true,
+      default: () => [],
     },
     generateCode: {
       type: Function,
@@ -260,20 +258,15 @@ export default defineComponent({
 
         this.$emit("update:modelValue", newCommands);
         this.dragIndex = -1;
-      } catch (error) {
-        console.debug("Internal drag & drop reorder", error);
-      }
+      } catch (error) {}
     },
     createNewCommand(parsedAction) {
       return {
         ...parsedAction,
         id: this.getUniqueId(),
-        argv: "",
         saveOutput: false,
         useOutput: null,
         outputVariable: null,
-        cmd: parsedAction.value || parsedAction.cmd,
-        value: parsedAction.value || parsedAction.cmd,
       };
     },
     getUniqueId() {
@@ -327,62 +320,40 @@ export default defineComponent({
         this.removeRangeCommand(index);
       }
     },
-    toggleSaveOutput(index) {
-      const newCommands = [...this.commands];
-      newCommands[index].saveOutput = !newCommands[index].saveOutput;
-      if (!newCommands[index].saveOutput) {
-        newCommands.forEach((cmd, i) => {
-          if (i > index && cmd.useOutput === index) {
-            cmd.useOutput = null;
-          }
-        });
-      }
-      this.$emit("update:modelValue", newCommands);
-    },
-    handleArgvChange(index, value) {
-      const newCommands = [...this.commands];
-      newCommands[index] = {
-        ...newCommands[index],
-        argv: value,
-      };
-      this.$emit("update:modelValue", newCommands);
-    },
-    updateCommand(index, updatedCommand) {
-      const newCommands = [...this.commands];
-      newCommands[index] = {
-        ...newCommands[index],
-        ...updatedCommand,
-      };
-      this.$emit("update:modelValue", newCommands);
-    },
     handleRunCommand(command) {
       // 创建一个临时的命令流程
       const tempFlow = [
         command,
         {
-          argv: `console.log(${command.outputVariable})`,
+          code: `console.log(${command.outputVariable})`,
         },
       ];
       // 触发运行事件
       this.$emit("action", "run", tempFlow);
     },
-    addBranch(index, chainInfo) {
+    // 查找不可重复出现的分支
+    findUniqueBranch(chainId, commandType) {
+      const uniqueBranch = ["default", "catch", "finally"];
+      if (!uniqueBranch.includes(commandType)) return false;
+      return !!this.commands.find(
+        (cmd) => cmd.chainId === chainId && cmd.commandType === commandType
+      );
+    },
+    addBranch({ chainId, commandType, value }) {
+      if (this.findUniqueBranch(chainId, commandType))
+        return quickcommand.showMessageBox("该分支仅允许存在一个", "warning");
       const newCommands = [...this.commands];
       const branchCommand = {
-        ...newCommands[index],
+        ...window.lodashM.cloneDeep(findCommandByValue(value)),
         id: this.getUniqueId(),
-        chainId: chainInfo.chainId,
-        commandType: chainInfo.commandType,
-        argv: "",
+        chainId: chainId,
+        commandType: commandType,
       };
 
       // 找到对应的 chainId 的最后一个命令位置
-      let lastIndex = -1;
-      for (let i = index + 1; i < newCommands.length; i++) {
-        if (newCommands[i].chainId === chainInfo.chainId) {
-          lastIndex = i;
-        }
-      }
+      const lastIndex = newCommands.findLastIndex(
+        (cmd) => cmd.chainId === chainId
+      );
 
       // 在最后一个命令之前插入新的分支命令
       if (lastIndex !== -1) {

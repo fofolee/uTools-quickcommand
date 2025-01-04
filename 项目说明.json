@@ -21,8 +21,7 @@
                 "配置项属性": {
                   "key": "必选，键",
                   "label": "必选，标签",
-                  "type": "必选，类型，input则使用VariableInput组件,其他类型则使用qurasr对应组件",
-                  "inputType": "可选，VariableInput组件的类型，用于指定VariableInput显示的类型",
+                  "type": "必选，类型，varInput则使用VariableInput组件,numInput则使用NumberInput组件,其他类型则使用qurasr对应组件",
                   "defaultValue": "可选，默认值",
                   "icon": "必选，图标",
                   "width": "可选，flex布局的相对比例"
@@ -35,9 +34,10 @@
                   "描述": "必选，选项，一个数组，每个元素是一个对象，包含以下属性：",
                   "配置项属性": {
                     "label": "必选，显示的名称",
-                    "value": "必选，选择的值，作为生成代码时使用的函数名"
+                    "value": "必选，生成代码时使用的函数名"
                   }
-                }
+                },
+                "value": "必选，默认值"
               }
             }
           },
@@ -52,22 +52,12 @@
             "描述": "自定义组件创建指南"
           },
           "formatString.js": {
-            "描述": "处理JSON字符串中的值，主要处理来自VariableInput的字段，最后返回字符串",
+            "描述": "处理字符串格式化的工具函数，主要用于处理对象序列化和类型转换",
             "主要功能": {
-              "formatJsonVariables": {
-                "描述": "处理JSON字符串中的值，支持完整字段处理和指定路径处理",
-                "参数": {
-                  "jsonObj": "要处理的JSON对象",
-                  "variableFields": "可选，需要处理的字段列表，不传则处理所有字段",
-                  "excludeFields": "可选，需要排除的字段列表"
-                },
-                "处理方式": {
-                  "完整字段处理": "如 headers - 处理整个对象及其所有子字段",
-                  "指定路径处理": "如 data.headers.Referer - 只处理特定路径",
-                  "全字段处理": "不传递 variableFields 则处理所有字段",
-                  "排除字段": "通过 excludeFields 排除特定字段，即使匹配了处理条件也不处理"
-                }
-              }
+              "stringifyWithType": "根据值的类型和属性将其转换为字符串，支持带类型标记的对象",
+              "removeEmptyValues": "递归移除对象中的空值",
+              "processObject": "递归处理对象的值并格式化成字符串",
+              "stringifyObject": "格式化对象为JSON字符串，根据值的类型决定是否添加引号"
             }
           }
         }

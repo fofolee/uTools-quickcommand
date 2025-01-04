@@ -3,7 +3,8 @@
     <!-- 加密/解密切换 -->
     <div class="tabs-container">
       <q-tabs
-        v-model="operation"
+        :model-value="argvs.operation"
+        @update:model-value="updateArgvs('operation', $event)"
         dense
         class="text-grey"
         active-color="primary"
@@ -29,22 +30,21 @@
     </div>
 
     <!-- 文本输入 -->
-    <div class="row q-mt-sm">
+    <div class="row">
       <VariableInput
-        v-model="text"
-        :label="operation === 'encrypt' ? '要加密的文本' : '要解密的文本'"
-        :command="{
-          icon: operation === 'encrypt' ? 'text_fields' : 'password',
-        }"
+        :model-value="argvs.text"
+        @update:model-value="updateArgvs('text', $event)"
+        :label="argvs.operation === 'encrypt' ? '要加密的文本' : '要解密的文本'"
+        :icon="argvs.operation === 'encrypt' ? 'text_fields' : 'password'"
         class="col-12"
-        @update:model-value="updateConfig"
       />
     </div>
 
     <div class="row">
       <!-- 算法选择 -->
       <q-select
-        v-model="algorithm"
+        :model-value="argvs.algorithm"
+        @update:model-value="updateArgvs('algorithm', $event)"
         :options="algorithms"
         label="加密算法"
         dense
@@ -55,8 +55,9 @@
       />
       <!-- RSA填充选择 -->
       <q-select
-        v-if="algorithm === 'RSA'"
-        v-model="padding"
+        v-if="argvs.algorithm === 'RSA'"
+        :model-value="argvs.padding"
+        @update:model-value="updateArgvs('padding', $event)"
         :options="paddings"
         label="填充方式"
         dense
@@ -67,8 +68,9 @@
       />
       <!-- SM2密文格式选择 -->
       <q-select
-        v-if="algorithm === 'SM2'"
-        v-model="cipherMode"
+        v-if="argvs.algorithm === 'SM2'"
+        :model-value="argvs.cipherMode"
+        @update:model-value="updateArgvs('cipherMode', $event)"
         :options="[
           { label: 'C1C3C2', value: 1 },
           { label: 'C1C2C3', value: 0 },
@@ -82,9 +84,10 @@
       />
       <!-- 格式选择 -->
       <q-select
-        v-model="format"
-        :options="operation === 'encrypt' ? outputFormats : inputFormats"
-        :label="operation === 'encrypt' ? '输出格式' : '输入格式'"
+        :model-value="argvs.format"
+        @update:model-value="updateArgvs('format', $event)"
+        :options="argvs.operation === 'encrypt' ? outputFormats : inputFormats"
+        :label="argvs.operation === 'encrypt' ? '输出格式' : '输入格式'"
         dense
         filled
         class="col-grow"
@@ -98,18 +101,20 @@
       <div class="col-6 key-input">
         <div class="key-wrapper">
           <q-input
-            v-model="publicKey"
+            :model-value="argvs.publicKey.key"
+            @update:model-value="
+              (key) => updateArgvs('publicKey', { ...argvs.publicKey, key })
+            "
             type="textarea"
             filled
             autogrow
             label="公钥"
             class="key-textarea"
-            @update:model-value="updateConfig"
           />
           <q-btn-dropdown
             flat
             dense
-            :label="publicKeyCodec"
+            :label="argvs.publicKey.codec"
             class="codec-dropdown"
           >
             <q-list>
@@ -118,7 +123,12 @@
                 :key="codec.value"
                 clickable
                 v-close-popup
-                @click="publicKeyCodec = codec.value"
+                @click="
+                  updateArgvs('publicKey', {
+                    ...argvs.publicKey,
+                    codec: codec.value,
+                  })
+                "
               >
                 <q-item-section>
                   <q-item-label>{{ codec.label }}</q-item-label>
@@ -131,18 +141,20 @@
       <div class="col-6 key-input">
         <div class="key-wrapper">
           <q-input
-            v-model="privateKey"
+            :model-value="argvs.privateKey.key"
+            @update:model-value="
+              (key) => updateArgvs('privateKey', { ...argvs.privateKey, key })
+            "
             type="textarea"
             filled
             autogrow
             label="私钥"
             class="key-textarea"
-            @update:model-value="updateConfig"
           />
           <q-btn-dropdown
             flat
             dense
-            :label="privateKeyCodec"
+            :label="argvs.privateKey.codec"
             class="codec-dropdown"
           >
             <q-list>
@@ -151,7 +163,12 @@
                 :key="codec.value"
                 clickable
                 v-close-popup
-                @click="privateKeyCodec = codec.value"
+                @click="
+                  updateArgvs('privateKey', {
+                    ...argvs.privateKey,
+                    codec: codec.value,
+                  })
+                "
               >
                 <q-item-section>
                   <q-item-label>{{ codec.label }}</q-item-label>
@@ -168,117 +185,136 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
-import { formatJsonVariables } from "js/composer/formatString";
+import { stringifyObject, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
   name: "AsymmetricCryptoEditor",
   components: {
     VariableInput,
   },
+  props: {
+    modelValue: Object,
+  },
+  emits: ["update:modelValue"],
   data() {
     return {
-      operation: "encrypt",
-      text: "",
-      algorithm: "RSA",
-      padding: "RSAES-PKCS1-V1_5",
-      cipherMode: 1,
-      publicKey: "",
-      privateKey: "",
-      publicKeyCodec: "Pem",
-      privateKeyCodec: "Pem",
-      format: "Base64",
-      algorithms: [
+      defaultArgvs: {
+        operation: "encrypt",
+        text: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        algorithm: "RSA",
+        keyLength: 1024,
+        padding: "RSAES-PKCS1-V1_5",
+        cipherMode: 1,
+        publicKey: {
+          key: "",
+          codec: "Pem",
+        },
+        privateKey: {
+          key: "",
+          codec: "Pem",
+        },
+        format: "Base64",
+      },
+    };
+  },
+  computed: {
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+    algorithms() {
+      return [
         { label: "RSA", value: "RSA" },
         { label: "SM2", value: "SM2" },
-      ],
-      paddings: [
+      ];
+    },
+    paddings() {
+      return [
         { label: "PKCS#1 v1.5", value: "RSAES-PKCS1-V1_5" },
         { label: "OAEP", value: "RSA-OAEP" },
         { label: "OAEP/SHA-256", value: "RSA-OAEP-256" },
-      ],
-      keyCodecs: [
+      ];
+    },
+    keyCodecs() {
+      return [
         { label: "PEM", value: "Pem" },
         { label: "Base64", value: "Base64" },
         { label: "Hex", value: "Hex" },
-      ],
-      outputFormats: [
+      ];
+    },
+    outputFormats() {
+      return [
         { label: "Base64", value: "Base64" },
         { label: "Hex", value: "Hex" },
-      ],
-      inputFormats: [
+      ];
+    },
+    inputFormats() {
+      return [
         { label: "Base64", value: "Base64" },
         { label: "Hex", value: "Hex" },
-      ],
-    };
-  },
-  props: {
-    command: {
-      type: Object,
+      ];
     },
   },
   methods: {
-    updateConfig() {
-      const code = `${this.command.value}(${formatJsonVariables(
-        {
-          text: this.text,
-          algorithm: this.algorithm,
-          operation: this.operation,
-          format: this.format,
-          publicKey: {
-            key: this.publicKey,
-            codec: this.publicKeyCodec,
-          },
-          privateKey: {
-            key: this.privateKey,
-            codec: this.privateKeyCodec,
-          },
-          padding: this.algorithm === "RSA" ? this.padding : undefined,
-          cipherMode: this.algorithm === "SM2" ? this.cipherMode : undefined,
-        },
-        ["text"]
-      )})`;
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+      try {
+        const variableFormatPaths = ["arg0.text"];
+        const params = parseFunction(code, { variableFormatPaths });
+        return params.args[0];
+      } catch (e) {
+        console.error("解析加密参数失败:", e);
+      }
+      return argvs;
+    },
+    generateCode(argvs = this.argvs) {
+      return `${this.modelValue.value}(${stringifyObject({
+        text: argvs.text,
+        algorithm: argvs.algorithm,
+        operation: argvs.operation,
+        format: argvs.format,
+        publicKey: argvs.publicKey,
+        privateKey: argvs.privateKey,
+        padding: argvs.algorithm === "RSA" ? argvs.padding : undefined,
+        cipherMode: argvs.algorithm === "SM2" ? argvs.cipherMode : undefined,
+      })})`;
+    },
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
 
-      this.$emit("update:model-value", code);
+      // 特殊处理
+      if (key === "operation") {
+        argvs.format = "Base64";
+      } else if (key === "algorithm") {
+        if (value === "RSA") {
+          argvs.padding = "PKCS#1";
+        } else {
+          argvs.cipherMode = 1;
+        }
+      }
+
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
     },
   },
-  watch: {
-    operation() {
-      this.format = "Base64";
-      this.updateConfig();
-    },
-    algorithm() {
-      if (this.algorithm === "RSA") {
-        this.padding = "PKCS#1";
-      } else {
-        this.cipherMode = 1;
-      }
-      this.updateConfig();
-    },
-    // 监听所有可能改变的值
-    text() {
-      this.updateConfig();
-    },
-    padding() {
-      this.updateConfig();
-    },
-    cipherMode() {
-      this.updateConfig();
-    },
-    publicKey() {
-      this.updateConfig();
-    },
-    privateKey() {
-      this.updateConfig();
-    },
-    publicKeyCodec() {
-      this.updateConfig();
-    },
-    privateKeyCodec() {
-      this.updateConfig();
-    },
-    format() {
-      this.updateConfig();
-    },
+  mounted() {
+    // 只在没有 argvs 和 code 的情况下生成默认代码
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>
@@ -414,7 +450,6 @@ export default defineComponent({
     margin-bottom: 8px;
   }
 }
-
 
 /* 确保下拉按钮内容垂直居中 */
 .codec-dropdown :deep(.q-btn__content) {

@@ -17,8 +17,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件、文件夹或软件的绝对路径",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "folder_open",
         },
       ],
@@ -30,8 +29,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件、文件夹或软件的绝对路径",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "location_on",
         },
       ],
@@ -43,8 +41,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件或软件的绝对路径",
-          type: "input",
-          defaultValue: "",
+          type: "varInput",
           icon: "folder_open",
         },
       ],

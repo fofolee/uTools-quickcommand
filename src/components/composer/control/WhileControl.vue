@@ -13,7 +13,8 @@
       <div class="loop-settings">
         <template v-if="type === 'while'">
           <ControlInput
-            v-model="condition"
+            :model-value="argvs.condition"
+            @update:model-value="updateArgvs('condition', $event)"
             label="条件"
             placeholder="表达式"
             class="condition-input"
@@ -37,8 +38,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'continue',
+                value: this.modelValue.value,
               })
             "
           >
@@ -51,8 +53,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'break',
+                value: this.modelValue.value,
               })
             "
           >
@@ -77,31 +80,39 @@ export default defineComponent({
   },
   inheritAttrs: false,
   props: {
-    modelValue: String,
-    command: Object,
-    type: {
-      type: String,
-      required: true,
-      validator: (value) =>
-        ["while", "continue", "break", "end"].includes(value),
-    },
+    modelValue: Object,
   },
   emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      condition: "true",
+      defaultArgvs: {
+        condition: "true",
+      },
     };
   },
-  created() {
-    if (!this.modelValue) {
-      this.updateValue();
-    }
-  },
   computed: {
-    generatedCode() {
+    type() {
+      return this.modelValue.commandType;
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+  },
+  methods: {
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs = this.argvs) {
       switch (this.type) {
         case "while":
-          return `while(${this.condition}){`;
+          return `while(${argvs.condition || "true"}){`;
         case "continue":
           return "continue;";
         case "break":
@@ -112,36 +123,29 @@ export default defineComponent({
           return "";
       }
     },
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseCodeString(val);
-        }
-      },
-    },
-    condition() {
-      this.updateValue();
-    },
-  },
-  methods: {
-    updateValue() {
-      this.$emit("update:modelValue", this.generatedCode);
-    },
-    parseCodeString(val) {
-      try {
-        if (this.type === "while") {
-          const match = val.match(/^while\((.*)\){$/);
-          if (match) {
-            this.condition = match[1];
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      switch (this.type) {
+        case "while":
+          const whileMatch = code.match(/^while\((.*?)\)\{$/);
+          if (whileMatch) {
+            argvs.condition = whileMatch[1] === "true" ? "" : whileMatch[1];
           }
-        }
-      } catch (e) {
-        console.error("Failed to parse code string:", e);
+          break;
       }
+      return argvs;
     },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

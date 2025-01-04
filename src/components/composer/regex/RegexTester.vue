@@ -28,7 +28,7 @@
           </q-chip>
         </div>
       </div>
-      <div v-if="replace" class="preview">
+      <div v-if="isReplace" class="preview">
         <div class="section-title">
           <q-icon name="find_replace" size="14px" class="q-mr-xs" />
           替换预览
@@ -48,8 +48,12 @@ export default defineComponent({
   name: "RegexTester",
   props: {
     text: {
-      type: String,
-      default: "",
+      type: Object,
+      default: () => ({
+        value: "",
+        isString: false,
+        __varInputVal__: true,
+      }),
     },
     regex: {
       type: String,
@@ -60,19 +64,21 @@ export default defineComponent({
       required: true,
     },
     replace: {
-      type: String,
-      default: "",
+      type: Object,
+      default: () => ({
+        value: "",
+        isString: false,
+        __varInputVal__: true,
+      }),
+    },
+    isReplace: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
-    processedText() {
-      if (this.text && this.text.startsWith('"') && this.text.endsWith('"')) {
-        return this.text.slice(1, -1);
-      }
-      return this.text;
-    },
     shouldShowPreview() {
-      return this.text && this.text.startsWith('"') && this.text.endsWith('"');
+      return this.text.value && this.text.isString;
     },
     matches() {
       if (!this.shouldShowPreview || !this.regex) return [];
@@ -82,48 +88,36 @@ export default defineComponent({
           .map(([key]) => key.charAt(0))
           .join("");
         const re = new RegExp(this.regex, flagStr);
-        return this.processedText.match(re) || [];
+        return this.text.value.match(re) || [];
       } catch {
         return [];
       }
     },
     highlightedText() {
-      if (!this.shouldShowPreview || !this.regex) return this.processedText;
+      if (!this.shouldShowPreview || !this.regex) return this.text.value;
       try {
         const flagStr = Object.entries(this.flags)
           .filter(([_, value]) => value)
           .map(([key]) => key.charAt(0))
           .join("");
         const re = new RegExp(this.regex, flagStr);
-        return this.processedText.replace(
-          re,
-          '<span class="highlight">$&</span>'
-        );
+        return this.text.value.replace(re, '<span class="highlight">$&</span>');
       } catch {
-        return this.processedText;
+        return this.text.value;
       }
-    },
-    processedReplace() {
-      if (
-        this.replace &&
-        this.replace.startsWith('"') &&
-        this.replace.endsWith('"')
-      ) {
-        return this.replace.slice(1, -1);
-      }
-      return this.replace;
     },
     replacedText() {
-      if (!this.shouldShowPreview || !this.regex) return this.processedText;
+      if (!this.shouldShowPreview || !this.regex || !this.isReplace)
+        return this.text.value;
       try {
         const flagStr = Object.entries(this.flags)
           .filter(([_, value]) => value)
           .map(([key]) => key.charAt(0))
           .join("");
         const re = new RegExp(this.regex, flagStr);
-        return this.processedText.replace(re, this.processedReplace);
+        return this.text.value.replace(re, this.replace.value);
       } catch {
-        return this.processedText;
+        return this.text.value;
       }
     },
   },

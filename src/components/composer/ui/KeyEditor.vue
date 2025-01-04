@@ -3,7 +3,8 @@
     <div class="row items-center q-gutter-x-sm full-width">
       <!-- 按键选择/输入区域 -->
       <q-select
-        v-model="mainKey"
+        ref="mainKeyInput"
+        v-model="argvs.mainKey"
         :options="commonKeys"
         dense
         filled
@@ -17,7 +18,6 @@
         behavior="menu"
         class="col q-px-sm"
         placeholder="选择或输入按键"
-        @filter="filterFn"
         @update:model-value="handleKeyInput"
         @input="handleInput"
       >
@@ -25,7 +25,7 @@
           <!-- 修饰键 -->
           <div class="row items-center q-gutter-x-xs no-wrap">
             <q-chip
-              v-for="(active, key) in modifiers"
+              v-for="(active, key) in argvs.modifiers"
               :key="key"
               :color="active ? 'primary' : 'grey-4'"
               :text-color="active ? 'white' : 'grey-7'"
@@ -41,7 +41,7 @@
         <!-- 添加自定义选中值显示 -->
         <template v-slot:selected>
           <q-badge
-            v-if="mainKey"
+            v-if="argvs.mainKey"
             color="primary"
             text-color="white"
             class="main-key"
@@ -75,20 +75,22 @@ export default defineComponent({
   name: "KeyEditor",
   props: {
     modelValue: {
-      type: String,
-      default: "",
+      type: Object,
+      required: true,
     },
   },
   data() {
     return {
       isRecording: false,
       showKeySelect: false,
-      mainKey: "",
-      modifiers: {
-        control: false,
-        alt: false,
-        shift: false,
-        command: false,
+      defaultArgvs: {
+        mainKey: "",
+        modifiers: {
+          control: false,
+          alt: false,
+          shift: false,
+          command: false,
+        },
       },
       modifierLabels: isMac
         ? {
@@ -121,14 +123,14 @@ export default defineComponent({
       ],
     };
   },
-  props: {
-    command: {
-      type: Object,
-    },
-  },
   computed: {
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
     mainKeyDisplay() {
-      if (!this.mainKey) return "";
+      if (!this.argvs.mainKey) return "";
       // 特殊按键映射表
       const specialKeyMap = {
         enter: "↵",
@@ -143,27 +145,24 @@ export default defineComponent({
         right: "→",
       };
       return (
-        specialKeyMap[this.mainKey] ||
-        (this.mainKey.length === 1
-          ? this.mainKey.toUpperCase()
-          : this.mainKey.charAt(0).toUpperCase() + this.mainKey.slice(1))
+        specialKeyMap[this.argvs.mainKey] ||
+        (this.argvs.mainKey.length === 1
+          ? this.argvs.mainKey.toUpperCase()
+          : this.argvs.mainKey.charAt(0).toUpperCase() +
+            this.argvs.mainKey.slice(1))
       );
-    },
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseKeyString(val);
-        }
-      },
     },
   },
   methods: {
     toggleModifier(key) {
-      this.modifiers[key] = !this.modifiers[key];
-      this.updateValue();
+      const newModifier = !this.argvs.modifiers[key];
+      this.argvs.modifiers[key] = newModifier;
+      this.updateValue({
+        modifiers: {
+          ...this.argvs.modifiers,
+          [key]: newModifier,
+        },
+      });
     },
     toggleRecording() {
       if (!this.isRecording) {
@@ -182,20 +181,21 @@ export default defineComponent({
         const currentTime = Date.now();
 
         // 重置所有修饰键状态
-        Object.keys(this.modifiers).forEach((key) => {
-          this.modifiers[key] = false;
+        Object.keys(this.argvs.modifiers).forEach((key) => {
+          this.argvs.modifiers[key] = false;
         });
 
         // 根据操作系统设置修饰键
         if (isMac) {
-          if (event.metaKey) this.modifiers.command = true;
-          if (event.ctrlKey) this.modifiers.control = true;
+          if (event.metaKey) this.argvs.modifiers.command = true;
+          if (event.ctrlKey) this.argvs.modifiers.control = true;
         } else {
-          if (event.ctrlKey) this.modifiers.control = true;
-          if (event.metaKey || event.winKey) this.modifiers.command = true;
+          if (event.ctrlKey) this.argvs.modifiers.control = true;
+          if (event.metaKey || event.winKey)
+            this.argvs.modifiers.command = true;
         }
-        if (event.altKey) this.modifiers.alt = true;
-        if (event.shiftKey) this.modifiers.shift = true;
+        if (event.altKey) this.argvs.modifiers.alt = true;
+        if (event.shiftKey) this.argvs.modifiers.shift = true;
 
         // 设置主按键
         let key = null;
@@ -240,10 +240,16 @@ export default defineComponent({
         // 处理双击修饰键
         if (["control", "alt", "shift", "command"].includes(key)) {
           if (key === lastKey && currentTime - lastKeyTime < 500) {
-            this.mainKey = key;
-            this.modifiers[key] = false; // 清除修饰键状态
+            this.argvs.mainKey = key;
+            this.argvs.modifiers[key] = false; // 清除修饰键状态
             this.stopRecording();
-            this.updateValue();
+            this.updateValue({
+              modifiers: {
+                ...this.argvs.modifiers,
+                [key]: false,
+              },
+              mainKey: key,
+            });
             return;
           }
           lastKey = key;
@@ -256,9 +262,11 @@ export default defineComponent({
           key === "space" ||
           !["meta", "control", "shift", "alt", "command"].includes(key)
         ) {
-          this.mainKey = key;
+          this.argvs.mainKey = key;
           this.stopRecording();
-          this.updateValue();
+          this.updateValue({
+            mainKey: key,
+          });
         }
       };
       document.addEventListener("keydown", this.recordEvent);
@@ -267,19 +275,31 @@ export default defineComponent({
       this.isRecording = false;
       document.removeEventListener("keydown", this.recordEvent);
     },
-    updateValue() {
-      if (!this.mainKey) return;
-      const activeModifiers = Object.entries(this.modifiers)
+    generateCode(argvs = this.argvs) {
+      if (!argvs.mainKey) return;
+      const activeModifiers = Object.entries(argvs.modifiers)
         .filter(([_, active]) => active)
         .map(([key]) => key)
         // 在非 Mac 系统上，将 command 换为 meta
         .map((key) => (!isMac && key === "command" ? "meta" : key));
 
-      const args = [this.mainKey, ...activeModifiers];
-      // 为每个参数添加引号
-      this.$emit("update:modelValue", `${this.command.value}("${args.join('","')}")`);
+      const args = [argvs.mainKey, ...activeModifiers];
+      return `keyTap("${args.join('","')}")`;
     },
-    parseKeyString(val) {
+    updateValue(argv) {
+      const newArgvs = {
+        ...this.argvs,
+        ...argv,
+      };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: newArgvs,
+        code: this.generateCode(newArgvs),
+      });
+    },
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
       try {
         // 移除 keyTap 和引号
         const cleanVal = val.replace(/^keyTap\("/, "").replace(/"\)$/, "");
@@ -288,56 +308,53 @@ export default defineComponent({
           .split('","')
           .map((arg) => arg.replace(/^"|"$/g, ""));
         if (args.length > 0) {
-          this.mainKey = args[0];
-          Object.keys(this.modifiers).forEach((key) => {
+          argvs.mainKey = args[0];
+          Object.keys(argvs.modifiers).forEach((key) => {
             // 在非 Mac 系统上，将 meta 转换为 command
             const modKey = !isMac && args.includes("meta") ? "command" : key;
-            this.modifiers[key] = args.includes(modKey);
+            argvs.modifiers[key] = args.includes(modKey);
           });
+          return argvs;
         }
       } catch (e) {
         console.error("Failed to parse key string:", e);
       }
     },
-    filterFn(val, update, abort) {
-      // 如果是直接输入（长度为1），则中止过滤
-      if (val.length === 1) {
-        abort();
-        return;
-      }
-
-      // 否则只在输入内容匹配预设选项时显示下拉列表
-      update(() => {
-        const needle = val.toLowerCase();
-        const matchedOptions = this.commonKeys.filter(
-          (key) =>
-            key.value === needle || key.label.toLowerCase().includes(needle)
-        );
-      });
-    },
     handleKeyInput(val) {
+      let newMainKey;
       if (val === null) {
-        this.mainKey = "";
+        newMainKey = "";
       } else if (typeof val === "string") {
         // 检查是否是预设选项
         const matchedOption = this.commonKeys.find(
           (key) => key.value === val.toLowerCase()
         );
         if (matchedOption) {
-          this.mainKey = matchedOption.value;
+          newMainKey = matchedOption.value;
         } else {
-          this.mainKey = val.charAt(0).toLowerCase();
+          newMainKey = val.charAt(0).toLowerCase();
         }
       }
-      this.updateValue();
+      this.argvs.mainKey = newMainKey;
+      this.updateValue({ mainKey: newMainKey });
     },
     handleInput(val) {
       // 直接输入时，取第一个字符并更新值
       if (val) {
-        this.mainKey = val.charAt(0).toLowerCase();
-        this.updateValue();
+        this.argvs.mainKey = val.data;
+        this.$refs.mainKeyInput.blur();
+        this.updateValue({ mainKey: val.data });
       }
     },
+  },
+  mounted() {
+    if (!this.modelValue.code && !this.modelValue.argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>

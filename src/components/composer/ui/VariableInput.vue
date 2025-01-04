@@ -1,7 +1,6 @@
 <template>
   <q-input
-    v-if="!isNumber"
-    v-model="localValue"
+    v-model="inputValue"
     dense
     filled
     :label="label"
@@ -27,7 +26,7 @@
         :icon="isString ? 'format_quote' : 'data_object'"
         size="sm"
         class="string-toggle"
-        @click="toggleStringType"
+        @click="isString = !isString"
         v-if="!hasSelectedVariable"
       >
         <q-tooltip>{{
@@ -79,42 +78,7 @@
       </q-btn-dropdown>
     </template>
     <template v-slot:prepend>
-      <q-icon :name="command.icon || 'code'" />
-    </template>
-  </q-input>
-  <!-- 强制为数字类型时，不支持切换类型 -->
-  <q-input
-    v-else
-    type="number"
-    v-model.number="localValue"
-    dense
-    filled
-    :label="label"
-    class="number-input"
-  >
-    <template v-slot:prepend>
-      <q-icon v-if="command.icon" :name="command.icon" />
-    </template>
-    <template v-slot:append>
-      <!-- <q-icon name="pin" size="xs" /> -->
-      <div class="column items-center number-controls">
-        <q-btn
-          flat
-          dense
-          icon="keyboard_arrow_up"
-          size="xs"
-          class="number-btn"
-          @click="updateNumber(100)"
-        />
-        <q-btn
-          flat
-          dense
-          icon="keyboard_arrow_down"
-          size="xs"
-          class="number-btn"
-          @click="updateNumber(-100)"
-        />
-      </div>
+      <q-icon :name="icon || 'code'" />
     </template>
   </q-input>
 </template>
@@ -126,16 +90,20 @@ export default defineComponent({
   name: "VariableInput",
 
   props: {
-    modelValue: [String, Number],
-    label: String,
-    command: {
+    modelValue: {
       type: Object,
       required: true,
+      default: () => ({
+        value: "",
+        isString: true,
+        __varInputVal__: true,
+      }),
     },
+    label: String,
+    icon: String,
   },
 
   emits: ["update:modelValue"],
-
   setup() {
     const variables = inject("composerVariables", []);
     return { variables };
@@ -144,103 +112,60 @@ export default defineComponent({
   data() {
     return {
       selectedVariable: null,
-      // 根据输入类型初始化字符串状态
-      isString: this.command.inputType !== "number",
     };
   },
 
   computed: {
-    localValue: {
-      get() {
-        // 数字类型直接返回原值
-        if (this.isNumber) return this.modelValue;
-        // 非数字类型时，根据isString状态决定是否显示引号
-        const val = this.modelValue || "";
-        return this.isString ? val.replace(/^"|"$/g, "") : val;
-      },
-      set(value) {
-        this.$emit("update:modelValue", this.formatValue(value));
-      },
-    },
-
     // 判断是否有选中的变量，用于控制UI显示和行为
     hasSelectedVariable() {
       return this.selectedVariable !== null;
     },
 
-    isNumber() {
-      return this.command.inputType === "number";
+    inputValue: {
+      get() {
+        return this.modelValue.value;
+      },
+      set(value) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          value,
+        });
+      },
+    },
+    isString: {
+      get() {
+        return this.modelValue.isString;
+      },
+      set(value) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          isString: value,
+        });
+      },
     },
   },
 
   methods: {
-    // 格式化值，处理引号的添加和移除
-    formatValue(value) {
-      // 空值、变量模式或数字类型时不处理
-      if (!value || this.hasSelectedVariable || this.isNumber) return value;
-      // 根据isString状态添加或移除引号
-      return this.isString
-        ? `"${value.replace(/^"|"$/g, "")}"`
-        : value.replace(/^"|"$/g, "");
-    },
-
-    // 切换字符串/非字符串模式
-    toggleStringType() {
-      if (!this.hasSelectedVariable) {
-        this.isString = !this.isString;
-        // 有值时需要重新格式化
-        if (this.modelValue) {
-          this.$emit("update:modelValue", this.formatValue(this.modelValue));
-        }
-      }
-    },
-
-    // 外部调用的方法，用于设置字符串状态
-    setIsString(value) {
-      if (!this.hasSelectedVariable && this.isString !== value) {
-        this.isString = value;
-        // 有值时需要重新格式化
-        if (this.modelValue) {
-          this.$emit("update:modelValue", this.formatValue(this.modelValue));
-        }
-      }
-    },
-
     // 插入变量时的处理
     insertVariable(variable) {
       this.selectedVariable = variable;
       this.isString = false; // 变量模式下不需要字符串处理
-      this.$emit("update:modelValue", variable.name);
+      this.$emit("update:modelValue", {
+        isString: false,
+        value: variable.name,
+        __varInputVal__: true,
+      });
     },
 
     // 清除变量时的处理
     clearVariable() {
       this.selectedVariable = null;
       this.isString = true; // 恢复到字符串模式
-      this.$emit("update:modelValue", "");
-    },
-
-    // 数字类型特有的增减处理
-    updateNumber(delta) {
-      const current = Number(this.localValue) || 0;
-      this.$emit("update:modelValue", current + delta);
-    },
-  },
-
-  watch: {
-    // 解决通过外部传入值时，无法触发字符串处理的问题
-    modelValue: {
-      immediate: true,
-      handler(newVal) {
-        // 只在有值且非变量模式且非数字类型时处理
-        if (newVal && !this.hasSelectedVariable && !this.isNumber) {
-          const formattedValue = this.formatValue(newVal);
-          // 只在值真正需要更新时才发更新
-          if (formattedValue !== newVal) {
-            this.$emit("update:modelValue", formattedValue);
-          }
-        }
-      },
+      this.$emit("update:modelValue", {
+        isString: true,
+        value: "",
+        __varInputVal__: true,
+      });
     },
   },
 });
@@ -324,49 +249,5 @@ export default defineComponent({
   opacity: 1;
   transform: scale(1.1);
   color: var(--q-negative);
-}
-
-/* 数字输入框样式 */
-.number-input {
-  width: 100%;
-}
-
-/* 隐藏默认的数字输入框箭头 - Chrome, Safari, Edge, Opera */
-.number-input :deep(input[type="number"]::-webkit-outer-spin-button),
-.number-input :deep(input[type="number"]::-webkit-inner-spin-button) {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.number-input :deep(.q-field__control) {
-  padding-left: 8px;
-  padding-right: 4px;
-}
-
-.number-controls {
-  height: 100%;
-  display: flex;
-  width: 32px;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.number-btn {
-  opacity: 0.7;
-  font-size: 12px;
-  padding: 0;
-  margin: 0;
-  min-height: 16px;
-  height: 16px;
-  width: 20px;
-}
-
-.number-btn :deep(.q-icon) {
-  font-size: 12px;
-}
-
-.number-btn:hover {
-  opacity: 1;
-  color: var(--q-primary);
 }
 </style>

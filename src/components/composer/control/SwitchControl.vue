@@ -13,7 +13,8 @@
       <div class="switch-settings">
         <template v-if="type === 'switch'">
           <ControlInput
-            v-model="expression"
+            :model-value="argvs.expression"
+            @update:model-value="updateArgvs('expression', $event)"
             label="变量"
             placeholder="变量或表达式"
             class="switch-input"
@@ -21,7 +22,8 @@
         </template>
         <template v-else-if="type === 'case'">
           <ControlInput
-            v-model="value"
+            :model-value="argvs.value"
+            @update:model-value="updateArgvs('value', $event)"
             label="值"
             placeholder="匹配值"
             class="switch-input"
@@ -45,8 +47,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'case',
+                value: this.modelValue.value,
               })
             "
           >
@@ -59,8 +62,9 @@
             v-close-popup
             @click="
               $emit('addBranch', {
-                chainId: command.chainId,
+                chainId: this.modelValue.chainId,
                 commandType: 'default',
+                value: this.modelValue.value,
               })
             "
           >
@@ -85,80 +89,77 @@ export default defineComponent({
   },
   inheritAttrs: false,
   props: {
-    modelValue: String,
-    command: Object,
-    type: {
-      type: String,
-      required: true,
-      validator: (value) =>
-        ["switch", "case", "default", "end"].includes(value),
-    },
+    modelValue: Object,
   },
-  emits: ["update:modelValue", "addBranch"],
   data() {
     return {
-      expression: "",
-      value: "",
+      defaultArgvs: {
+        expression: "",
+        value: "",
+      },
     };
   },
-  created() {
-    if (!this.modelValue) {
-      this.updateValue();
-    }
-  },
+  emits: ["update:modelValue", "addBranch"],
   computed: {
-    generatedCode() {
+    type() {
+      return this.modelValue.commandType;
+    },
+    argvs() {
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
+    },
+  },
+  methods: {
+    updateArgvs(key, value) {
+      const argvs = { ...this.argvs, [key]: value };
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
+    generateCode(argvs = this.argvs) {
       switch (this.type) {
         case "switch":
-          return `switch(${this.expression || "value"}){`;
+          return `switch(${argvs.expression || "value"}){`;
         case "case":
-          return `case ${this.value}:`;
+          return `case ${argvs.value}:`;
         case "default":
           return "default:";
         case "end":
           return "}";
-        default:
-          return "";
       }
     },
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.parseCodeString(val);
-        }
-      },
-    },
-    expression() {
-      this.updateValue();
-    },
-    value() {
-      this.updateValue();
-    },
-  },
-  methods: {
-    updateValue() {
-      this.$emit("update:modelValue", this.generatedCode);
-    },
-    parseCodeString(val) {
-      try {
-        if (this.type === "switch") {
-          const match = val.match(/^switch\((.*)\){$/);
-          if (match) {
-            this.expression = match[1];
+    parseCodeToArgvs(code) {
+      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      if (!code) return argvs;
+
+      switch (this.type) {
+        case "switch":
+          const switchMatch = code.match(/^switch\((.*?)\)\{$/);
+          if (switchMatch) {
+            argvs.expression = switchMatch[1] === "value" ? "" : switchMatch[1];
           }
-        } else if (this.type === "case") {
-          const match = val.match(/^case\s+(.*):$/);
-          if (match) {
-            this.value = match[1];
+          break;
+        case "case":
+          const caseMatch = code.match(/^case\s+(.*?):$/);
+          if (caseMatch) {
+            argvs.value = caseMatch[1];
           }
-        }
-      } catch (e) {
-        console.error("Failed to parse code string:", e);
+          break;
       }
+      return argvs;
     },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs: this.defaultArgvs,
+        code: this.generateCode(this.defaultArgvs),
+      });
+    }
   },
 });
 </script>
