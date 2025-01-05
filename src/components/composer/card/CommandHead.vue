@@ -20,8 +20,16 @@
     </div>
 
     <!-- 标题 -->
-    <div class="text-subtitle2 command-label q-px-sm drag-handle">
-      {{ command.label }}
+    <div class="drag-handle command-label">
+      <div class="text-subtitle2 command-label-text">
+        {{ command.label }}
+      </div>
+      <div
+        class="text-caption text-grey command-summary"
+        v-if="command.summary && isCollapsed"
+      >
+        {{ command.summary }}
+      </div>
     </div>
 
     <!-- 主要内容区域 -->
@@ -119,10 +127,20 @@ export default {
   pointer-events: all;
   cursor: grab;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .command-label:hover {
   color: var(--q-primary);
   transition: all 0.3s ease;
+}
+
+.command-summary {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

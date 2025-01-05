@@ -30,13 +30,13 @@ export const stringifyWithType = (argv) => {
  */
 const removeEmptyValues = (obj) => {
   return window.lodashM.omitBy(obj, (value) => {
-    if (
-      window.lodashM.isNil(value) ||
-      value === "" ||
-      (value.isString && value.value === "")
-    )
-      return true;
-    if (typeof value === "object")
+    // 如果value是VariableInput的输出，则取其value值
+    const realValue = value?.hasOwnProperty("__varInputVal__")
+      ? value.value
+      : value;
+    if (window.lodashM.isNil(realValue) || realValue === "") return true;
+    // 如果value是对象，并且不是VariableInput的输出，则递归移除空值
+    if (typeof value === "object" && !value.hasOwnProperty("__varInputVal__"))
       return window.lodashM.isEmpty(removeEmptyValues(value));
     return false;
   });
@@ -52,7 +52,7 @@ const processObject = (obj, parentPath = "") => {
   // 移除空值
   obj = removeEmptyValues(obj);
   // 如果是 VariableInput 的输出，直接用 stringifyWithType 处理
-  if (obj && typeof obj === "object" && obj.hasOwnProperty("__varInputVal__")) {
+  if (obj?.hasOwnProperty("__varInputVal__")) {
     return stringifyWithType(obj);
   }
 
@@ -95,6 +95,9 @@ const processObject = (obj, parentPath = "") => {
  * @returns {string} 格式化后的JSON字符串
  */
 export const stringifyObject = (jsonObj) => {
+  if (jsonObj?.hasOwnProperty("__varInputVal__")) {
+    return stringifyWithType(jsonObj);
+  }
   try {
     return processObject(jsonObj);
   } catch (e) {

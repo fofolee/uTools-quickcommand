@@ -223,13 +223,9 @@ export default defineComponent({
   },
   computed: {
     argvs() {
-      if (this.modelValue.argvs) {
-        return this.modelValue.argvs;
-      }
-      if (!this.modelValue.code) {
-        return window.lodashM.cloneDeep(this.defaultArgvs);
-      }
-      return this.parseCodeToArgvs(this.modelValue.code);
+      return (
+        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+      );
     },
     keyCodecs() {
       return [
@@ -324,11 +320,7 @@ export default defineComponent({
         }
       }
 
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs,
-        code: this.generateCode(argvs),
-      });
+      this.updateModelValue(argvs);
     },
     parseCodeToArgvs(code) {
       const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
@@ -342,14 +334,27 @@ export default defineComponent({
       }
       return argvs;
     },
+    getSummary(argvs) {
+      const text = window.lodashM.truncate(argvs.text.value, {
+        length: 30,
+        omission: "...",
+      });
+      return argvs.operation === "encrypt"
+        ? "加密" + " " + text
+        : "解密" + " " + text;
+    },
+    updateModelValue(argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        summary: this.getSummary(argvs),
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.defaultArgvs),
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

@@ -79,6 +79,10 @@ export default defineComponent({
       };
     }
 
+    const getSummary = (argvs) => {
+      return argvs.goto.url.value;
+    };
+
     // 计算 argvs
     const argvs = computed({
       get: () => localConfigs.value,
@@ -95,6 +99,7 @@ export default defineComponent({
         emit("update:modelValue", {
           ...props.modelValue,
           argvs: newConfigs,
+          summary: getSummary(newConfigs),
           code: generateUBrowserCode(newConfigs, selectedActions.value),
         });
       },

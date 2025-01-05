@@ -186,11 +186,7 @@ export default defineComponent({
           }
         }
 
-        this.$emit("update:modelValue", {
-          ...this.modelValue,
-          code: this.generateCode(newValue),
-          argvs: newValue,
-        });
+        this.updateModelValue(newValue);
       },
     },
     hasOptions() {
@@ -281,14 +277,21 @@ export default defineComponent({
         [key]: value,
       };
     },
+    getSummary(argvs) {
+      return this.operations.find((op) => op.name === argvs.operation).label;
+    },
+    updateModelValue(argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        summary: this.getSummary(argvs),
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        code: this.generateCode(this.defaultArgvs),
-        argvs: { ...this.defaultArgvs },
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

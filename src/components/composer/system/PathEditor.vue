@@ -263,11 +263,7 @@ export default defineComponent({
         );
       },
       set(value) {
-        this.$emit("update:modelValue", {
-          ...this.modelValue,
-          code: this.generateCode(value),
-          argvs: value,
-        });
+        this.updateModelValue(value);
       },
     },
     pointerStyle() {
@@ -420,14 +416,21 @@ export default defineComponent({
       newPaths.splice(index, 1);
       this.updateArgvs("paths", newPaths);
     },
+    getSummary(argvs) {
+      return this.operations.find((op) => op.name === argvs.operation)?.label;
+    },
+    updateModelValue(argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        summary: this.getSummary(argvs),
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        code: this.generateCode(this.defaultArgvs),
-        argvs: { ...this.defaultArgvs },
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

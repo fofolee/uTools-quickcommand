@@ -472,7 +472,9 @@ export default defineComponent({
         ? `, ${stringifyObject(restConfig)}`
         : "";
 
-      return `${this.modelValue.value}.${method.toLowerCase()}(${stringifyWithType(url)}${
+      return `${
+        this.modelValue.value
+      }.${method.toLowerCase()}(${stringifyWithType(url)}${
         this.hasRequestData ? `, ${stringifyObject(data)}` : ""
       }${configStr})`;
     },
@@ -490,11 +492,7 @@ export default defineComponent({
         }
       }
 
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs,
-        code: this.generateCode(argvs),
-      });
+      this.updateModelValue(argvs);
     },
     updateHeaders(headers) {
       // 保留 Content-Type 和 User-Agent
@@ -535,14 +533,21 @@ export default defineComponent({
     setFieldValue(path, value) {
       this.updateArgvs(path, value);
     },
+    getSummary(argvs) {
+      return argvs.method + " " + argvs.url.value;
+    },
+    updateModelValue(argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        summary: this.getSummary(argvs),
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.defaultArgvs),
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

@@ -163,19 +163,11 @@ export default defineComponent({
         isReplace: this.argvs.isReplace,
         replaceValue: this.argvs.replaceValue,
       };
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs,
-        code: this.generateCode(argvs),
-      });
+      this.updateModelValue(argvs);
     },
     updateArgvs(key, value) {
       const argvs = { ...this.argvs, [key]: value };
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs,
-        code: this.generateCode(argvs),
-      });
+      this.updateModelValue(argvs);
     },
     generateCode(argvs) {
       const flagStr = Object.entries(argvs.flags)
@@ -270,14 +262,27 @@ export default defineComponent({
         };
       }
     },
+    getSummary(argvs) {
+      return argvs.isReplace
+        ? argvs.textValue.value +
+            " 匹配 " +
+            argvs.regexValue +
+            " 替换为 " +
+            argvs.replaceValue.value
+        : argvs.textValue.value + " 匹配 " + argvs.regexValue;
+    },
+    updateModelValue(argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        summary: this.getSummary(argvs),
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.defaultArgvs),
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

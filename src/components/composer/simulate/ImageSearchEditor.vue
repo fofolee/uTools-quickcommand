@@ -145,11 +145,7 @@ export default defineComponent({
 
     updateArgvs(key, value) {
       const argvs = { ...this.argvs, [key]: value };
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs,
-        code: this.generateCode(argvs),
-      });
+      this.updateModelValue(argvs);
     },
 
     // 处理文件上传
@@ -244,14 +240,17 @@ export default defineComponent({
         return argvs;
       }
     },
+    updateModelValue(argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        argvs,
+        code: this.generateCode(argvs),
+      });
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.defaultArgvs),
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

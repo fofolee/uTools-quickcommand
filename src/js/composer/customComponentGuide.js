@@ -124,6 +124,49 @@ const customComponentGuide = {
               `,
             },
           },
+          getSummary: {
+            description: "生成命令的简短描述，用于在命令列表中显示",
+            parameters: "argvs - 当前参数对象",
+            implementation: {
+              simpleCase: `
+                // 返回操作类型的标签
+                return this.operations.find(op => op.name === argvs.operation).label;
+              `,
+              complexCase: `
+                // 返回关键参数的值
+                return argvs.command.value;
+              `,
+            },
+            notes: [
+              "返回值应该简洁明了，帮助用户快速识别命令的功能",
+              "对于复杂命令，应该返回最关键的参数信息",
+              "返回的文本长度应该适中，避免过长",
+            ],
+          },
+          updateModelValue: {
+            description: "更新组件的值并触发更新事件",
+            parameters: "argvs - 当前参数对象",
+            implementation: `
+              this.$emit("update:modelValue", {
+                ...this.modelValue,
+                summary: this.getSummary(argvs),
+                code: this.generateCode(argvs),
+                argvs,
+              });
+            `,
+            notes: [
+              "必须保留原有的 modelValue 属性",
+              "必须包含 summary、code 和 argvs 三个字段",
+              "summary 用于在命令列表中显示",
+              "code 是生成的代码字符串",
+              "argvs 是当前的参数对象",
+            ],
+            usage: [
+              "在 mounted 钩子中初始化组件值",
+              "在 argvs setter 中更新组件值",
+              "在任何需要更新组件值的地方调用",
+            ],
+          },
         },
         mounted: {
           description: "组件初始化时的处理",

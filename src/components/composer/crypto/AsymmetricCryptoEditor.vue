@@ -299,21 +299,31 @@ export default defineComponent({
         }
       }
 
+      this.updateModelValue(argvs);
+    },
+    updateModelValue(argvs) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
+        summary: this.getSummary(argvs),
         argvs,
         code: this.generateCode(argvs),
       });
+    },
+    getSummary(argvs) {
+      const text = window.lodashM.truncate(argvs.text.value, {
+        length: 30,
+        omission: "...",
+      });
+
+      return argvs.operation === "encrypt"
+        ? "加密" + " " + text
+        : "解密" + " " + text;
     },
   },
   mounted() {
     // 只在没有 argvs 和 code 的情况下生成默认代码
     if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.defaultArgvs),
-      });
+      this.updateModelValue(this.defaultArgvs);
     }
   },
 });

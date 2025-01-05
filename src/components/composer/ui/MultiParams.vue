@@ -89,11 +89,7 @@ export default defineComponent({
         );
       },
       set(value) {
-        this.$emit("update:modelValue", {
-          ...this.modelValue,
-          functionName: value,
-          code: this.generateCode(value, this.argvs),
-        });
+        this.updateModelValue(value, this.defaultArgvs);
       },
     },
     argvs() {
@@ -110,13 +106,7 @@ export default defineComponent({
       const newArgvs = [...this.argvs];
       newArgvs[index] = value;
 
-      const newCode = this.generateCode(this.functionName, newArgvs);
-
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: newArgvs,
-        code: newCode,
-      });
+      this.updateModelValue(this.functionName, newArgvs);
     },
     generateCode(functionName, argvs) {
       const newArgvs = argvs.map((argv) => stringifyWithType(argv));
@@ -178,6 +168,29 @@ export default defineComponent({
       }
       return argvs;
     },
+    getSummary(argvs) {
+      // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间
+      return argvs
+        .map((item) =>
+          item?.hasOwnProperty("__varInputVal__")
+            ? window.lodashM.truncate(item.value, {
+                length: 30,
+                omission: "...",
+              })
+            : item
+        )
+        .filter((item) => item != null)
+        .join("、");
+    },
+    updateModelValue(functionName, argvs) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        functionName,
+        summary: this.getSummary(argvs),
+        argvs,
+        code: this.generateCode(functionName, argvs),
+      });
+    },
   },
   mounted() {
     if (
@@ -185,12 +198,7 @@ export default defineComponent({
       !this.modelValue.code &&
       !this.modelValue.functionName
     ) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        functionName: this.functionName,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.functionName, this.defaultArgvs),
-      });
+      this.updateModelValue(this.functionName, this.defaultArgvs);
     }
   },
 });
