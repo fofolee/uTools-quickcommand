@@ -6,6 +6,12 @@
       class="row q-col-gutter-sm items-center"
     >
       <div class="col-4">
+        <!-- 如果传入options.items，则键值支持下拉选择
+        示例：
+        options: {
+          items: ['User-Agent', 'Content-Type', 'Accept']
+        }
+        -->
         <q-select
           v-if="options?.items"
           :model-value="item.key"
@@ -25,6 +31,7 @@
             <q-icon name="code" />
           </template>
         </q-select>
+        <!-- 不传options.items时，键值为非VariableInput的输入框 -->
         <q-input
           v-else
           :model-value="item.key"
@@ -39,9 +46,10 @@
         </q-input>
       </div>
       <div class="col">
+        <!-- 值使用VariableInput组件 -->
         <VariableInput
           :model-value="item.value"
-          :label="item.key || '值'"
+          label="值"
           icon="code"
           class="col-grow"
           @update:model-value="(val) => updateItemValue(val, index)"
@@ -107,6 +115,11 @@ export default defineComponent({
       type: Object,
       required: true,
     },
+    /**
+     * 配置选项，支持：
+     *    选项模式：通过 items 提供选项列表
+     *    字典的每个键都可以从选项中选择值
+     */
     options: {
       type: Object,
       default: null,

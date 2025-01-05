@@ -44,5 +44,20 @@ export const networkCommands = {
       isAsync: true,
       icon: "http",
     },
+    {
+      value: "quickcomposer.network.url",
+      label: "URL操作",
+      desc: "URL解析、格式化和参数处理",
+      component: "UrlEditor",
+      icon: "link",
+    },
+    {
+      value: "quickcomposer.network.dns",
+      label: "DNS操作",
+      desc: "DNS解析和查询",
+      component: "DnsEditor",
+      icon: "dns",
+      isAsync: true,
+    },
   ],
 };

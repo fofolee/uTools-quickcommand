@@ -150,12 +150,16 @@ const isPathMatched = (path, patterns) => {
     const regexPattern = pattern
       // 先处理 **，将其转换为特殊标记
       .replace(/\*\*/g, "###DOUBLEWILDCARD###")
+      // 处理数组索引通配符 [*]
+      .replace(/\[\*\]/g, "###ARRAYINDEX###")
       // 处理普通的 *
-      .replace(/\*/g, "[^/.]+")
+      .replace(/\*/g, "[^/.\\[\\]]+")
       // 转义特殊字符
-      .replace(/[.]/g, "\\$&")
+      .replace(/[.[\]]/g, "\\$&")
       // 还原 ** 为正则表达式
-      .replace(/###DOUBLEWILDCARD###/g, ".*");
+      .replace(/###DOUBLEWILDCARD###/g, ".*")
+      // 还原数组索引通配符
+      .replace(/###ARRAYINDEX###/g, "\\[\\d+\\]");
 
     const regex = new RegExp(`^${regexPattern}$`);
     return regex.test(path);
@@ -188,25 +192,28 @@ const isPathMatched = (path, patterns) => {
  *    - arg1.data.* - 匹配data下的所有直接子属性
  *    - arg2.params.** - 匹配params下的所有属性（包括嵌套）
  *
- * 3. 通配符：
- *    - * - 匹配单个层级的任意字符（不包含点号）
- *    - ** - 匹配任意层级（包含点号）
+ * 3. 数组索引：
+ *    - arg0[0] - 匹配数组的第一个元素
+ *    - arg0[*] - 匹配数组的任意元素
+ *    - arg0[*].name - 匹配数组任意元素的name属性
+ *    - arg0[*].** - 匹配数组任意元素的所有属性（包括嵌套）
  *
- * 4. 排除规则：
+ * 4. 通配符：
+ *    - * - 匹配单个层级的任意字符（不包含点号和方括号）
+ *    - ** - 匹配任意层级（包含点号）
+ *    - [*] - 匹配任意数组索引
+ *
+ * 5. 排除规则：
  *    - !pattern - 排除匹配的路径
  *    - 排除优先级高于包含
  *
- * 5. 示例：
+ * 6. 示例：
  *    - arg0 - 匹配第一个参数
  *    - arg*.headers.** - 匹配任意参数中headers下的所有属性
  *    - arg*.data.* - 匹配任意参数中data下的直接子属性
+ *    - arg0[*] - 匹配第一个参数的所有数组元素
+ *    - arg0[*].name - 匹配第一个参数数组中所有元素的name属性
  *    - !arg*.headers.Content-Type - 排除所有参数中的Content-Type头
- *    - arg*.headers.Accept* - 匹配所有以Accept开头的头部
- *
- * 6. 使用建议：
- *    - 优先使用精确匹配（arg0, arg1.data）
- *    - 使用通配符时注意层级（* vs **）
- *    - 合理使用排除规则避免过度匹配
  *
  * @returns {Object} 解析结果，包含函数名和参数数组
  */

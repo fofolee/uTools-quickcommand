@@ -46,5 +46,13 @@ export const fileCommands = {
         },
       ],
     },
+    {
+      value: "quickcomposer.file.zlib",
+      label: "压缩解压",
+      desc: "使用 zlib 进行数据压缩和解压",
+      component: "ZlibEditor",
+      icon: "compress",
+      isAsync: true,
+    },
   ],
 };

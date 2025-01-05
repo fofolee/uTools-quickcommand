@@ -65,5 +65,17 @@ export const OsEditor = defineAsyncComponent(() =>
 );
 
 export const PathEditor = defineAsyncComponent(() =>
-  import("src/components/composer/system/PathEditor.vue")
+  import("components/composer/system/PathEditor.vue")
+);
+export const ZlibEditor = defineAsyncComponent(() =>
+  import("components/composer/file/ZlibEditor.vue")
+);
+export const UrlEditor = defineAsyncComponent(() =>
+  import("components/composer/network/UrlEditor.vue")
+);
+export const DnsEditor = defineAsyncComponent(() =>
+  import("components/composer/network/DnsEditor.vue")
+);
+export const BufferEditor = defineAsyncComponent(() =>
+  import("components/composer/developer/BufferEditor.vue")
 );

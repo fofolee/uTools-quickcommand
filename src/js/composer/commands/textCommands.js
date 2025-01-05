@@ -22,28 +22,42 @@ export const textCommands = {
           {
             label: "Base64编码",
             value: "quickcomposer.text.base64Encode",
+            icon: "title",
           },
           {
             label: "Base64解码",
             value: "quickcomposer.text.base64Decode",
+            icon: "title",
           },
           {
             label: "十六进制编码",
             value: "quickcomposer.text.hexEncode",
+            icon: "code",
           },
           {
             label: "十六进制解码",
             value: "quickcomposer.text.hexDecode",
+            icon: "code",
           },
-          { label: "URL编码", value: "quickcomposer.text.urlEncode" },
-          { label: "URL解码", value: "quickcomposer.text.urlDecode" },
+          {
+            label: "URL编码",
+            value: "quickcomposer.text.urlEncode",
+            icon: "link",
+          },
+          {
+            label: "URL解码",
+            value: "quickcomposer.text.urlDecode",
+            icon: "link",
+          },
           {
             label: "HTML编码",
             value: "quickcomposer.text.htmlEncode",
+            icon: "html",
           },
           {
             label: "HTML解码",
             value: "quickcomposer.text.htmlDecode",
+            icon: "html",
           },
         ],
         width: 3,
@@ -75,11 +89,31 @@ export const textCommands = {
       functionSelector: {
         selectLabel: "哈希算法",
         options: [
-          { label: "MD5", value: "quickcomposer.text.md5Hash" },
-          { label: "SHA1", value: "quickcomposer.text.sha1Hash" },
-          { label: "SHA256", value: "quickcomposer.text.sha256Hash" },
-          { label: "SHA512", value: "quickcomposer.text.sha512Hash" },
-          { label: "SM3", value: "quickcomposer.text.sm3Hash" },
+          {
+            label: "MD5",
+            value: "quickcomposer.text.md5Hash",
+            icon: "functions",
+          },
+          {
+            label: "SHA1",
+            value: "quickcomposer.text.sha1Hash",
+            icon: "functions",
+          },
+          {
+            label: "SHA256",
+            value: "quickcomposer.text.sha256Hash",
+            icon: "functions",
+          },
+          {
+            label: "SHA512",
+            value: "quickcomposer.text.sha512Hash",
+            icon: "functions",
+          },
+          {
+            label: "SM3",
+            value: "quickcomposer.text.sm3Hash",
+            icon: "functions",
+          },
         ],
       },
       width: 3,

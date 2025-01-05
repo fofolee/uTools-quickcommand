@@ -29,7 +29,7 @@ module.exports = configure(function (ctx) {
     boot: [],
 
     // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-css
-    css: ["app.css"],
+    css: ["app.css", "composer.css"],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
@@ -98,6 +98,7 @@ module.exports = configure(function (ctx) {
           path.join(__dirname, "./src/plugins")
         );
         chain.resolve.alias.set("js", path.join(__dirname, "./src/js"));
+        chain.resolve.alias.set("css", path.join(__dirname, "./src/css"));
       },
       extendWebpack(cfg) {
         cfg.optimization.splitChunks = {

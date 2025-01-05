@@ -78,7 +78,7 @@
     <template v-if="argvs.operation === 'read'">
       <div class="row q-gutter-sm">
         <q-select
-          v-model="argvs.encoding"
+          :model-value="argvs.encoding || 'Buffer'"
           :options="encodingOptions"
           label="编码"
           dense
@@ -392,6 +392,7 @@ const ENCODING_OPTIONS = [
   { label: "GB2312", value: "gb2312" },
   { label: "GBK", value: "gbk" },
   { label: "GB18030", value: "gb18030" },
+  { label: "Buffer", value: null },
   { label: "Big5", value: "big5" },
   { label: "ASCII", value: "ascii" },
   { label: "Latin1", value: "latin1" },

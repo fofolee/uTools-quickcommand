@@ -7,17 +7,14 @@
         :key="op.name"
         :class="['operation-card', { active: argvs.operation === op.name }]"
         @click="updateArgvs('operation', op.name)"
+        :data-value="op.name"
       >
-        <div
-          class="row items-center justify-center q-gutter-x-xs q-px-sm q-py-xs"
-        >
-          <q-icon
-            :name="op.icon"
-            size="16px"
-            :color="argvs.operation === op.name ? 'primary' : 'grey'"
-          />
-          <div class="text-caption">{{ op.label }}</div>
-        </div>
+        <q-icon
+          :name="op.icon"
+          size="16px"
+          :color="argvs.operation === op.name ? 'primary' : 'grey'"
+        />
+        <div class="text-caption">{{ op.label }}</div>
       </div>
     </div>
 
@@ -433,6 +430,22 @@ export default defineComponent({
       this.updateModelValue(this.defaultArgvs);
     }
   },
+  watch: {
+    "argvs.operation": {
+      immediate: true,
+      handler(newVal) {
+        this.$nextTick(() => {
+          document
+            .querySelector(`.operation-card[data-value="${newVal}"]`)
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+              inline: "nearest",
+            });
+        });
+      },
+    },
+  },
 });
 </script>
 
@@ -440,30 +453,6 @@ export default defineComponent({
 .path-editor {
   display: flex;
   flex-direction: column;
-}
-
-.operation-cards {
-  display: flex;
-  justify-content: flex-start;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.operation-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  min-width: 80px;
-}
-
-.operation-card:hover {
-  background: var(--q-primary-opacity-5);
-}
-
-.operation-card.active {
-  border-color: var(--q-primary);
-  background: var(--q-primary-opacity-5);
 }
 
 .options-container {

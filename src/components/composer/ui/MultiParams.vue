@@ -5,41 +5,46 @@
       class="flex-item"
       :style="{ flex: localCommand.functionSelector.width || 3 }"
     >
-      <q-select
-        v-model="functionName"
-        :options="localCommand.functionSelector.options"
-        :label="localCommand.functionSelector.selectLabel"
-        dense
-        filled
-        emit-value
-        map-options
-      >
-        <template v-slot:prepend>
-          <q-icon :name="localCommand.icon || 'functions'" />
-        </template>
-      </q-select>
-    </div>
-    <div
-      v-for="(item, index) in localConfig"
-      :key="index"
-      class="flex-item"
-      :style="{ flex: item.width || 12 }"
-    >
-      <div v-if="item.type === 'varInput'">
-        <VariableInput
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-        />
+      <div class="operation-cards">
+        <div
+          v-for="option in localCommand.functionSelector?.options"
+          :key="option.value"
+          :class="['operation-card', { active: functionName === option.value }]"
+          :data-value="option.value"
+          @click="functionName = option.value"
+        >
+          <q-icon
+            :name="option.icon || localCommand.icon || 'functions'"
+            size="16px"
+            :color="functionName === option.value ? 'primary' : 'grey'"
+          />
+          <div class="text-caption">{{ option.label }}</div>
+        </div>
       </div>
-      <div v-else-if="item.type === 'numInput'">
-        <NumberInput
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-        />
+    </div>
+    <div class="flex-container">
+      <div
+        v-for="(item, index) in localConfig"
+        :key="index"
+        class="flex-item"
+        :style="{ flex: item.width || 12 }"
+      >
+        <div v-if="item.type === 'varInput'">
+          <VariableInput
+            :model-value="argvs[index]"
+            @update:model-value="updateArgv(index, $event)"
+            :label="item.label"
+            :icon="item.icon"
+          />
+        </div>
+        <div v-else-if="item.type === 'numInput'">
+          <NumberInput
+            :model-value="argvs[index]"
+            @update:model-value="updateArgv(index, $event)"
+            :label="item.label"
+            :icon="item.icon"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -170,7 +175,11 @@ export default defineComponent({
     },
     getSummary(argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间
-      return argvs
+      const funcNameLabel = this.localCommand.functionSelector?.options.find(
+        (option) => option.value === this.functionName
+      )?.label;
+      const subFeature = funcNameLabel ? `${funcNameLabel} ` : "";
+      const allArgvs = argvs
         .map((item) =>
           item?.hasOwnProperty("__varInputVal__")
             ? window.lodashM.truncate(item.value, {
@@ -179,8 +188,8 @@ export default defineComponent({
               })
             : item
         )
-        .filter((item) => item != null)
-        .join("、");
+        .filter((item) => item != null && item != "");
+      return `${subFeature}${allArgvs.join(",")}`;
     },
     updateModelValue(functionName, argvs) {
       this.$emit("update:modelValue", {
@@ -201,6 +210,23 @@ export default defineComponent({
       this.updateModelValue(this.functionName, this.defaultArgvs);
     }
   },
+  watch: {
+    functionName: {
+      immediate: true,
+      handler(newVal) {
+        // 当操作卡片改变时，确保它在视图中可见
+        this.$nextTick(() => {
+          document
+            .querySelector(`.operation-card[data-value="${newVal}"]`)
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+              inline: "nearest",
+            });
+        });
+      },
+    },
+  },
 });
 </script>
 
@@ -213,12 +239,56 @@ export default defineComponent({
 }
 
 .flex-item {
-  min-width: 100px; /* 设置最小宽度以确保内容可读性 */
+  min-width: 100px;
 }
 
 @media (max-width: 600px) {
   .flex-item {
-    flex: 1 1 100% !important; /* 在小屏幕上强制换行 */
+    flex: 1 1 100% !important;
   }
+}
+
+.operation-cards {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding: 1px;
+  gap: 8px;
+  border-radius: 8px;
+}
+
+.operation-cards::-webkit-scrollbar {
+  display: none;
+}
+
+.operation-card {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  min-width: 72px;
+  padding: 2px 0;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.body--dark .operation-card {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.operation-card:hover {
+  background: var(--q-primary-opacity-5);
+  transform: translateY(-1px);
+  border: 1px solid var(--q-primary-opacity-10);
+}
+
+.operation-card.active {
+  border-color: var(--q-primary);
+  background: var(--q-primary-opacity-5);
+}
+
+.body--dark .operation-card.active {
+  border-color: var(--q-primary-opacity-50);
 }
 </style>

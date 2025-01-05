@@ -8,16 +8,12 @@
         :class="['operation-card', { active: argvs.operation === op.name }]"
         @click="updateArgvs('operation', op.name)"
       >
-        <div
-          class="row items-center justify-center q-gutter-x-xs q-px-sm q-py-xs"
-        >
-          <q-icon
-            :name="op.icon"
-            size="16px"
-            :color="argvs.operation === op.name ? 'primary' : 'grey'"
-          />
-          <div class="text-caption">{{ op.label }}</div>
-        </div>
+        <q-icon
+          :name="op.icon"
+          size="16px"
+          :color="argvs.operation === op.name ? 'primary' : 'grey'"
+        />
+        <div class="text-caption">{{ op.label }}</div>
       </div>
     </div>
 
@@ -200,17 +196,24 @@ export default defineComponent({
       );
       if (activeIndex === -1) return {};
 
-      // 计算选项卡的宽度和间距
-      const cardWidth = 80; // 卡片宽度
-      const gap = 4; // 卡片间距
+      // 获取操作卡片容器的宽度
+      const container = document.querySelector(".operation-cards");
+      if (!container) return {};
+
+      const containerWidth = container.offsetWidth;
+      const cardCount = this.operations.length;
+
+      // 计算每个卡片的位置
+      const cardWidth = 100; // 卡片宽度
       const pointerWidth = 12; // 尖角宽度
 
-      // 计算尖角的左偏移量：
-      // 1. 计算到当前选中卡片的起始位置：(cardWidth + gap) * activeIndex
-      // 2. 加上卡片的一半宽度：cardWidth / 2
-      // 3. 减去尖角的一半宽度：pointerWidth / 2
+      // 计算卡片之间的间距
+      const totalGapWidth = containerWidth - cardWidth * cardCount;
+      const gapWidth = totalGapWidth / (cardCount - 1);
+
+      // 计算当前选中卡片的中心位置
       const leftOffset =
-        (cardWidth + gap) * activeIndex + cardWidth / 2 - pointerWidth / 2;
+        (cardWidth + gapWidth) * activeIndex + cardWidth / 2 - pointerWidth / 2;
 
       return {
         left: `${leftOffset}px`,
@@ -303,29 +306,6 @@ export default defineComponent({
   flex-direction: column;
 }
 
-.operation-cards {
-  display: flex;
-  justify-content: flex-start;
-  gap: 4px;
-}
-
-.operation-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  min-width: 80px;
-}
-
-.operation-card:hover {
-  background: var(--q-primary-opacity-5);
-}
-
-.operation-card.active {
-  border-color: var(--q-primary);
-  background: var(--q-primary-opacity-5);
-}
-
 .operation-options {
   position: relative;
   background: #f8f8f8;
@@ -380,5 +360,16 @@ export default defineComponent({
 .custom-btn.active {
   color: white;
   background: var(--q-primary);
+}
+
+/* 覆盖command-composer的样式 */
+.command-composer .operation-cards {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.command-composer .operation-card {
+  width: 100px;
 }
 </style>
