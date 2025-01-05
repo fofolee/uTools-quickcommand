@@ -76,7 +76,7 @@ export const ubrowserOperationConfigs = [
         key: "value",
         label: "注入的CSS样式",
         icon: "style",
-        type: "textarea",
+        type: "varInput",
       },
     ],
     icon: "style",
@@ -424,7 +424,7 @@ export const ubrowserOperationConfigs = [
       {
         key: "checked",
         label: "选中状态",
-        type: "checkbox",
+        type: "boolean-toggle",
         defaultValue: false,
         width: 4,
       },
@@ -564,9 +564,6 @@ const defaultUBrowserRunConfigs = {
 // ubrowser 默认配置 基础参数-浏览器操作-运行参数
 export const defaultUBrowserConfigs = {
   // 基础参数
-  useragent: {
-    value: "",
-  },
   goto: {
     url: {
       value: "",
@@ -593,82 +590,183 @@ export const defaultUBrowserConfigs = {
     timeout: 60000,
   },
   click: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   css: {
-    value: "",
+    value: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   press: {
-    key: "",
+    key: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
     modifiers: [],
   },
   paste: {
-    text: "",
+    text: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   screenshot: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
     rect: { x: 0, y: 0, width: 0, height: 0 },
-    savePath: "",
+    savePath: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   pdf: {
     options: {
       marginsType: 0,
       pageSize: "A4",
     },
-    savePath: "",
+    savePath: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   device: {
     size: { width: 1280, height: 800 },
-    useragent: "",
+    useragent: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   cookies: {
-    name: "",
+    name: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   setCookies: {
-    items: [{ name: "", value: "" }],
+    items: [
+      {
+        name: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        value: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+      },
+    ],
   },
   removeCookies: {
-    name: "",
+    name: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   clearCookies: {
-    url: "",
+    url: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   evaluate: {
     function: "",
     params: [],
   },
   when: {
-    condition: "",
+    condition: {
+      value: "",
+      isString: false,
+      __varInputVal__: true,
+    },
   },
   mousedown: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   mouseup: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   file: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
     files: [],
   },
   value: {
-    selector: "",
-    value: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
+    value: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   check: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
     checked: false,
   },
   focus: {
-    selector: "",
+    selector: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   scroll: {
-    target: "",
+    target: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
     x: 0,
     y: 0,
   },
   download: {
-    url: "",
-    savePath: "",
+    url: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
+    savePath: {
+      value: "",
+      isString: true,
+      __varInputVal__: true,
+    },
   },
   // 运行参数
   run: defaultUBrowserRunConfigs,

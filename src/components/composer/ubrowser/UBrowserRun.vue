@@ -155,7 +155,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref, computed } from "vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 
 export default defineComponent({
@@ -170,24 +170,24 @@ export default defineComponent({
     },
   },
   emits: ["update:configs"],
-  data() {
-    return {
-      localConfigs: window.lodashM.cloneDeep(this.configs),
+  setup(props, { emit }) {
+    const localConfigs = ref(window.lodashM.cloneDeep(props.configs));
+
+    // 监听 configs 变化
+    const watchConfigs = computed(() => props.configs);
+    watchConfigs.value &&
+      (localConfigs.value = window.lodashM.cloneDeep(props.configs));
+
+    // 更新配置
+    const updateConfig = (key, value) => {
+      localConfigs.value.run[key] = value;
+      emit("update:configs", window.lodashM.cloneDeep(localConfigs.value));
     };
-  },
-  methods: {
-    updateConfig(key, value) {
-      this.localConfigs.run[key] = value;
-      this.$emit("update:configs", window.lodashM.cloneDeep(this.localConfigs));
-    },
-  },
-  watch: {
-    configs: {
-      deep: true,
-      handler(newConfigs) {
-        this.localConfigs = window.lodashM.cloneDeep(newConfigs);
-      },
-    },
+
+    return {
+      localConfigs,
+      updateConfig,
+    };
   },
 });
 </script>

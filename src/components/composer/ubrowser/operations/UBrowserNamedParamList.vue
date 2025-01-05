@@ -10,7 +10,7 @@
         <VariableInput
           :model-value="param.name"
           label="参数名"
-          :command="{ icon: 'label' }"
+          icon="label"
           @update:model-value="(value) => handleUpdate(index, 'name', value)"
         />
       </div>
@@ -18,7 +18,7 @@
         <VariableInput
           :model-value="param.value"
           label="传递给参数的值"
-          :command="{ icon: 'edit' }"
+          icon="edit"
           @update:model-value="(value) => handleUpdate(index, 'value', value)"
         />
       </div>
@@ -56,14 +56,41 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Array,
-      default: () => [{ name: "", value: "" }],
+      default: () => [
+        {
+          name: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          value: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+        },
+      ],
     },
     label: String,
   },
   emits: ["update:modelValue"],
   methods: {
     addParam() {
-      const newValue = [...(this.modelValue || []), { name: "", value: "" }];
+      const newValue = [
+        ...(this.modelValue || []),
+        {
+          name: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          value: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+        },
+      ];
       this.$emit("update:modelValue", newValue);
     },
     removeParam(index) {

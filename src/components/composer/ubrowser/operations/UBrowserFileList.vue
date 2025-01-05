@@ -58,7 +58,14 @@ export default defineComponent({
   emits: ["update:modelValue"],
   methods: {
     addFile() {
-      const newValue = [...(this.modelValue || []), ""];
+      const newValue = [
+        ...(this.modelValue || []),
+        {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+      ];
       this.$emit("update:modelValue", newValue);
     },
     removeFile(index) {

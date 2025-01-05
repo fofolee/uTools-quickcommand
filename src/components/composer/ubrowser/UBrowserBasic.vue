@@ -33,7 +33,8 @@
             </div>
             <div class="col-auto">
               <q-select
-                v-model="selectedUA"
+                :model-value="selectedUA"
+                @update:model-value="handleUAChange"
                 :options="userAgentOptions"
                 label="常用 UA"
                 dense
@@ -66,11 +67,11 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import { defaultUBrowserConfigs } from "js/composer/ubrowserConfig";
+import { defineComponent, ref, computed } from "vue";
 import { userAgent } from "js/options/httpOptions";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
+
 export default defineComponent({
   name: "UBrowserBasic",
   components: {
@@ -83,37 +84,47 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      selectedUA: null,
-      localConfigs: defaultUBrowserConfigs.goto,
-      userAgentOptions: userAgent,
-    };
-  },
-  created() {
-    // 初始化本地配置
-    this.localConfigs = window.lodashM.cloneDeep(this.configs);
-  },
-  methods: {
-    updateConfigs() {
-      this.$emit("update:configs", window.lodashM.cloneDeep(this.localConfigs));
-    },
-  },
-  watch: {
-    configs: {
-      deep: true,
-      handler(newConfigs) {
-        this.localConfigs = window.lodashM.cloneDeep(newConfigs);
+  emits: ["update:configs"],
+  setup(props, { emit }) {
+    const selectedUA = ref(null);
+
+    // 使用 computed 处理配置
+    const localConfigs = computed({
+      get: () => props.configs,
+      set: (val) => {
+        emit("update:configs", val);
       },
-    },
-    selectedUA(value) {
-      if (value) {
-        this.localConfigs.goto.headers.userAgent.value = value;
-        this.localConfigs.goto.headers.userAgent.isString = true;
-        this.updateConfigs();
-        this.selectedUA = null;
+    });
+
+    // 更新配置
+    const updateConfigs = () => {
+      emit("update:configs", localConfigs.value);
+    };
+
+    // 处理 UA 选择
+    const handleUAChange = (val) => {
+      if (!val) return;
+
+      const newConfigs = window.lodashM.cloneDeep(props.configs);
+      if (!newConfigs.goto.headers) {
+        newConfigs.goto.headers = {};
       }
-    },
+      newConfigs.goto.headers.userAgent = {
+        value: val,
+        isString: true,
+        __varInputVal__: true,
+      };
+      emit("update:configs", newConfigs);
+      selectedUA.value = null;
+    };
+
+    return {
+      selectedUA,
+      localConfigs,
+      userAgentOptions: userAgent,
+      updateConfigs,
+      handleUAChange,
+    };
   },
 });
 </script>

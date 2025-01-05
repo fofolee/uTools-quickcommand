@@ -15,7 +15,7 @@
     </q-tabs>
 
     <!-- 内容区域 -->
-    <q-tab-panels v-model="step" animated swipeable class="ubrowser-panels">
+    <q-tab-panels v-model="step" class="ubrowser-panels">
       <q-tab-panel name="1" class="panel-content">
         <UBrowserBasic :configs="configs" @update:configs="updateConfigs" />
       </q-tab-panel>
@@ -23,8 +23,9 @@
       <q-tab-panel name="2" class="panel-content">
         <UBrowserOperations
           :configs="configs"
+          :selected-actions="selectedActions"
           @update:configs="updateConfigs"
-          v-model:selected-actions="selectedActions"
+          @update:selected-actions="(val) => (selectedActions = val)"
           @remove-action="removeAction"
         />
       </q-tab-panel>
@@ -37,7 +38,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref, computed } from "vue";
 import UBrowserBasic from "./UBrowserBasic.vue";
 import UBrowserOperations from "./UBrowserOperations.vue";
 import UBrowserRun from "./UBrowserRun.vue";
@@ -53,117 +54,115 @@ export default defineComponent({
   },
   props: {
     modelValue: {
-      type: String,
-      default: "",
+      type: Object,
+      required: true,
     },
   },
   emits: ["update:modelValue"],
-  data() {
-    return {
-      step: "1",
-      selectedActions: [],
-      configs: window.lodashM.cloneDeep(defaultUBrowserConfigs),
+  setup(props, { emit }) {
+    // 基础状态
+    const step = ref("1");
+    const selectedActions = ref([]);
+
+    // 初始化配置，确保包含 run 参数
+    const localConfigs = ref(window.lodashM.cloneDeep(defaultUBrowserConfigs));
+    if (props.modelValue?.argvs) {
+      // 合并配置，保留默认的 run 参数
+      localConfigs.value = {
+        ...localConfigs.value,
+        ...props.modelValue.argvs,
+        run: {
+          ...localConfigs.value.run,
+          ...props.modelValue.argvs.run,
+        },
+      };
+    }
+
+    // 计算 argvs
+    const argvs = computed({
+      get: () => localConfigs.value,
+      set: (val) => {
+        // 确保保留 run 参数
+        const newConfigs = {
+          ...val,
+          run: {
+            ...localConfigs.value.run,
+            ...val.run,
+          },
+        };
+        localConfigs.value = newConfigs;
+        emit("update:modelValue", {
+          ...props.modelValue,
+          argvs: newConfigs,
+          code: generateUBrowserCode(newConfigs, selectedActions.value),
+        });
+      },
+    });
+
+    // 更新配置
+    const updateConfigs = (newConfigs) => {
+      argvs.value = window.lodashM.cloneDeep(newConfigs);
     };
-  },
-  methods: {
-    updateConfigs(newConfigs) {
-      this.configs = newConfigs;
-    },
-    removeAction(action) {
-      const newActions = this.selectedActions.filter((a) => a.id !== action.id);
-      this.selectedActions = newActions;
-      const newConfigs = { ...this.configs };
+
+    // 移除操作
+    const removeAction = (action) => {
+      selectedActions.value = selectedActions.value.filter(
+        (a) => a.id !== action.id
+      );
+      const newConfigs = { ...argvs.value };
       delete newConfigs[action.value];
-      this.configs = newConfigs;
-    },
-  },
-  watch: {
-    configs: {
-      deep: true,
-      handler() {
-        this.$emit(
-          "update:modelValue",
-          generateUBrowserCode(this.configs, this.selectedActions)
-        );
-      },
-    },
-    selectedActions: {
-      handler() {
-        this.$emit(
-          "update:modelValue",
-          generateUBrowserCode(this.configs, this.selectedActions)
-        );
-      },
-    },
-    step: {
-      handler() {
-        this.$emit(
-          "update:modelValue",
-          generateUBrowserCode(this.configs, this.selectedActions)
-        );
-      },
-    },
+      argvs.value = newConfigs;
+    };
+
+    return {
+      step,
+      selectedActions,
+      configs: argvs,
+      updateConfigs,
+      removeAction,
+    };
   },
 });
 </script>
 
-<style scoped>
+<style>
 .ubrowser-editor {
-  width: 100%;
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 0;
+  width: 100%;
 }
 
 .ubrowser-tabs {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 4px 4px 0 0;
   flex-shrink: 0;
 }
 
 .ubrowser-panels {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 0 0 4px 4px;
   flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-
-/* 调整面板内边距和布局 */
-.ubrowser-panels :deep(.q-tab-panel) {
-  padding: 8px;
-  height: 100%;
-  min-height: 0;
-}
-
-/* 面板内容区域 */
-.panel-content {
-  height: 100%;
   overflow: auto;
 }
 
-/* 调整标签页样式 */
+.panel-content {
+  padding: 16px;
+  min-height: 200px;
+}
+
+.ubrowser-panels :deep(.q-tab-panel) {
+  padding: 0;
+}
+
 .ubrowser-tabs :deep(.q-tab) {
-  min-height: 36px;
-  padding: 0 12px;
-}
-
-.ubrowser-tabs :deep(.q-tab__content) {
-  min-width: 0;
-  flex-direction: row;
-  gap: 4px;
-}
-
-.ubrowser-tabs :deep(.q-tab__label) {
-  font-size: 12px;
-  line-height: 1;
+  min-height: 40px;
+  padding: 0 16px;
 }
 
 .ubrowser-tabs :deep(.q-tab__icon) {
-  font-size: 16px;
-  margin: 0;
+  font-size: 20px;
+}
+
+.ubrowser-tabs :deep(.q-tab__label) {
+  font-size: 14px;
+  line-height: 1.2;
+  margin-left: 8px;
 }
 </style>

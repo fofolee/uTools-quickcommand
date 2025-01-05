@@ -106,20 +106,21 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
+  emits: ["remove-action", "update:selectedActions", "update:configs"],
+  setup() {
     return {
-      ubrowserOperationConfigs: ubrowserOperationConfigs,
+      ubrowserOperationConfigs,
     };
   },
-  emits: ["remove-action", "update:selectedActions", "update:configs"],
   methods: {
     moveAction(index, direction) {
       const newIndex = index + direction;
       if (newIndex >= 0 && newIndex < this.selectedActions.length) {
         const actions = [...this.selectedActions];
-        const temp = actions[index];
-        actions[index] = actions[newIndex];
-        actions[newIndex] = temp;
+        [actions[index], actions[newIndex]] = [
+          actions[newIndex],
+          actions[index],
+        ];
         this.$emit("update:selectedActions", actions);
       }
     },
@@ -127,19 +128,22 @@ export default defineComponent({
       const index = this.selectedActions.findIndex(
         (a) => a.value === action.value
       );
+
       if (index === -1) {
         // 添加操作
+        const newAction = {
+          ...action,
+          id: this.$root.getUniqueId(),
+          argv: "",
+          saveOutput: false,
+          useOutput: null,
+          cmd: action.value || action.cmd,
+          value: action.value || action.cmd,
+        };
+
         this.$emit("update:selectedActions", [
           ...this.selectedActions,
-          {
-            ...action,
-            id: this.$root.getUniqueId(),
-            argv: "",
-            saveOutput: false,
-            useOutput: null,
-            cmd: action.value || action.cmd,
-            value: action.value || action.cmd,
-          },
+          newAction,
         ]);
 
         // 初始化配置对象
@@ -148,14 +152,14 @@ export default defineComponent({
           const newConfigs = { ...this.configs };
           if (!newConfigs[action.value]) {
             newConfigs[action.value] = {};
+            // 设置默认值
+            config.forEach((field) => {
+              if (field.defaultValue !== undefined) {
+                newConfigs[action.value][field.key] = field.defaultValue;
+              }
+            });
+            this.$emit("update:configs", newConfigs);
           }
-          // 设置默认值
-          config.forEach((field) => {
-            if (field.defaultValue !== undefined) {
-              newConfigs[action.value][field.key] = field.defaultValue;
-            }
-          });
-          this.$emit("update:configs", newConfigs);
         }
       } else {
         // 移除操作
@@ -167,7 +171,7 @@ export default defineComponent({
     getActionProps(action, key) {
       return this.ubrowserOperationConfigs.find(
         (a) => a.value === action.value
-      )[key];
+      )?.[key];
     },
   },
 });

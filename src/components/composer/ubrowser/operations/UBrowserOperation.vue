@@ -7,20 +7,37 @@
       >
         <!-- 复选框组 -->
         <template v-if="field.type === 'checkbox-group'">
-          <UBrowserCheckboxGroup
-            v-model="fieldValue[field.key]"
+          <q-option-group
+            :model-value="
+              Array.isArray(fieldValue[field.key]) ? fieldValue[field.key] : []
+            "
             :options="field.options"
+            type="checkbox"
+            class="row items-center"
+            inline
+            dense
             @update:model-value="updateValue(field.key, $event)"
           />
         </template>
 
-        <!-- 单个复选框 -->
-        <template v-else-if="field.type === 'checkbox'">
-          <UBrowserCheckbox
-            v-model="fieldValue[field.key]"
-            :label="field.label"
-            @update:model-value="updateValue(field.key, $event)"
-          />
+        <!-- 是/否选择 -->
+        <template v-else-if="field.type === 'boolean-toggle'">
+          <div class="row items-center no-wrap">
+            <q-badge class="q-pa-xs">{{ field.label }}</q-badge>
+            <q-btn-toggle
+              :model-value="fieldValue[field.key] ? 'true' : 'false'"
+              :options="[
+                { label: '是', value: 'true' },
+                { label: '否', value: 'false' },
+              ]"
+              dense
+              flat
+              no-caps
+              spread
+              class="button-group"
+              @update:model-value="updateValue(field.key, $event === 'true')"
+            />
+          </div>
         </template>
 
         <!-- 基本输入类型的处理 -->
@@ -37,12 +54,9 @@
           <!-- 普通输入框 -->
           <template v-else>
             <VariableInput
-              v-model="fieldValue[field.key]"
+              :model-value="fieldValue[field.key]"
               :label="field.label"
-              :command="{
-                icon: field.icon,
-                inputType: field.inputType,
-              }"
+              :icon="field.icon"
               @update:model-value="updateValue(field.key, $event)"
             />
           </template>
@@ -53,16 +67,6 @@
           <NumberInput
             v-model="fieldValue[field.key]"
             :label="field.label"
-            :command="{ icon: field.icon }"
-            @update:model-value="updateValue(field.key, $event)"
-          />
-        </template>
-
-        <!-- 文本区域 -->
-        <template v-else-if="field.type === 'textarea'">
-          <UBrowserTextarea
-            v-model="fieldValue[field.key]"
-            :label="field.label"
             :icon="field.icon"
             @update:model-value="updateValue(field.key, $event)"
           />
@@ -70,13 +74,20 @@
 
         <!-- 选择框 -->
         <template v-else-if="field.type === 'select'">
-          <UBrowserSelect
-            v-model="fieldValue[field.key]"
+          <q-select
+            :model-value="fieldValue[field.key]"
             :label="field.label"
-            :icon="field.icon"
             :options="field.options"
+            dense
+            filled
+            emit-value
+            map-options
             @update:model-value="updateValue(field.key, $event)"
-          />
+          >
+            <template v-slot:prepend>
+              <q-icon :name="field.icon" />
+            </template>
+          </q-select>
         </template>
 
         <!-- Cookie列表 -->
@@ -106,20 +117,39 @@
 
         <!-- 按钮组 -->
         <template v-else-if="field.type === 'button-toggle'">
-          <UBrowserButtonToggle
-            v-model="fieldValue[field.key]"
-            :label="field.label"
-            :options="field.options"
-            @update:model-value="updateValue(field.key, $event)"
-          />
+          <div class="row items-center no-wrap">
+            <q-badge class="q-pa-xs">{{ field.label }}</q-badge>
+            <q-btn-toggle
+              :model-value="fieldValue[field.key]"
+              :options="field.options"
+              dense
+              flat
+              no-caps
+              spread
+              class="button-group"
+              @update:model-value="updateValue(field.key, $event)"
+            />
+          </div>
         </template>
 
         <!-- 设备尺寸 -->
         <template v-else-if="field.type === 'device-size'">
-          <UBrowserDeviceSize
-            v-model="fieldValue.size"
-            @update:model-value="updateValue(field.key, $event)"
-          />
+          <div class="row q-col-gutter-sm">
+            <VariableInput
+              v-model.number="fieldValue.size[key]"
+              class="col-6"
+              v-for="key in ['width', 'height']"
+              :key="key"
+              label="宽度"
+              icon="width"
+              @update:model-value="
+                updateValue(field.key, {
+                  ...fieldValue.size,
+                  [key]: $event,
+                })
+              "
+            />
+          </div>
         </template>
 
         <!-- 带参数的函数输入 -->
@@ -139,36 +169,25 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, computed, ref, onMounted } from "vue";
 import { get, set } from "lodash";
 import UBrowserFunctionInput from "./UBrowserFunctionInput.vue";
-import UBrowserCheckbox from "./UBrowserCheckbox.vue";
 import UBrowserFileList from "./UBrowserFileList.vue";
 import UBrowserCookieList from "./UBrowserCookieList.vue";
-import UBrowserButtonToggle from "./UBrowserButtonToggle.vue";
-import UBrowserDeviceSize from "./UBrowserDeviceSize.vue";
 import UBrowserNamedParamList from "./UBrowserNamedParamList.vue";
-import UBrowserSelect from "./UBrowserSelect.vue";
 import UBrowserDeviceName from "./UBrowserDeviceName.vue";
-import UBrowserTextarea from "./UBrowserTextarea.vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
-import UBrowserCheckboxGroup from "./UBrowserCheckboxGroup.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
+
 export default defineComponent({
   name: "UBrowserOperation",
   components: {
     UBrowserFunctionInput,
-    UBrowserCheckbox,
     UBrowserFileList,
     UBrowserCookieList,
-    UBrowserButtonToggle,
-    UBrowserDeviceSize,
     UBrowserNamedParamList,
-    UBrowserSelect,
     UBrowserDeviceName,
-    UBrowserTextarea,
     VariableInput,
-    UBrowserCheckboxGroup,
     NumberInput,
   },
   props: {
@@ -186,70 +205,62 @@ export default defineComponent({
     },
   },
   emits: ["update:configs"],
-  data() {
-    return {
-      fieldValue: {},
-    };
-  },
-  created() {
-    // 初始化字段值，确保有默认值
-    this.fields.forEach((field) => {
-      const value = get(this.configs[this.action], field.key);
-      // 根据字段类型设置适当的默认值
-      let defaultValue;
-      if (field.type === "checkbox-group") {
-        defaultValue = field.defaultValue || [];
-      } else if (field.type === "checkbox") {
-        defaultValue = field.defaultValue || false;
-      } else if (field.type === "function-with-params") {
-        // 为function-with-params类型设置特殊的默认值结构
-        this.fieldValue.function = value?.function || "";
-        this.fieldValue.args = value?.args || [];
-        return; // 跳过后续的赋值
-      } else {
-        defaultValue = field.defaultValue;
-      }
-      this.fieldValue[field.key] = value !== undefined ? value : defaultValue;
+  setup(props, { emit }) {
+    const fieldValue = ref({});
+
+    // 初始化字段值
+    onMounted(() => {
+      props.fields.forEach((field) => {
+        const value = get(props.configs[props.action], field.key);
+        // 根据字段类型设置适当的默认值
+        if (field.type === "function-with-params") {
+          fieldValue.value.function = value?.function || "";
+          fieldValue.value.args = value?.args || [];
+          return;
+        }
+
+        const defaultValue =
+          field.type === "checkbox-group"
+            ? []
+            : field.type === "checkbox"
+            ? field.defaultValue || false
+            : field.defaultValue;
+
+        fieldValue.value[field.key] = Array.isArray(value)
+          ? value
+          : defaultValue;
+      });
     });
-  },
-  methods: {
-    updateValue(key, value) {
-      // 更新本地值
-      this.fieldValue[key] = value;
 
-      // 创建新的配置对
-      const newConfigs = { ...this.configs };
-      if (!newConfigs[this.action]) {
-        newConfigs[this.action] = {};
+    // 更新值的方法
+    const updateValue = (key, value) => {
+      fieldValue.value[key] = value;
+
+      const newConfigs = { ...props.configs };
+      if (!newConfigs[props.action]) {
+        newConfigs[props.action] = {};
       }
 
-      // 使用 lodash 的 set 来处理嵌套路径
-      set(newConfigs[this.action], key, value);
+      set(newConfigs[props.action], key, value);
+      emit("update:configs", newConfigs);
+    };
 
-      // 发出更新事件
-      this.$emit("update:configs", newConfigs);
-    },
-  },
-  watch: {
-    // 监听配置变化
-    configs: {
-      deep: true,
-      handler() {
-        this.fields.forEach((field) => {
-          const value = get(this.configs[this.action], field.key);
-          if (field.type === "function-with-params") {
-            // 为function-with-params类型设置特殊的更新逻辑
-            this.fieldValue.function =
-              value?.function || this.fieldValue.function || "";
-            this.fieldValue.args = value?.args || this.fieldValue.args || [];
-            return;
-          }
-          if (value !== undefined) {
-            this.fieldValue[field.key] = value;
-          }
-        });
-      },
-    },
+    return {
+      fieldValue,
+      updateValue,
+    };
   },
 });
 </script>
+
+<style scoped>
+.button-group {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.button-group :deep(.q-btn) {
+  min-height: 24px;
+  font-size: 12px;
+}
+</style>

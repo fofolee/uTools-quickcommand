@@ -2,7 +2,7 @@
   <div class="row q-col-gutter-sm">
     <div class="col">
       <VariableInput
-        :command="{ icon: icon }"
+        icon="label"
         :model-value="modelValue"
         :label="label"
         @update:model-value="$emit('update:modelValue', $event)"
@@ -41,8 +41,12 @@ export default defineComponent({
   },
   props: {
     modelValue: {
-      type: String,
-      default: "",
+      type: Object,
+      default: () => ({
+        value: "",
+        isString: true,
+        __varInputVal__: true,
+      }),
     },
     label: {
       type: String,

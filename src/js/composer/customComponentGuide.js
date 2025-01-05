@@ -4,6 +4,7 @@
  */
 const customComponentGuide = {
   description: "创建自定义命令组件的完整流程",
+  important: "创建过程中严禁删除、修改任何已有的函数或对象",
   steps: {
     "1. Backend Interface": {
       location: "plugin/lib/quickcomposer/xxx/yyy.js",

@@ -11,7 +11,7 @@
             <VariableInput
               :model-value="cookie.name"
               label="名称"
-              :command="{ icon: 'label' }"
+              icon="label"
               @update:model-value="
                 (value) => handleUpdate(index, 'name', value)
               "
@@ -21,7 +21,7 @@
             <VariableInput
               :model-value="cookie.value"
               label="值"
-              :command="{ icon: 'edit' }"
+              icon="edit"
               @update:model-value="
                 (value) => handleUpdate(index, 'value', value)
               "
@@ -64,20 +64,58 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Array,
-      default: () => [{ name: "", value: "" }],
+      default: () => [
+        {
+          name: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          value: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+        },
+      ],
     },
   },
   emits: ["update:modelValue"],
   methods: {
     addCookie() {
-      const newValue = [...this.modelValue, { name: "", value: "" }];
+      const newValue = [
+        ...this.modelValue,
+        {
+          name: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          value: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+        },
+      ];
       this.$emit("update:modelValue", newValue);
     },
     removeCookie(index) {
       const newValue = [...this.modelValue];
       newValue.splice(index, 1);
       if (newValue.length === 0) {
-        newValue.push({ name: "", value: "" });
+        newValue.push({
+          name: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          value: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+        });
       }
       this.$emit("update:modelValue", newValue);
     },
