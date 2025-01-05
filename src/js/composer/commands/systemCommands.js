@@ -4,7 +4,7 @@ export const systemCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "copyTo",
+      value: "electron.clipboard.writeText",
       label: "将内容写入剪贴板",
       config: [
         {

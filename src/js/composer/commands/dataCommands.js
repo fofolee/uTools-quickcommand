@@ -4,7 +4,7 @@ export const dataCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.data",
+      value: "quickcomposer.data.base64Encode",
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
@@ -74,7 +74,7 @@ export const dataCommands = {
       component: "AsymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.data",
+      value: "quickcomposer.data.md5Hash",
       label: "哈希计算",
       desc: "计算文本的哈希值",
       icon: "enhanced_encryption",

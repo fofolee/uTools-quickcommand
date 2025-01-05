@@ -8,7 +8,7 @@ export const notifyCommands = {
       label: "打印消息",
       config: [
         {
-          key: "message",
+          key: "log",
           label: "要打印的消息文本",
           type: "varInput",
           icon: "info",
@@ -16,11 +16,11 @@ export const notifyCommands = {
       ],
     },
     {
-      value: "message",
+      value: "utools.showNotification",
       label: "发送系统消息",
       config: [
         {
-          key: "message",
+          key: "notification",
           label: "要发送的系统消息文本",
           type: "varInput",
           icon: "message",
@@ -28,7 +28,7 @@ export const notifyCommands = {
       ],
     },
     {
-      value: "send",
+      value: "utools.hideMainWindowTypeString",
       label: "发送文本到活动窗口",
       config: [
         {

@@ -4,11 +4,11 @@ export const networkCommands = {
   defaultOpened: true,
   commands: [
     {
-      value: "visit",
+      value: "utools.shellOpenExternal",
       label: "默认浏览器打开网址",
       config: [
         {
-          key: "url",
+          key: "visit",
           label: "要访问的网址链接",
           type: "varInput",
           icon: "language",
