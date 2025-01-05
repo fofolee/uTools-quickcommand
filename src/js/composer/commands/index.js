@@ -6,6 +6,7 @@ import { dataCommands } from "./dataCommands";
 import { otherCommands } from "./otherCommands";
 import { simulateCommands } from "./simulateCommands";
 import { controlCommands } from "./controlCommands";
+import { uiCommands } from "./uiCommand";
 
 export const commandCategories = [
   fileCommands,
@@ -16,4 +17,5 @@ export const commandCategories = [
   controlCommands,
   otherCommands,
   simulateCommands,
+  uiCommands,
 ];

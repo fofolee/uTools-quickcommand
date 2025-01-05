@@ -53,6 +53,9 @@
             :icon="item.icon"
           />
         </div>
+        <div v-else-if="item.type === 'arrayEditor'">
+          <ArrayEditor :model-value="argvs[index]" />
+        </div>
       </div>
     </div>
   </div>
@@ -62,13 +65,20 @@
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
-import { stringifyWithType, parseToHasType } from "js/composer/formatString";
+import ArrayEditor from "components/composer/ui/ArrayEditor.vue";
+import {
+  stringifyWithType,
+  stringifyObject,
+  parseToHasType,
+  parseFunction,
+} from "js/composer/formatString";
 
 export default defineComponent({
   name: "MultiParams",
   components: {
     VariableInput,
     NumberInput,
+    ArrayEditor,
   },
   props: {
     modelValue: {
@@ -119,7 +129,11 @@ export default defineComponent({
     },
     generateCode(funcName, argvs) {
       const newArgvs = argvs
-        .map((argv) => stringifyWithType(argv))
+        .map((argv) => {
+          return typeof argv === "string"
+            ? stringifyWithType(argv)
+            : stringifyObject(argv);
+        })
         .filter((item) => item != null && item !== "");
       console.log(newArgvs);
       return `${funcName}(${newArgvs.join(",")})`;
@@ -167,6 +181,11 @@ export default defineComponent({
             } else if (config.type === "numInput") {
               // 对于 NumberInput 类型，转换为数字
               argvs[index] = Number(param) || 0;
+            } else if (config.type === "arrayEditor") {
+              let result = parseFunction(`${this.funcName}(${param})`, [
+                "arg0[*]",
+              ]);
+              argvs[index] = result.argv;
             } else {
               // 其他类型直接使用值
               argvs[index] = param;

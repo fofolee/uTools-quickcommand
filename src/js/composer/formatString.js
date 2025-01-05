@@ -95,6 +95,9 @@ const processObject = (obj, parentPath = "") => {
  * @returns {string} 格式化后的JSON字符串
  */
 export const stringifyObject = (jsonObj) => {
+  if (jsonObj instanceof Array) {
+    return `[${jsonObj.map((item) => stringifyObject(item)).join(",")}]`;
+  }
   if (jsonObj?.hasOwnProperty("__varInputVal__")) {
     return stringifyWithType(jsonObj);
   }
