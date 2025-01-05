@@ -93,7 +93,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "../ui/VariableInput.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
 import RegexInput from "./RegexInput.vue";
 import RegexBuilder from "./RegexBuilder.vue";
 import RegexTester from "./RegexTester.vue";

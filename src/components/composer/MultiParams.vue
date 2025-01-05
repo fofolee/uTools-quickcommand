@@ -52,8 +52,8 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "./VariableInput.vue";
-import NumberInput from "./NumberInput.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
+import NumberInput from "components/composer/ui/NumberInput.vue";
 import { stringifyWithType, parseToHasType } from "js/composer/formatString";
 
 export default defineComponent({

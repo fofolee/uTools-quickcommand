@@ -67,9 +67,9 @@
 <script>
 import { defineComponent, inject } from "vue";
 import { validateVariableName } from "js/common/variableValidator";
-import VariableInput from "./ui/VariableInput.vue";
-import MultiParams from "./ui/MultiParams.vue";
-import CommandHead from "./card/CommandHead.vue";
+import VariableInput from "components/composer/ui/VariableInput.vue";
+import MultiParams from "components/composer/MultiParams.vue";
+import CommandHead from "components/composer/card/CommandHead.vue";
 import * as CardComponents from "js/composer/cardComponents";
 
 export default defineComponent({

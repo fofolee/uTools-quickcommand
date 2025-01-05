@@ -1,10 +1,10 @@
-export const textCommands = {
-  label: "文本处理",
-  icon: "code",
+export const dataCommands = {
+  label: "数据处理",
+  icon: "auto_graph",
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.text",
+      value: "quickcomposer.data",
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
@@ -21,42 +21,42 @@ export const textCommands = {
         options: [
           {
             label: "Base64编码",
-            value: "quickcomposer.text.base64Encode",
+            value: "quickcomposer.data.base64Encode",
             icon: "title",
           },
           {
             label: "Base64解码",
-            value: "quickcomposer.text.base64Decode",
+            value: "quickcomposer.data.base64Decode",
             icon: "title",
           },
           {
             label: "十六进制编码",
-            value: "quickcomposer.text.hexEncode",
+            value: "quickcomposer.data.hexEncode",
             icon: "code",
           },
           {
             label: "十六进制解码",
-            value: "quickcomposer.text.hexDecode",
+            value: "quickcomposer.data.hexDecode",
             icon: "code",
           },
           {
             label: "URL编码",
-            value: "quickcomposer.text.urlEncode",
+            value: "quickcomposer.data.urlEncode",
             icon: "link",
           },
           {
             label: "URL解码",
-            value: "quickcomposer.text.urlDecode",
+            value: "quickcomposer.data.urlDecode",
             icon: "link",
           },
           {
             label: "HTML编码",
-            value: "quickcomposer.text.htmlEncode",
+            value: "quickcomposer.data.htmlEncode",
             icon: "html",
           },
           {
             label: "HTML解码",
-            value: "quickcomposer.text.htmlDecode",
+            value: "quickcomposer.data.htmlDecode",
             icon: "html",
           },
         ],
@@ -64,17 +64,17 @@ export const textCommands = {
       },
     },
     {
-      value: "quickcomposer.text.symmetricCrypto",
+      value: "quickcomposer.data.symmetricCrypto",
       label: "对称加解密",
       component: "SymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.text.asymmetricCrypto",
+      value: "quickcomposer.data.asymmetricCrypto",
       label: "非对称加解密",
       component: "AsymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.text",
+      value: "quickcomposer.data",
       label: "哈希计算",
       desc: "计算文本的哈希值",
       icon: "enhanced_encryption",
@@ -91,27 +91,27 @@ export const textCommands = {
         options: [
           {
             label: "MD5",
-            value: "quickcomposer.text.md5Hash",
+            value: "quickcomposer.data.md5Hash",
             icon: "functions",
           },
           {
             label: "SHA1",
-            value: "quickcomposer.text.sha1Hash",
+            value: "quickcomposer.data.sha1Hash",
             icon: "functions",
           },
           {
             label: "SHA256",
-            value: "quickcomposer.text.sha256Hash",
+            value: "quickcomposer.data.sha256Hash",
             icon: "functions",
           },
           {
             label: "SHA512",
-            value: "quickcomposer.text.sha512Hash",
+            value: "quickcomposer.data.sha512Hash",
             icon: "functions",
           },
           {
             label: "SM3",
-            value: "quickcomposer.text.sm3Hash",
+            value: "quickcomposer.data.sm3Hash",
             icon: "functions",
           },
         ],
@@ -119,7 +119,7 @@ export const textCommands = {
       width: 3,
     },
     {
-      value: "quickcomposer.text.reverseString",
+      value: "quickcomposer.data.reverseString",
       label: "字符串反转",
       config: [
         {
@@ -131,7 +131,7 @@ export const textCommands = {
       ],
     },
     {
-      value: "quickcomposer.text.replaceString",
+      value: "quickcomposer.data.replaceString",
       label: "字符串替换",
       config: [
         {
@@ -158,7 +158,7 @@ export const textCommands = {
       ],
     },
     {
-      value: "quickcomposer.text.substring",
+      value: "quickcomposer.data.substring",
       label: "字符串截取",
       config: [
         {
@@ -185,12 +185,27 @@ export const textCommands = {
       ],
     },
     {
-      value: "quickcomposer.text.regexTransform",
+      value: "quickcomposer.data.regexTransform",
       label: "正则提取/替换",
       component: "RegexEditor",
       componentProps: {
         inputLabel: "要处理的文本",
       },
+    },
+    {
+      value: "quickcomposer.data.buffer",
+      label: "Buffer操作",
+      desc: "Buffer创建、转换和操作",
+      component: "BufferEditor",
+      icon: "memory",
+    },
+    {
+      value: "quickcomposer.data.zlib",
+      label: "数据压缩解压",
+      desc: "使用 zlib 进行数据压缩和解压",
+      component: "ZlibEditor",
+      icon: "compress",
+      isAsync: true,
     },
   ],
 };

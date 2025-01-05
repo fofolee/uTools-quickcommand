@@ -2,7 +2,7 @@ import { defineAsyncComponent } from "vue";
 
 // UI Components
 export const KeyEditor = defineAsyncComponent(() =>
-  import("components/composer/ui/KeyEditor.vue")
+  import("src/components/composer/simulate/KeyEditor.vue")
 );
 export const ImageSearchEditor = defineAsyncComponent(() =>
   import("components/composer/simulate/ImageSearchEditor.vue")
@@ -36,18 +36,18 @@ export const UBrowserEditor = defineAsyncComponent(() =>
   import("components/composer/ubrowser/UBrowserEditor.vue")
 );
 export const AxiosConfigEditor = defineAsyncComponent(() =>
-  import("components/composer/http/AxiosConfigEditor.vue")
+  import("src/components/composer/network/AxiosConfigEditor.vue")
 );
 export const RegexEditor = defineAsyncComponent(() =>
-  import("components/composer/regex/RegexEditor.vue")
+  import("components/composer/data/regex/RegexEditor.vue")
 );
 
 // Crypto Components
 export const SymmetricCryptoEditor = defineAsyncComponent(() =>
-  import("components/composer/crypto/SymmetricCryptoEditor.vue")
+  import("src/components/composer/data/SymmetricCryptoEditor.vue")
 );
 export const AsymmetricCryptoEditor = defineAsyncComponent(() =>
-  import("components/composer/crypto/AsymmetricCryptoEditor.vue")
+  import("src/components/composer/data/AsymmetricCryptoEditor.vue")
 );
 
 // File Components
@@ -68,7 +68,7 @@ export const PathEditor = defineAsyncComponent(() =>
   import("components/composer/system/PathEditor.vue")
 );
 export const ZlibEditor = defineAsyncComponent(() =>
-  import("components/composer/file/ZlibEditor.vue")
+  import("src/components/composer/data/ZlibEditor.vue")
 );
 export const UrlEditor = defineAsyncComponent(() =>
   import("components/composer/network/UrlEditor.vue")
@@ -77,5 +77,5 @@ export const DnsEditor = defineAsyncComponent(() =>
   import("components/composer/network/DnsEditor.vue")
 );
 export const BufferEditor = defineAsyncComponent(() =>
-  import("components/composer/developer/BufferEditor.vue")
+  import("src/components/composer/data/BufferEditor.vue")
 );

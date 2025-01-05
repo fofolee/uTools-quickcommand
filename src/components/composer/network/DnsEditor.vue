@@ -28,7 +28,6 @@
           label="主机名"
           icon="dns"
           class="col"
-          v-if="needsHostname"
         />
 
         <!-- IP地址输入 -->
