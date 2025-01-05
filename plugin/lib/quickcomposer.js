@@ -1,5 +1,5 @@
 const quickcomposer = {
-  textProcessor: require("./quickcomposer/textProcessor"),
+  text: require("./quickcomposer/text"),
   simulate: require("./quickcomposer/simulate"),
   file: require("./quickcomposer/file"),
   system: require("./quickcomposer/system"),

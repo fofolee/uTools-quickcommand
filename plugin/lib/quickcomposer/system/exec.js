@@ -1,13 +1,17 @@
-const { execSync } = require("child_process");
+const { exec: execAsync } = require("child_process");
 const iconv = require("iconv-lite");
 const os = require("os");
+const util = require("util");
+
+// 将 exec 转换为 Promise 版本
+const execPromise = util.promisify(execAsync);
 
 function getSystemEncoding() {
   // Windows 默认使用 GBK/GB2312，其他系统默认 UTF-8
   return os.platform() === "win32" ? "gbk" : "utf8";
 }
 
-function exec(command, options = {}) {
+async function exec(command, options = {}) {
   try {
     const {
       autoEncoding = true,
@@ -17,7 +21,7 @@ function exec(command, options = {}) {
     } = options;
 
     // 执行命令，总是使用 buffer 获取原始输出
-    const output = execSync(command, {
+    const { stdout: output } = await execPromise(command, {
       ...execOptions,
       encoding: "buffer",
       windowsHide,

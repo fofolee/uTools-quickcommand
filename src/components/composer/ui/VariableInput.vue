@@ -48,12 +48,12 @@
         v-if="variables.length"
       >
         <q-list class="variable-list">
-          <q-item-label header class="text-subtitle2">
-            <q-icon name="functions" size="16px" class="q-mr-sm" />
+          <q-item-label header class="variable-label">
+            <q-icon name="functions" size="15px" />
             选择变量
           </q-item-label>
 
-          <q-separator />
+          <q-separator class="q-my-xs" />
 
           <template v-if="variables.length">
             <q-item
@@ -216,21 +216,29 @@ export default defineComponent({
 
 .variable-item {
   border-radius: 4px;
-  margin: 2px 0;
+  padding: 0px 16px;
   transition: all 0.3s ease;
+  min-height: 40px;
 }
 
 .variable-item:hover {
   background: var(--q-primary-opacity-10);
 }
 
+.variable-label {
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .variable-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .variable-source {
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.7;
 }
 

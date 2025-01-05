@@ -1,10 +1,10 @@
-export const textProcessorCommands = {
+export const textCommands = {
   label: "文本处理",
   icon: "code",
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.textProcessor",
+      value: "quickcomposer.text",
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
@@ -21,46 +21,46 @@ export const textProcessorCommands = {
         options: [
           {
             label: "Base64编码",
-            value: "quickcomposer.textProcessor.base64Encode",
+            value: "quickcomposer.text.base64Encode",
           },
           {
             label: "Base64解码",
-            value: "quickcomposer.textProcessor.base64Decode",
+            value: "quickcomposer.text.base64Decode",
           },
           {
             label: "十六进制编码",
-            value: "quickcomposer.textProcessor.hexEncode",
+            value: "quickcomposer.text.hexEncode",
           },
           {
             label: "十六进制解码",
-            value: "quickcomposer.textProcessor.hexDecode",
+            value: "quickcomposer.text.hexDecode",
           },
-          { label: "URL编码", value: "quickcomposer.textProcessor.urlEncode" },
-          { label: "URL解码", value: "quickcomposer.textProcessor.urlDecode" },
+          { label: "URL编码", value: "quickcomposer.text.urlEncode" },
+          { label: "URL解码", value: "quickcomposer.text.urlDecode" },
           {
             label: "HTML编码",
-            value: "quickcomposer.textProcessor.htmlEncode",
+            value: "quickcomposer.text.htmlEncode",
           },
           {
             label: "HTML解码",
-            value: "quickcomposer.textProcessor.htmlDecode",
+            value: "quickcomposer.text.htmlDecode",
           },
         ],
         width: 3,
       },
     },
     {
-      value: "quickcomposer.textProcessor.symmetricCrypto",
+      value: "quickcomposer.text.symmetricCrypto",
       label: "对称加解密",
       component: "SymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.textProcessor.asymmetricCrypto",
+      value: "quickcomposer.text.asymmetricCrypto",
       label: "非对称加解密",
       component: "AsymmetricCryptoEditor",
     },
     {
-      value: "quickcomposer.textProcessor",
+      value: "quickcomposer.text",
       label: "哈希计算",
       desc: "计算文本的哈希值",
       icon: "enhanced_encryption",
@@ -75,17 +75,17 @@ export const textProcessorCommands = {
       functionSelector: {
         selectLabel: "哈希算法",
         options: [
-          { label: "MD5", value: "quickcomposer.textProcessor.md5Hash" },
-          { label: "SHA1", value: "quickcomposer.textProcessor.sha1Hash" },
-          { label: "SHA256", value: "quickcomposer.textProcessor.sha256Hash" },
-          { label: "SHA512", value: "quickcomposer.textProcessor.sha512Hash" },
-          { label: "SM3", value: "quickcomposer.textProcessor.sm3Hash" },
+          { label: "MD5", value: "quickcomposer.text.md5Hash" },
+          { label: "SHA1", value: "quickcomposer.text.sha1Hash" },
+          { label: "SHA256", value: "quickcomposer.text.sha256Hash" },
+          { label: "SHA512", value: "quickcomposer.text.sha512Hash" },
+          { label: "SM3", value: "quickcomposer.text.sm3Hash" },
         ],
       },
       width: 3,
     },
     {
-      value: "quickcomposer.textProcessor.reverseString",
+      value: "quickcomposer.text.reverseString",
       label: "字符串反转",
       config: [
         {
@@ -97,7 +97,7 @@ export const textProcessorCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessor.replaceString",
+      value: "quickcomposer.text.replaceString",
       label: "字符串替换",
       config: [
         {
@@ -124,7 +124,7 @@ export const textProcessorCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessor.substring",
+      value: "quickcomposer.text.substring",
       label: "字符串截取",
       config: [
         {
@@ -151,7 +151,7 @@ export const textProcessorCommands = {
       ],
     },
     {
-      value: "quickcomposer.textProcessor.regexTransform",
+      value: "quickcomposer.text.regexTransform",
       label: "正则提取/替换",
       component: "RegexEditor",
       componentProps: {

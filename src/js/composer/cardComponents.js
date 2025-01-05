@@ -63,3 +63,7 @@ export const SystemCommandEditor = defineAsyncComponent(() =>
 export const OsEditor = defineAsyncComponent(() =>
   import("components/composer/system/OsEditor.vue")
 );
+
+export const PathEditor = defineAsyncComponent(() =>
+  import("src/components/composer/system/PathEditor.vue")
+);
