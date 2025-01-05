@@ -4,7 +4,7 @@ export const simulateCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "keyTap",
+      value: "utools.simulateKeyboardTap",
       label: "模拟按键",
       config: [],
       component: "KeyEditor",

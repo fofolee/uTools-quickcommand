@@ -249,44 +249,124 @@ const customComponentGuide = {
       },
       tips: "formatJsonVariables 主要用于处理对象中的变量，避免对简单参数使用，以免产生不必要的引号",
     },
-    asyncCommand: "后端使用异步函数时，命令配置需要设置isAsync: true",
-    componentStructure: "参考现有组件的实现方式，保持一致的代码风格",
-    errorHandling: "前后端都需要适当的错误处理和提示",
-    typeChecking: "确保所有参数都有适当的类型检查",
-    codeGeneration: {
-      description: "代码生成的关键点",
-      points: [
-        "1. 使用 generateCode 方法生成标准格式的代码",
-        "2. 确保生成的代码可以被正确解析回参数",
-        "3. 处理特殊字符和引号",
-        "4. 考虑不同类型参数的处理方式",
+    commonComponents: {
+      description: "常用组件的使用说明",
+      components: {
+        VariableInput: {
+          description: "变量输入组件",
+          usage: "用于输入可能包含变量的字符串",
+          props: [
+            "model-value - 输入值，需要包含 value、isString、__varInputVal__ 属性",
+            "label - 输入框标签",
+            "icon - 输入框图标",
+          ],
+        },
+        DictEditor: {
+          description: "键值对编辑组件",
+          usage: "用于编辑对象类型的配置，如 headers、env 等",
+          features: [
+            "自带添加/删除按钮",
+            "支持键值对编辑",
+            "值部分默认使用 VariableInput",
+            "支持下拉选项（通过 options.items 配置）",
+          ],
+          notes: [
+            "初始值应该是一个对象，如 {}",
+            "支持通过 options 属性配置下拉选项",
+          ],
+        },
+        NumberInput: {
+          description: "数字输入组件",
+          usage: "用于输入数字类型的配置",
+          props: [
+            "model-value - 数字值",
+            "label - 输入框标签",
+            "icon - 输入框图标",
+          ],
+        },
+      },
+    },
+    dataFlow: {
+      description: "数据流转说明",
+      patterns: {
+        modelValue: {
+          description: "组件数据结构",
+          structure: {
+            value: "函数名，来自命令配置",
+            code: "生成的代码字符串",
+            argvs: "解析后的参数对象",
+          },
+        },
+        updateFlow: {
+          description: "数据更新流程",
+          steps: [
+            "1. 用户输入触发 update:model-value 事件",
+            "2. 组件内部更新 argvs",
+            "3. argvs 更新触发 generateCode",
+            "4. 发送完整的 modelValue 给父组件",
+          ],
+        },
+      },
+    },
+    bestPractices: {
+      description: "最佳实践",
+      tips: [
+        "使用现有组件而不是重新开发",
+        "参考 axios 等成熟组件的实现",
+        "保持数据流的清晰和一致",
+        "合理使用计算属性和方法",
+        "避免直接修改 props",
+        "正确处理默认值",
       ],
     },
-    codeParsing: {
-      description: "代码解析的关键点",
-      points: [
-        "1. 使用 parseCodeToArgvs 方法解析代码为参数",
-        "2. 处理参数中的特殊字符和引号",
-        "3. 正确识别参数类型",
-        "4. 处理解析失败的情况",
-      ],
-    },
-    componentLifecycle: {
-      description: "组件生命周期管理",
-      points: [
-        "1. mounted 中初始化默认值",
-        "2. 清理事件监听器",
-        "3. 处理组件销毁",
-      ],
-    },
-    codeStyle: {
-      description: "代码风格规范",
-      points: [
-        "1. 保持代码结构清晰",
-        "2. 使用有意义的变量名",
-        "3. 添加必要的注释",
-        "4. 遵循 Vue 组件命名规范",
-      ],
+    commonPitfalls: {
+      description: "自定义组件开发中的常见错误和最佳实践",
+      componentRegistration: {
+        description: "组件注册相关注意事项",
+        tips: [
+          "组件名使用 PascalCase 命名，如 SystemCommandEditor",
+          "在 cardComponents.js 中注册时使用字符串形式，如 component: 'SystemCommandEditor'",
+          "不要在配置文件中导入组件",
+          "不要在配置文件中定义 defaultArgvs，这应该只在组件内部定义",
+        ],
+      },
+      codeGeneration: {
+        description: "代码生成相关注意事项",
+        tips: [
+          "使用 modelValue.value 获取函数名，避免硬编码",
+          "在 generateCode 中正确处理默认值的移除",
+          "正确定义 variableFormatPaths 以处理变量格式",
+        ],
+      },
+      dataManagement: {
+        description: "数据管理相关注意事项",
+        tips: [
+          "使用 updateArgvs(key, value) 方法显式更新数据",
+          "在模板中使用 :model-value 和 @update:model-value 而不是 v-model",
+          "在 emit 时不需要提交 value 字段，因为这在 command 配置里已定义",
+          "使用 getter/setter 形式的 argvs 计算属性",
+          "在 mounted 和 updateArgvs 中保留原始字段 ...this.modelValue",
+          "处理嵌套对象更新时需要正确处理路径，如 'options.encoding' 需要分别更新 options 对象",
+          "更新嵌套对象时要保持对象的响应性，使用解构运算符复制对象",
+        ],
+      },
+      performance: {
+        description: "性能优化相关注意事项",
+        tips: [
+          "避免使用过多的 watch 属性，容易造成性能问题",
+          "使用 computed 代替复杂的 watch",
+          "减少不必要的数据更新和重渲染",
+          "保持简单的 getter/setter 模式，避免复杂的嵌套对象更新",
+        ],
+      },
+      componentStructure: {
+        description: "组件结构相关注意事项",
+        tips: [
+          "使用 data() 而不是 setup 来定义组件数据",
+          "在配置文件中的 value 应该包含完整路径，如 quickcomposer.system.exec",
+          "组件内部保持简单清晰的结构，避免过度复杂的逻辑",
+        ],
+      },
     },
   },
   examples: {

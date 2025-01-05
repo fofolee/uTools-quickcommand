@@ -284,7 +284,7 @@ export default defineComponent({
         .map((key) => (!isMac && key === "command" ? "meta" : key));
 
       const args = [argvs.mainKey, ...activeModifiers];
-      return `keyTap("${args.join('","')}")`;
+      return `${this.modelValue.value}("${args.join('","')}")`;
     },
     updateValue(argv) {
       const newArgvs = {

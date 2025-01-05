@@ -247,13 +247,16 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* checkbox大小及字体 */
-.command-composer :deep(.q-checkbox__label) {
+/* checkbox/toggle大小及字体 */
+.command-composer :deep(.q-checkbox__label),
+.command-composer :deep(.q-toggle__label) {
   font-size: 12px;
 }
 
-.command-composer :deep(.q-checkbox__inner) {
-  font-size: 24px;
+.command-composer :deep(.q-checkbox__inner),
+.command-composer :deep(.q-toggle__inner) {
+  font-size: 28px;
+  margin: 4px 0px;
 }
 
 /* 暗黑模式下的标签栏背景颜色 */

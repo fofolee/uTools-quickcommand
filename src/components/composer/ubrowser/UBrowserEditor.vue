@@ -8,6 +8,7 @@
       align="left"
       narrow-indicator
       inline-label
+      active-class="ubrowser-tabs-active"
     >
       <q-tab name="1" icon="settings" label="基础参数" size="sm" />
       <q-tab name="2" icon="touch_app" label="浏览器操作" size="sm" />
@@ -133,6 +134,10 @@ export default defineComponent({
   width: 100%;
 }
 
+.ubrowser-tabs-active {
+  color: var(--q-primary);
+}
+
 .ubrowser-tabs {
   flex-shrink: 0;
 }
@@ -143,7 +148,7 @@ export default defineComponent({
 }
 
 .panel-content {
-  padding: 16px;
+  padding: 8px;
   min-height: 200px;
 }
 

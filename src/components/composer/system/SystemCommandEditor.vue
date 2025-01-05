@@ -1,0 +1,303 @@
+<template>
+  <div class="row q-col-gutter-sm">
+    <!-- 命令输入和选项按钮 -->
+    <div class="col-12 command-input-wrapper">
+      <div class="row items-center q-gutter-sm">
+        <div class="col">
+          <VariableInput
+            :model-value="argvs.command"
+            @update:model-value="(val) => updateArgvs('command', val)"
+            label="命令"
+            icon="terminal"
+          />
+        </div>
+        <q-btn
+          flat
+          round
+          dense
+          icon="settings"
+          :color="showOptions ? 'primary' : 'grey-7'"
+          @click="showOptions = !showOptions"
+        >
+          <q-tooltip>选项</q-tooltip>
+        </q-btn>
+      </div>
+    </div>
+
+    <!-- 执行选项 -->
+    <div class="col-12">
+      <q-slide-transition>
+        <div v-show="showOptions" class="row q-col-gutter-sm">
+          <!-- 工作目录 -->
+          <div class="col-12 col-sm-6">
+            <VariableInput
+              :model-value="argvs.options.cwd"
+              @update:model-value="(val) => updateArgvs('options.cwd', val)"
+              label="工作目录"
+              icon="folder"
+            />
+          </div>
+
+          <!-- Shell路径 -->
+          <div class="col-12 col-sm-6">
+            <VariableInput
+              :model-value="argvs.options.shell"
+              @update:model-value="(val) => updateArgvs('options.shell', val)"
+              label="Shell路径"
+              icon="terminal"
+            />
+          </div>
+
+          <!-- 超时和缓冲区 -->
+          <div class="col-12">
+            <div class="row q-col-gutter-sm">
+              <div class="col-sm-6">
+                <NumberInput
+                  :model-value="argvs.options.timeout"
+                  @update:model-value="
+                    (val) => updateArgvs('options.timeout', val)
+                  "
+                  label="超时时间(ms)"
+                  icon="timer"
+                />
+              </div>
+              <div class="col-sm-6">
+                <NumberInput
+                  :model-value="argvs.options.maxBuffer"
+                  @update:model-value="
+                    (val) => updateArgvs('options.maxBuffer', val)
+                  "
+                  label="最大缓冲区(bytes)"
+                  icon="memory"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- 编码处理 -->
+          <div class="col-12">
+            <div class="row q-col-gutter-sm items-center">
+              <div class="col-6 row justify-between">
+                <q-toggle
+                  :model-value="argvs.options.windowsHide"
+                  @update:model-value="
+                    (val) => updateArgvs('options.windowsHide', val)
+                  "
+                  label="隐藏命令窗口"
+                />
+                <q-toggle
+                  :model-value="argvs.options.autoEncoding"
+                  @update:model-value="
+                    (val) => updateArgvs('options.autoEncoding', val)
+                  "
+                  label="自动处理编码"
+                />
+              </div>
+              <div class="col-6" v-if="!argvs.options.autoEncoding">
+                <q-select
+                  :model-value="argvs.options.encoding"
+                  @update:model-value="
+                    (val) => updateArgvs('options.encoding', val)
+                  "
+                  :options="encodingOptions"
+                  label="输出编码"
+                  dense
+                  filled
+                  emit-value
+                  map-options
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="code" />
+                  </template>
+                </q-select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 环境变量 -->
+          <div class="col-12">
+            <BorderLabel label="环境变量">
+              <DictEditor
+                :model-value="argvs.options.env"
+                @update:model-value="(val) => updateArgvs('options.env', val)"
+              />
+            </BorderLabel>
+          </div>
+        </div>
+      </q-slide-transition>
+    </div>
+  </div>
+</template>
+
+<script>
+import { defineComponent } from "vue";
+import {
+  parseFunction,
+  stringifyObject,
+  stringifyWithType,
+} from "js/composer/formatString";
+import VariableInput from "components/composer/ui/VariableInput.vue";
+import NumberInput from "components/composer/ui/NumberInput.vue";
+import DictEditor from "components/composer/ui/DictEditor.vue";
+import BorderLabel from "components/composer/ui/BorderLabel.vue";
+
+export default defineComponent({
+  name: "SystemCommandEditor",
+  components: {
+    VariableInput,
+    NumberInput,
+    DictEditor,
+    BorderLabel,
+  },
+  props: {
+    modelValue: {
+      type: Object,
+      required: true,
+    },
+  },
+  emits: ["update:modelValue"],
+  data() {
+    return {
+      showOptions: false,
+      encodingOptions: [
+        { label: "Buffer", value: "buffer" },
+        { label: "UTF-8", value: "utf8" },
+        { label: "GBK", value: "gbk" },
+        { label: "GB2312", value: "gb2312" },
+        { label: "ASCII", value: "ascii" },
+        { label: "Base64", value: "base64" },
+      ],
+      defaultArgvs: {
+        command: {
+          value: "",
+          isString: true,
+          __varInputVal__: true,
+        },
+        options: {
+          cwd: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          env: {},
+          autoEncoding: true,
+          encoding: "buffer",
+          timeout: 0,
+          maxBuffer: 1024 * 1024, // 1MB
+          shell: {
+            value: "",
+            isString: true,
+            __varInputVal__: true,
+          },
+          windowsHide: true,
+        },
+      },
+    };
+  },
+  computed: {
+    argvs: {
+      get() {
+        return (
+          this.modelValue.argvs ||
+          this.parseCodeToArgvs(this.modelValue.code) ||
+          this.defaultArgvs
+        );
+      },
+      set(value) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          code: this.generateCode(value),
+          argvs: value,
+        });
+      },
+    },
+  },
+  methods: {
+    parseCodeToArgvs(code) {
+      if (!code) return null;
+
+      // 定义需要使用variable格式的路径
+      const variableFormatPaths = [
+        "arg0", // 命令字符串
+        "arg1.cwd", // 工作目录
+        "arg1.env.**", // 环境变量
+      ];
+
+      // 解析代码
+      const result = parseFunction(code, { variableFormatPaths });
+      if (!result) return this.defaultArgvs;
+
+      // 返回解析结果
+      const [command, options = {}] = result.args;
+      return {
+        command: command || this.defaultArgvs.command,
+        options: {
+          ...this.defaultArgvs.options,
+          ...options,
+          cwd: options.cwd || this.defaultArgvs.options.cwd,
+          env: options.env || this.defaultArgvs.options.env,
+        },
+      };
+    },
+    generateCode(argvs) {
+      const args = [];
+
+      // 添加命令
+      args.push(stringifyWithType(argvs.command));
+
+      // 添加选项
+      const options = { ...argvs.options };
+      // 移除默认值
+      Object.keys(options).forEach((key) => {
+        if (
+          JSON.stringify(options[key]) ===
+          JSON.stringify(this.defaultArgvs.options[key])
+        ) {
+          delete options[key];
+        }
+      });
+
+      if (Object.keys(options).length > 0) {
+        args.push(stringifyObject(options));
+      }
+
+      return `${this.modelValue.value}(${args.join(", ")})`;
+    },
+    updateArgvs(key, value) {
+      if (key.includes(".")) {
+        // 处理嵌套属性，如 'options.encoding'
+        const [parent, child] = key.split(".");
+        this.argvs = {
+          ...this.argvs,
+          [parent]: {
+            ...this.argvs[parent],
+            [child]: value,
+          },
+        };
+      } else {
+        // 处理顶层属性
+        this.argvs = { ...this.argvs, [key]: value };
+      }
+    },
+  },
+  mounted() {
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        code: this.generateCode(this.defaultArgvs),
+        argvs: this.defaultArgvs,
+      });
+    }
+  },
+});
+</script>
+
+<style scoped>
+.q-expansion-item :deep(.q-expansion-item__container) {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.command-input-wrapper {
+  position: relative;
+}
+</style>

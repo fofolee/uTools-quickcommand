@@ -49,7 +49,7 @@ export default defineComponent({
     },
     icon: {
       type: String,
-      default: "pin",
+      default: "",
     },
   },
   emits: ["update:modelValue"],

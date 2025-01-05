@@ -54,3 +54,8 @@ export const AsymmetricCryptoEditor = defineAsyncComponent(() =>
 export const FileOperationEditor = defineAsyncComponent(() =>
   import("components/composer/file/FileOperationEditor.vue")
 );
+
+// System Components
+export const SystemCommandEditor = defineAsyncComponent(() =>
+  import("components/composer/system/SystemCommandEditor.vue")
+);

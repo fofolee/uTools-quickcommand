@@ -472,7 +472,7 @@ export default defineComponent({
         ? `, ${stringifyObject(restConfig)}`
         : "";
 
-      return `axios.${method.toLowerCase()}(${stringifyWithType(url)}${
+      return `${this.modelValue.value}.${method.toLowerCase()}(${stringifyWithType(url)}${
         this.hasRequestData ? `, ${stringifyObject(data)}` : ""
       }${configStr})`;
     },

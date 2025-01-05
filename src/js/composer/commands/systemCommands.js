@@ -4,18 +4,6 @@ export const systemCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "system",
-      label: "执行系统命令",
-      config: [
-        {
-          key: "command",
-          label: "要执行的命令行",
-          type: "varInput",
-          icon: "terminal",
-        },
-      ],
-    },
-    {
       value: "copyTo",
       label: "将内容写入剪贴板",
       config: [
@@ -32,6 +20,14 @@ export const systemCommands = {
       label: "获取剪贴板内容",
       config: [],
       allowEmptyArgv: true,
+    },
+    {
+      value: "quickcomposer.system.exec",
+      label: "执行系统命令",
+      desc: "执行系统命令并返回输出结果",
+      config: [],
+      component: "SystemCommandEditor",
+      icon: "terminal",
     },
   ],
 };

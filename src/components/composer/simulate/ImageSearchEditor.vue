@@ -212,7 +212,7 @@ export default defineComponent({
       };
 
       // 生成代码
-      return `quickcomposer.simulate.findImage("data:image/png;base64,${config.imageData}", { threshold: ${config.threshold}, mouseAction: "${config.mouseAction}" })`;
+      return `${this.modelValue.value}("data:image/png;base64,${config.imageData}", { threshold: ${config.threshold}, mouseAction: "${config.mouseAction}" })`;
     },
 
     parseCodeToArgvs(code) {

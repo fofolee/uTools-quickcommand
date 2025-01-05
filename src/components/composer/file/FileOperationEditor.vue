@@ -564,7 +564,7 @@ export default defineComponent({
           break;
       }
 
-      return `quickcomposer.file.operation(${stringifyObject(params)})`;
+      return `${this.modelValue.value}(${stringifyObject(params)})`;
     },
     updateArgvs(key, value) {
       const argvs = { ...this.argvs };
