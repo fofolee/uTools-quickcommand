@@ -4,6 +4,7 @@ const string = require("./string");
 const crypto = require("./crypto");
 const buffer = require("./buffer");
 const zlib = require("./zlib");
+const random = require("./random");
 
 module.exports = {
   ...encoder,
@@ -12,4 +13,5 @@ module.exports = {
   ...crypto,
   buffer,
   zlib,
+  random,
 };

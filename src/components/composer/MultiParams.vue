@@ -45,6 +45,14 @@
             :icon="item.icon"
           />
         </div>
+        <div v-else-if="item.type === 'switch'">
+          <q-toggle
+            :model-value="argvs[index]"
+            @update:model-value="updateArgv(index, $event)"
+            :label="item.label"
+            :icon="item.icon"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -110,7 +118,10 @@ export default defineComponent({
       this.updateModelValue(this.funcName, newArgvs);
     },
     generateCode(funcName, argvs) {
-      const newArgvs = argvs.map((argv) => stringifyWithType(argv));
+      const newArgvs = argvs
+        .map((argv) => stringifyWithType(argv))
+        .filter((item) => item != null && item !== "");
+      console.log(newArgvs);
       return `${funcName}(${newArgvs.join(",")})`;
     },
     parseCodeToArgvs(code) {
