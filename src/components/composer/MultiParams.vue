@@ -9,14 +9,14 @@
         <div
           v-for="option in localCommand.functionSelector?.options"
           :key="option.value"
-          :class="['operation-card', { active: functionName === option.value }]"
+          :class="['operation-card', { active: funcName === option.value }]"
           :data-value="option.value"
-          @click="functionName = option.value"
+          @click="funcName = option.value"
         >
           <q-icon
             :name="option.icon || localCommand.icon || 'functions'"
             size="16px"
-            :color="functionName === option.value ? 'primary' : 'grey'"
+            :color="funcName === option.value ? 'primary' : 'grey'"
           />
           <div class="text-caption">{{ option.label }}</div>
         </div>
@@ -85,13 +85,9 @@ export default defineComponent({
     defaultArgvs() {
       return this.localConfig.map((item) => item.value);
     },
-    functionName: {
+    funcName: {
       get() {
-        return (
-          this.modelValue.functionName ||
-          this.modelValue.functionSelector?.options[0]?.value ||
-          this.modelValue.value
-        );
+        return this.modelValue.value;
       },
       set(value) {
         this.updateModelValue(value, this.defaultArgvs);
@@ -111,18 +107,18 @@ export default defineComponent({
       const newArgvs = [...this.argvs];
       newArgvs[index] = value;
 
-      this.updateModelValue(this.functionName, newArgvs);
+      this.updateModelValue(this.funcName, newArgvs);
     },
-    generateCode(functionName, argvs) {
+    generateCode(funcName, argvs) {
       const newArgvs = argvs.map((argv) => stringifyWithType(argv));
-      return `${functionName}(${newArgvs.join(",")})`;
+      return `${funcName}(${newArgvs.join(",")})`;
     },
     parseCodeToArgvs(code) {
       const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
       if (!code) return argvs;
 
       // 匹配函数名和参数
-      const pattern = new RegExp(`^${this.functionName}\\((.*?)\\)$`);
+      const pattern = new RegExp(`^${this.funcName}\\((.*?)\\)$`);
       const match = code.match(pattern);
       if (match) {
         try {
@@ -176,7 +172,7 @@ export default defineComponent({
     getSummary(argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间
       const funcNameLabel = this.localCommand.functionSelector?.options.find(
-        (option) => option.value === this.functionName
+        (option) => option.value === this.funcName
       )?.label;
       const subFeature = funcNameLabel ? `${funcNameLabel} ` : "";
       const allArgvs = argvs
@@ -191,27 +187,23 @@ export default defineComponent({
         .filter((item) => item != null && item != "");
       return `${subFeature}${allArgvs.join(",")}`;
     },
-    updateModelValue(functionName, argvs) {
+    updateModelValue(funcName, argvs) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
-        functionName,
-        summary: this.getSummary(argvs),
+        value: funcName,
         argvs,
-        code: this.generateCode(functionName, argvs),
+        summary: this.getSummary(argvs),
+        code: this.generateCode(funcName, argvs),
       });
     },
   },
   mounted() {
-    if (
-      !this.modelValue.argvs &&
-      !this.modelValue.code &&
-      !this.modelValue.functionName
-    ) {
-      this.updateModelValue(this.functionName, this.defaultArgvs);
+    if (!this.modelValue.argvs && !this.modelValue.code) {
+      this.updateModelValue(this.funcName, this.defaultArgvs);
     }
   },
   watch: {
-    functionName: {
+    funcName: {
       immediate: true,
       handler(newVal) {
         // 当操作卡片改变时，确保它在视图中可见
