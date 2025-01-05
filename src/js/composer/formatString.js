@@ -219,7 +219,22 @@ export const parseFunction = (functionStr, options = {}) => {
       throw new Error("Not a valid function call");
     }
 
-    const functionName = callExpression.callee.name;
+    // 处理函数名，支持成员方法调用
+    let name;
+    if (callExpression.callee.type === "MemberExpression") {
+      // 递归获取完整的成员访问路径
+      const getMemberPath = (node) => {
+        if (node.type === "Identifier") {
+          return node.name;
+        } else if (node.type === "MemberExpression") {
+          return `${getMemberPath(node.object)}.${node.property.name}`;
+        }
+        return "";
+      };
+      name = getMemberPath(callExpression.callee);
+    } else {
+      name = callExpression.callee.name;
+    }
 
     // 递归处理AST节点
     const processNode = (node, currentPath = "") => {
@@ -260,6 +275,9 @@ export const parseFunction = (functionStr, options = {}) => {
           );
         case "ObjectProperty":
           return processNode(node.value, currentPath);
+        case "MemberExpression":
+          // 处理成员表达式
+          return getMemberPath(node);
         default:
           console.warn("Unhandled node type:", node.type);
           return null;
@@ -271,7 +289,7 @@ export const parseFunction = (functionStr, options = {}) => {
     );
 
     return {
-      functionName,
+      name,
       args,
     };
   } catch (e) {

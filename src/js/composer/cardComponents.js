@@ -59,3 +59,7 @@ export const FileOperationEditor = defineAsyncComponent(() =>
 export const SystemCommandEditor = defineAsyncComponent(() =>
   import("components/composer/system/SystemCommandEditor.vue")
 );
+
+export const OsEditor = defineAsyncComponent(() =>
+  import("components/composer/system/OsEditor.vue")
+);

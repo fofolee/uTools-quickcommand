@@ -91,7 +91,7 @@ const customComponentGuide = {
             },
           },
           parseCodeToArgvs: {
-            description: "解析代码字符串为参数对象",
+            description: "解析代码字符串为参数对象，严禁使用eval",
             parameters: "code - 要解析的代码字符串",
             implementation: {
               steps: [

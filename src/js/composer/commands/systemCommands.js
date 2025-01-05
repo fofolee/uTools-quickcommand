@@ -25,9 +25,15 @@ export const systemCommands = {
       value: "quickcomposer.system.exec",
       label: "执行系统命令",
       desc: "执行系统命令并返回输出结果",
-      config: [],
       component: "SystemCommandEditor",
       icon: "terminal",
+    },
+    {
+      value: "quickcomposer.system.os",
+      label: "系统信息",
+      desc: "获取操作系统相关信息",
+      component: "OsEditor",
+      icon: "computer",
     },
   ],
 };
