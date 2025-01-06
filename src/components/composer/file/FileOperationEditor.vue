@@ -383,7 +383,7 @@
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 // 静态选项数据
 const ENCODING_OPTIONS = [
@@ -557,7 +557,7 @@ export default defineComponent({
           break;
       }
 
-      return `${this.modelValue.value}(${stringifyObject(params)})`;
+      return `${this.modelValue.value}(${stringifyArgv(params)})`;
     },
     updateArgvs(key, value) {
       const argvs = { ...this.argvs };

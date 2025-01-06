@@ -141,7 +141,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 
@@ -244,9 +244,9 @@ export default defineComponent({
               strategy: argvs.options.strategy,
             };
 
-      return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+      return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
         argvs.data
-      )}, "${argvs.method}", ${stringifyObject(options)})`;
+      )}, "${argvs.method}", ${stringifyArgv(options)})`;
     },
     parseCodeToArgvs(code) {
       if (!code) return null;

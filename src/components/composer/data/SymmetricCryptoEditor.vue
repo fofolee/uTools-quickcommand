@@ -185,7 +185,7 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
   name: "SymmetricCryptoEditor",
@@ -293,7 +293,7 @@ export default defineComponent({
   },
   methods: {
     generateCode(argvs = this.argvs) {
-      return `${this.modelValue.value}(${stringifyObject({
+      return `${this.modelValue.value}(${stringifyArgv({
         text: argvs.text,
         algorithm: argvs.algorithm,
         mode: argvs.mode,

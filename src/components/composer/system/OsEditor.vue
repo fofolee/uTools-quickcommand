@@ -90,7 +90,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
   name: "OsEditor",
@@ -248,7 +248,7 @@ export default defineComponent({
         return `${this.modelValue.value}.${argvs.operation}()`;
       }
 
-      return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+      return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
         params
       )})`;
     },

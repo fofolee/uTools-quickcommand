@@ -161,7 +161,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 
 export default defineComponent({
@@ -288,33 +288,33 @@ export default defineComponent({
         case "dirname":
         case "extname":
         case "isAbsolute":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.path
           )})`;
 
         case "basename":
           if (argvs.ext && argvs.ext.value) {
-            return `${this.modelValue.value}.${
-              argvs.operation
-            }(${stringifyObject(argvs.path)}, ${stringifyObject(argvs.ext)})`;
+            return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
+              argvs.path
+            )}, ${stringifyArgv(argvs.ext)})`;
           }
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.path
           )})`;
 
         case "join":
         case "resolve":
           return `${this.modelValue.value}.${argvs.operation}(${argvs.paths
-            .map((p) => stringifyObject(p))
+            .map((p) => stringifyArgv(p))
             .join(", ")})`;
 
         case "relative":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.from
-          )}, ${stringifyObject(argvs.to)})`;
+          )}, ${stringifyArgv(argvs.to)})`;
 
         case "format":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.pathObject
           )})`;
 

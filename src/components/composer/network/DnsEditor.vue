@@ -73,7 +73,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 
 export default defineComponent({
@@ -151,17 +151,17 @@ export default defineComponent({
     generateCode(argvs = this.argvs) {
       switch (argvs.operation) {
         case "lookupHost":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.hostname
-          )}, ${stringifyObject(argvs.options)})`;
+          )}, ${stringifyArgv(argvs.options)})`;
 
         case "reverseResolve":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.ip
           )})`;
 
         default:
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.hostname
           )})`;
       }

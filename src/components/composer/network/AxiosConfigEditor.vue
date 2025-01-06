@@ -169,8 +169,7 @@ import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 import DictEditor from "components/composer/ui/DictEditor.vue";
 import {
-  stringifyObject,
-  stringifyWithType,
+  stringifyArgv,
   parseFunction,
 } from "js/composer/formatString";
 import {
@@ -469,13 +468,13 @@ export default defineComponent({
       if (!url) return;
 
       const configStr = Object.keys(restConfig).length
-        ? `, ${stringifyObject(restConfig)}`
+        ? `, ${stringifyArgv(restConfig)}`
         : "";
 
       return `${
         this.modelValue.value
-      }.${method.toLowerCase()}(${stringifyWithType(url)}${
-        this.hasRequestData ? `, ${stringifyObject(data)}` : ""
+      }.${method.toLowerCase()}(${stringifyArgv(url)}${
+        this.hasRequestData ? `, ${stringifyArgv(data)}` : ""
       }${configStr})`;
     },
     updateArgvs(key, value) {

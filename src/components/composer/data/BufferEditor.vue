@@ -362,7 +362,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 import ArrayEditor from "components/composer/ui/ArrayEditor.vue";
@@ -492,63 +492,63 @@ export default defineComponent({
     generateCode(argvs = this.argvs) {
       switch (argvs.operation) {
         case "from":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.data
           )}, "${argvs.encoding}")`;
 
         case "toString":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buffer
           )}, "${argvs.encoding}", ${argvs.start}, ${argvs.end})`;
 
         case "write":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buffer
-          )}, ${stringifyObject(argvs.string)}, ${argvs.offset}, ${
+          )}, ${stringifyArgv(argvs.string)}, ${argvs.offset}, ${
             argvs.length
           }, "${argvs.encoding}")`;
 
         case "fill":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buffer
-          )}, ${stringifyObject(argvs.value)}, ${argvs.offset}, ${
-            argvs.end
-          }, "${argvs.encoding}")`;
+          )}, ${stringifyArgv(argvs.value)}, ${argvs.offset}, ${argvs.end}, "${
+            argvs.encoding
+          }")`;
 
         case "copy":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.source
-          )}, ${stringifyObject(argvs.target)}, ${argvs.targetStart}, ${
+          )}, ${stringifyArgv(argvs.target)}, ${argvs.targetStart}, ${
             argvs.sourceStart
           }, ${argvs.sourceEnd})`;
 
         case "compare":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buf1
-          )}, ${stringifyObject(argvs.buf2)})`;
+          )}, ${stringifyArgv(argvs.buf2)})`;
 
         case "concat":
           const buffersStr = argvs.buffers
-            .map((buf) => stringifyObject(buf))
+            .map((buf) => stringifyArgv(buf))
             .join(", ");
           return `${this.modelValue.value}.${argvs.operation}([${buffersStr}]${
             argvs.totalLength !== undefined ? `, ${argvs.totalLength}` : ""
           })`;
 
         case "indexOf":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buffer
-          )}, ${stringifyObject(argvs.value)}, ${argvs.byteOffset}, "${
+          )}, ${stringifyArgv(argvs.value)}, ${argvs.byteOffset}, "${
             argvs.encoding
           }")`;
 
         case "slice":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buffer
           )}, ${argvs.start}, ${argvs.end})`;
 
         case "swap":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.buffer
           )}, ${argvs.size})`;
 

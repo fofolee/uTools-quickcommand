@@ -1,26 +1,12 @@
 import { parse } from "@babel/parser";
 
 /**
- * 根据值的类型和属性将其转换为字符串
- * 1. 对于带有 __varInputVal__ 属性的对象，根据该属性决定是否添加引号
- * 2. 对于普通字符串，自动添加引号
- * 3. 对于其他类型(数字、布尔等)，直接转换
- * @param {Object|string|number|boolean} argv 要转换的值
- * @returns {string} 转换后的字符串
+ * 处理带有 __varInputVal__ 属性的对象
+ * @param {Object} argv 要处理的对象
+ * @returns {string} 处理后的字符串
  */
-export const stringifyWithType = (argv) => {
-  // 处理带有类型标记的对象
-  if (typeof argv === "object" && argv.hasOwnProperty("__varInputVal__")) {
-    return argv.isString ? `"${argv.value}"` : argv.value;
-  }
-
-  // 处理普通字符串
-  if (typeof argv === "string") {
-    return `"${argv}"`;
-  }
-
-  // 处理其他类型
-  return argv;
+const stringifyVarInputVal = (argv) => {
+  return argv.isString ? `"${argv.value}"` : argv.value;
 };
 
 /**
@@ -51,9 +37,9 @@ const removeEmptyValues = (obj) => {
 const processObject = (obj, parentPath = "") => {
   // 移除空值
   obj = removeEmptyValues(obj);
-  // 如果是 VariableInput 的输出，直接用 stringifyWithType 处理
+  // 如果是 VariableInput 的输出，直接用 stringifyVarInputVal 处理
   if (obj?.hasOwnProperty("__varInputVal__")) {
-    return stringifyWithType(obj);
+    return stringifyVarInputVal(obj);
   }
 
   let result = "{\n";
@@ -64,16 +50,18 @@ const processObject = (obj, parentPath = "") => {
 
     // 处理对象类型
     if (value && typeof value === "object") {
-      // 如果是 VariableInput 的输出，直接用 stringifyWithType 处理
+      // 如果是 VariableInput 的输出，直接用 stringifyVarInputVal 处理
       if (value.hasOwnProperty("__varInputVal__")) {
-        valueStr = stringifyWithType(value);
+        valueStr = stringifyVarInputVal(value);
       } else {
         valueStr = processObject(value, parentPath + "  ");
       }
     }
     // 处理其他类型
-    else {
-      valueStr = stringifyWithType(value);
+    else if (value && typeof value === "string") {
+      valueStr = `"${value}"`;
+    } else {
+      valueStr = value;
     }
 
     // 添加缩进
@@ -94,12 +82,12 @@ const processObject = (obj, parentPath = "") => {
  * @param {Object} jsonObj 要格式化的对象
  * @returns {string} 格式化后的JSON字符串
  */
-export const stringifyObject = (jsonObj) => {
+const stringifyObject = (jsonObj) => {
+  if (jsonObj?.hasOwnProperty("__varInputVal__")) {
+    return stringifyVarInputVal(jsonObj);
+  }
   if (jsonObj instanceof Array) {
     return `[${jsonObj.map((item) => stringifyObject(item)).join(",")}]`;
-  }
-  if (jsonObj?.hasOwnProperty("__varInputVal__")) {
-    return stringifyWithType(jsonObj);
   }
   try {
     return processObject(jsonObj);
@@ -107,6 +95,24 @@ export const stringifyObject = (jsonObj) => {
     console.warn("Failed to stringify object:", e);
     return JSON.stringify(jsonObj, null, 2);
   }
+};
+
+/**
+ * 格式化参数为字符串
+ * @param {Object|string|number|boolean} argv 要格式化的参数
+ * @returns {string} 格式化后的字符串
+ */
+export const stringifyArgv = (argv) => {
+  // 处理普通字符串
+  if (typeof argv === "string") {
+    return `"${argv}"`;
+  }
+  // 处理对象
+  if (typeof argv === "object") {
+    return stringifyObject(argv);
+  }
+  // 处理其他类型
+  return argv;
 };
 
 /**

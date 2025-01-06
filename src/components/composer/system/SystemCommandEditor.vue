@@ -131,11 +131,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import {
-  parseFunction,
-  stringifyObject,
-  stringifyWithType,
-} from "js/composer/formatString";
+import { parseFunction, stringifyArgv } from "js/composer/formatString";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 import DictEditor from "components/composer/ui/DictEditor.vue";
@@ -239,7 +235,7 @@ export default defineComponent({
       const args = [];
 
       // 添加命令
-      args.push(stringifyWithType(argvs.command));
+      args.push(stringifyArgv(argvs.command));
 
       // 添加选项
       const options = { ...argvs.options };
@@ -254,7 +250,7 @@ export default defineComponent({
       });
 
       if (Object.keys(options).length > 0) {
-        args.push(stringifyObject(options));
+        args.push(stringifyArgv(options));
       }
 
       return `${this.modelValue.value}(${args.join(", ")})`;

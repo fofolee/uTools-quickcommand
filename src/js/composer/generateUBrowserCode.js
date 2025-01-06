@@ -4,14 +4,14 @@
  * @param {Array} selectedActions 已选择的操作列表
  * @returns {string} 生成的代码
  */
-import { stringifyObject, stringifyWithType } from "./formatString";
+import { stringifyArgv } from "./formatString";
 
 // 生成 goto 参数字符串
 function generateGotoArgs(goto) {
   const args = [];
 
   // URL
-  const urlStr = stringifyWithType(goto.url);
+  const urlStr = stringifyArgv(goto.url);
   args.push(urlStr);
 
   // Headers
@@ -24,7 +24,7 @@ function generateGotoArgs(goto) {
       headers.userAgent = goto.headers.userAgent;
     }
     console.log("Headers:", JSON.stringify(headers, null, 2));
-    args.push(stringifyObject(headers, true));
+    args.push(stringifyArgv(headers, true));
   }
 
   // Timeout
@@ -121,7 +121,7 @@ function generateRunArgs(run) {
   if (run.proxy) options.proxy = run.proxy;
   if (run.viewport) options.viewport = run.viewport;
 
-  return Object.keys(options).length ? stringifyObject(options) : "";
+  return Object.keys(options).length ? stringifyArgv(options) : "";
 }
 
 // 生成操作参数字符串
@@ -143,11 +143,11 @@ function generateActionArgs(action, config) {
     case "mousedown":
     case "mouseup":
     case "focus":
-      result = stringifyWithType(config.selector);
+      result = stringifyArgv(config.selector);
       break;
     case "css":
     case "paste":
-      result = stringifyWithType(config.value);
+      result = stringifyArgv(config.value);
       break;
     case "press":
       result = generatePressArgs(config);
@@ -163,7 +163,7 @@ function generateActionArgs(action, config) {
       break;
     case "cookies":
     case "removeCookies":
-      result = stringifyWithType(config.name);
+      result = stringifyArgv(config.name);
       break;
     case "setCookies":
       result = generateSetCookiesArgs(config);
@@ -190,7 +190,7 @@ function generateActionArgs(action, config) {
       result = generateDownloadArgs(config);
       break;
     case "devTools":
-      result = stringifyWithType(config.mode);
+      result = stringifyArgv(config.mode);
       break;
     default:
       result = "";
@@ -208,7 +208,7 @@ function generateActionArgs(action, config) {
 function generateWaitArgs(config) {
   switch (config.type) {
     case "selector":
-      return stringifyWithType(config.selector);
+      return stringifyArgv(config.selector);
     case "function":
       return config.function;
     case "time":
@@ -220,7 +220,7 @@ function generateWaitArgs(config) {
 
 // 生成 press 参数字符串
 function generatePressArgs(config) {
-  const args = [stringifyWithType(config.key)];
+  const args = [stringifyArgv(config.key)];
   if (config.modifiers?.length) {
     args.push(JSON.stringify(config.modifiers));
   }
@@ -231,12 +231,12 @@ function generatePressArgs(config) {
 function generateScreenshotArgs(config) {
   const args = [];
   if (config.rect) {
-    args.push(stringifyObject(config.rect));
+    args.push(stringifyArgv(config.rect));
   } else if (config.selector) {
-    args.push(stringifyWithType(config.selector));
+    args.push(stringifyArgv(config.selector));
   }
   if (config.savePath) {
-    args.push(stringifyWithType(config.savePath));
+    args.push(stringifyArgv(config.savePath));
   }
   return args.join(", ");
 }
@@ -245,10 +245,10 @@ function generateScreenshotArgs(config) {
 function generatePdfArgs(config) {
   const args = [];
   if (config.savePath) {
-    args.push(stringifyWithType(config.savePath));
+    args.push(stringifyArgv(config.savePath));
   }
   if (config.options) {
-    args.push(stringifyObject(config.options));
+    args.push(stringifyArgv(config.options));
   }
   return args.join(", ");
 }
@@ -256,26 +256,26 @@ function generatePdfArgs(config) {
 // 生成 device 参数字符串
 function generateDeviceArgs(config) {
   if (config.type === "preset") {
-    return stringifyWithType(config.deviceName);
+    return stringifyArgv(config.deviceName);
   } else {
     const options = {};
     if (config.size) options.size = config.size;
     if (config.useragent) options.userAgent = config.useragent;
-    return stringifyObject(options);
+    return stringifyArgv(options);
   }
 }
 
 // 生成 setCookies 参数字符串
 function generateSetCookiesArgs(config) {
   if (!config.items?.length) return "[]";
-  return stringifyObject(config.items);
+  return stringifyArgv(config.items);
 }
 
 // 生成 evaluate 参数字符串
 function generateEvaluateArgs(config) {
   const args = [config.function];
   if (config.args?.length) {
-    args.push(...config.args.map(stringifyWithType));
+    args.push(...config.args.map(stringifyArgv));
   }
   return args.join(", ");
 }
@@ -285,35 +285,35 @@ function generateWhenArgs(config) {
   if (config.type === "function") {
     return config.function;
   } else {
-    return stringifyWithType(config.selector);
+    return stringifyArgv(config.selector);
   }
 }
 
 // 生成 file 参数字符串
 function generateFileArgs(config) {
-  const args = [stringifyWithType(config.selector)];
+  const args = [stringifyArgv(config.selector)];
   if (config.files) {
-    args.push(stringifyObject(config.files));
+    args.push(stringifyArgv(config.files));
   }
   return args.join(", ");
 }
 
 // 生成 value 参数字符串
 function generateValueArgs(config) {
-  return `${stringifyWithType(config.selector)}, ${stringifyWithType(
+  return `${stringifyArgv(config.selector)}, ${stringifyArgv(
     config.value
   )}`;
 }
 
 // 生成 check 参数字符串
 function generateCheckArgs(config) {
-  return `${stringifyWithType(config.selector)}, ${config.checked}`;
+  return `${stringifyArgv(config.selector)}, ${config.checked}`;
 }
 
 // 生成 scroll 参数字符串
 function generateScrollArgs(config) {
   if (config.type === "element") {
-    return stringifyWithType(config.selector);
+    return stringifyArgv(config.selector);
   } else {
     if (config.x !== undefined) {
       return `${config.x}, ${config.y}`;
@@ -325,9 +325,9 @@ function generateScrollArgs(config) {
 
 // 生成 download 参数字符串
 function generateDownloadArgs(config) {
-  const args = [stringifyWithType(config.url)];
+  const args = [stringifyArgv(config.url)];
   if (config.savePath) {
-    args.push(stringifyWithType(config.savePath));
+    args.push(stringifyArgv(config.savePath));
   }
   return args.join(", ");
 }

@@ -169,7 +169,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyObject, parseFunction } from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import DictEditor from "components/composer/ui/DictEditor.vue";
 
@@ -305,47 +305,45 @@ export default defineComponent({
         case "parse":
         case "isAbsolute":
         case "parseComponents":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.url
           )})`;
 
         case "format":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.urlObject
           )})`;
 
         case "parseQuery":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.query
           )})`;
 
         case "formatQuery":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.queryParams
           )})`;
 
         case "parsePath":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.path
           )})`;
 
         case "parseHost":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.host
           )})`;
 
         case "getQueryParam":
         case "removeQueryParam":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.url
-          )}, ${stringifyObject(argvs.param)})`;
+          )}, ${stringifyArgv(argvs.param)})`;
 
         case "addQueryParam":
-          return `${this.modelValue.value}.${argvs.operation}(${stringifyObject(
+          return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
             argvs.url
-          )}, ${stringifyObject(argvs.param)}, ${stringifyObject(
-            argvs.value
-          )})`;
+          )}, ${stringifyArgv(argvs.param)}, ${stringifyArgv(argvs.value)})`;
 
         default:
           return `${this.modelValue.value}.${argvs.operation}()`;

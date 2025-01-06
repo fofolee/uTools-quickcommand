@@ -85,7 +85,7 @@ const customComponentGuide = {
               `,
               objectCase: `
                 // 对象参数的情况
-                const formattedConfig = stringifyObject(config);
+                const formattedConfig = stringifyArgv(config);
                 return \`functionName(\${formattedConfig})\`;
               `,
             },
@@ -182,7 +182,7 @@ const customComponentGuide = {
           `,
         },
         stringHandling: {
-          stringifyObject: {
+          stringifyArgv: {
             description: "将对象转换为代码字符串",
             usage: "用于生成包含对象参数的代码",
             example: "将 {key: 'value'} 转换为 '{key:\"value\"}'",
@@ -245,12 +245,6 @@ const customComponentGuide = {
               functionName: "函数名称",
               args: "解析后的参数数组，根据路径规则处理变量格式",
             },
-          },
-          stringifyWithType: {
-            description: "将带类型的值转换为字符串",
-            usage: "用于处理 VariableInput 类型的值",
-            example:
-              "将 {value: 'text', isString: true, __varInputVal__: true,} 转换为 '\"text\"'",
           },
           parseToHasType: {
             description: "将字符串解析为带类型的值",

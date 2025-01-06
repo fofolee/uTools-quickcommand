@@ -67,8 +67,7 @@ import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 import ArrayEditor from "components/composer/ui/ArrayEditor.vue";
 import {
-  stringifyWithType,
-  stringifyObject,
+  stringifyArgv,
   parseToHasType,
   parseFunction,
 } from "js/composer/formatString";
@@ -129,11 +128,7 @@ export default defineComponent({
     },
     generateCode(funcName, argvs) {
       const newArgvs = argvs
-        .map((argv) => {
-          return typeof argv === "string"
-            ? stringifyWithType(argv)
-            : stringifyObject(argv);
-        })
+        .map((argv) => stringifyArgv(argv))
         .filter((item) => item != null && item !== "");
       console.log(newArgvs);
       return `${funcName}(${newArgvs.join(",")})`;
