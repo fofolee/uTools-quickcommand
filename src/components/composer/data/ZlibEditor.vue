@@ -1,31 +1,18 @@
 <template>
   <div class="zlib-editor">
     <!-- 操作类型选择 -->
-    <div class="row items-center q-gutter-x-xs">
-      <!-- 数据输入 -->
-      <VariableInput
-        :model-value="argvs.data"
-        @update:model-value="(val) => updateArgvs('data', val)"
-        label="要处理的数据"
-        class="col"
-        icon="data_object"
-      />
-      <div class="col-auto row items-center q-gutter-x-xs">
-        <div
-          v-for="op in operations"
-          :key="op.name"
-          :class="['operation-card', { active: argvs.operation === op.name }]"
-          @click="updateArgvs('operation', op.name)"
-        >
-          <q-icon
-            :name="op.icon"
-            size="16px"
-            :color="argvs.operation === op.name ? 'primary' : 'grey'"
-          />
-          <div class="text-caption">{{ op.label }}</div>
-        </div>
-      </div>
-    </div>
+    <OperationCard
+      :model-value="argvs.operation"
+      @update:model-value="(val) => updateArgvs('operation', val)"
+      :options="operations"
+    />
+    <!-- 数据输入 -->
+    <VariableInput
+      :model-value="argvs.data"
+      @update:model-value="(val) => updateArgvs('data', val)"
+      label="要处理的数据"
+      icon="data_object"
+    />
     <!-- 操作配置 -->
     <div class="operation-options">
       <div class="options-container">
@@ -144,12 +131,13 @@ import { defineComponent } from "vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
-
+import OperationCard from "components/composer/common/OperationCard.vue";
 export default defineComponent({
   name: "ZlibEditor",
   components: {
     VariableInput,
     NumberInput,
+    OperationCard,
   },
   props: {
     modelValue: {
@@ -161,8 +149,8 @@ export default defineComponent({
   data() {
     return {
       operations: [
-        { name: "compressData", label: "压缩", icon: "compress" },
-        { name: "decompressData", label: "解压", icon: "expand" },
+        { value: "compressData", label: "压缩", icon: "compress" },
+        { value: "decompressData", label: "解压", icon: "expand" },
       ],
       methods: [
         { label: "Gzip", value: "gzip" },
@@ -299,7 +287,7 @@ export default defineComponent({
     },
     getSummary(argvs) {
       const op = this.operations.find(
-        (op) => op.name === argvs.operation
+        (op) => op.value === argvs.operation
       )?.label;
       const method = this.methods.find((m) => m.value === argvs.method)?.label;
       return `${op} (${method})`;

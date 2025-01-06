@@ -1,22 +1,11 @@
 <template>
   <div class="url-editor">
     <!-- 操作类型选择 -->
-    <div class="operation-cards">
-      <div
-        v-for="op in operations"
-        :key="op.name"
-        :class="['operation-card', { active: argvs.operation === op.name }]"
-        @click="updateArgvs('operation', op.name)"
-        :data-value="op.name"
-      >
-        <q-icon
-          :name="op.icon"
-          size="16px"
-          :color="argvs.operation === op.name ? 'primary' : 'grey'"
-        />
-        <div class="text-caption">{{ op.label }}</div>
-      </div>
-    </div>
+    <OperationCard
+      :model-value="argvs.operation"
+      @update:model-value="(val) => updateArgvs('operation', val)"
+      :options="operations"
+    />
 
     <!-- 操作配置 -->
     <div class="operation-options q-mt-sm">
@@ -172,12 +161,14 @@ import { defineComponent } from "vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import DictEditor from "components/composer/common/DictEditor.vue";
+import OperationCard from "components/composer/common/OperationCard.vue";
 
 export default defineComponent({
   name: "UrlEditor",
   components: {
     VariableInput,
     DictEditor,
+    OperationCard,
   },
   props: {
     modelValue: {
@@ -189,17 +180,17 @@ export default defineComponent({
   data() {
     return {
       operations: [
-        { name: "parse", label: "解析URL", icon: "link_off" },
-        { name: "format", label: "格式化URL", icon: "link" },
-        { name: "parseQuery", label: "解析查询字符串", icon: "search" },
-        { name: "formatQuery", label: "格式化查询字符串", icon: "edit" },
-        { name: "parsePath", label: "解析路径", icon: "folder_open" },
-        { name: "parseHost", label: "解析主机名", icon: "dns" },
-        { name: "getQueryParam", label: "获取参数", icon: "find_in_page" },
-        { name: "addQueryParam", label: "添加参数", icon: "add_circle" },
-        { name: "removeQueryParam", label: "移除参数", icon: "remove_circle" },
-        { name: "isAbsolute", label: "检查绝对URL", icon: "check_circle" },
-        { name: "parseComponents", label: "解析组成部分", icon: "category" },
+        { value: "parse", label: "解析URL", icon: "link_off" },
+        { value: "format", label: "格式化URL", icon: "link" },
+        { value: "parseQuery", label: "解析查询字符串", icon: "search" },
+        { value: "formatQuery", label: "格式化查询字符串", icon: "edit" },
+        { value: "parsePath", label: "解析路径", icon: "folder_open" },
+        { value: "parseHost", label: "解析主机名", icon: "dns" },
+        { value: "getQueryParam", label: "获取参数", icon: "find_in_page" },
+        { value: "addQueryParam", label: "添加参数", icon: "add_circle" },
+        { value: "removeQueryParam", label: "移除参数", icon: "remove_circle" },
+        { value: "isAbsolute", label: "检查绝对URL", icon: "check_circle" },
+        { value: "parseComponents", label: "解析组成部分", icon: "category" },
       ],
       defaultArgvs: {
         operation: "parse",
@@ -428,7 +419,7 @@ export default defineComponent({
     },
     getSummary(argvs) {
       const op = this.operations.find(
-        (op) => op.name === argvs.operation
+        (op) => op.value === argvs.operation
       )?.label;
       return op + " " + argvs.url.value;
     },
@@ -446,22 +437,6 @@ export default defineComponent({
       this.updateModelValue(this.defaultArgvs);
     }
   },
-  watch: {
-    "argvs.operation": {
-      immediate: true,
-      handler(newVal) {
-        this.$nextTick(() => {
-          document
-            .querySelector(`.operation-card[data-value="${newVal}"]`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-              inline: "nearest",
-            });
-        });
-      },
-    },
-  },
 });
 </script>
 
@@ -476,10 +451,5 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-/* 覆盖command-composer的样式 */
-.command-composer .operation-card {
-  min-width: 100px;
 }
 </style>

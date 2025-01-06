@@ -130,7 +130,7 @@ const customComponentGuide = {
             implementation: {
               simpleCase: `
                 // 返回操作类型的标签
-                return this.operations.find(op => op.name === argvs.operation).label;
+                return this.operations.find(op => op.value === argvs.operation).label;
               `,
               complexCase: `
                 // 返回关键参数的值

@@ -1,27 +1,11 @@
 <template>
   <div class="flex-container">
-    <div
+    <OperationCard
       v-if="hasFunctionSelector"
-      class="flex-item"
-      :style="{ flex: localCommand.functionSelector.width || 3 }"
-    >
-      <div class="operation-cards">
-        <div
-          v-for="option in localCommand.functionSelector?.options"
-          :key="option.value"
-          :class="['operation-card', { active: funcName === option.value }]"
-          :data-value="option.value"
-          @click="funcName = option.value"
-        >
-          <q-icon
-            :name="option.icon || localCommand.icon || 'functions'"
-            size="16px"
-            :color="funcName === option.value ? 'primary' : 'grey'"
-          />
-          <div class="text-caption">{{ option.label }}</div>
-        </div>
-      </div>
-    </div>
+      :model-value="funcName"
+      @update:model-value="funcName = $event"
+      :options="localCommand.functionSelector?.options"
+    />
     <div class="flex-container">
       <div
         v-for="(item, index) in localConfig"
@@ -102,6 +86,7 @@ import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
 import DictEditor from "components/composer/common/DictEditor.vue";
+import OperationCard from "components/composer/common/OperationCard.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
@@ -111,6 +96,7 @@ export default defineComponent({
     NumberInput,
     ArrayEditor,
     DictEditor,
+    OperationCard,
   },
   props: {
     modelValue: {
@@ -218,23 +204,6 @@ export default defineComponent({
     if (!this.modelValue.argvs && !this.modelValue.code) {
       this.updateModelValue(this.funcName, this.defaultArgvs);
     }
-  },
-  watch: {
-    funcName: {
-      immediate: true,
-      handler(newVal) {
-        // 当操作卡片改变时，确保它在视图中可见
-        this.$nextTick(() => {
-          document
-            .querySelector(`.operation-card[data-value="${newVal}"]`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-              inline: "nearest",
-            });
-        });
-      },
-    },
   },
 });
 </script>

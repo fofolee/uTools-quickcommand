@@ -1,21 +1,11 @@
 <template>
   <div class="os-editor">
     <!-- 操作类型选择 -->
-    <div class="operation-cards">
-      <div
-        v-for="op in operations"
-        :key="op.name"
-        :class="['operation-card', { active: argvs.operation === op.name }]"
-        @click="updateArgvs('operation', op.name)"
-      >
-        <q-icon
-          :name="op.icon"
-          size="16px"
-          :color="argvs.operation === op.name ? 'primary' : 'grey'"
-        />
-        <div class="text-caption">{{ op.label }}</div>
-      </div>
-    </div>
+    <OperationCard
+      :model-value="argvs.operation"
+      @update:model-value="(val) => updateArgvs('operation', val)"
+      :options="operations"
+    />
 
     <!-- 操作配置 -->
     <div class="operation-options q-mt-sm" v-if="hasOptions">
@@ -91,9 +81,12 @@
 <script>
 import { defineComponent } from "vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
-
+import OperationCard from "components/composer/common/OperationCard.vue";
 export default defineComponent({
   name: "OsEditor",
+  components: {
+    OperationCard,
+  },
   props: {
     modelValue: {
       type: Object,
@@ -104,11 +97,11 @@ export default defineComponent({
   data() {
     return {
       operations: [
-        { name: "arch", label: "系统架构", icon: "memory" },
-        { name: "cpus", label: "CPU信息", icon: "developer_board" },
-        { name: "memory", label: "内存信息", icon: "storage" },
-        { name: "network", label: "网络信息", icon: "wifi" },
-        { name: "platform", label: "平台信息", icon: "computer" },
+        { value: "arch", label: "系统架构", icon: "memory" },
+        { value: "cpus", label: "CPU信息", icon: "developer_board" },
+        { value: "memory", label: "内存信息", icon: "storage" },
+        { value: "network", label: "网络信息", icon: "wifi" },
+        { value: "platform", label: "平台信息", icon: "computer" },
       ],
       formatOptions: [
         { label: "完整信息", value: "full" },
@@ -192,7 +185,7 @@ export default defineComponent({
     },
     pointerStyle() {
       const activeIndex = this.operations.findIndex(
-        (op) => op.name === this.argvs.operation
+        (op) => op.value === this.argvs.operation
       );
       if (activeIndex === -1) return {};
 
@@ -281,7 +274,7 @@ export default defineComponent({
       };
     },
     getSummary(argvs) {
-      return this.operations.find((op) => op.name === argvs.operation).label;
+      return this.operations.find((op) => op.value === argvs.operation).label;
     },
     updateModelValue(argvs) {
       this.$emit("update:modelValue", {

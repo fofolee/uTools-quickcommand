@@ -1,22 +1,11 @@
 <template>
   <div class="dns-editor">
     <!-- 操作类型选择 -->
-    <div class="operation-cards">
-      <div
-        v-for="op in operations"
-        :key="op.name"
-        :class="['operation-card', { active: argvs.operation === op.name }]"
-        @click="updateArgvs('operation', op.name)"
-        :data-value="op.name"
-      >
-        <q-icon
-          :name="op.icon"
-          size="16px"
-          :color="argvs.operation === op.name ? 'primary' : 'grey'"
-        />
-        <div class="text-caption">{{ op.label }}</div>
-      </div>
-    </div>
+    <OperationCard
+      :model-value="argvs.operation"
+      @update:model-value="(val) => updateArgvs('operation', val)"
+      :options="operations"
+    />
 
     <!-- 操作配置 -->
     <div class="operation-options">
@@ -75,11 +64,12 @@
 import { defineComponent } from "vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
-
+import OperationCard from "components/composer/common/OperationCard.vue";
 export default defineComponent({
   name: "DnsEditor",
   components: {
     VariableInput,
+    OperationCard,
   },
   props: {
     modelValue: {
@@ -91,19 +81,19 @@ export default defineComponent({
   data() {
     return {
       operations: [
-        { name: "lookupHost", label: "DNS查询", icon: "search" },
-        { name: "resolveAll", label: "解析所有记录", icon: "all_inclusive" },
-        { name: "resolveIpv4", label: "解析IPv4", icon: "filter_4" },
-        { name: "resolveIpv6", label: "解析IPv6", icon: "filter_6" },
-        { name: "resolveMxRecords", label: "解析MX记录", icon: "mail" },
+        { value: "lookupHost", label: "DNS查询", icon: "search" },
+        { value: "resolveAll", label: "解析所有记录", icon: "all_inclusive" },
+        { value: "resolveIpv4", label: "解析IPv4", icon: "filter_4" },
+        { value: "resolveIpv6", label: "解析IPv6", icon: "filter_6" },
+        { value: "resolveMxRecords", label: "解析MX记录", icon: "mail" },
         {
-          name: "resolveTxtRecords",
+          value: "resolveTxtRecords",
           label: "解析TXT记录",
           icon: "text_fields",
         },
-        { name: "resolveNsRecords", label: "解析NS记录", icon: "dns" },
-        { name: "resolveCnameRecords", label: "解析CNAME记录", icon: "link" },
-        { name: "reverseResolve", label: "反向解析", icon: "swap_horiz" },
+        { value: "resolveNsRecords", label: "解析NS记录", icon: "dns" },
+        { value: "resolveCnameRecords", label: "解析CNAME记录", icon: "link" },
+        { value: "reverseResolve", label: "反向解析", icon: "swap_horiz" },
       ],
       families: [
         { label: "自动", value: 0 },
@@ -214,7 +204,7 @@ export default defineComponent({
     },
     getSummary(argvs) {
       const op = this.operations.find(
-        (op) => op.name === argvs.operation
+        (op) => op.value === argvs.operation
       )?.label;
       return op === "反向解析"
         ? "反向解析 " + argvs.ip.value
@@ -234,22 +224,6 @@ export default defineComponent({
       this.updateModelValue(this.defaultArgvs);
     }
   },
-  watch: {
-    "argvs.operation": {
-      immediate: true,
-      handler(newVal) {
-        this.$nextTick(() => {
-          document
-            .querySelector(`.operation-card[data-value="${newVal}"]`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-              inline: "nearest",
-            });
-        });
-      },
-    },
-  },
 });
 </script>
 
@@ -263,9 +237,5 @@ export default defineComponent({
   min-height: 32px;
   gap: 8px;
   padding-top: 8px;
-}
-
-.command-composer .operation-card {
-  min-width: 95px;
 }
 </style>

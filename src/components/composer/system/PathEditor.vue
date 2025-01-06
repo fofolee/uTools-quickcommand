@@ -1,22 +1,11 @@
 <template>
   <div class="path-editor">
     <!-- 操作类型选择 -->
-    <div class="operation-cards">
-      <div
-        v-for="op in operations"
-        :key="op.name"
-        :class="['operation-card', { active: argvs.operation === op.name }]"
-        @click="updateArgvs('operation', op.name)"
-        :data-value="op.name"
-      >
-        <q-icon
-          :name="op.icon"
-          size="16px"
-          :color="argvs.operation === op.name ? 'primary' : 'grey'"
-        />
-        <div class="text-caption">{{ op.label }}</div>
-      </div>
-    </div>
+    <OperationCard
+      :model-value="argvs.operation"
+      @update:model-value="(val) => updateArgvs('operation', val)"
+      :options="operations"
+    />
 
     <!-- 操作配置 -->
     <div class="operation-options q-mt-sm">
@@ -163,11 +152,12 @@
 import { defineComponent } from "vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
-
+import OperationCard from "components/composer/common/OperationCard.vue";
 export default defineComponent({
   name: "PathEditor",
   components: {
     VariableInput,
+    OperationCard,
   },
   props: {
     modelValue: {
@@ -179,16 +169,16 @@ export default defineComponent({
   data() {
     return {
       operations: [
-        { name: "normalize", label: "规范化路径", icon: "straighten" },
-        { name: "join", label: "连接路径", icon: "add_link" },
-        { name: "parse", label: "解析路径", icon: "account_tree" },
-        { name: "dirname", label: "获取目录名", icon: "folder" },
-        { name: "basename", label: "获取文件名", icon: "description" },
-        { name: "extname", label: "获取扩展名", icon: "extension" },
-        { name: "isAbsolute", label: "判断绝对路径", icon: "check_circle" },
-        { name: "relative", label: "计算相对路径", icon: "compare_arrows" },
-        { name: "resolve", label: "解析绝对路径", icon: "assistant_direction" },
-        { name: "format", label: "格式化路径", icon: "format_shapes" },
+        { value: "normalize", label: "规范化路径", icon: "straighten" },
+        { value: "join", label: "连接路径", icon: "add_link" },
+        { value: "parse", label: "解析路径", icon: "account_tree" },
+        { value: "dirname", label: "获取目录名", icon: "folder" },
+        { value: "basename", label: "获取文件名", icon: "description" },
+        { value: "extname", label: "获取扩展名", icon: "extension" },
+        { value: "isAbsolute", label: "判断绝对路径", icon: "check_circle" },
+        { value: "relative", label: "计算相对路径", icon: "compare_arrows" },
+        { value: "resolve", label: "解析绝对路径", icon: "assistant_direction" },
+        { value: "format", label: "格式化路径", icon: "format_shapes" },
       ],
       defaultArgvs: {
         operation: "normalize",
@@ -265,7 +255,7 @@ export default defineComponent({
     },
     pointerStyle() {
       const activeIndex = this.operations.findIndex(
-        (op) => op.name === this.argvs.operation
+        (op) => op.value === this.argvs.operation
       );
       if (activeIndex === -1) return {};
 
@@ -414,7 +404,7 @@ export default defineComponent({
       this.updateArgvs("paths", newPaths);
     },
     getSummary(argvs) {
-      return this.operations.find((op) => op.name === argvs.operation)?.label;
+      return this.operations.find((op) => op.value === argvs.operation)?.label;
     },
     updateModelValue(argvs) {
       this.$emit("update:modelValue", {
@@ -429,22 +419,6 @@ export default defineComponent({
     if (!this.modelValue.argvs && !this.modelValue.code) {
       this.updateModelValue(this.defaultArgvs);
     }
-  },
-  watch: {
-    "argvs.operation": {
-      immediate: true,
-      handler(newVal) {
-        this.$nextTick(() => {
-          document
-            .querySelector(`.operation-card[data-value="${newVal}"]`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-              inline: "nearest",
-            });
-        });
-      },
-    },
   },
 });
 </script>

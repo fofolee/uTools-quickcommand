@@ -1,23 +1,11 @@
 <template>
   <div class="buffer-editor">
     <!-- 操作类型选择 -->
-    <div class="operation-cards">
-      <div
-        v-for="op in operations"
-        :key="op.name"
-        :class="['operation-card', { active: argvs.operation === op.name }]"
-        @click="updateArgvs('operation', op.name)"
-        :data-value="op.name"
-      >
-        <q-icon
-          :name="op.icon"
-          size="16px"
-          :color="argvs.operation === op.name ? 'primary' : 'grey'"
-        />
-        <div class="text-caption">{{ op.label }}</div>
-      </div>
-    </div>
-
+    <OperationCard
+      :model-value="argvs.operation"
+      @update:model-value="(val) => updateArgvs('operation', val)"
+      :options="operations"
+    />
     <!-- 操作配置 -->
     <div class="operation-options q-mt-sm">
       <div class="options-container">
@@ -366,6 +354,7 @@ import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
+import OperationCard from "components/composer/common/OperationCard.vue";
 
 export default defineComponent({
   name: "BufferEditor",
@@ -373,6 +362,7 @@ export default defineComponent({
     VariableInput,
     NumberInput,
     ArrayEditor,
+    OperationCard,
   },
   props: {
     modelValue: {
@@ -384,16 +374,16 @@ export default defineComponent({
   data() {
     return {
       operations: [
-        { name: "from", label: "创建Buffer", icon: "add_box" },
-        { name: "toString", label: "转换字符串", icon: "text_fields" },
-        { name: "write", label: "写入数据", icon: "edit" },
-        { name: "fill", label: "填充数据", icon: "format_color_fill" },
-        { name: "copy", label: "复制数据", icon: "content_copy" },
-        { name: "compare", label: "比较数据", icon: "compare" },
-        { name: "concat", label: "连接Buffer", icon: "merge" },
-        { name: "indexOf", label: "查找数据", icon: "search" },
-        { name: "slice", label: "切片数据", icon: "content_cut" },
-        { name: "swap", label: "交换字节序", icon: "swap_horiz" },
+        { value: "from", label: "创建Buffer", icon: "add_box" },
+        { value: "toString", label: "转换字符串", icon: "text_fields" },
+        { value: "write", label: "写入数据", icon: "edit" },
+        { value: "fill", label: "填充数据", icon: "format_color_fill" },
+        { value: "copy", label: "复制数据", icon: "content_copy" },
+        { value: "compare", label: "比较数据", icon: "compare" },
+        { value: "concat", label: "连接Buffer", icon: "merge" },
+        { value: "indexOf", label: "查找数据", icon: "search" },
+        { value: "slice", label: "切片数据", icon: "content_cut" },
+        { value: "swap", label: "交换字节序", icon: "swap_horiz" },
       ],
       encodings: [
         { label: "UTF-8", value: "utf8" },
@@ -669,7 +659,7 @@ export default defineComponent({
     },
     getSummary(argvs) {
       const op = this.operations.find(
-        (op) => op.name === argvs.operation
+        (op) => op.value === argvs.operation
       )?.label;
       return op;
     },
@@ -686,22 +676,6 @@ export default defineComponent({
     if (!this.modelValue.argvs && !this.modelValue.code) {
       this.updateModelValue(this.defaultArgvs);
     }
-  },
-  watch: {
-    "argvs.operation": {
-      immediate: true,
-      handler(newVal) {
-        this.$nextTick(() => {
-          document
-            .querySelector(`.operation-card[data-value="${newVal}"]`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-              inline: "nearest",
-            });
-        });
-      },
-    },
   },
 });
 </script>
