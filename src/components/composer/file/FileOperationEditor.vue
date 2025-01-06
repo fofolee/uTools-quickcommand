@@ -54,25 +54,24 @@
     </div>
 
     <!-- 文件路径输入 -->
-    <div class="row q-gutter-sm">
-      <VariableInput
-        :model-value="argvs.filePath"
-        @update:model-value="updateArgvs('filePath', $event)"
-        label="文件路径"
-        icon="folder"
-        class="col-grow"
-      />
-      <q-btn
-        flat
-        dense
-        round
-        icon="folder_open"
-        class="self-center"
-        @click="selectFile"
-      >
-        <q-tooltip>选择文件</q-tooltip>
-      </q-btn>
-    </div>
+    <VariableInput
+      :model-value="argvs.filePath"
+      @update:model-value="updateArgvs('filePath', $event)"
+      label="文件路径"
+      icon="folder"
+      class="col-grow"
+      :options="{
+        dialog: {
+          options: {
+            title: '选择文件',
+            properties: [
+              shouldSelectDirectory ? 'openDirectory' : 'openFile',
+              'showHiddenFiles',
+            ],
+          },
+        },
+      }"
+    />
 
     <!-- 读取操作配置 -->
     <template v-if="argvs.operation === 'read'">
@@ -583,23 +582,6 @@ export default defineComponent({
       }
 
       this.updateModelValue(argvs);
-    },
-    async selectFile() {
-      const result = window.utools.showOpenDialog({
-        title: "选择文件",
-        properties: [
-          this.shouldSelectDirectory ? "openDirectory" : "openFile",
-          "showHiddenFiles",
-        ],
-        buttonLabel: "选择",
-      });
-      if (result && result[0]) {
-        this.updateArgvs("filePath", {
-          value: result[0],
-          isString: true,
-          __varInputVal__: true,
-        });
-      }
     },
     updateMode() {
       const modeMap = {

@@ -29,36 +29,68 @@
         class="flex-item"
         :style="{ flex: item.width || 12 }"
       >
-        <div v-if="item.type === 'varInput'">
-          <VariableInput
-            :model-value="argvs[index]"
-            @update:model-value="updateArgv(index, $event)"
-            :label="item.label"
-            :icon="item.icon"
-          />
-        </div>
-        <div v-else-if="item.type === 'numInput'">
-          <NumberInput
-            :model-value="argvs[index]"
-            @update:model-value="updateArgv(index, $event)"
-            :label="item.label"
-            :icon="item.icon"
-          />
-        </div>
-        <div v-else-if="item.type === 'switch'">
-          <q-toggle
-            :model-value="argvs[index]"
-            @update:model-value="updateArgv(index, $event)"
-            :label="item.label"
-            :icon="item.icon"
-          />
-        </div>
-        <div v-else-if="item.type === 'arrayEditor'">
-          <ArrayEditor
-            :model-value="argvs[index]"
-            @update:model-value="updateArgv(index, $event)"
-          />
-        </div>
+        <VariableInput
+          v-if="item.type === 'varInput'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+          :options="item.options"
+        />
+        <NumberInput
+          v-else-if="item.type === 'numInput'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+        />
+        <ArrayEditor
+          v-else-if="item.type === 'arrayEditor'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :options="item.options"
+        />
+        <DictEditor
+          v-else-if="item.type === 'dictEditor'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :options="item.options"
+        />
+        <q-toggle
+          v-else-if="item.type === 'switch'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+        />
+        <q-select
+          v-else-if="item.type === 'select'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :options="item.options"
+        >
+          <template v-slot:prepend>
+            <q-icon :name="item.icon" />
+          </template>
+        </q-select>
+        <q-input
+          v-else-if="item.type === 'input'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+        >
+          <template v-slot:prepend>
+            <q-icon :name="item.icon" />
+          </template>
+        </q-input>
+        <q-checkbox
+          v-else-if="item.type === 'checkbox'"
+          :model-value="argvs[index]"
+          @update:model-value="updateArgv(index, $event)"
+          :label="item.label"
+          :icon="item.icon"
+        />
       </div>
     </div>
   </div>
@@ -69,6 +101,7 @@ import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
+import DictEditor from "components/composer/common/DictEditor.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
@@ -77,6 +110,7 @@ export default defineComponent({
     VariableInput,
     NumberInput,
     ArrayEditor,
+    DictEditor,
   },
   props: {
     modelValue: {
@@ -141,6 +175,8 @@ export default defineComponent({
           variableFormatPaths.push(`arg${index}`);
         } else if (item.type === "arrayEditor") {
           variableFormatPaths.push(`arg${index}[*]`);
+        } else if (item.type === "dictEditor") {
+          variableFormatPaths.push(`arg${index}.**`);
         }
       });
       try {

@@ -137,7 +137,7 @@ export default defineComponent({
     },
     options: {
       type: Object,
-      default: null,
+      default: () => ({}),
     },
   },
   emits: ["update:modelValue"],

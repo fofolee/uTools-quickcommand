@@ -90,7 +90,9 @@
                 :model-value="argvs.headers['User-Agent']"
                 @update:model-value="updateArgvs('headers.User-Agent', $event)"
                 label="User Agent"
-                :options="userAgentOptions"
+                :options="{
+                  items: userAgentOptions,
+                }"
                 icon="devices"
                 class="col-grow"
               />

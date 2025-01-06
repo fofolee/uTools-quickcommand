@@ -19,6 +19,12 @@ export const fileCommands = {
           label: "文件、文件夹或软件的绝对路径",
           type: "varInput",
           icon: "folder_open",
+          options: {
+            dialog: {
+              type: "open",
+              options: {},
+            },
+          },
         },
       ],
     },
@@ -31,6 +37,12 @@ export const fileCommands = {
           label: "文件、文件夹或软件的绝对路径",
           type: "varInput",
           icon: "location_on",
+          options: {
+            dialog: {
+              type: "open",
+              options: {},
+            },
+          },
         },
       ],
     },
@@ -43,6 +55,15 @@ export const fileCommands = {
           label: "文件或软件的绝对路径",
           type: "varInput",
           icon: "folder_open",
+          options: {
+            dialog: {
+              type: "open",
+              options: {
+                filters: [{ extensions: ["exe", "app"] }],
+                properties: ["openFile", "openDirectory"],
+              },
+            },
+          },
         },
       ],
     },

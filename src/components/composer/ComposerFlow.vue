@@ -325,7 +325,8 @@ export default defineComponent({
       const tempFlow = [
         command,
         {
-          code: `console.log(${command.outputVariable})`,
+          //没有输出，则不打印
+          code: `${command.outputVariable} && console.log(${command.outputVariable})`,
         },
       ];
       // 触发运行事件

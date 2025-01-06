@@ -1,11 +1,11 @@
 <template>
   <div class="array-editor">
     <div v-for="(item, index) in items" :key="index" class="row items-center">
-      <template v-if="optionsKeys">
+      <template v-if="options.keys">
         <div
-          v-for="key in optionsKeys"
+          v-for="key in options.keys"
           :key="key"
-          :class="['col', optionsKeys.length > 1 ? 'q-pr-sm' : '']"
+          :class="['col', options.keys.length > 1 ? 'q-pr-sm' : '']"
         >
           <VariableInput
             :model-value="item[key]"
@@ -21,7 +21,9 @@
             :model-value="item"
             :label="`${label || '项目'} ${index + 1}`"
             :icon="icon || 'code'"
-            :options="options"
+            :options="{
+              items: options.items,
+            }"
             @update:model-value="(val) => updateItemValue(index, val)"
           />
         </div>
@@ -81,8 +83,8 @@
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
  * @property {Object} options - 配置选项
- * @property {String[]} [optionsKeys] - 多键对象模式的键名列表
- * @property {String[]} [options] - 下拉选择模式的选项列表
+ * @property {String[]} [options.keys] - 多键对象模式的键名列表
+ * @property {String[]} [options.items] - 下拉选择模式的选项列表
  *
  * @example
  * // 基础数组
@@ -95,7 +97,7 @@
  * ]
  *
  * // 多键对象数组
- * optionsKeys = ['name', 'age', 'email']
+ * options.keys = ['name', 'age', 'email']
  * [
  *   {
  *     name: { value: "张三", isString: true, __varInputVal__: true },
@@ -105,7 +107,7 @@
  * ]
  *
  * // 下拉选择模式
- * options = ['选项1', '选项2', '选项3']
+ * options.items = ['选项1', '选项2', '选项3']
  * [
  *   {
  *     value: "选项1",
@@ -136,12 +138,8 @@ export default defineComponent({
       default: "",
     },
     options: {
-      type: Array,
-      default: null,
-    },
-    optionsKeys: {
-      type: Array,
-      default: null,
+      type: Object,
+      default: () => ({}),
     },
   },
   emits: ["update:modelValue"],
@@ -152,9 +150,9 @@ export default defineComponent({
   },
   methods: {
     initializeItems() {
-      if (this.optionsKeys) {
+      if (this.options.keys) {
         const item = {};
-        this.optionsKeys.forEach((key) => {
+        this.options.keys.forEach((key) => {
           item[key] = {
             value: "",
             isString: false,
@@ -178,9 +176,9 @@ export default defineComponent({
      */
     addItem() {
       let newItems = [];
-      if (this.optionsKeys) {
+      if (this.options.keys) {
         const newItem = {};
-        this.optionsKeys.forEach((key) => {
+        this.options.keys.forEach((key) => {
           newItem[key] = {
             value: "",
             isString: false,
@@ -208,9 +206,9 @@ export default defineComponent({
       const newItems = [...this.items];
       newItems.splice(index, 1);
       if (newItems.length === 0) {
-        if (this.optionsKeys) {
+        if (this.options.keys) {
           const newItem = {};
-          this.optionsKeys.forEach((key) => {
+          this.options.keys.forEach((key) => {
             newItem[key] = {
               value: "",
               isString: false,

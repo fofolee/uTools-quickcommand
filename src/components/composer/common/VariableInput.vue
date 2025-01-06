@@ -11,10 +11,9 @@
         v-if="hasSelectedVariable"
         flat
         dense
-        round
         icon="close"
         size="sm"
-        class="clear-btn q-mr-xs"
+        class="clear-btn prepend-btn"
         @click="clearVariable"
       >
         <q-tooltip>清除选中的变量</q-tooltip>
@@ -22,10 +21,9 @@
       <q-btn
         flat
         dense
-        round
         :icon="isString ? 'format_quote' : 'data_object'"
         size="sm"
-        class="string-toggle"
+        class="string-toggle prepend-btn"
         @click="toggleType"
         v-if="!hasSelectedVariable"
       >
@@ -37,29 +35,40 @@
       </q-btn>
       <!-- 选项下拉按钮 -->
       <q-btn-dropdown
-        v-if="options && !hasSelectedVariable"
+        v-if="options.items && !hasSelectedVariable"
         flat
         dense
         size="sm"
         dropdown-icon="menu"
         no-icon-animation
-        class="options-dropdown"
+        class="options-dropdown prepend-btn"
       >
-        <q-list class="options-list">
+        <q-list class="options-item-list">
           <q-item
-            v-for="option in normalizedOptions"
-            :key="getOptionValue(option)"
+            v-for="item in normalizedItems"
+            :key="getItemValue(item)"
             clickable
             v-close-popup
-            @click="selectOption(option)"
+            @click="selectItem(item)"
             class="option-item"
           >
             <q-item-section>
-              {{ getOptionLabel(option) }}
+              {{ getItemLabel(item) }}
             </q-item-section>
           </q-item>
         </q-list>
       </q-btn-dropdown>
+      <q-btn
+        v-if="!hasSelectedVariable && options.dialog"
+        flat
+        dense
+        icon="file_open"
+        size="sm"
+        class="prepend-btn"
+        @click="handleFileOpen(options.dialog)"
+      >
+        <q-tooltip>选择文件</q-tooltip>
+      </q-btn>
       <!-- 变量选择下拉 -->
       <q-btn-dropdown
         flat
@@ -68,7 +77,7 @@
           'text-primary': hasSelectedVariable,
           'text-grey-6': !hasSelectedVariable,
         }"
-        class="variable-dropdown"
+        class="variable-dropdown prepend-btn"
         size="sm"
         v-if="variables.length"
       >
@@ -118,14 +127,30 @@ import { defineComponent, inject } from "vue";
  * @property {Object} modelValue - 输入框的值对象
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
- * @property {String[]} [options] - 可选的下拉选项列表
- *
+ * @property {Object} [options] - 可选的配置对象
+ * @property {Array} [options.items] - 选项列表
+ * @property {Boolean} [options.dialog] - 是否显示文件选择对话框
+ * @property {Object} [options.dialog] - 文件选择对话框配置
+ * @property {String} [options.dialog.type] - 对话框类型，open 或 save
+ * @property {Object} [options.dialog.options] - 对话框选项，对应 utools.showOpenDialog 和 utools.showSaveDialog 的 options
  * @example
  * // modelValue 对象格式
  * {
  *   value: "", // 输入框的值
  *   isString: true, // 是否是字符串
  *   __varInputVal__: true // 用于标识是变量输入框
+ * }
+ * @example
+ * // options 对象格式
+ * {
+ *   items: ["item1", "item2", "item3"], // 选项列表
+ *   dialog: {
+ *     type: "open", // 对话框类型，open 或 save
+ *     options: {
+ *       title: "选择文件",
+ *       defaultPath: "/",
+ *     },
+ *   },
  * }
  */
 export default defineComponent({
@@ -144,18 +169,8 @@ export default defineComponent({
     label: String,
     icon: String,
     options: {
-      type: Array,
-      default: null,
-      validator(value) {
-        if (!value) return true;
-        // 检查数组中的每一项是否符合格式要求
-        return value.every((item) => {
-          return (
-            typeof item === "string" || // ["xxx", "yyy"]
-            (typeof item === "object" && "label" in item && "value" in item) // [{label: "xxx", value: "yyy"}]
-          );
-        });
-      },
+      type: Object,
+      default: () => ({}),
     },
   },
 
@@ -202,14 +217,13 @@ export default defineComponent({
     },
 
     // 标准化选项格式
-    normalizedOptions() {
-      console.log(this.options);
-      if (!this.options) return [];
-      return this.options.map((option) => {
-        if (typeof option === "string") {
-          return { label: option, value: option };
+    normalizedItems() {
+      if (!this.options.items) return [];
+      return this.options.items.map((item) => {
+        if (typeof item === "string") {
+          return { label: item, value: item };
         }
-        return option;
+        return item;
       });
     },
   },
@@ -245,21 +259,55 @@ export default defineComponent({
       });
     },
 
-    getOptionLabel(option) {
+    getItemLabel(option) {
       return typeof option === "string" ? option : option.label;
     },
 
-    getOptionValue(option) {
+    getItemValue(option) {
       return typeof option === "string" ? option : option.value;
     },
 
-    selectOption(option) {
-      const value = this.getOptionValue(option);
+    selectItem(option) {
+      const value = this.getItemValue(option);
       this.$emit("update:modelValue", {
         value,
         isString: true,
         __varInputVal__: true,
       });
+    },
+    escapePath(paths) {
+      if (!paths) return null;
+      if (typeof paths === "string") return paths.replace(/\\/g, "\\\\");
+      return paths.map((path) => path.replace(/\\/g, "\\\\"));
+    },
+    handleFileOpen(dialog) {
+      let { type, options } = window.lodashM.cloneDeep(dialog);
+      if (!type) type = "open";
+      if (type === "open") {
+        const files = this.escapePath(utools.showOpenDialog(options));
+        if (!files) return;
+        if (files.length > 1) {
+          this.$emit("update:modelValue", {
+            value: files,
+            isString: false,
+            __varInputVal__: true,
+          });
+        } else if (files.length === 1) {
+          this.$emit("update:modelValue", {
+            value: files[0],
+            isString: true,
+            __varInputVal__: true,
+          });
+        }
+      } else {
+        const file = this.escapePath(utools.showSaveDialog(options));
+        if (!file) return;
+        this.$emit("update:modelValue", {
+          value: file,
+          isString: true,
+          __varInputVal__: true,
+        });
+      }
     },
   },
 });
@@ -275,31 +323,20 @@ export default defineComponent({
   padding-right: 8px;
 }
 
-/* 字符串切换按钮样式 */
-.string-toggle {
+.prepend-btn {
   min-width: 24px;
   padding: 4px;
   opacity: 0.6;
   transition: all 0.3s ease;
 }
 
-.string-toggle:hover {
+.prepend-btn:hover {
   opacity: 1;
   transform: scale(1.05);
 }
 
-/* 变量下拉框样式 */
-.variable-dropdown {
-  min-width: 32px;
-  padding: 4px;
-  opacity: 0.8;
-  transition: all 0.3s ease;
-  margin-left: 4px;
-}
-
-.variable-dropdown:hover {
-  opacity: 1;
-  transform: scale(1.05);
+.clear-btn:hover {
+  color: var(--q-negative);
 }
 
 /* 变量列表样式 */
@@ -316,7 +353,7 @@ export default defineComponent({
 }
 
 .variable-item:hover {
-  background: var(--q-primary-opacity-10);
+  backg: var(--q-primary-opacity-10);
 }
 
 .variable-label {
@@ -341,33 +378,7 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* 清空按钮样式 */
-.clear-btn {
-  opacity: 0.6;
-  transition: all 0.3s ease;
-}
-
-.clear-btn:hover {
-  opacity: 1;
-  transform: scale(1.1);
-  color: var(--q-negative);
-}
-
-/* 选项下拉框样式 */
-.options-dropdown {
-  min-width: 32px;
-  padding: 4px;
-  opacity: 0.8;
-  transition: all 0.3s ease;
-  margin-left: 4px;
-}
-
-.options-dropdown:hover {
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-.options-list {
+.options-item-list {
   min-width: 120px;
   padding: 4px;
 }
@@ -383,11 +394,11 @@ export default defineComponent({
 }
 
 .option-item:hover {
-  background: var(--q-primary-opacity-10);
+  backg: var(--q-primary-opacity-10);
 }
 
 /* 暗色模式适配 */
 .body--dark .option-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  backg: rgba(255, 255, 255, 0.1);
 }
 </style>
