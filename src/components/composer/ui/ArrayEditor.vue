@@ -1,20 +1,6 @@
 <template>
   <div class="array-editor">
     <div v-for="(item, index) in items" :key="index" class="row items-center">
-      <!-- 如果传入options.keys，则生成多键对象
-        示例：
-        options: {
-          keys: ['name', 'age', 'email']
-        }
-          生成数据结构示例：
-          [
-            {
-              name: { value: "张三", isString: true, __varInputVal__: true },
-              age: { value: "18", isString: false, __varInputVal__: true },
-              email: { value: "zhangsan@example.com", isString: true, __varInputVal__: true }
-            }
-          ]
-      -->
       <template v-if="options?.keys">
         <div
           v-for="key in options.keys"
@@ -31,12 +17,6 @@
       </template>
       <template v-else>
         <div class="col">
-          <!-- 如果传入options.items，则生成下拉选择
-            示例：
-            options: {
-              items: ['选项1', '选项2', '选项3']
-            }
-          -->
           <template v-if="options?.items">
             <q-select
               :model-value="item.value"
@@ -57,14 +37,6 @@
               </template>
             </q-select>
           </template>
-          <!-- 不传options情况下，生成单值对象
-            生成数据结构示例：
-            [
-              "张三",
-              "李四",
-              "王五"
-            ]
-          -->
           <template v-else>
             <VariableInput
               :model-value="item"
@@ -122,6 +94,47 @@
 </template>
 
 <script>
+/**
+ * 数组编辑器组件
+ * @description 支持单值数组和多键对象数组的编辑
+ *
+ * @property {Array} modelValue - 绑定的数组值
+ * @property {String} label - 输入框标签
+ * @property {String} icon - 输入框图标
+ * @property {Object} options - 配置选项
+ * @property {String[]} [options.keys] - 多键对象模式的键名列表
+ * @property {String[]} [options.items] - 下拉选择模式的选项列表
+ *
+ * @example
+ * // 基础数组
+ * [
+ *   {
+ *     value: "张三",
+ *     isString: true,
+ *     __varInputVal__: true
+ *   }
+ * ]
+ *
+ * // 多键对象数组
+ * options.keys = ['name', 'age', 'email']
+ * [
+ *   {
+ *     name: { value: "张三", isString: true, __varInputVal__: true },
+ *     age: { value: "18", isString: false, __varInputVal__: true },
+ *     email: { value: "zhangsan@example.com", isString: true, __varInputVal__: true }
+ *   }
+ * ]
+ *
+ * // 下拉选择模式
+ * options.items = ['选项1', '选项2', '选项3']
+ * [
+ *   {
+ *     value: "选项1",
+ *     isString: true,
+ *     __varInputVal__: true
+ *   }
+ * ]
+ */
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 
@@ -143,14 +156,6 @@ export default defineComponent({
       type: String,
       default: "",
     },
-    /**
-     * 配置选项，支持两种模式：
-     * 1. 选项模式：通过 items 提供选项列表
-     *    数组的每个元素都可以从选项中选择值
-     *
-     * 2. 多键模式：通过 keys 定义每个数组元素包含的键
-     *    数组的每个元素都是一个对象，包含指定的键，每个键对应一个输入框
-     */
     options: {
       type: Object,
       default: null,
@@ -179,12 +184,6 @@ export default defineComponent({
     },
   },
   methods: {
-    /**
-     * 初始化数组项
-     * 1. 如果传入了初始值，直接使用
-     * 2. 如果配置了 keys，创建包含所有键的对象
-     * 3. 默认创建单值对象
-     */
     initializeItems() {
       if (this.modelValue.length) {
         return this.modelValue;

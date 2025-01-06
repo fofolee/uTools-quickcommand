@@ -20,6 +20,13 @@
 <script>
 import { defineComponent } from "vue";
 
+/**
+ * 控制流程输入框组件
+ * @description 调整了样式的输入框组件
+ *
+ * @property {String|Number} modelValue - 输入框的值
+ * @property {String} label - 输入框前置标签文本
+ */
 export default defineComponent({
   name: "ControlInput",
   inheritAttrs: false,

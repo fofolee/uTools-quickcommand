@@ -86,6 +86,22 @@
 <script>
 import { defineComponent, inject } from "vue";
 
+/**
+ * 变量输入框组件
+ * @description 支持变量选择和字符串输入的输入框组件
+ *
+ * @property {Object} modelValue - 输入框的值对象
+ * @property {String} label - 输入框标签
+ * @property {String} icon - 输入框图标
+ *
+ * @example
+ * // modelValue 对象格式
+ * {
+ *   value: "", // 输入框的值
+ *   isString: true, // 是否是字符串
+ *   __varInputVal__: true // 用于标识是变量输入框
+ * }
+ */
 export default defineComponent({
   name: "VariableInput",
 

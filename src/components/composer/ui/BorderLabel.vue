@@ -15,6 +15,13 @@
 </template>
 
 <script>
+/**
+ * 边框标签组件
+ * @description 对指定元素进行包裹，显示一个定位在左上角的标签，点击标签可以折叠/展开内容
+ *
+ * @property {Boolean} modelValue - 控制内容的展开/折叠状态
+ * @property {String} label - 标签文本
+ */
 export default {
   name: "BorderLabel",
   props: {

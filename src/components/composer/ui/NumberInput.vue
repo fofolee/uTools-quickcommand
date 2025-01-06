@@ -37,6 +37,14 @@
 <script>
 import { defineComponent } from "vue";
 
+/**
+ * 数字输入框组件
+ * @description 对加减按钮进行了美化的数字输入组件
+ *
+ * @property {Number} modelValue - 输入框的数值
+ * @property {String} label - 输入框标签
+ * @property {String} icon - 输入框图标
+ */
 export default defineComponent({
   name: "NumberInput",
   props: {

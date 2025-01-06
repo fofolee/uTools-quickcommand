@@ -6,12 +6,6 @@
       class="row q-col-gutter-sm items-center"
     >
       <div class="col-4">
-        <!-- 如果传入options.items，则键值支持下拉选择
-        示例：
-        options: {
-          items: ['User-Agent', 'Content-Type', 'Accept']
-        }
-        -->
         <q-select
           v-if="options?.items"
           :model-value="item.key"
@@ -31,7 +25,6 @@
             <q-icon name="code" />
           </template>
         </q-select>
-        <!-- 不传options.items时，键值为非VariableInput的输入框 -->
         <q-input
           v-else
           :model-value="item.key"
@@ -46,7 +39,6 @@
         </q-input>
       </div>
       <div class="col">
-        <!-- 值使用VariableInput组件 -->
         <VariableInput
           :model-value="item.value"
           label="值"
@@ -105,6 +97,34 @@
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 
+/**
+ * 字典编辑器组件
+ * @description 支持键值对编辑，键支持变量选择和字符串输入，值为VariableInput特有对象
+ *
+ * @property {Object} modelValue - 绑定的字典对象
+ * @property {Object} options - 配置选项
+ * @property {String[]} [options.items] - 键名的下拉选择选项
+ *
+ * @example
+ * // 基础字典对象
+ * {
+ *   key: {
+ *     value: "", // 输入框的值
+ *     isString: true, // 是否是字符串
+ *     __varInputVal__: true // 用于标识是变量输入框
+ *   }
+ * }
+ *
+ * // 下拉选择模式
+ * options.items = ['User-Agent', 'Content-Type', 'Accept']
+ * {
+ *   "User-Agent": {
+ *     value: "Mozilla/5.0",
+ *     isString: true,
+ *     __varInputVal__: true
+ *   }
+ * }
+ */
 export default defineComponent({
   name: "DictEditor",
   components: {
@@ -115,11 +135,6 @@ export default defineComponent({
       type: Object,
       required: true,
     },
-    /**
-     * 配置选项，支持：
-     *    选项模式：通过 items 提供选项列表
-     *    字典的每个键都可以从选项中选择值
-     */
     options: {
       type: Object,
       default: null,
