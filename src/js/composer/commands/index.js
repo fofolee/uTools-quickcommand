@@ -15,7 +15,7 @@ export const commandCategories = [
   notifyCommands,
   dataCommands,
   controlCommands,
-  otherCommands,
-  simulateCommands,
   uiCommands,
+  simulateCommands,
+  otherCommands,
 ];

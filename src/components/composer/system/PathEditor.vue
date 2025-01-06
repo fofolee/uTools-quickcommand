@@ -162,7 +162,7 @@
 <script>
 import { defineComponent } from "vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
-import VariableInput from "components/composer/ui/VariableInput.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
 
 export default defineComponent({
   name: "PathEditor",

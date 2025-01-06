@@ -96,7 +96,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import NumberInput from "../ui/NumberInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
 
 export default defineComponent({
   name: "ImageSearchEditor",

@@ -42,7 +42,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "components/composer/ui/VariableInput.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
 
 export default defineComponent({
   name: "UBrowserFileList",

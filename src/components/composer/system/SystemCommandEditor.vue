@@ -132,10 +132,10 @@
 <script>
 import { defineComponent } from "vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
-import VariableInput from "components/composer/ui/VariableInput.vue";
-import NumberInput from "components/composer/ui/NumberInput.vue";
-import DictEditor from "components/composer/ui/DictEditor.vue";
-import BorderLabel from "components/composer/ui/BorderLabel.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
+import DictEditor from "components/composer/common/DictEditor.vue";
+import BorderLabel from "components/composer/common/BorderLabel.vue";
 
 export default defineComponent({
   name: "SystemCommandEditor",

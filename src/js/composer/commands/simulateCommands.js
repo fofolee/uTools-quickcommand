@@ -1,6 +1,6 @@
 export const simulateCommands = {
   label: "模拟操作",
-  icon: "keyboard",
+  icon: "ads_click",
   defaultOpened: false,
   commands: [
     {

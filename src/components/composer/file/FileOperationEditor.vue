@@ -381,8 +381,8 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "components/composer/ui/VariableInput.vue";
-import NumberInput from "components/composer/ui/NumberInput.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 // 静态选项数据

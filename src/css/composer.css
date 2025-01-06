@@ -87,8 +87,8 @@
 }
 
 /* 输入框标签悬浮的位置 */
-.command-composer .q-field--filled .q-field--float .q_field__label {
-  transform: translateY(-35%) scale(0.7);
+.command-composer .q-field--filled.q-field--dense.q-field--float .q-field__label {
+  transform: translateY(-50%) scale(0.75);
 }
 
 /* 去除filled输入框边框 */

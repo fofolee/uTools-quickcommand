@@ -1,6 +1,6 @@
 export const dataCommands = {
   label: "数据处理",
-  icon: "auto_graph",
+  icon: "format_color_text",
   defaultOpened: false,
   commands: [
     {

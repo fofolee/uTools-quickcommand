@@ -1,6 +1,6 @@
 export const uiCommands = {
   label: "UI操作",
-  icon: "auto_graph",
+  icon: "web",
   defaultOpened: false,
   commands: [
     {

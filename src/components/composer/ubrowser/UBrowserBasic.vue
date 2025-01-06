@@ -69,8 +69,8 @@
 <script>
 import { defineComponent, ref, computed } from "vue";
 import { userAgent } from "js/options/httpOptions";
-import VariableInput from "components/composer/ui/VariableInput.vue";
-import NumberInput from "components/composer/ui/NumberInput.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
 
 export default defineComponent({
   name: "UBrowserBasic",

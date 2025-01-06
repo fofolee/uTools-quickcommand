@@ -176,8 +176,8 @@ import UBrowserFileList from "./UBrowserFileList.vue";
 import UBrowserCookieList from "./UBrowserCookieList.vue";
 import UBrowserNamedParamList from "./UBrowserNamedParamList.vue";
 import UBrowserDeviceName from "./UBrowserDeviceName.vue";
-import VariableInput from "components/composer/ui/VariableInput.vue";
-import NumberInput from "components/composer/ui/NumberInput.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
 
 export default defineComponent({
   name: "UBrowserOperation",

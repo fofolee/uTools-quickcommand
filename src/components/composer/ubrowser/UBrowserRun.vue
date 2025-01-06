@@ -156,7 +156,7 @@
 
 <script>
 import { defineComponent, ref, computed } from "vue";
-import NumberInput from "components/composer/ui/NumberInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
 
 export default defineComponent({
   name: "UBrowserRun",

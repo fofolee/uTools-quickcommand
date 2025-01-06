@@ -80,7 +80,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import ControlInput from "../ui/ControlInput.vue";
+import ControlInput from "components/composer/common/ControlInput.vue";
 
 export default defineComponent({
   name: "SwitchControl",

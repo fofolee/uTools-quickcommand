@@ -63,9 +63,9 @@
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "components/composer/ui/VariableInput.vue";
-import NumberInput from "components/composer/ui/NumberInput.vue";
-import ArrayEditor from "components/composer/ui/ArrayEditor.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
+import ArrayEditor from "components/composer/common/ArrayEditor.vue";
 import {
   stringifyArgv,
   parseToHasType,
