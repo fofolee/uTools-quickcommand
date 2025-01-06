@@ -54,7 +54,10 @@
           />
         </div>
         <div v-else-if="item.type === 'arrayEditor'">
-          <ArrayEditor :model-value="argvs[index]" />
+          <ArrayEditor
+            :model-value="argvs[index]"
+            @update:model-value="updateArgv(index, $event)"
+          />
         </div>
       </div>
     </div>
@@ -66,11 +69,7 @@ import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
-import {
-  stringifyArgv,
-  parseToHasType,
-  parseFunction,
-} from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
   name: "MultiParams",
@@ -130,69 +129,27 @@ export default defineComponent({
       const newArgvs = argvs
         .map((argv) => stringifyArgv(argv))
         .filter((item) => item != null && item !== "");
-      console.log(newArgvs);
       return `${funcName}(${newArgvs.join(",")})`;
     },
     parseCodeToArgvs(code) {
       const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
       if (!code) return argvs;
 
-      // 匹配函数名和参数
-      const pattern = new RegExp(`^${this.funcName}\\((.*?)\\)$`);
-      const match = code.match(pattern);
-      if (match) {
-        try {
-          const paramStr = match[1].trim();
-          if (!paramStr) return argvs;
-
-          // 分割参数，考虑括号嵌套
-          let params = [];
-          let bracketCount = 0;
-          let currentParam = "";
-
-          for (let i = 0; i < paramStr.length; i++) {
-            const char = paramStr[i];
-            if (char === "," && bracketCount === 0) {
-              params.push(currentParam.trim());
-              currentParam = "";
-              continue;
-            }
-            if (char === "{") bracketCount++;
-            if (char === "}") bracketCount--;
-            currentParam += char;
-          }
-          if (currentParam) {
-            params.push(currentParam.trim());
-          }
-
-          // 根据配置处理每个参数
-          params.forEach((param, index) => {
-            if (index >= this.localConfig.length) return;
-
-            const config = this.localConfig[index];
-            if (config.type === "varInput") {
-              // 对于 VariableInput 类型，解析为带有 __varInputVal__ 标记的对象
-              argvs[index] = parseToHasType(param);
-            } else if (config.type === "numInput") {
-              // 对于 NumberInput 类型，转换为数字
-              argvs[index] = Number(param) || 0;
-            } else if (config.type === "arrayEditor") {
-              let result = parseFunction(`${this.funcName}(${param})`, [
-                "arg0[*]",
-              ]);
-              argvs[index] = result.argv;
-            } else {
-              // 其他类型直接使用值
-              argvs[index] = param;
-            }
-          });
-
-          return argvs;
-        } catch (e) {
-          console.error("解析参数失败:", e);
+      const variableFormatPaths = [];
+      this.localConfig.forEach((item, index) => {
+        if (item.type === "varInput") {
+          variableFormatPaths.push(`arg${index}`);
+        } else if (item.type === "arrayEditor") {
+          variableFormatPaths.push(`arg${index}[*]`);
         }
+      });
+      try {
+        const { args } = parseFunction(code, { variableFormatPaths });
+        return args;
+      } catch (e) {
+        console.error("解析参数失败:", e);
+        return argvs;
       }
-      return argvs;
     },
     getSummary(argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间

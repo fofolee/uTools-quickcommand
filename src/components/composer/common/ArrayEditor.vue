@@ -145,30 +145,14 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue"],
-  data() {
-    return {
-      // 本地维护的数组数据
-      localItems: this.initializeItems(),
-    };
-  },
   computed: {
-    items: {
-      get() {
-        return this.localItems;
-      },
-      set(newItems) {
-        this.localItems = newItems;
-        this.$emit("update:modelValue", newItems);
-      },
+    items() {
+      return this.modelValue.length ? this.modelValue : this.initializeItems();
     },
   },
   methods: {
     initializeItems() {
-      if (this.modelValue.length) {
-        return this.modelValue;
-      }
-
-      if (this.options?.keys) {
+      if (this.optionsKeys) {
         const item = {};
         this.optionsKeys.forEach((key) => {
           item[key] = {
@@ -193,6 +177,7 @@ export default defineComponent({
      * 根据配置创建相应的数据结构
      */
     addItem() {
+      let newItems = [];
       if (this.optionsKeys) {
         const newItem = {};
         this.optionsKeys.forEach((key) => {
@@ -202,9 +187,9 @@ export default defineComponent({
             __varInputVal__: true,
           };
         });
-        this.items = [...this.items, newItem];
+        newItems = [...this.items, newItem];
       } else {
-        this.items = [
+        newItems = [
           ...this.items,
           {
             value: "",
@@ -213,6 +198,7 @@ export default defineComponent({
           },
         ];
       }
+      this.$emit("update:modelValue", newItems);
     },
     /**
      * 移除指定索引的数组项
@@ -240,7 +226,7 @@ export default defineComponent({
           });
         }
       }
-      this.items = newItems;
+      this.$emit("update:modelValue", newItems);
     },
     /**
      * 更新单值模式下的值
@@ -248,7 +234,7 @@ export default defineComponent({
     updateItemValue(index, value) {
       const newItems = [...this.items];
       newItems[index] = value;
-      this.items = newItems;
+      this.$emit("update:modelValue", newItems);
     },
     /**
      * 更新多键模式下指定键的值
@@ -259,7 +245,7 @@ export default defineComponent({
         ...newItems[index],
         [key]: value,
       };
-      this.items = newItems;
+      this.$emit("update:modelValue", newItems);
     },
   },
 });
@@ -274,7 +260,7 @@ export default defineComponent({
 }
 
 /* 防止输入框换行 */
-:deep(.q-field__native) {
+.array-editor :deep(.q-field__native) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -309,11 +295,11 @@ export default defineComponent({
   bottom: 0;
 }
 
-:deep(.q-btn .q-icon) {
+.array-editor :deep(.q-btn .q-icon) {
   font-size: 14px;
 }
 
-:deep(.q-btn.q-btn--dense) {
+.array-editor :deep(.q-btn.q-btn--dense) {
   padding: 0;
   min-height: 16px;
 }
