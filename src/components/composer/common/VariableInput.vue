@@ -111,9 +111,21 @@
           <template v-else>
             <q-item>
               <q-item-section>
-                <q-item-label
-                  >无可用变量，请先点击命令卡片输出变量按钮设置变量</q-item-label
-                >
+                <q-item-label class="empty-variables-tip">
+                  <div class="q-gutter-md">
+                    <div class="row items-center justify-center text-grey-6">
+                      <q-icon name="info" size="20px" class="q-mr-sm" />
+                      <span>无可用变量</span>
+                    </div>
+                    <div class="row items-center justify-center">
+                      <span class="text-grey-7"
+                        >点击命令卡片右上角的
+                        <q-icon name="output" size="16px" class="q-mx-xs" />
+                        按钮添加输出变量
+                      </span>
+                    </div>
+                  </div>
+                </q-item-label>
               </q-item-section>
             </q-item>
           </template>
@@ -410,5 +422,16 @@ export default defineComponent({
 /* 暗色模式适配 */
 .body--dark .option-item:hover {
   backg: rgba(255, 255, 255, 0.1);
+}
+
+.empty-variables-tip {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.empty-variables-tip:hover {
+  opacity: 1;
 }
 </style>
