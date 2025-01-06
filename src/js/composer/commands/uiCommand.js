@@ -7,6 +7,8 @@ export const uiCommands = {
       value: "quickcommand.showButtonBox",
       label: "按钮组弹窗",
       isAsync: true,
+      outputVariable: "{id,text}",
+      saveOutput: true,
       config: [
         {
           label: "按钮组",

@@ -74,6 +74,7 @@ import ChainStyles from "./flow/ChainStyles.vue";
 import EmptyFlow from "./flow/EmptyFlow.vue";
 import DropArea from "./flow/DropArea.vue";
 import { findCommandByValue } from "js/composer/composerConfig";
+import { processVariable } from "js/composer/variableManager";
 
 export default defineComponent({
   name: "ComposerFlow",
@@ -96,11 +97,11 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:modelValue", "add-command", "action"],
   setup() {
-    const removeVariable = inject("removeVariable");
-    return { removeVariable };
+    const getCurrentVariables = inject("getCurrentVariables");
+    return { getCurrentVariables };
   },
+  emits: ["update:modelValue", "add-command", "action"],
   data() {
     return {
       dragIndex: -1,
@@ -261,13 +262,17 @@ export default defineComponent({
       } catch (error) {}
     },
     createNewCommand(parsedAction) {
-      return {
+      const newCommand = {
         ...parsedAction,
         id: this.getUniqueId(),
-        saveOutput: false,
-        useOutput: null,
-        outputVariable: null,
       };
+      if (newCommand.saveOutput && newCommand.outputVariable) {
+        newCommand.outputVariable = processVariable({
+          value: newCommand.outputVariable,
+          existingVars: this.getCurrentVariables().map((v) => v.name),
+        }).processedValue;
+      }
+      return newCommand;
     },
     getUniqueId() {
       return this.$root.getUniqueId();
@@ -284,9 +289,6 @@ export default defineComponent({
         const cmd = newCommands[i];
         // 如果chainId不为空，则只删除指定chainId的命令
         if (chainId && cmd.chainId !== chainId) continue;
-        if (cmd.outputVariable) {
-          this.removeVariable(cmd.outputVariable);
-        }
         newCommands.splice(i, 1);
       }
       this.$emit("update:modelValue", newCommands);
@@ -326,7 +328,7 @@ export default defineComponent({
         command,
         {
           //没有输出，则不打印
-          code: `${command.outputVariable} && console.log(${command.outputVariable})`,
+          code: `if(${command.outputVariable}!==undefined){console.log(${command.outputVariable})}`,
         },
       ];
       // 触发运行事件

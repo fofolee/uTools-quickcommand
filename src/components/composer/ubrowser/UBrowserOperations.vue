@@ -136,7 +136,6 @@ export default defineComponent({
           id: this.$root.getUniqueId(),
           argv: "",
           saveOutput: false,
-          useOutput: null,
           cmd: action.value || action.cmd,
           value: action.value || action.cmd,
         };

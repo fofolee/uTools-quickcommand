@@ -179,15 +179,13 @@ export default defineComponent({
       )?.label;
       const subFeature = funcNameLabel ? `${funcNameLabel} ` : "";
       const allArgvs = argvs
+        .filter((item) => item != null && item != "")
         .map((item) =>
-          item?.hasOwnProperty("__varInputVal__")
-            ? window.lodashM.truncate(item.value, {
-                length: 30,
-                omission: "...",
-              })
-            : item
-        )
-        .filter((item) => item != null && item != "");
+          window.lodashM.truncate(stringifyArgv(item).toString(), {
+            length: 30,
+            omission: "...",
+          })
+        );
       return `${subFeature}${allArgvs.join(",")}`;
     },
     updateModelValue(funcName, argvs) {

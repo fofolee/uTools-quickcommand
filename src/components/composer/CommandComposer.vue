@@ -29,6 +29,7 @@ import {
   findCommandByValue,
 } from "js/composer/composerConfig";
 import { generateCode } from "js/composer/generateCode";
+import { parseVariables } from "js/composer/variableManager";
 
 export default defineComponent({
   name: "CommandComposer",
@@ -37,37 +38,32 @@ export default defineComponent({
     ComposerFlow,
   },
   setup() {
-    const variables = ref([]);
+    const commandFlow = ref([]);
 
-    const addVariable = (name, command) => {
-      if (!variables.value.find((v) => v.name === name)) {
-        variables.value.push({
-          name,
-          sourceCommand: command,
-        });
+    // 提供获取当前变量的函数，直接返回解析后的变量列表
+    const getCurrentVariables = () => {
+      const variables = [];
+      for (const cmd of commandFlow.value) {
+        if (cmd.saveOutput && cmd.outputVariable) {
+          variables.push(
+            ...parseVariables(cmd.outputVariable).map((variable) => ({
+              name: variable,
+              sourceCommand: cmd,
+            }))
+          );
+        }
       }
+      return variables;
     };
 
-    const removeVariable = (name) => {
-      const index = variables.value.findIndex((v) => v.name === name);
-      if (index !== -1) {
-        variables.value.splice(index, 1);
-      }
-    };
-
-    provide("composerVariables", variables);
-    provide("addVariable", addVariable);
-    provide("removeVariable", removeVariable);
+    provide("getCurrentVariables", getCurrentVariables);
 
     return {
-      variables,
-      addVariable,
-      removeVariable,
+      commandFlow,
     };
   },
   data() {
     return {
-      commandFlow: [],
       availableCommands,
     };
   },

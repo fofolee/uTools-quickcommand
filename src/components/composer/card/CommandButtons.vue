@@ -9,8 +9,9 @@
         <!-- 变量输入框 -->
         <q-input
           v-if="command.saveOutput"
-          :model-value="command.outputVariable"
-          @update:model-value="$emit('update:outputVariable', $event)"
+          v-model="inputValue"
+          @focus="sourceValue = inputValue"
+          @blur="handleBlur"
           outlined
           placeholder="变量名"
           class="variable-input"
@@ -91,6 +92,17 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      inputValue: this.command.outputVariable || "",
+      sourceValue: "",
+    };
+  },
+  watch: {
+    "command.outputVariable"(newVal) {
+      this.inputValue = newVal || "";
+    },
+  },
   emits: [
     "update:outputVariable",
     "toggle-output",
@@ -98,6 +110,17 @@ export default {
     "remove",
     "toggle-collapse",
   ],
+  methods: {
+    handleBlur() {
+      // 如果输入框的值和源值相同，则不更新
+      if (
+        this.inputValue.replace(/[ ]/g, "") ===
+        this.sourceValue.replace(/[ ]/g, "")
+      )
+        return;
+      this.$emit("update:outputVariable", this.inputValue);
+    },
+  },
 };
 </script>
 
@@ -115,7 +138,7 @@ export default {
 }
 
 .variable-input {
-  width: 100px;
+  width: 120px;
 }
 
 .output-section :deep(.q-field) {

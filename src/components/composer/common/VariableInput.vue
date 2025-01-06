@@ -79,7 +79,7 @@
         }"
         class="variable-dropdown prepend-btn"
         size="sm"
-        v-if="variables.length"
+        @click="variables = getCurrentVariables()"
       >
         <q-list class="variable-list">
           <q-item-label header class="variable-label">
@@ -105,6 +105,15 @@
                 <q-item-label caption class="variable-source">
                   来自: {{ variable.sourceCommand.label }}
                 </q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+          <template v-else>
+            <q-item>
+              <q-item-section>
+                <q-item-label
+                  >无可用变量，请先点击命令卡片输出变量按钮设置变量</q-item-label
+                >
               </q-item-section>
             </q-item>
           </template>
@@ -176,13 +185,14 @@ export default defineComponent({
 
   emits: ["update:modelValue"],
   setup() {
-    const variables = inject("composerVariables", []);
-    return { variables };
+    const getCurrentVariables = inject("getCurrentVariables");
+    return { getCurrentVariables };
   },
 
   data() {
     return {
       selectedVariable: null,
+      variables: [],
     };
   },
 

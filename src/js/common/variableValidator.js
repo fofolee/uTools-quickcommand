@@ -117,6 +117,9 @@ const reservedWords = [
  * @returns {object} - 包含验证结果和错误信息的对象
  */
 export function validateVariableName(name) {
+  // 去除空格
+  name = name.trim();
+
   // 检查是否为空
   if (!name) {
     return {

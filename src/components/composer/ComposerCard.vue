@@ -66,11 +66,11 @@
 
 <script>
 import { defineComponent, inject } from "vue";
-import { validateVariableName } from "js/common/variableValidator";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import MultiParams from "components/composer/MultiParams.vue";
 import CommandHead from "components/composer/card/CommandHead.vue";
 import * as CardComponents from "js/composer/cardComponents";
+import { processVariable } from "js/composer/variableManager";
 
 export default defineComponent({
   name: "ComposerCard",
@@ -110,46 +110,27 @@ export default defineComponent({
     },
   },
   setup() {
-    const addVariable = inject("addVariable");
-    const removeVariable = inject("removeVariable");
-    const variables = inject("composerVariables", []);
-
-    return {
-      addVariable,
-      removeVariable,
-      variables,
-    };
+    const getCurrentVariables = inject("getCurrentVariables");
+    return { getCurrentVariables };
   },
   methods: {
     handleOutputVariableUpdate(value) {
-      // 检查变量名是否合法
-      const validation = validateVariableName(value);
-      if (!validation.isValid) {
-        quickcommand.showMessageBox(validation.error, "warning");
-        return;
+      const result = processVariable({
+        value,
+        existingVars: this.getCurrentVariables().map((v) => v.name),
+      });
+
+      if (result.warning) {
+        quickcommand.showMessageBox(result.warning, "info");
       }
 
-      // 检查变量名是否重复
-      if (this.variables.some((v) => v.name === value)) {
-        quickcommand.showMessageBox(`变量名 "${value}" 已经存在`, "warning");
-        return;
-      }
-
-      // 处理变量管理
-      if (this.localCommand.outputVariable) {
-        this.removeVariable(this.localCommand.outputVariable);
-      }
-      if (value) {
-        this.addVariable(value, this.localCommand);
-      }
-      this.localCommand.outputVariable = value;
+      this.localCommand.outputVariable = result.processedValue;
     },
     handleToggleOutput() {
       this.localCommand.saveOutput = !this.localCommand.saveOutput;
 
       // 如果关闭输出，清空变量名
-      if (!this.localCommand.saveOutput && this.localCommand.outputVariable) {
-        this.removeVariable(this.localCommand.outputVariable);
+      if (!this.localCommand.saveOutput) {
         this.localCommand.outputVariable = null;
       }
     },
