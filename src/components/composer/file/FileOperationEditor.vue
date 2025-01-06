@@ -630,7 +630,7 @@ export default defineComponent({
           "arg0.newPath",
         ];
         const result = parseFunction(code, { variableFormatPaths });
-        let params = result.args[0];
+        let params = result.argvs[0];
 
         // 根据不同操作类型处理特定参数
         switch (params.operation) {

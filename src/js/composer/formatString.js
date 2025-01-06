@@ -303,13 +303,13 @@ export const parseFunction = (functionStr, options = {}) => {
       }
     };
 
-    const args = callExpression.arguments.map((arg, index) =>
+    const argvs = callExpression.arguments.map((arg, index) =>
       processNode(arg, `arg${index}`)
     );
 
     return {
       name,
-      args,
+      argvs,
     };
   } catch (e) {
     console.warn("Failed to parse function:", e);

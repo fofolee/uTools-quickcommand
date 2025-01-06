@@ -262,7 +262,7 @@ export default defineComponent({
         if (!result) return this.defaultArgvs;
 
         const operation = result.name.split(".").pop();
-        const [data, method, options] = result.args;
+        const [data, method, options] = result.argvs;
 
         const newArgvs = {
           ...this.defaultArgvs,

@@ -421,9 +421,9 @@ export default defineComponent({
           console.warn("axios 参数解析失败:", code);
           return argvs;
         }
-        const url = result.args[0] || "";
-        const data = hasData ? result.args[1] : {};
-        const config = result.args[hasData ? 2 : 1] || {};
+        const url = result.argvs[0] || "";
+        const data = hasData ? result.argvs[1] : {};
+        const config = result.argvs[hasData ? 2 : 1] || {};
         const {
           "Content-Type": contentType,
           "User-Agent": userAgent,

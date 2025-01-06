@@ -220,7 +220,7 @@ export default defineComponent({
       if (!result) return this.defaultArgvs;
 
       // 返回解析结果
-      const [command, options = {}] = result.args;
+      const [command, options = {}] = result.argvs;
       return {
         command: command || this.defaultArgvs.command,
         options: {

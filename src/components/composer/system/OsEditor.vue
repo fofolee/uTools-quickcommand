@@ -262,7 +262,7 @@ export default defineComponent({
 
         // 获取操作名称（方法名）
         const operation = result.name.split(".").pop();
-        const [params = {}] = result.args;
+        const [params = {}] = result.argvs;
 
         return {
           ...this.defaultArgvs,

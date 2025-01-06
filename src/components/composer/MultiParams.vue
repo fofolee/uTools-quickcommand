@@ -132,7 +132,7 @@ export default defineComponent({
       return `${funcName}(${newArgvs.join(",")})`;
     },
     parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
+      let argvs = window.lodashM.cloneDeep(this.defaultArgvs);
       if (!code) return argvs;
 
       const variableFormatPaths = [];
@@ -144,12 +144,11 @@ export default defineComponent({
         }
       });
       try {
-        const { args } = parseFunction(code, { variableFormatPaths });
-        return args;
+        argvs = parseFunction(code, { variableFormatPaths }).argvs;
       } catch (e) {
-        console.error("解析参数失败:", e);
-        return argvs;
+        console.log("解析参数失败:", e);
       }
+      return argvs;
     },
     getSummary(argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间

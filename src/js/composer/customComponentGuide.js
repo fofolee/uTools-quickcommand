@@ -113,7 +113,7 @@ const customComponentGuide = {
                 if (!result) return this.defaultArgvs;
 
                 // 处理解析结果
-                const [url, config] = result.args;
+                const [url, config] = result.argvs;
 
                 // 返回处理后的参数对象
                 return {

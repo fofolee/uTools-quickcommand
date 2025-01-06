@@ -267,7 +267,7 @@ export default defineComponent({
       try {
         const variableFormatPaths = ["arg0.text"];
         const params = parseFunction(code, { variableFormatPaths });
-        return params.args[0];
+        return params.argvs[0];
       } catch (e) {
         console.error("解析加密参数失败:", e);
       }
