@@ -90,26 +90,10 @@
                 :model-value="argvs.headers['User-Agent']"
                 @update:model-value="updateArgvs('headers.User-Agent', $event)"
                 label="User Agent"
+                :options="userAgentOptions"
                 icon="devices"
                 class="col-grow"
               />
-            </div>
-            <div class="col-auto flex items-center">
-              <q-btn-dropdown flat dense dropdown-icon="menu">
-                <q-list>
-                  <q-item
-                    v-for="ua in userAgentOptions"
-                    :key="ua.value"
-                    clickable
-                    v-close-popup
-                    @click="setUserAgent(ua.value)"
-                  >
-                    <q-item-section>
-                      <q-item-label>{{ ua.label }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </q-btn-dropdown>
             </div>
 
             <div class="col-12">
@@ -168,10 +152,7 @@ import { defineComponent } from "vue";
 import VariableInput from "components/composer/ui/VariableInput.vue";
 import NumberInput from "components/composer/ui/NumberInput.vue";
 import DictEditor from "components/composer/ui/DictEditor.vue";
-import {
-  stringifyArgv,
-  parseFunction,
-} from "js/composer/formatString";
+import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import {
   userAgent,
   commonHeaders,
@@ -471,11 +452,9 @@ export default defineComponent({
         ? `, ${stringifyArgv(restConfig)}`
         : "";
 
-      return `${
-        this.modelValue.value
-      }.${method.toLowerCase()}(${stringifyArgv(url)}${
-        this.hasRequestData ? `, ${stringifyArgv(data)}` : ""
-      }${configStr})`;
+      return `${this.modelValue.value}.${method.toLowerCase()}(${stringifyArgv(
+        url
+      )}${this.hasRequestData ? `, ${stringifyArgv(data)}` : ""}${configStr})`;
     },
     updateArgvs(key, value) {
       const argvs = { ...this.argvs };

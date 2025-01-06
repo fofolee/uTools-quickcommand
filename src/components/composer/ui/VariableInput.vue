@@ -26,7 +26,7 @@
         :icon="isString ? 'format_quote' : 'data_object'"
         size="sm"
         class="string-toggle"
-        @click="isString = !isString"
+        @click="toggleType"
         v-if="!hasSelectedVariable"
       >
         <q-tooltip>{{
@@ -35,7 +35,32 @@
             : "当前类型是：变量、数字、表达式等，点击切换"
         }}</q-tooltip>
       </q-btn>
-
+      <!-- 选项下拉按钮 -->
+      <q-btn-dropdown
+        v-if="options && !hasSelectedVariable"
+        flat
+        dense
+        size="sm"
+        dropdown-icon="menu"
+        no-icon-animation
+        class="options-dropdown"
+      >
+        <q-list class="options-list">
+          <q-item
+            v-for="option in normalizedOptions"
+            :key="getOptionValue(option)"
+            clickable
+            v-close-popup
+            @click="selectOption(option)"
+            class="option-item"
+          >
+            <q-item-section>
+              {{ getOptionLabel(option) }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
+      <!-- 变量选择下拉 -->
       <q-btn-dropdown
         flat
         dense
@@ -93,6 +118,7 @@ import { defineComponent, inject } from "vue";
  * @property {Object} modelValue - 输入框的值对象
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
+ * @property {String[]} [options] - 可选的下拉选项列表
  *
  * @example
  * // modelValue 对象格式
@@ -117,6 +143,20 @@ export default defineComponent({
     },
     label: String,
     icon: String,
+    options: {
+      type: Array,
+      default: null,
+      validator(value) {
+        if (!value) return true;
+        // 检查数组中的每一项是否符合格式要求
+        return value.every((item) => {
+          return (
+            typeof item === "string" || // ["xxx", "yyy"]
+            (typeof item === "object" && "label" in item && "value" in item) // [{label: "xxx", value: "yyy"}]
+          );
+        });
+      },
+    },
   },
 
   emits: ["update:modelValue"],
@@ -137,6 +177,18 @@ export default defineComponent({
       return this.selectedVariable !== null;
     },
 
+    isString: {
+      get() {
+        return this.modelValue.isString;
+      },
+      set(value) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          isString: value,
+        });
+      },
+    },
+
     inputValue: {
       get() {
         return this.modelValue.value;
@@ -148,16 +200,17 @@ export default defineComponent({
         });
       },
     },
-    isString: {
-      get() {
-        return this.modelValue.isString;
-      },
-      set(value) {
-        this.$emit("update:modelValue", {
-          ...this.modelValue,
-          isString: value,
-        });
-      },
+
+    // 标准化选项格式
+    normalizedOptions() {
+      console.log(this.options);
+      if (!this.options) return [];
+      return this.options.map((option) => {
+        if (typeof option === "string") {
+          return { label: option, value: option };
+        }
+        return option;
+      });
     },
   },
 
@@ -180,6 +233,31 @@ export default defineComponent({
       this.$emit("update:modelValue", {
         isString: true,
         value: "",
+        __varInputVal__: true,
+      });
+    },
+
+    // 切换类型
+    toggleType() {
+      this.$emit("update:modelValue", {
+        ...this.modelValue,
+        isString: !this.modelValue.isString,
+      });
+    },
+
+    getOptionLabel(option) {
+      return typeof option === "string" ? option : option.label;
+    },
+
+    getOptionValue(option) {
+      return typeof option === "string" ? option : option.value;
+    },
+
+    selectOption(option) {
+      const value = this.getOptionValue(option);
+      this.$emit("update:modelValue", {
+        value,
+        isString: true,
         __varInputVal__: true,
       });
     },
@@ -273,5 +351,43 @@ export default defineComponent({
   opacity: 1;
   transform: scale(1.1);
   color: var(--q-negative);
+}
+
+/* 选项下拉框样式 */
+.options-dropdown {
+  min-width: 32px;
+  padding: 4px;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  margin-left: 4px;
+}
+
+.options-dropdown:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.options-list {
+  min-width: 120px;
+  padding: 4px;
+}
+
+.option-item {
+  border-radius: 4px;
+  padding: 0px 16px;
+  transition: all 0.3s ease;
+  min-height: 40px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.option-item:hover {
+  background: var(--q-primary-opacity-10);
+}
+
+/* 暗色模式适配 */
+.body--dark .option-item:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>

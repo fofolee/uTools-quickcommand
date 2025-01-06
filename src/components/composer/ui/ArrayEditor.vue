@@ -1,11 +1,11 @@
 <template>
   <div class="array-editor">
     <div v-for="(item, index) in items" :key="index" class="row items-center">
-      <template v-if="options?.keys">
+      <template v-if="optionsKeys">
         <div
-          v-for="key in options.keys"
+          v-for="key in optionsKeys"
           :key="key"
-          :class="['col', options.keys.length > 1 ? 'q-pr-sm' : '']"
+          :class="['col', optionsKeys.length > 1 ? 'q-pr-sm' : '']"
         >
           <VariableInput
             :model-value="item[key]"
@@ -17,34 +17,13 @@
       </template>
       <template v-else>
         <div class="col">
-          <template v-if="options?.items">
-            <q-select
-              :model-value="item.value"
-              :options="filterOptions"
-              :label="`${label || '项目'} ${index + 1}`"
-              dense
-              filled
-              use-input
-              input-debounce="0"
-              :hide-selected="!!inputValue"
-              @filter="filterFn"
-              @update:model-value="(val) => handleSelect(val, index)"
-              @input-value="(val) => handleInput(val, index)"
-              @blur="handleBlur"
-            >
-              <template v-slot:prepend>
-                <q-icon :name="icon || 'code'" />
-              </template>
-            </q-select>
-          </template>
-          <template v-else>
-            <VariableInput
-              :model-value="item"
-              :label="`${label || '项目'} ${index + 1}`"
-              :icon="icon || 'code'"
-              @update:model-value="(val) => updateItemValue(index, val)"
-            />
-          </template>
+          <VariableInput
+            :model-value="item"
+            :label="`${label || '项目'} ${index + 1}`"
+            :icon="icon || 'code'"
+            :options="options"
+            @update:model-value="(val) => updateItemValue(index, val)"
+          />
         </div>
       </template>
       <div class="col-auto">
@@ -102,8 +81,8 @@
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
  * @property {Object} options - 配置选项
- * @property {String[]} [options.keys] - 多键对象模式的键名列表
- * @property {String[]} [options.items] - 下拉选择模式的选项列表
+ * @property {String[]} [optionsKeys] - 多键对象模式的键名列表
+ * @property {String[]} [options] - 下拉选择模式的选项列表
  *
  * @example
  * // 基础数组
@@ -116,7 +95,7 @@
  * ]
  *
  * // 多键对象数组
- * options.keys = ['name', 'age', 'email']
+ * optionsKeys = ['name', 'age', 'email']
  * [
  *   {
  *     name: { value: "张三", isString: true, __varInputVal__: true },
@@ -126,7 +105,7 @@
  * ]
  *
  * // 下拉选择模式
- * options.items = ['选项1', '选项2', '选项3']
+ * options = ['选项1', '选项2', '选项3']
  * [
  *   {
  *     value: "选项1",
@@ -157,7 +136,11 @@ export default defineComponent({
       default: "",
     },
     options: {
-      type: Object,
+      type: Array,
+      default: null,
+    },
+    optionsKeys: {
+      type: Array,
       default: null,
     },
   },
@@ -166,10 +149,6 @@ export default defineComponent({
     return {
       // 本地维护的数组数据
       localItems: this.initializeItems(),
-      // 选项模式下的过滤选项
-      filterOptions: this.options?.items || [],
-      // 选项模式下的输入值
-      inputValue: "",
     };
   },
   computed: {
@@ -191,7 +170,7 @@ export default defineComponent({
 
       if (this.options?.keys) {
         const item = {};
-        this.options.keys.forEach((key) => {
+        this.optionsKeys.forEach((key) => {
           item[key] = {
             value: "",
             isString: false,
@@ -214,9 +193,9 @@ export default defineComponent({
      * 根据配置创建相应的数据结构
      */
     addItem() {
-      if (this.options?.keys) {
+      if (this.optionsKeys) {
         const newItem = {};
-        this.options.keys.forEach((key) => {
+        this.optionsKeys.forEach((key) => {
           newItem[key] = {
             value: "",
             isString: false,
@@ -243,9 +222,9 @@ export default defineComponent({
       const newItems = [...this.items];
       newItems.splice(index, 1);
       if (newItems.length === 0) {
-        if (this.options?.keys) {
+        if (this.optionsKeys) {
           const newItem = {};
-          this.options.keys.forEach((key) => {
+          this.optionsKeys.forEach((key) => {
             newItem[key] = {
               value: "",
               isString: false,
@@ -281,59 +260,6 @@ export default defineComponent({
         [key]: value,
       };
       this.items = newItems;
-    },
-    /**
-     * 选项模式下的输入处理
-     * 当输入的值不在选项中时，创建新值
-     */
-    handleInput(val, index) {
-      this.inputValue = val;
-      if (val && !this.filterOptions.includes(val)) {
-        const newItems = [...this.items];
-        newItems[index] = {
-          value: val,
-          isString: false,
-          __varInputVal__: true,
-        };
-        this.items = newItems;
-      }
-    },
-    /**
-     * 选项模式下的选择处理
-     */
-    handleSelect(val, index) {
-      this.inputValue = "";
-      const newItems = [...this.items];
-      newItems[index] = {
-        value: val,
-        isString: false,
-        __varInputVal__: true,
-      };
-      this.items = newItems;
-    },
-    /**
-     * 选项模式下的失焦处理
-     */
-    handleBlur() {
-      this.inputValue = "";
-    },
-    /**
-     * 选项模式下的过滤处理
-     * 根据输入值过滤可选项
-     */
-    filterFn(val, update) {
-      if (!this.options?.items) return;
-
-      update(() => {
-        if (val === "") {
-          this.filterOptions = this.options.items;
-        } else {
-          const needle = val.toLowerCase();
-          this.filterOptions = this.options.items.filter(
-            (v) => v.toLowerCase().indexOf(needle) > -1
-          );
-        }
-      });
     },
   },
 });
