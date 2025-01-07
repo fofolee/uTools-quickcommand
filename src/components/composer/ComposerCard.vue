@@ -55,7 +55,11 @@
             <MultiParams
               v-else
               v-model="localCommand"
-              :class="localCommand.config?.length ? 'col q-mt-sm' : 'col'"
+              :class="
+                localCommand.config?.length || localCommand.functionSelector
+                  ? 'col q-mt-sm'
+                  : 'col'
+              "
             />
           </div>
         </div>

@@ -72,6 +72,12 @@
         :label="config.label"
         :icon="config.icon"
       />
+      <ButtonGroup
+        v-else-if="config.type === 'buttonGroup'"
+        :model-value="values[index]"
+        @update:model-value="$emit('update', index, $event)"
+        :options="config.options"
+      />
     </div>
   </div>
 </template>
@@ -82,6 +88,7 @@ import VariableInput from "./VariableInput.vue";
 import NumberInput from "./NumberInput.vue";
 import ArrayEditor from "./ArrayEditor.vue";
 import DictEditor from "./DictEditor.vue";
+import ButtonGroup from "./ButtonGroup.vue";
 
 /**
  * 参数输入组件
@@ -101,6 +108,7 @@ export default defineComponent({
     NumberInput,
     ArrayEditor,
     DictEditor,
+    ButtonGroup,
   },
   props: {
     configs: {

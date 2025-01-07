@@ -111,7 +111,6 @@ export default defineComponent({
       this.updateModelValue(this.funcName, newArgvs);
     },
     generateCode(funcName, argvs) {
-      console.log("argvs", argvs);
       /**
        * 字符串模式stringfiy后，null会变成'"null"', ''变成'""'
        * 变量模式stringify后，null变成'null', ''保持''

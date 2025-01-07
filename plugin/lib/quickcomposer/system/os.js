@@ -6,7 +6,7 @@ function arch() {
 }
 
 // 获取CPU信息
-function cpus({ format = "full" } = {}) {
+function cpus(format = "full") {
   const cpuInfo = os.cpus();
   if (format === "simple") {
     return cpuInfo.map(({ model, speed }) => ({ model, speed }));
@@ -15,7 +15,7 @@ function cpus({ format = "full" } = {}) {
 }
 
 // 获取内存信息
-function memory({ type = "totalmem" } = {}) {
+function memory(type = "totalmem") {
   switch (type) {
     case "totalmem":
       return os.totalmem();
@@ -27,7 +27,7 @@ function memory({ type = "totalmem" } = {}) {
 }
 
 // 获取网络信息
-function network({ type = "hostname", internal = false } = {}) {
+function network(type = "hostname", internal = false) {
   switch (type) {
     case "hostname":
       return os.hostname();
@@ -50,7 +50,7 @@ function network({ type = "hostname", internal = false } = {}) {
 }
 
 // 获取平台信息
-function platform({ type = "platform" } = {}) {
+function platform(type = "platform") {
   switch (type) {
     case "platform":
       return os.platform();

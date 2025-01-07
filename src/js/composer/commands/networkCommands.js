@@ -47,11 +47,181 @@ export const networkCommands = {
       saveOutput: true,
     },
     {
-      value: "quickcomposer.network.url",
+      value: "quickcomposer.network.url.parse",
       label: "URL操作",
       desc: "URL解析、格式化和参数处理",
-      component: "UrlEditor",
       icon: "link",
+      config: [
+        {
+          label: "URL",
+          type: "varInput",
+          icon: "link",
+          width: "auto",
+        },
+      ],
+      functionSelector: [
+        {
+          value: "quickcomposer.network.url.parse",
+          label: "解析URL",
+          icon: "link_off",
+        },
+        {
+          value: "quickcomposer.network.url.format",
+          label: "格式化URL",
+          icon: "link",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "协议",
+              type: "varInput",
+              icon: "security",
+              width: 6,
+            },
+            {
+              label: "认证信息",
+              type: "varInput",
+              icon: "person",
+              width: 6,
+            },
+            {
+              label: "主机名",
+              type: "varInput",
+              icon: "dns",
+              width: 6,
+            },
+            {
+              label: "端口",
+              type: "varInput",
+              icon: "settings_ethernet",
+              width: 6,
+            },
+            {
+              label: "路径",
+              type: "varInput",
+              icon: "folder",
+            },
+            {
+              label: "查询字符串",
+              type: "varInput",
+              icon: "search",
+              width: 6,
+            },
+            {
+              label: "锚点",
+              type: "varInput",
+              icon: "tag",
+              width: 6,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.parseQuery",
+          label: "解析查询字符串",
+          icon: "search",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "查询字符串",
+              type: "varInput",
+              icon: "search",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.formatQuery",
+          label: "格式化查询字符串",
+          icon: "edit",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "参数",
+              type: "dictEditor",
+              icon: "edit",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.parsePath",
+          label: "解析路径",
+          icon: "folder_open",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "路径",
+              type: "varInput",
+              icon: "folder",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.parseHost",
+          label: "解析主机名",
+          icon: "dns",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "主机名",
+              type: "varInput",
+              icon: "dns",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.getQueryParam",
+          label: "获取参数",
+          icon: "find_in_page",
+          config: [
+            {
+              label: "参数名",
+              type: "varInput",
+              icon: "key",
+              width: "auto",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.addQueryParam",
+          label: "添加参数",
+          icon: "add_circle",
+          config: [
+            {
+              label: "参数名",
+              type: "varInput",
+              icon: "key",
+              width: "auto",
+            },
+            {
+              label: "参数值",
+              type: "varInput",
+              icon: "text_fields",
+              width: "auto",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.removeQueryParam",
+          label: "移除参数",
+          icon: "remove_circle",
+          config: [
+            {
+              label: "参数名",
+              type: "varInput",
+              icon: "key",
+              width: "auto",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.network.url.isAbsolute",
+          label: "检查绝对URL",
+          icon: "check_circle",
+        },
+        {
+          value: "quickcomposer.network.url.parseComponents",
+          label: "解析组成部分",
+          icon: "category",
+        },
+      ],
     },
     {
       value: "quickcomposer.network.dns.lookupHost",

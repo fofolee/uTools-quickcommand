@@ -1,32 +1,57 @@
 const url = require("url");
 
 // URL 解析
-function parse(urlString, parseQueryString = false) {
-  return url.parse(urlString, parseQueryString);
+function parse(urlString) {
+  try {
+    return url.parse(urlString, false);
+  } catch (error) {
+    throw new Error(`URL解析失败: ${error.message}`);
+  }
 }
 
-// URL 格式化
-function format(urlObject) {
-  return url.format(urlObject);
+// 格式化 URL
+function format(protocol, auth, hostname, port, pathname, search, hash) {
+  try {
+    const urlObject = {
+      protocol,
+      auth,
+      hostname,
+      port,
+      pathname,
+      search,
+      hash,
+    };
+    return url.format(urlObject);
+  } catch (error) {
+    throw new Error(`URL格式化失败: ${error.message}`);
+  }
 }
 
 // 解析查询字符串
-function parseQuery(query) {
-  const searchParams = new URLSearchParams(query);
-  const result = {};
-  for (const [key, value] of searchParams) {
-    result[key] = value;
+function parseQuery(queryString) {
+  try {
+    const searchParams = new URLSearchParams(queryString);
+    const result = {};
+    for (const [key, value] of searchParams) {
+      result[key] = value;
+    }
+    return result;
+  } catch (error) {
+    throw new Error(`查询字符串解析失败: ${error.message}`);
   }
-  return result;
 }
 
 // 格式化查询字符串
-function formatQuery(queryObject) {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(queryObject)) {
-    searchParams.append(key, value);
+function formatQuery(queryParams) {
+  try {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(queryParams)) {
+      searchParams.append(key, value);
+    }
+    return searchParams.toString();
+  } catch (error) {
+    throw new Error(`查询字符串格式化失败: ${error.message}`);
   }
-  return searchParams.toString();
 }
 
 // 解析路径名

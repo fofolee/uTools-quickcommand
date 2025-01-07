@@ -5,7 +5,7 @@ const path = require("path");
  * @param {string} p 要规范化的路径
  * @returns {string} 规范化后的路径
  */
-async function normalize(p) {
+function normalize(p) {
   try {
     return path.normalize(p);
   } catch (error) {
@@ -18,7 +18,7 @@ async function normalize(p) {
  * @param {...string} paths 路径片段
  * @returns {string} 连接后的路径
  */
-async function join(...paths) {
+function join(...paths) {
   try {
     return path.join(...paths);
   } catch (error) {
@@ -31,7 +31,7 @@ async function join(...paths) {
  * @param {string} p 要解析的路径
  * @returns {Object} 解析结果，包含 root, dir, base, ext, name
  */
-async function parse(p) {
+function parse(p) {
   try {
     return path.parse(p);
   } catch (error) {
@@ -44,7 +44,7 @@ async function parse(p) {
  * @param {string} p 路径
  * @returns {string} 目录名
  */
-async function dirname(p) {
+function dirname(p) {
   try {
     return path.dirname(p);
   } catch (error) {
@@ -58,7 +58,7 @@ async function dirname(p) {
  * @param {string} [ext] 可选的扩展名，如果提供则从结果中移除
  * @returns {string} 文件名
  */
-async function basename(p, ext) {
+function basename(p, ext = undefined) {
   try {
     return path.basename(p, ext);
   } catch (error) {
@@ -71,7 +71,7 @@ async function basename(p, ext) {
  * @param {string} p 路径
  * @returns {string} 扩展名
  */
-async function extname(p) {
+function extname(p) {
   try {
     return path.extname(p);
   } catch (error) {
@@ -84,7 +84,7 @@ async function extname(p) {
  * @param {string} p 路径
  * @returns {boolean} 是否为绝对路径
  */
-async function isAbsolute(p) {
+function isAbsolute(p) {
   try {
     return path.isAbsolute(p);
   } catch (error) {
@@ -98,7 +98,7 @@ async function isAbsolute(p) {
  * @param {string} to 目标路径
  * @returns {string} 相对路径
  */
-async function relative(from, to) {
+function relative(from, to) {
   try {
     return path.relative(from, to);
   } catch (error) {
@@ -111,7 +111,7 @@ async function relative(from, to) {
  * @param {...string} paths 路径片段
  * @returns {string} 解析后的绝对路径
  */
-async function resolve(...paths) {
+function resolve(...paths) {
   try {
     return path.resolve(...paths);
   } catch (error) {
@@ -121,11 +121,16 @@ async function resolve(...paths) {
 
 /**
  * 格式化路径对象为路径字符串
- * @param {Object} pathObject 路径对象，包含 dir, root, base, name, ext
+ * @param {string} root 根路径
+ * @param {string} dir 目录
+ * @param {string} base 基本名称
+ * @param {string} name 文件名
+ * @param {string} ext 扩展名
  * @returns {string} 格式化后的路径
  */
-async function format(pathObject) {
+function format(root, dir, base, name, ext) {
   try {
+    const pathObject = { root, dir, base, name, ext };
     return path.format(pathObject);
   } catch (error) {
     throw new Error(`格式化路径失败: ${error.message}`);

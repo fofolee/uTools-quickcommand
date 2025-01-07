@@ -32,20 +32,252 @@ export const systemCommands = {
       isAsync: true,
     },
     {
-      value: "quickcomposer.system.os",
+      value: "quickcomposer.system.os.arch",
       label: "系统信息",
       desc: "获取操作系统相关信息",
-      component: "OsEditor",
       icon: "computer",
-      isAsync: true,
+      config: [],
+      functionSelector: [
+        {
+          value: "quickcomposer.system.os.arch",
+          label: "系统架构",
+          icon: "memory",
+        },
+        {
+          value: "quickcomposer.system.os.cpus",
+          label: "CPU信息",
+          icon: "developer_board",
+          config: [
+            {
+              label: "信息格式",
+              type: "buttonGroup",
+              options: [
+                { label: "完整信息", value: "full" },
+                { label: "仅型号和速度", value: "simple" },
+              ],
+              defaultValue: "full",
+              width: 12,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.os.memory",
+          label: "内存信息",
+          icon: "storage",
+          config: [
+            {
+              label: "内存类型",
+              type: "buttonGroup",
+              options: [
+                { label: "总内存", value: "totalmem" },
+                { label: "空闲内存", value: "freemem" },
+              ],
+              defaultValue: "totalmem",
+              width: 12,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.os.network",
+          label: "网络信息",
+          icon: "wifi",
+          config: [
+            {
+              label: "网络信息类型",
+              type: "buttonGroup",
+              options: [
+                { label: "主机名", value: "hostname" },
+                { label: "网络接口", value: "networkInterfaces" },
+              ],
+              defaultValue: "hostname",
+              width: 12,
+            },
+            {
+              label: "包含内部接口",
+              type: "checkbox",
+              defaultValue: false,
+              width: 12,
+              condition: "values[0] === 'networkInterfaces'",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.os.platform",
+          label: "平台信息",
+          icon: "computer",
+          config: [
+            {
+              label: "平台信息类型",
+              type: "buttonGroup",
+              options: [
+                { label: "操作系统名称", value: "platform" },
+                { label: "操作系统类型", value: "type" },
+                { label: "操作系统版本", value: "release" },
+                { label: "操作系统架构", value: "arch" },
+                { label: "CPU字节序", value: "endianness" },
+                { label: "系统临时目录", value: "tmpdir" },
+                { label: "主目录", value: "homedir" },
+                { label: "系统正常运行时间", value: "uptime" },
+                { label: "用户信息", value: "userInfo" },
+              ],
+              defaultValue: "platform",
+              width: 12,
+            },
+          ],
+        },
+      ],
     },
     {
-      value: "quickcomposer.system.path",
+      value: "quickcomposer.system.path.normalize",
       label: "路径操作",
-      desc: "路径操作",
-      component: "PathEditor",
-      icon: "folder_path",
-      isAsync: true,
+      desc: "路径解析和处理",
+      icon: "folder",
+      config: [
+        {
+          label: "路径",
+          type: "varInput",
+          icon: "folder",
+          width: "auto",
+        },
+      ],
+      functionSelector: [
+        {
+          value: "quickcomposer.system.path.normalize",
+          label: "规范化路径",
+          icon: "straighten",
+        },
+        {
+          value: "quickcomposer.system.path.parse",
+          label: "解析路径",
+          icon: "account_tree",
+        },
+        {
+          value: "quickcomposer.system.path.dirname",
+          label: "获取目录名",
+          icon: "folder",
+        },
+        {
+          value: "quickcomposer.system.path.basename",
+          label: "获取文件名",
+          icon: "description",
+          config: [
+            {
+              label: "要移除的扩展名",
+              type: "varInput",
+              icon: "extension",
+              width: "auto",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.path.extname",
+          label: "获取扩展名",
+          icon: "extension",
+        },
+        {
+          value: "quickcomposer.system.path.isAbsolute",
+          label: "判断绝对路径",
+          icon: "check_circle",
+        },
+        {
+          value: "quickcomposer.system.path.join",
+          label: "连接路径",
+          icon: "add_link",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "路径片段",
+              type: "varInput",
+              icon: "folder",
+              width: "auto",
+            },
+            {
+              label: "路径片段",
+              type: "varInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.path.resolve",
+          label: "解析绝对路径",
+          icon: "assistant_direction",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "路径片段",
+              type: "varInput",
+              icon: "folder",
+              width: "auto",
+            },
+            {
+              label: "路径片段",
+              type: "varInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.path.relative",
+          label: "计算相对路径",
+          icon: "compare_arrows",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "起始路径",
+              type: "varInput",
+              icon: "folder",
+              width: 6,
+            },
+            {
+              label: "目标路径",
+              type: "varInput",
+              icon: "folder",
+              width: 6,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.system.path.format",
+          label: "格式化路径",
+          icon: "format_shapes",
+          excludeConfig: [0],
+          config: [
+            {
+              label: "根路径",
+              type: "varInput",
+              icon: "folder",
+              width: 6,
+            },
+            {
+              label: "目录",
+              type: "varInput",
+              icon: "folder",
+              width: 6,
+            },
+            {
+              label: "基本名称",
+              type: "varInput",
+              icon: "description",
+              width: 6,
+            },
+            {
+              label: "文件名",
+              type: "varInput",
+              icon: "insert_drive_file",
+              width: 6,
+            },
+            {
+              label: "扩展名",
+              type: "varInput",
+              icon: "extension",
+              width: 6,
+            },
+          ],
+        },
+      ],
     },
   ],
 };

@@ -60,19 +60,7 @@ export const SystemCommandEditor = defineAsyncComponent(() =>
   import("components/composer/system/SystemCommandEditor.vue")
 );
 
-export const OsEditor = defineAsyncComponent(() =>
-  import("components/composer/system/OsEditor.vue")
-);
 
-export const PathEditor = defineAsyncComponent(() =>
-  import("components/composer/system/PathEditor.vue")
-);
 export const ZlibEditor = defineAsyncComponent(() =>
   import("src/components/composer/data/ZlibEditor.vue")
-);
-export const UrlEditor = defineAsyncComponent(() =>
-  import("components/composer/network/UrlEditor.vue")
-);
-export const BufferEditor = defineAsyncComponent(() =>
-  import("src/components/composer/data/BufferEditor.vue")
 );
