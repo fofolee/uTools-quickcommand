@@ -1,105 +1,26 @@
 <template>
-  <div class="flex-container">
+  <div class="multi-params">
     <OperationCard
       v-if="hasFunctionSelector"
       :model-value="funcName"
       @update:model-value="funcName = $event"
       :options="localCommand.functionSelector?.options"
-      class="width-12"
     />
-    <div class="flex-container">
-      <div
-        v-for="(item, index) in localConfig"
-        :key="index"
-        class="grid-item"
-        :style="getColumnStyle(item.width)"
-      >
-        <VariableInput
-          v-if="item.type === 'varInput'"
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-          :options="item.options"
-        />
-        <NumberInput
-          v-else-if="item.type === 'numInput'"
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-        />
-        <ArrayEditor
-          v-else-if="item.type === 'arrayEditor'"
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :options="item.options"
-        />
-        <DictEditor
-          v-else-if="item.type === 'dictEditor'"
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :options="item.options"
-        />
-        <q-toggle
-          v-else-if="item.type === 'switch'"
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-        />
-        <q-select
-          v-else-if="item.type === 'select'"
-          filled
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :options="item.options"
-        >
-          <template v-slot:prepend>
-            <q-icon :name="item.icon || 'code'" />
-          </template>
-        </q-select>
-        <q-input
-          v-else-if="item.type === 'input'"
-          filled
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-        >
-          <template v-slot:prepend>
-            <q-icon :name="item.icon || 'code'" />
-          </template>
-        </q-input>
-        <q-checkbox
-          v-else-if="item.type === 'checkbox'"
-          :model-value="argvs[index]"
-          @update:model-value="updateArgv(index, $event)"
-          :label="item.label"
-          :icon="item.icon"
-        />
-      </div>
-    </div>
+    <ParamInput :configs="localConfig" :values="argvs" @update="updateArgv" />
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "components/composer/common/VariableInput.vue";
-import NumberInput from "components/composer/common/NumberInput.vue";
-import ArrayEditor from "components/composer/common/ArrayEditor.vue";
-import DictEditor from "components/composer/common/DictEditor.vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
+import ParamInput from "components/composer/common/ParamInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 
 export default defineComponent({
   name: "MultiParams",
   components: {
-    VariableInput,
-    NumberInput,
-    ArrayEditor,
-    DictEditor,
     OperationCard,
+    ParamInput,
   },
   props: {
     modelValue: {
@@ -216,66 +137,10 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.flex-container {
+.multi-params {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  width: 100%;
-  --grid-gap: 8px;
-}
-
-.grid-item {
-  min-width: 50px;
-  margin-bottom: 0;
-}
-
-@media (max-width: 600px) {
-  .grid-item {
-    width: 100% !important;
-  }
-}
-
-.operation-cards {
-  display: flex;
-  align-items: center;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  padding: 1px;
+  flex-direction: column;
   gap: 8px;
-  border-radius: 8px;
-}
-
-.operation-cards::-webkit-scrollbar {
-  display: none;
-}
-
-.operation-card {
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid transparent;
-  border-radius: 6px;
-  min-width: 72px;
-  padding: 2px 0;
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.body--dark .operation-card {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.operation-card:hover {
-  background: var(--q-primary-opacity-5);
-  transform: translateY(-1px);
-  border: 1px solid var(--q-primary-opacity-10);
-}
-
-.operation-card.active {
-  border-color: var(--q-primary);
-  background: var(--q-primary-opacity-5);
-}
-
-.body--dark .operation-card.active {
-  border-color: var(--q-primary-opacity-50);
+  width: 100%;
 }
 </style>

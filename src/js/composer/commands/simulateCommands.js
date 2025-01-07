@@ -72,6 +72,8 @@ export const simulateCommands = {
     {
       value: "utools.getCursorScreenPoint",
       label: "获取鼠标坐标",
+      outputVariable: "{x:curX,y:curY}",
+      saveOutput: true,
       config: [],
       allowEmptyArgv: true,
     },
