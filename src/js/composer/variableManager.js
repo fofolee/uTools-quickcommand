@@ -106,7 +106,7 @@ export function processVariable({ value, existingVars }) {
   // 处理解构变量
   const processedVars = destructured.vars.map((name) => {
     const parts = name.split(":").map((p) => p.trim());
-    const key = parts.length > 1 ? parts[0] : parts[0];
+    const key = parts[0];
     const varName = parts[parts.length - 1];
     const processedName = generateValidVarName(varName, existingVars, varName);
 
@@ -114,13 +114,14 @@ export function processVariable({ value, existingVars }) {
       key,
       processedName,
       needsRename: processedName !== varName,
+      hasRename: parts.length > 1
     };
   });
 
   // 如果有变量需要重命名，使用对象解构格式
   if (processedVars.some((v) => v.needsRename)) {
     const pairs = processedVars.map((v) =>
-      v.needsRename ? `${v.key}:${v.processedName}` : v.key
+      v.needsRename || v.hasRename ? `${v.key}:${v.processedName}` : v.key
     );
     const format = `{${pairs.join(", ")}}`;
     return {
@@ -134,7 +135,9 @@ export function processVariable({ value, existingVars }) {
   const format =
     destructured.format === "array"
       ? `[${processedVars.map((v) => v.key).join(", ")}]`
-      : `{${processedVars.map((v) => v.key).join(", ")}}`;
+      : `{${processedVars.map((v) =>
+          v.hasRename ? `${v.key}:${v.processedName}` : v.key
+        ).join(", ")}}`;
 
   return {
     isValid: true,

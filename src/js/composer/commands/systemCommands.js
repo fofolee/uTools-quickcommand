@@ -19,6 +19,8 @@ export const systemCommands = {
       value: "electron.clipboard.readText",
       label: "获取剪贴板内容",
       config: [],
+      outputVariable: "clipboardText",
+      saveOutput: true,
       allowEmptyArgv: true,
     },
     {

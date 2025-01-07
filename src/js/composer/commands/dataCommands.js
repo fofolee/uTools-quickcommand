@@ -8,6 +8,8 @@ export const dataCommands = {
       label: "编解码",
       desc: "文本编解码",
       icon: "code",
+      outputVariable: "processedText",
+      saveOutput: true,
       config: [
         {
           label: "要编解码的文本",
@@ -65,17 +67,23 @@ export const dataCommands = {
       value: "quickcomposer.data.symmetricCrypto",
       label: "对称加解密",
       component: "SymmetricCryptoEditor",
+      outputVariable: "processedText",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.asymmetricCrypto",
       label: "非对称加解密",
       component: "AsymmetricCryptoEditor",
+      outputVariable: "processedText",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.md5Hash",
       label: "哈希计算",
       desc: "计算文本的哈希值",
       icon: "enhanced_encryption",
+      outputVariable: "hashValue",
+      saveOutput: true,
       config: [
         {
           label: "要计算哈希的文本",
@@ -115,10 +123,12 @@ export const dataCommands = {
       },
     },
     {
-      value: "Math",
+      value: "Math.sin",
       label: "数学计算",
       desc: "数学函数计算",
       icon: "calculate",
+      outputVariable: "calculatedText",
+      saveOutput: true,
       config: [
         {
           label: "要计算的数值",
@@ -225,6 +235,8 @@ export const dataCommands = {
           width: 10,
         },
       ],
+      outputVariable: "randomNumber",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.reverseString",
@@ -237,6 +249,8 @@ export const dataCommands = {
           icon: "swap_horiz",
         },
       ],
+      outputVariable: "reversedText",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.replaceString",
@@ -264,6 +278,8 @@ export const dataCommands = {
           width: 4,
         },
       ],
+      outputVariable: "replacedText",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.substring",
@@ -291,6 +307,8 @@ export const dataCommands = {
           width: 3,
         },
       ],
+      outputVariable: "substringText",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.regexTransform",
@@ -299,6 +317,8 @@ export const dataCommands = {
       componentProps: {
         inputLabel: "要处理的文本",
       },
+      outputVariable: "processedText",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.data.buffer",

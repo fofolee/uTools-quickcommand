@@ -43,6 +43,8 @@ export const networkCommands = {
       component: "AxiosConfigEditor",
       isAsync: true,
       icon: "http",
+      outputVariable: "{data}",
+      saveOutput: true,
     },
     {
       value: "quickcomposer.network.url",
