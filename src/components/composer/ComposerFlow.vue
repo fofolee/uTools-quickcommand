@@ -49,6 +49,7 @@
               >
                 <ComposerCard
                   v-model="commands[index]"
+                  :command-index="index"
                   @remove="removeCommand(index)"
                   @run="handleRunCommand"
                   @add-branch="addBranch"

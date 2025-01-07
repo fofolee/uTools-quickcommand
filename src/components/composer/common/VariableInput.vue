@@ -79,7 +79,7 @@
         }"
         class="variable-dropdown prepend-btn"
         size="sm"
-        @click="variables = getCurrentVariables()"
+        @click="variables = getAvailableVariables()"
       >
         <q-list class="variable-list">
           <q-item-label header class="variable-label">
@@ -115,14 +115,12 @@
                   <div class="q-gutter-md">
                     <div class="row items-center justify-center text-grey-6">
                       <q-icon name="info" size="20px" class="q-mr-sm" />
-                      <span>无可用变量</span>
+                      <span>当前命令没有可用变量</span>
                     </div>
-                    <div class="row items-center justify-center">
-                      <span class="text-grey-7"
-                        >点击命令卡片右上角的
-                        <q-icon name="output" size="16px" class="q-mx-xs" />
-                        按钮添加输出变量
-                      </span>
+                    <div class="row items-center justify-center text-grey-7">
+                      <div class="text-grey-7">点击其他命令卡片右上角的</div>
+                      <q-icon name="output" size="16px" class="q-mx-xs" />
+                      <div>按钮添加输出变量</div>
                     </div>
                   </div>
                 </q-item-label>
@@ -198,7 +196,18 @@ export default defineComponent({
   emits: ["update:modelValue"],
   setup() {
     const getCurrentVariables = inject("getCurrentVariables");
-    return { getCurrentVariables };
+    const commandIndex = inject("commandIndex", null);
+
+    const getAvailableVariables = () => {
+      // commandIndex 是响应式的，所以需要使用 value 来获取其值
+      return getCurrentVariables().filter(
+        (variable) => variable.sourceCommand.index < commandIndex.value
+      );
+    };
+
+    return {
+      getAvailableVariables,
+    };
   },
 
   data() {

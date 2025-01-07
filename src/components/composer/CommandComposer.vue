@@ -43,12 +43,17 @@ export default defineComponent({
     // 提供获取当前变量的函数，直接返回解析后的变量列表
     const getCurrentVariables = () => {
       const variables = [];
-      for (const cmd of commandFlow.value) {
+      for (const [index, cmd] of commandFlow.value.entries()) {
         if (cmd.saveOutput && cmd.outputVariable) {
           variables.push(
             ...parseVariables(cmd.outputVariable).map((variable) => ({
               name: variable,
-              sourceCommand: cmd,
+              // 提供来源命令的标志信息
+              sourceCommand: {
+                label: cmd.label,
+                id: cmd.id,
+                index,
+              },
             }))
           );
         }

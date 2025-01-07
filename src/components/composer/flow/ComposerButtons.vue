@@ -22,11 +22,11 @@
         v-if="isDev"
       >
       </q-btn>
-      <q-btn icon="logout" dense flat v-close-popup>
+      <q-btn icon="close" dense flat v-close-popup>
         <q-tooltip>退出可视化编排</q-tooltip>
       </q-btn>
       <q-separator vertical />
-      <q-btn dense icon="publish" flat @click="$emit('action', 'insert')">
+      <q-btn dense icon="read_more" flat @click="$emit('action', 'insert')">
         <q-tooltip>插入到编辑器光标处</q-tooltip>
       </q-btn>
       <q-btn dense flat icon="done_all" @click="$emit('action', 'apply')">

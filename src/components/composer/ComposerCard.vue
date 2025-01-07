@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { defineComponent, inject } from "vue";
+import { defineComponent, inject, provide, computed } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import MultiParams from "components/composer/MultiParams.vue";
 import CommandHead from "components/composer/card/CommandHead.vue";
@@ -83,6 +83,10 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Object,
+      required: true,
+    },
+    commandIndex: {
+      type: Number,
       required: true,
     },
   },
@@ -109,8 +113,12 @@ export default defineComponent({
       );
     },
   },
-  setup() {
+  setup(props) {
     const getCurrentVariables = inject("getCurrentVariables");
+    // 创建响应式的commandIndex
+    const commandIndex = computed(() => props.commandIndex);
+    // 主要用于VariableInput组件的变量选择下拉框，获取当前命令的索引
+    provide("commandIndex", commandIndex);
     return { getCurrentVariables };
   },
   methods: {
