@@ -17,50 +17,48 @@ export const dataCommands = {
           type: "varInput",
         },
       ],
-      functionSelector: {
-        options: [
-          {
-            label: "Base64编码",
-            value: "quickcomposer.data.base64Encode",
-            icon: "title",
-          },
-          {
-            label: "Base64解码",
-            value: "quickcomposer.data.base64Decode",
-            icon: "title",
-          },
-          {
-            label: "十六进制编码",
-            value: "quickcomposer.data.hexEncode",
-            icon: "code",
-          },
-          {
-            label: "十六进制解码",
-            value: "quickcomposer.data.hexDecode",
-            icon: "code",
-          },
-          {
-            label: "URL编码",
-            value: "quickcomposer.data.urlEncode",
-            icon: "link",
-          },
-          {
-            label: "URL解码",
-            value: "quickcomposer.data.urlDecode",
-            icon: "link",
-          },
-          {
-            label: "HTML编码",
-            value: "quickcomposer.data.htmlEncode",
-            icon: "html",
-          },
-          {
-            label: "HTML解码",
-            value: "quickcomposer.data.htmlDecode",
-            icon: "html",
-          },
-        ],
-      },
+      functionSelector: [
+        {
+          label: "Base64编码",
+          value: "quickcomposer.data.base64Encode",
+          icon: "title",
+        },
+        {
+          label: "Base64解码",
+          value: "quickcomposer.data.base64Decode",
+          icon: "title",
+        },
+        {
+          label: "十六进制编码",
+          value: "quickcomposer.data.hexEncode",
+          icon: "code",
+        },
+        {
+          label: "十六进制解码",
+          value: "quickcomposer.data.hexDecode",
+          icon: "code",
+        },
+        {
+          label: "URL编码",
+          value: "quickcomposer.data.urlEncode",
+          icon: "link",
+        },
+        {
+          label: "URL解码",
+          value: "quickcomposer.data.urlDecode",
+          icon: "link",
+        },
+        {
+          label: "HTML编码",
+          value: "quickcomposer.data.htmlEncode",
+          icon: "html",
+        },
+        {
+          label: "HTML解码",
+          value: "quickcomposer.data.htmlDecode",
+          icon: "html",
+        },
+      ],
     },
     {
       value: "quickcomposer.data.symmetricCrypto",
@@ -90,35 +88,33 @@ export const dataCommands = {
           type: "varInput",
         },
       ],
-      functionSelector: {
-        options: [
-          {
-            label: "MD5",
-            value: "quickcomposer.data.md5Hash",
-            icon: "functions",
-          },
-          {
-            label: "SHA1",
-            value: "quickcomposer.data.sha1Hash",
-            icon: "functions",
-          },
-          {
-            label: "SHA256",
-            value: "quickcomposer.data.sha256Hash",
-            icon: "functions",
-          },
-          {
-            label: "SHA512",
-            value: "quickcomposer.data.sha512Hash",
-            icon: "functions",
-          },
-          {
-            label: "SM3",
-            value: "quickcomposer.data.sm3Hash",
-            icon: "functions",
-          },
-        ],
-      },
+      functionSelector: [
+        {
+          label: "MD5",
+          value: "quickcomposer.data.md5Hash",
+          icon: "functions",
+        },
+        {
+          label: "SHA1",
+          value: "quickcomposer.data.sha1Hash",
+          icon: "functions",
+        },
+        {
+          label: "SHA256",
+          value: "quickcomposer.data.sha256Hash",
+          icon: "functions",
+        },
+        {
+          label: "SHA512",
+          value: "quickcomposer.data.sha512Hash",
+          icon: "functions",
+        },
+        {
+          label: "SM3",
+          value: "quickcomposer.data.sm3Hash",
+          icon: "functions",
+        },
+      ],
     },
     {
       value: "Math.sin",
@@ -134,80 +130,78 @@ export const dataCommands = {
           type: "numInput",
         },
       ],
-      functionSelector: {
-        options: [
-          {
-            label: "正弦(sin)",
-            value: "Math.sin",
-            icon: "functions",
-          },
-          {
-            label: "余弦(cos)",
-            value: "Math.cos",
-            icon: "functions",
-          },
-          {
-            label: "正切(tan)",
-            value: "Math.tan",
-            icon: "functions",
-          },
-          {
-            label: "反正弦(asin)",
-            value: "Math.asin",
-            icon: "functions",
-          },
-          {
-            label: "反余弦(acos)",
-            value: "Math.acos",
-            icon: "functions",
-          },
-          {
-            label: "反正切(atan)",
-            value: "Math.atan",
-            icon: "functions",
-          },
-          {
-            label: "平方根(sqrt)",
-            value: "Math.sqrt",
-            icon: "functions",
-          },
-          {
-            label: "自然对数(ln)",
-            value: "Math.log",
-            icon: "functions",
-          },
-          {
-            label: "10对数(log10)",
-            value: "Math.log10",
-            icon: "functions",
-          },
-          {
-            label: "绝对值(abs)",
-            value: "Math.abs",
-            icon: "functions",
-          },
-          {
-            label: "向上取整(ceil)",
-            value: "Math.ceil",
-            icon: "functions",
-          },
-          {
-            label: "向下取整(floor)",
-            value: "Math.floor",
-            icon: "functions",
-          },
-          {
-            label: "四舍五入(round)",
-            value: "Math.round",
-            icon: "functions",
-          },
-          {
-            label: "幂运算(pow)",
-            value: "Math.pow",
-            icon: "functions",
-          },
-        ],
-      },
+      functionSelector: [
+        {
+          label: "正弦(sin)",
+          value: "Math.sin",
+          icon: "functions",
+        },
+        {
+          label: "余弦(cos)",
+          value: "Math.cos",
+          icon: "functions",
+        },
+        {
+          label: "正切(tan)",
+          value: "Math.tan",
+          icon: "functions",
+        },
+        {
+          label: "反正弦(asin)",
+          value: "Math.asin",
+          icon: "functions",
+        },
+        {
+          label: "反余弦(acos)",
+          value: "Math.acos",
+          icon: "functions",
+        },
+        {
+          label: "反正切(atan)",
+          value: "Math.atan",
+          icon: "functions",
+        },
+        {
+          label: "平方根(sqrt)",
+          value: "Math.sqrt",
+          icon: "functions",
+        },
+        {
+          label: "自然对数(ln)",
+          value: "Math.log",
+          icon: "functions",
+        },
+        {
+          label: "10对数(log10)",
+          value: "Math.log10",
+          icon: "functions",
+        },
+        {
+          label: "绝对值(abs)",
+          value: "Math.abs",
+          icon: "functions",
+        },
+        {
+          label: "向上取整(ceil)",
+          value: "Math.ceil",
+          icon: "functions",
+        },
+        {
+          label: "向下取整(floor)",
+          value: "Math.floor",
+          icon: "functions",
+        },
+        {
+          label: "四舍五入(round)",
+          value: "Math.round",
+          icon: "functions",
+        },
+        {
+          label: "幂运算(pow)",
+          value: "Math.pow",
+          icon: "functions",
+        },
+      ],
     },
     {
       value: "quickcomposer.data.random",

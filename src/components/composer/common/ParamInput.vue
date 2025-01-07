@@ -43,6 +43,8 @@
       <q-select
         v-else-if="config.type === 'select'"
         filled
+        emit-value
+        map-options
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
         :options="config.options"
@@ -113,9 +115,16 @@ export default defineComponent({
   emits: ["update"],
   methods: {
     getColumnStyle(width = 12) {
+      if (width === "auto") {
+        return {
+          flex: "1 1 0%",
+          minWidth: "0",
+        };
+      }
       const columnWidth = (width / 12) * 100;
       return {
         width: `calc(${columnWidth}% - var(--grid-gap))`,
+        flex: "0 0 auto",
       };
     },
   },
@@ -134,11 +143,18 @@ export default defineComponent({
 .grid-item {
   min-width: 50px;
   margin-bottom: 0;
+  display: flex;
+}
+
+.grid-item > * {
+  flex: 1;
+  min-width: 0;
 }
 
 @media (max-width: 600px) {
   .grid-item {
     width: 100% !important;
+    flex: 1 1 100% !important;
   }
 }
 </style>

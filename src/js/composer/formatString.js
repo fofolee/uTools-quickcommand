@@ -103,15 +103,19 @@ const stringifyObject = (jsonObj) => {
  * @returns {string} 格式化后的字符串
  */
 export const stringifyArgv = (argv) => {
-  // 处理普通字符串
+  // 普通字符串加上引号
   if (typeof argv === "string") {
     return `"${argv}"`;
   }
-  // 处理对象
+  // null类型是Object，需要单独处理，返回原值
+  if (argv === null) {
+    return null;
+  }
+  // 对象通过stringifyObject处理
   if (typeof argv === "object") {
     return stringifyObject(argv);
   }
-  // 处理其他类型
+  // 其他类型返回原值
   return argv;
 };
 
@@ -270,12 +274,25 @@ export const parseFunction = (functionStr, options = {}) => {
           return shouldUseVariableFormat
             ? { value: node.value, isString: true, __varInputVal__: true }
             : node.value;
+        // 数字、布尔
         case "NumericLiteral":
-          return node.value;
         case "BooleanLiteral":
-          return node.value;
+          return shouldUseVariableFormat
+            ? {
+                value: JSON.stringify(node.value),
+                isString: false,
+                __varInputVal__: true,
+              }
+            : node.value;
+        // null
         case "NullLiteral":
-          return null;
+          return shouldUseVariableFormat
+            ? {
+                value: "null",
+                isString: false,
+                __varInputVal__: true,
+              }
+            : null;
         case "Identifier":
           // 标识符（变量）总是不带引号的
           return shouldUseVariableFormat

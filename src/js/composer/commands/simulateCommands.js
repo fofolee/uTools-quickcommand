@@ -27,26 +27,23 @@ export const simulateCommands = {
           width: 6,
         },
       ],
-      functionSelector: {
-        options: [
-          {
-            label: "单击",
-            value: "utools.simulateMouseClick",
-            icon: "mouse",
-          },
-          {
-            label: "右击",
-            value: "utools.simulateMouseRightClick",
-            icon: "mouse",
-          },
-          {
-            label: "双击",
-            value: "utools.simulateMouseDoubleClick",
-            icon: "mouse",
-          },
-        ],
-        allowEmptyArgv: true,
-      },
+      functionSelector: [
+        {
+          label: "单击",
+          value: "utools.simulateMouseClick",
+          icon: "mouse",
+        },
+        {
+          label: "右击",
+          value: "utools.simulateMouseRightClick",
+          icon: "mouse",
+        },
+        {
+          label: "双击",
+          value: "utools.simulateMouseDoubleClick",
+          icon: "mouse",
+        },
+      ],
     },
     {
       value: "utools.simulateMouseMove",

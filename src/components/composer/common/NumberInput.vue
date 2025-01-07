@@ -67,13 +67,17 @@ export default defineComponent({
         return this.modelValue;
       },
       set(value) {
-        this.$emit("update:modelValue", value);
+        if (value === null || value === undefined || value === "") {
+          this.$emit("update:modelValue", null);
+        } else {
+          this.$emit("update:modelValue", value);
+        }
       },
     },
   },
   methods: {
     updateNumber(delta) {
-      this.$emit("update:modelValue", this.localValue + delta);
+      this.$emit("update:modelValue", (this.localValue || 0) + delta);
     },
   },
 });
