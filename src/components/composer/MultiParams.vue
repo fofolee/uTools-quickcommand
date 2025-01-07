@@ -5,13 +5,14 @@
       :model-value="funcName"
       @update:model-value="funcName = $event"
       :options="localCommand.functionSelector?.options"
+      class="width-12"
     />
     <div class="flex-container">
       <div
         v-for="(item, index) in localConfig"
         :key="index"
-        class="flex-item"
-        :style="{ flex: item.width || 12 }"
+        class="grid-item"
+        :style="getColumnStyle(item.width)"
       >
         <VariableInput
           v-if="item.type === 'varInput'"
@@ -49,23 +50,25 @@
         />
         <q-select
           v-else-if="item.type === 'select'"
+          filled
           :model-value="argvs[index]"
           @update:model-value="updateArgv(index, $event)"
           :options="item.options"
         >
           <template v-slot:prepend>
-            <q-icon :name="item.icon" />
+            <q-icon :name="item.icon || 'code'" />
           </template>
         </q-select>
         <q-input
           v-else-if="item.type === 'input'"
+          filled
           :model-value="argvs[index]"
           @update:model-value="updateArgv(index, $event)"
           :label="item.label"
           :icon="item.icon"
         >
           <template v-slot:prepend>
-            <q-icon :name="item.icon" />
+            <q-icon :name="item.icon || 'code'" />
           </template>
         </q-input>
         <q-checkbox
@@ -197,6 +200,12 @@ export default defineComponent({
         code: this.generateCode(funcName, argvs),
       });
     },
+    getColumnStyle(width = 12) {
+      const columnWidth = (width / 12) * 100;
+      return {
+        width: `calc(${columnWidth}% - var(--grid-gap))`,
+      };
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
@@ -210,17 +219,19 @@ export default defineComponent({
 .flex-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
+  --grid-gap: 8px;
 }
 
-.flex-item {
-  min-width: 100px;
+.grid-item {
+  min-width: 50px;
+  margin-bottom: 0;
 }
 
 @media (max-width: 600px) {
-  .flex-item {
-    flex: 1 1 100% !important;
+  .grid-item {
+    width: 100% !important;
   }
 }
 

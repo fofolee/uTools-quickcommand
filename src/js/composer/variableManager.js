@@ -114,7 +114,7 @@ export function processVariable({ value, existingVars }) {
       key,
       processedName,
       needsRename: processedName !== varName,
-      hasRename: parts.length > 1
+      hasRename: parts.length > 1,
     };
   });
 
@@ -135,9 +135,9 @@ export function processVariable({ value, existingVars }) {
   const format =
     destructured.format === "array"
       ? `[${processedVars.map((v) => v.key).join(", ")}]`
-      : `{${processedVars.map((v) =>
-          v.hasRename ? `${v.key}:${v.processedName}` : v.key
-        ).join(", ")}}`;
+      : `{${processedVars
+          .map((v) => (v.hasRename ? `${v.key}:${v.processedName}` : v.key))
+          .join(", ")}}`;
 
   return {
     isValid: true,

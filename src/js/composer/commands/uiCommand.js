@@ -5,7 +5,7 @@ export const uiCommands = {
   commands: [
     {
       value: "quickcommand.showButtonBox",
-      label: "按钮组弹窗",
+      label: "按钮组",
       isAsync: true,
       outputVariable: "{id,text}",
       saveOutput: true,
@@ -15,14 +15,54 @@ export const uiCommands = {
           type: "arrayEditor",
           defaultValue: [
             {
-              value: "按钮1",
+              value: "是",
               isString: true,
               __varInputVal__: true,
             },
             {
-              value: "按钮2",
+              value: "否",
               isString: true,
               __varInputVal__: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcommand.showInputBox",
+      label: "输入框",
+      isAsync: true,
+      outputVariable: "[inputValue1]",
+      saveOutput: true,
+      config: [
+        {
+          label: "输入框",
+          type: "arrayEditor",
+          width: 12,
+          options: {
+            keys: [
+              {
+                label: "标签",
+                value: "label",
+              },
+              {
+                label: "默认值",
+                value: "value",
+              },
+            ],
+          },
+          defaultValue: [
+            {
+              label: {
+                value: "请输入",
+                isString: true,
+                __varInputVal__: true,
+              },
+              value: {
+                value: "",
+                isString: true,
+                __varInputVal__: true,
+              },
             },
           ],
         },

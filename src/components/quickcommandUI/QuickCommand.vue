@@ -57,6 +57,18 @@ export default {
   },
   mounted() {
     const quickcommandUI = {
+      /**
+       * 显示一个输入框组对话框，并返回用户输入的所有值
+       *
+       * @param options 数组，如果元素为字符串，则作为输入框的标签名；如果元素为对象，则作为输入框的属性，（旧），可为对象，包含label、value、hint三个属性
+       *
+       * @example options = ["请输入", "请输入2"]
+       * @example options = [{label: "请输入", value: "", hint: ""}, {label: "请输入2", value: "", hint: ""}]
+       * @example options = {labels: ["请输入", "请输入2"], values: ["", ""], hints: ["", ""]}
+       *
+       * @param title 窗口标题，默认为空
+       *
+       */
       showInputBox: (options = ["请输入"], title = "") =>
         new Promise((reslove, reject) => {
           let props = {
@@ -67,11 +79,31 @@ export default {
           };
           if (!window.lodashM.isObject(options))
             return reject(new TypeError(`应为 Object, 而非 ${typeof options}`));
-          if (window.lodashM.isArray(options)) props.labels = options;
-          else Object.assign(props, options);
+          if (window.lodashM.isArray(options)) {
+            options.forEach((item) => {
+              if (typeof item === "string") {
+                props.labels.push(item);
+                props.values.push("");
+                props.hints.push("");
+              } else {
+                props.labels.push(item.label);
+                props.values.push(item.value);
+                props.hints.push(item.hint);
+              }
+            });
+          } else {
+            // 兼容旧版本
+            Object.assign(props, options);
+          }
           this.showUI(InputBox, props, false, reslove);
         }),
 
+      /**
+       * 显示一个按钮组对话框，并返回用户点击的按钮的标签
+       *
+       * @param labels 按钮标签数组，默认为["确定"]
+       * @param title 窗口标题，默认为空
+       */
       showButtonBox: (labels = ["确定"], title = "") =>
         new Promise((reslove, reject) => {
           if (!window.lodashM.isArray(labels))
@@ -79,6 +111,14 @@ export default {
           this.showUI(ButtonBox, { labels, title }, false, reslove);
         }),
 
+      /**
+       * 显示一个确认对话框，并返回用户点击的按钮的标签
+       *
+       * @param message 确认消息，默认为空
+       * @param title 窗口标题，默认为空
+       * @param isHtml 是否为html消息，默认为false
+       * @param width 窗口宽度，默认为300
+       */
       showConfirmBox: (message = "", title = "提示", isHtml = false, width) =>
         new Promise((reslove, reject) => {
           this.showUI(
@@ -89,6 +129,14 @@ export default {
           );
         }),
 
+      /**
+       * 显示一个消息框，并返回用户点击的按钮的标签
+       *
+       * @param message 消息内容，默认为空
+       * @param icon 消息图标，默认为"success"
+       * @param time 消息显示时间，默认为消息内容长度乘以120毫秒
+       * @param position 消息显示位置，默认为"top"
+       */
       showMessageBox: (message, icon = "success", time, position = "top") => {
         message = window.lodashM.truncate(message, { length: 1200 });
         if (icon === "success") icon = "positive";
@@ -112,11 +160,23 @@ export default {
         });
       },
 
+      /**
+       * 显示一个文本区域对话框，并返回用户输入的文本
+       *
+       * @param placeholder 文本区域提示，默认为空
+       * @param value 文本区域默认值，默认为空
+       */
       showTextArea: (placeholder = "", value = "") =>
         new Promise((reslove, reject) => {
           this.showUI(TextArea, { placeholder, value }, true, reslove);
         }),
 
+      /**
+       * 显示一个支持搜索的且可以动态更新的选项列表，选项类型为文本或html
+       *
+       * @param initItems 初始选项数组，默认为空
+       * @param options 选项列表配置，默认为空
+       */
       showSelectList: (initItems, options = {}) =>
         new Promise((reslove, reject) => {
           if (!window.lodashM.isArray(initItems))
@@ -134,27 +194,50 @@ export default {
           this.showUI(SelectList, { initItems, options }, true, reslove);
         }),
 
+      /**
+       * 显示一个等待按钮，并返回用户点击的按钮的标签
+       *
+       * @param callback 等待回调函数
+       * @param label 按钮标签，默认为"确定"
+       */
       showWaitButton: (callback, label = "确定") => {
         this.wbLabel = label;
         this.showWb = true;
         this.wbEvent = callback;
       },
 
+      /**
+       * 关闭等待按钮
+       */
       closeWaitButton: () => {
         this.showWb = false;
       },
 
+      /**
+       * 更新选项列表
+       *
+       * @param opt 新选项
+       * @param id 选项索引，默认为undefined
+       */
       updateSelectList: (opt, id) => {
         if (this.currentUI !== SelectList) throw "请先创建 selectList";
         if (typeof id === "undefined") this.$refs.ui.items.push(opt);
         else this.$refs.ui.items[id] = opt;
       },
 
+      /**
+       * 监听全局快捷键
+       *
+       * @param callback 快捷键回调函数
+       */
       listenKeydown: (callback) => {
         this.listeners.push(callback);
         document.addEventListener("keydown", callback);
       },
 
+      /**
+       * 移除全局快捷键
+       */
       removeListener: () => {
         this.listeners.forEach((listener) => {
           document.removeEventListener("keydown", listener);

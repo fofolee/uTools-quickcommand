@@ -25,18 +25,16 @@ interface quickcommandApi {
    *     console.log(`输入的内容分别为${values}`)
    * })
    *
-   * quickcommand.showInputBox({labels:["输入框标签"],values:["默认值"],hints:["输入框提示"]}).then(values => {
+   * quickcommand.showInputBox([{label:"输入框标签",value:"默认值",hint:"输入框提示"},{label:"输入框标签2",value:"默认值2",hint:"输入框提示2"}]).then(values => {
    *     console.log(`输入的内容分别为${values}`)
    * })
    * ```
    *
-   *
-   *
-   * @param options 数组时，为每一个输入框的标签名；对象时，为每一个输入框的属性
+   * @param options 数组，如果元素为字符串，则作为输入框的标签名；如果元素为对象，则作为输入框的属性，包含label、value、hint三个属性
    * @param title 窗口标题，默认为空
    */
   showInputBox(
-    options: string[] | { labels: string[]; values: string[]; hints: string[] },
+    options: string[] | { labels: string; values: string; hints: string }[],
     title?: string
   ): Promise<string[]>;
 

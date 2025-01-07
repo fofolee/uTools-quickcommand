@@ -8,8 +8,8 @@
           :class="['col', options.keys.length > 1 ? 'q-pr-sm' : '']"
         >
           <VariableInput
-            :model-value="item[key]"
-            :label="key"
+            :model-value="item[key.value || key]"
+            :label="key.label || key"
             :icon="icon || 'code'"
             @update:model-value="(val) => updateItemKeyValue(index, key, val)"
           />
