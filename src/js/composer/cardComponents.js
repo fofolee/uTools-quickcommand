@@ -73,9 +73,6 @@ export const ZlibEditor = defineAsyncComponent(() =>
 export const UrlEditor = defineAsyncComponent(() =>
   import("components/composer/network/UrlEditor.vue")
 );
-export const DnsEditor = defineAsyncComponent(() =>
-  import("components/composer/network/DnsEditor.vue")
-);
 export const BufferEditor = defineAsyncComponent(() =>
   import("src/components/composer/data/BufferEditor.vue")
 );

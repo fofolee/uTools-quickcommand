@@ -13,9 +13,9 @@ const resolveCname = promisify(dns.resolveCname);
 const reverse = promisify(dns.reverse);
 
 // 解析主机名
-async function lookupHost(hostname, options = {}) {
+async function lookupHost(hostname, family = 0, all = false) {
   try {
-    return await lookup(hostname, options);
+    return await lookup(hostname, { family, all });
   } catch (error) {
     throw new Error(`DNS查询失败: ${error.message}`);
   }

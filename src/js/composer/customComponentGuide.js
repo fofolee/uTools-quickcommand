@@ -272,7 +272,6 @@ const customComponentGuide = {
         desc: "命令描述",
         isAsync: "是否异步命令",
         isControlFlow: "是否控制流命令",
-        allowEmptyArgv: "是否允许空参数",
       },
     },
   },
