@@ -548,7 +548,7 @@ export const dataCommands = {
           icon: "merge",
           config: [
             {
-              label: "Buffer列表",
+              label: "Buffer",
               type: "arrayEditor",
               icon: "memory",
               width: 12,

@@ -60,7 +60,10 @@ export const SystemCommandEditor = defineAsyncComponent(() =>
   import("components/composer/system/SystemCommandEditor.vue")
 );
 
-
 export const ZlibEditor = defineAsyncComponent(() =>
   import("src/components/composer/data/ZlibEditor.vue")
+);
+
+export const SelectListEditor = defineAsyncComponent(() =>
+  import("components/composer/ui/SelectListEditor.vue")
 );

@@ -1,17 +1,19 @@
 <template>
   <div class="array-editor">
     <div v-for="(item, index) in items" :key="index" class="row items-center">
-      <template v-if="options.keys">
+      <template v-if="optionsKeys.length">
         <div
-          v-for="key in options.keys"
-          :key="key"
-          :class="['col', options.keys.length > 1 ? 'q-pr-sm' : '']"
+          v-for="key in optionsKeys"
+          :key="key.value"
+          :class="['col', optionsKeys.length > 1 ? 'q-pr-sm' : '']"
         >
           <VariableInput
-            :model-value="item[key.value || key]"
-            :label="key.label || key"
+            :model-value="item[key.value]"
+            :label="key.label"
             :icon="icon || 'code'"
-            @update:model-value="(val) => updateItemKeyValue(index, key, val)"
+            @update:model-value="
+              (val) => updateItemKeyValue(index, key.value, val)
+            "
           />
         </div>
       </template>
@@ -147,15 +149,25 @@ export default defineComponent({
     items() {
       return this.modelValue.length ? this.modelValue : this.initializeItems();
     },
+    optionsKeys() {
+      return (
+        this.options?.keys?.map((key) => {
+          return {
+            value: key.value || key,
+            label: key.label || key,
+          };
+        }) || []
+      );
+    },
   },
   methods: {
     initializeItems() {
-      if (this.options.keys) {
+      if (this.optionsKeys?.length) {
         const item = {};
-        this.options.keys.forEach((key) => {
+        this.optionsKeys.forEach((key) => {
           item[key] = {
             value: "",
-            isString: false,
+            isString: true,
             __varInputVal__: true,
           };
         });
@@ -165,7 +177,7 @@ export default defineComponent({
       return [
         {
           value: "",
-          isString: false,
+          isString: true,
           __varInputVal__: true,
         },
       ];
@@ -181,7 +193,7 @@ export default defineComponent({
         this.options.keys.forEach((key) => {
           newItem[key] = {
             value: "",
-            isString: false,
+            isString: true,
             __varInputVal__: true,
           };
         });
@@ -191,7 +203,7 @@ export default defineComponent({
           ...this.items,
           {
             value: "",
-            isString: false,
+            isString: true,
             __varInputVal__: true,
           },
         ];
@@ -211,7 +223,7 @@ export default defineComponent({
           this.options.keys.forEach((key) => {
             newItem[key] = {
               value: "",
-              isString: false,
+              isString: true,
               __varInputVal__: true,
             };
           });
@@ -219,7 +231,7 @@ export default defineComponent({
         } else {
           newItems.push({
             value: "",
-            isString: false,
+            isString: true,
             __varInputVal__: true,
           });
         }

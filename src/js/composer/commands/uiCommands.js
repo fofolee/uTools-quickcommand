@@ -68,5 +68,12 @@ export const uiCommands = {
         },
       ],
     },
+    {
+      value: "quickcommand.showSelectList",
+      label: "选择列表",
+      desc: "显示一个支持搜索的选项列表，可以动态更新选项",
+      component: "SelectListEditor",
+      isAsync: true,
+    },
   ],
 };

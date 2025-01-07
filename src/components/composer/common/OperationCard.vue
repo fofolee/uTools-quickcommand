@@ -7,6 +7,10 @@
           :key="option.value"
           :class="['operation-card', { active: modelValue === option.value }]"
           :data-value="option.value"
+          :style="{
+            borderRadius: square ? '5px' : '16px',
+            height: height ? height : '',
+          }"
           @click="$emit('update:modelValue', option.value)"
         >
           <q-icon
@@ -35,6 +39,13 @@ export default {
     minWidth: {
       type: String,
       default: "80px",
+    },
+    square: {
+      type: Boolean,
+      default: false,
+    },
+    height: {
+      type: String,
     },
   },
   computed: {
@@ -105,7 +116,6 @@ export default {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  border-radius: 16px;
   background: rgba(0, 0, 0, 0.03);
   display: flex;
   align-items: center;

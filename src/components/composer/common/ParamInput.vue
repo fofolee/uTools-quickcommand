@@ -25,6 +25,7 @@
         v-else-if="config.type === 'arrayEditor'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
+        :label="config.label"
         :options="config.options"
       />
       <DictEditor
