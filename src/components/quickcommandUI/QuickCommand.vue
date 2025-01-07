@@ -176,6 +176,17 @@ export default {
        *
        * @param initItems 初始选项数组，默认为空
        * @param options 选项列表配置，默认为空
+       * @example
+       * initItems = ['1','2','3']
+       * options = {placeholder: "输入进行筛选，支持拼音", optionType: "plaintext", enableSearch: true, showCancelButton: false, closeOnSelect: true}
+       *
+       * @example
+       * initItems = [{title: "1", description: "1"},     {title: "2", description: "2"}, {title: "3", description: "3"}]
+       * options = {placeholder: "输入进行筛选，支持拼音", optionType: "json", enableSearch: true, showCancelButton: false, closeOnSelect: true}
+       *
+       * @example
+       * initItems = ["<div>1</div>", "<div>2</div>", "<div>3</div>"]
+       * options = {placeholder: "输入进行筛选，支持拼音", optionType: "html", enableSearch: true, showCancelButton: false, closeOnSelect: true}
        */
       showSelectList: (initItems, options = {}) =>
         new Promise((reslove, reject) => {

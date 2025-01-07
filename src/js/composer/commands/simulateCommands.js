@@ -28,7 +28,6 @@ export const simulateCommands = {
         },
       ],
       functionSelector: {
-        selectLabel: "鼠标动作",
         options: [
           {
             label: "单击",

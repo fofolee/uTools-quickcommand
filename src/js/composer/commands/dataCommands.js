@@ -18,7 +18,6 @@ export const dataCommands = {
         },
       ],
       functionSelector: {
-        selectLabel: "编解码方式",
         options: [
           {
             label: "Base64编码",
@@ -92,7 +91,6 @@ export const dataCommands = {
         },
       ],
       functionSelector: {
-        selectLabel: "哈希算法",
         options: [
           {
             label: "MD5",
@@ -137,7 +135,6 @@ export const dataCommands = {
         },
       ],
       functionSelector: {
-        selectLabel: "计算方式",
         options: [
           {
             label: "正弦(sin)",

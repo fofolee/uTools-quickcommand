@@ -34,8 +34,20 @@ export default defineComponent({
     localCommand() {
       return this.modelValue;
     },
+    // 通用参数配置
+    commonConfig() {
+      return this.modelValue.config || [];
+    },
+    // 特定函数独有参数配置
+    functionConfig() {
+      return (
+        this.modelValue.functionSelector?.options.find(
+          (item) => item.value === this.funcName
+        )?.config || []
+      );
+    },
     localConfig() {
-      return (this.modelValue.config || []).map((item) => {
+      return [...this.commonConfig, ...this.functionConfig].map((item) => {
         return {
           ...item,
           value: item.defaultValue,
