@@ -11,6 +11,7 @@
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
         :label="config.label"
+        :placeholder="config.placeholder"
         :icon="config.icon"
         :options="config.options"
       />
@@ -20,6 +21,7 @@
         @update:model-value="$emit('update', index, $event)"
         :label="config.label"
         :icon="config.icon"
+        :placeholder="config.placeholder"
       />
       <ArrayEditor
         v-else-if="config.type === 'arrayEditor'"
@@ -61,6 +63,7 @@
         @update:model-value="$emit('update', index, $event)"
         :label="config.label"
         :icon="config.icon"
+        :placeholder="config.placeholder"
       >
         <template v-slot:prepend>
           <q-icon :name="config.icon || 'code'" />
@@ -153,11 +156,20 @@ export default defineComponent({
   min-width: 50px;
   margin-bottom: 0;
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .grid-item > * {
   flex: 1;
   min-width: 0;
+}
+
+/* 让开关、复选框和按钮组居中显示 */
+.grid-item > .q-toggle,
+.grid-item > .q-checkbox,
+.grid-item > .q-btn-group {
+  flex: 0 1 auto;
 }
 
 @media (max-width: 600px) {

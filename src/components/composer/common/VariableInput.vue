@@ -4,6 +4,7 @@
     dense
     filled
     :label="label"
+    :placeholder="placeholder"
     class="variable-input"
   >
     <template v-slot:append>
@@ -182,6 +183,7 @@ export default defineComponent({
       default: () => newVarInputVal("str"),
     },
     label: String,
+    placeholder: String,
     icon: String,
     noIcon: Boolean,
     options: {

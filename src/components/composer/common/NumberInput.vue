@@ -5,6 +5,7 @@
     dense
     filled
     :label="label"
+    :placeholder="placeholder"
     class="number-input"
   >
     <template v-slot:prepend>
@@ -52,6 +53,10 @@ export default defineComponent({
       type: Number,
     },
     label: {
+      type: String,
+      default: "",
+    },
+    placeholder: {
       type: String,
       default: "",
     },
