@@ -5,12 +5,15 @@
         <div
           v-for="key in optionsKeys"
           :key="key.value"
-          :class="['col', optionsKeys.length > 1 ? 'q-pr-sm' : '']"
+          :class="[
+            key.width ? `col-${key.width}` : 'col',
+            optionsKeys.length > 1 ? 'q-pr-sm' : '',
+          ]"
         >
           <VariableInput
             :model-value="item[key.value]"
             :label="key.label"
-            :icon="icon || 'code'"
+            :no-icon="true"
             @update:model-value="
               (val) => updateItemKeyValue(index, key.value, val)
             "
@@ -155,6 +158,7 @@ export default defineComponent({
           return {
             value: key.value || key,
             label: key.label || key,
+            width: key.width,
           };
         }) || []
       );

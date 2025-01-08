@@ -131,7 +131,7 @@
       </q-btn-dropdown>
     </template>
     <template v-slot:prepend>
-      <q-icon :name="icon || 'code'" />
+      <q-icon v-if="!noIcon" :name="icon || 'code'" />
     </template>
   </q-input>
 </template>
@@ -187,6 +187,7 @@ export default defineComponent({
     },
     label: String,
     icon: String,
+    noIcon: Boolean,
     options: {
       type: Object,
       default: () => ({}),

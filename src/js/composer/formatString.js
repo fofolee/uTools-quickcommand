@@ -306,9 +306,37 @@ export const parseFunction = (functionStr, options = {}) => {
             return obj;
           }, {});
         case "ArrayExpression":
-          return node.elements.map((element, index) =>
-            processNode(element, `${currentPath}[${index}]`)
-          );
+          return node.elements.map((element, index) => {
+            const elementPath = `${currentPath}[${index}]`;
+            const processedElement = processNode(element, elementPath);
+
+            if (
+              shouldUseVariableFormat &&
+              typeof processedElement === "object"
+            ) {
+              return Object.entries(processedElement).reduce(
+                (acc, [key, value]) => {
+                  // 如果值已经是 varInputVal 格式，直接使用
+                  if (value?.__varInputVal__) {
+                    acc[key] = value;
+                  } else {
+                    // 否则转换为 varInputVal 格式
+                    acc[key] = {
+                      value:
+                        typeof value === "string"
+                          ? value
+                          : JSON.stringify(value),
+                      isString: typeof value === "string",
+                      __varInputVal__: true,
+                    };
+                  }
+                  return acc;
+                },
+                {}
+              );
+            }
+            return processedElement;
+          });
         case "ObjectProperty":
           return processNode(node.value, currentPath);
         case "MemberExpression":

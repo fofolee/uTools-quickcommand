@@ -6,7 +6,7 @@
         <!-- 选项类型选择 -->
         <div class="col model-type-select">
           <OperationCard
-            v-model="argvs.optionType"
+            :model-value="argvs.optionType"
             :options="[
               { label: '纯文本', value: 'plaintext', icon: 'text_fields' },
               { label: 'HTML', value: 'html', icon: 'code' },
@@ -14,7 +14,7 @@
             ]"
             square
             height="36px"
-            @update:model-value="updateArgvs('optionType', $event)"
+            @update:model-value="handleOptionTypeChange"
           />
         </div>
 
@@ -22,7 +22,7 @@
         <div class="col-2.5 input-mode-select">
           <q-select
             :model-value="argvs.inputMode"
-            @update:model-value="updateArgvs('inputMode', $event)"
+            @update:model-value="handleInputModeChange"
             :options="[
               {
                 label: '手动输入',
@@ -133,6 +133,11 @@
           :options="{
             keys: [
               {
+                value: 'id',
+                label: 'id',
+                width: 3,
+              },
+              {
                 value: 'title',
                 label: '标题',
               },
@@ -174,28 +179,22 @@ import ArrayEditor from "../common/ArrayEditor.vue";
 import OperationCard from "../common/OperationCard.vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
 
-const jsonDefaultSelects = {
-  selects: new Array(3).fill({
-    title: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
-    description: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
-  }),
+const newVarInputVal = (type = "str", val = "") => {
+  if (typeof val !== "string") val = JSON.stringify(val);
+  return {
+    value: val,
+    isString: type === "str",
+    __varInputVal__: true,
+  };
 };
 
-const textDefaultSelects = {
-  selects: new Array(3).fill({
-    value: "",
-    isString: true,
-    __varInputVal__: true,
-  }),
-};
+const jsonDefaultSelects = new Array(3).fill().map((_, index) => ({
+  id: newVarInputVal("var", index),
+  title: newVarInputVal("str"),
+  description: newVarInputVal("str"),
+}));
+
+const textDefaultSelects = new Array(3).fill(newVarInputVal("str"));
 
 const defaultSelects = {
   json: jsonDefaultSelects,
@@ -248,12 +247,25 @@ export default defineComponent({
     },
   },
   methods: {
-    updateArgvs(key, value) {
+    /**
+     * 更新参数
+     * @param {string|string[]} keys - 键名
+     * @param {string|string[]} values - 值
+     */
+    updateArgvs(keys, values) {
+      if (typeof keys === "string") {
+        keys = [keys];
+        values = [values];
+      }
       const argvs = { ...this.argvs };
-      const keys = key.split(".");
-      const lastKey = keys.pop();
-      const target = keys.reduce((obj, key) => obj[key], argvs);
-      target[lastKey] = value;
+      // 更新每一个键
+      keys.forEach((key, index) => {
+        // 支持嵌套对象的键值
+        const subKeys = key.split(".");
+        const lastKey = subKeys.pop();
+        const target = subKeys.reduce((obj, key) => obj[key], argvs);
+        target[lastKey] = values[index];
+      });
       this.updateModelValue(argvs);
     },
     generateCode(argvs = this.argvs) {
@@ -285,13 +297,16 @@ export default defineComponent({
 
       try {
         const result = parseFunction(code, {
-          variableFormatPaths: ["arg0", "arg1.placeholder"],
+          variableFormatPaths: ["arg0", "arg0[*]", "arg1.placeholder"],
         });
+
         if (!result) return this.defaultArgvs;
 
         const [selects, options = {}] = result.argvs;
+        const inputMode = selects.__varInputVal__ ? "variable" : "manual";
         return {
           ...this.defaultArgvs,
+          inputMode,
           selects,
           ...options,
         };
@@ -318,19 +333,45 @@ export default defineComponent({
         argvs,
       });
     },
+    handleOptionTypeChange(newOptionType) {
+      const oldOptionType = this.argvs.optionType;
+      // 原地点击不处理
+      if (oldOptionType === newOptionType) return;
+      // 变量输入模式不需要处理 selects
+      if (this.argvs.inputMode === "variable") {
+        this.updateArgvs("optionType", newOptionType);
+        return;
+      }
+      const oldSelects = this.argvs.selects;
+      let newSelects = oldSelects;
+      // 从JSON转换为非JSON时，取title或description
+      if (oldOptionType === "json") {
+        newSelects = oldSelects.map(
+          (item) => item.title || item.description || newVarInputVal("str")
+        );
+      } else if (newOptionType === "json") {
+        // 从非JSON转换为JSON时，添加title和description
+        newSelects = oldSelects.map((item) => ({
+          title: item,
+          description: item,
+        }));
+      }
+      this.updateArgvs(["optionType", "selects"], [newOptionType, newSelects]);
+    },
+    handleInputModeChange(newInputMode) {
+      let newSelects = this.argvs.selects;
+      if (newInputMode === "variable") {
+        newSelects = newVarInputVal("var");
+      } else {
+        newSelects = defaultSelects[this.argvs.optionType];
+      }
+      this.updateArgvs(["inputMode", "selects"], [newInputMode, newSelects]);
+    },
   },
   mounted() {
     if (!this.modelValue.argvs && !this.modelValue.code) {
       this.updateModelValue(this.defaultArgvs);
     }
-  },
-  watch: {
-    "argvs.optionType": {
-      immediate: true,
-      handler(newVal) {
-        this.argvs.selects = defaultSelects[newVal];
-      },
-    },
   },
 });
 </script>
