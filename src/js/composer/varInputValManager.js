@@ -37,5 +37,10 @@ export const newEmptyVarInputVal = (type = "str") => {
  * @returns {string} 处理后的字符串
  */
 export const stringifyVarInputVal = (argv) => {
-  return argv.isString ? `"${argv.value}"` : argv.value;
+  if (!argv.isString) return argv.value;
+  try {
+    return JSON.stringify(argv.value);
+  } catch (e) {
+    return `"${argv.value}"`;
+  }
 };

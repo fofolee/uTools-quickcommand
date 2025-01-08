@@ -293,16 +293,11 @@ export default defineComponent({
       const value = this.getItemValue(option);
       this.$emit("update:modelValue", newVarInputVal("str", value));
     },
-    escapePath(paths) {
-      if (!paths) return null;
-      if (typeof paths === "string") return paths.replace(/\\/g, "\\\\");
-      return paths.map((path) => path.replace(/\\/g, "\\\\"));
-    },
     handleFileOpen(dialog) {
       let { type, options } = window.lodashM.cloneDeep(dialog);
       if (!type) type = "open";
       if (type === "open") {
-        const files = this.escapePath(utools.showOpenDialog(options));
+        const files = utools.showOpenDialog(options);
         if (!files) return;
         if (files.length > 1) {
           this.$emit("update:modelValue", newVarInputVal("var", files));
@@ -310,7 +305,7 @@ export default defineComponent({
           this.$emit("update:modelValue", newVarInputVal("str", files[0]));
         }
       } else {
-        const file = this.escapePath(utools.showSaveDialog(options));
+        const file = utools.showSaveDialog(options);
         if (!file) return;
         this.$emit("update:modelValue", newVarInputVal("str", file));
       }
