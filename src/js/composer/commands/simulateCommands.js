@@ -10,9 +10,32 @@ export const simulateCommands = {
       component: "KeyEditor",
     },
     {
+      value: "quickcomposer.simulate.sendText",
+      label: "发送文本",
+      config: [
+        {
+          key: "text",
+          label: "要发送的文本内容",
+          type: "varInput",
+          icon: "send",
+          width: 9,
+        },
+        {
+          label: "发送方式",
+          type: "select",
+          defaultValue: false,
+          icon: "keyboard",
+          options: [
+            { label: "模拟输入", value: false },
+            { label: "模拟粘贴", value: true },
+          ],
+          width: 3,
+        },
+      ],
+    },
+    {
       value: "utools.simulateMouseClick",
       label: "鼠标点击",
-      allowEmptyArgv: true,
       config: [
         {
           label: "X坐标（留空则原地点击）",
@@ -47,31 +70,35 @@ export const simulateCommands = {
     },
     {
       value: "utools.simulateMouseMove",
-      label: "鼠标移动",
-      config: [
+      label: "鼠标位置",
+      functionSelector: [
         {
-          label: "X坐标",
-          icon: "drag_handle",
-          defaultValue: 0,
-          type: "numInput",
-          width: 6,
+          label: "移动到坐标",
+          value: "utools.simulateMouseMove",
+          icon: "mouse",
+          config: [
+            {
+              label: "X坐标",
+              icon: "drag_handle",
+              defaultValue: 0,
+              type: "numInput",
+              width: 6,
+            },
+            {
+              label: "Y坐标",
+              icon: "drag_handle",
+              defaultValue: 0,
+              type: "numInput",
+              width: 6,
+            },
+          ],
         },
         {
-          label: "Y坐标",
-          icon: "drag_handle",
-          defaultValue: 0,
-          type: "numInput",
-          width: 6,
+          label: "获取坐标",
+          value: "utools.getCursorScreenPoint",
+          icon: "mouse",
         },
       ],
-    },
-    {
-      value: "utools.getCursorScreenPoint",
-      label: "获取鼠标坐标",
-      outputVariable: "{x:curX,y:curY}",
-      saveOutput: true,
-      config: [],
-      allowEmptyArgv: true,
     },
     {
       value: "quickcomposer.simulate.findImage",
