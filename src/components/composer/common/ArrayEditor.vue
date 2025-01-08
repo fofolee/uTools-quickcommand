@@ -1,82 +1,89 @@
 <template>
-  <div class="array-editor">
-    <div v-for="(item, index) in items" :key="index" class="row items-center">
-      <template v-if="optionsKeys.length">
-        <div
-          v-for="key in optionsKeys"
-          :key="key.value"
-          :class="[
-            key.width ? `col-${key.width}` : 'col',
-            optionsKeys.length > 1 ? 'q-pr-sm' : '',
-          ]"
-        >
-          <VariableInput
-            :model-value="item[key.value]"
-            :label="key.label"
-            :no-icon="true"
-            @update:model-value="
-              (val) => updateItemKeyValue(index, key.value, val)
-            "
-          />
-        </div>
-      </template>
-      <template v-else>
-        <div class="col">
-          <VariableInput
-            :model-value="item"
-            :label="`${label || '项目'} ${index + 1}`"
-            :icon="icon || 'code'"
-            :options="{
-              items: options.items,
-            }"
-            @update:model-value="(val) => updateItemValue(index, val)"
-          />
-        </div>
-      </template>
-      <div class="col-auto">
-        <div class="btn-container">
-          <template v-if="items.length === 1">
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="add"
-              class="center-btn"
-              @click="addItem"
+  <component
+    :is="!!label ? 'BorderLabel' : 'div'"
+    :label="label"
+    :icon="icon"
+    :model-value="isCollapse"
+  >
+    <div class="array-editor">
+      <div v-for="(item, index) in items" :key="index" class="row items-center">
+        <template v-if="optionsKeys.length">
+          <div
+            v-for="key in optionsKeys"
+            :key="key.value"
+            :class="[
+              key.width ? `col-${key.width}` : 'col',
+              optionsKeys.length > 1 ? 'q-pr-sm' : '',
+            ]"
+          >
+            <VariableInput
+              :model-value="item[key.value]"
+              :label="key.label"
+              :no-icon="true"
+              @update:model-value="
+                (val) => updateItemKeyValue(index, key.value, val)
+              "
             />
-          </template>
-          <template v-else-if="index === items.length - 1">
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="remove"
-              class="top-btn"
-              @click="removeItem(index)"
+          </div>
+        </template>
+        <template v-else>
+          <div class="col">
+            <VariableInput
+              :model-value="item"
+              :label="`${label || '项目'} ${index + 1}`"
+              :icon="icon || 'code'"
+              :options="{
+                items: options.items,
+              }"
+              @update:model-value="(val) => updateItemValue(index, val)"
             />
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="add"
-              class="bottom-btn"
-              @click="addItem"
-            />
-          </template>
-          <template v-else>
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="remove"
-              class="center-btn"
-              @click="removeItem(index)"
-            />
-          </template>
+          </div>
+        </template>
+        <div class="col-auto">
+          <div class="btn-container">
+            <template v-if="items.length === 1">
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="add"
+                class="center-btn"
+                @click="addItem"
+              />
+            </template>
+            <template v-else-if="index === items.length - 1">
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="remove"
+                class="top-btn"
+                @click="removeItem(index)"
+              />
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="add"
+                class="bottom-btn"
+                @click="addItem"
+              />
+            </template>
+            <template v-else>
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="remove"
+                class="center-btn"
+                @click="removeItem(index)"
+              />
+            </template>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <script>
@@ -118,16 +125,19 @@
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
+import BorderLabel from "components/composer/common/BorderLabel.vue";
 
 export default defineComponent({
   name: "ArrayEditor",
   components: {
     VariableInput,
+    BorderLabel,
   },
   props: {
     modelValue: {
       type: Array,
       required: true,
+      default: () => [],
     },
     label: {
       type: String,
@@ -136,6 +146,10 @@ export default defineComponent({
     icon: {
       type: String,
       default: "",
+    },
+    isCollapse: {
+      type: Boolean,
+      default: true,
     },
     options: {
       type: Object,

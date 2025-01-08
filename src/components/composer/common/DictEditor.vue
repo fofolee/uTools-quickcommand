@@ -1,102 +1,110 @@
 <template>
-  <div class="dict-editor">
-    <div
-      v-for="(item, index) in items"
-      :key="index"
-      class="row q-col-gutter-sm items-center"
-    >
-      <div class="col-4">
-        <q-select
-          v-if="options?.items"
-          :model-value="item.key"
-          :options="options.items"
-          label="名称"
-          dense
-          filled
-          use-input
-          input-debounce="0"
-          :hide-selected="!!inputValue"
-          @filter="filterFn"
-          @update:model-value="(val) => handleSelect(val, index)"
-          @input-value="(val) => handleInput(val, index)"
-          @blur="handleBlur"
-        >
-          <template v-slot:prepend>
-            <q-icon name="code" />
-          </template>
-        </q-select>
-        <q-input
-          v-else
-          :model-value="item.key"
-          label="名称"
-          dense
-          filled
-          @update:model-value="(val) => updateItemKey(val, index)"
-        >
-          <template v-slot:prepend>
-            <q-icon name="code" />
-          </template>
-        </q-input>
-      </div>
-      <div class="col">
-        <VariableInput
-          :model-value="item.value"
-          label="值"
-          icon="code"
-          class="col-grow"
-          @update:model-value="(val) => updateItemValue(val, index)"
-        />
-      </div>
-      <div class="col-auto">
-        <div class="btn-container">
-          <template v-if="items.length === 1">
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="add"
-              class="center-btn"
-              @click="addItem"
-            />
-          </template>
-          <template v-else-if="index === items.length - 1">
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="remove"
-              class="top-btn"
-              @click="removeItem(index)"
-            />
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="add"
-              class="bottom-btn"
-              @click="addItem"
-            />
-          </template>
-          <template v-else>
-            <q-btn
-              flat
-              dense
-              size="sm"
-              icon="remove"
-              class="center-btn"
-              @click="removeItem(index)"
-            />
-          </template>
+  <component
+    :is="!!label ? 'BorderLabel' : 'div'"
+    :label="label"
+    :icon="icon"
+    :model-value="isCollapse"
+  >
+    <div class="dict-editor">
+      <div
+        v-for="(item, index) in items"
+        :key="index"
+        class="row q-col-gutter-sm items-center"
+      >
+        <div class="col-4">
+          <q-select
+            v-if="options?.items"
+            :model-value="item.key"
+            :options="options.items"
+            label="名称"
+            dense
+            filled
+            use-input
+            input-debounce="0"
+            :hide-selected="!!inputValue"
+            @filter="filterFn"
+            @update:model-value="(val) => handleSelect(val, index)"
+            @input-value="(val) => handleInput(val, index)"
+            @blur="handleBlur"
+          >
+            <template v-slot:prepend>
+              <q-icon name="code" />
+            </template>
+          </q-select>
+          <q-input
+            v-else
+            :model-value="item.key"
+            label="名称"
+            dense
+            filled
+            @update:model-value="(val) => updateItemKey(val, index)"
+          >
+            <template v-slot:prepend>
+              <q-icon name="code" />
+            </template>
+          </q-input>
+        </div>
+        <div class="col">
+          <VariableInput
+            :model-value="item.value"
+            label="值"
+            icon="code"
+            class="col-grow"
+            @update:model-value="(val) => updateItemValue(val, index)"
+          />
+        </div>
+        <div class="col-auto">
+          <div class="btn-container">
+            <template v-if="items.length === 1">
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="add"
+                class="center-btn"
+                @click="addItem"
+              />
+            </template>
+            <template v-else-if="index === items.length - 1">
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="remove"
+                class="top-btn"
+                @click="removeItem(index)"
+              />
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="add"
+                class="bottom-btn"
+                @click="addItem"
+              />
+            </template>
+            <template v-else>
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="remove"
+                class="center-btn"
+                @click="removeItem(index)"
+              />
+            </template>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <script>
 import { defineComponent } from "vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
+import BorderLabel from "components/composer/common/BorderLabel.vue";
 
 /**
  * 字典编辑器组件
@@ -124,15 +132,29 @@ export default defineComponent({
   name: "DictEditor",
   components: {
     VariableInput,
+    BorderLabel,
   },
   props: {
     modelValue: {
       type: Object,
       required: true,
+      default: () => ({}),
     },
     options: {
       type: Object,
       default: () => ({}),
+    },
+    label: {
+      type: String,
+      default: "",
+    },
+    icon: {
+      type: String,
+      default: "",
+    },
+    isCollapse: {
+      type: Boolean,
+      default: true,
     },
   },
   emits: ["update:modelValue"],

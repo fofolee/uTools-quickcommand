@@ -440,5 +440,43 @@ export const dataCommands = {
       icon: "compress",
       isAsync: true,
     },
+    {
+      value: "quickcomposer.data.htmlParser",
+      label: "HTML解析",
+      desc: "解析 HTML 字符串",
+      icon: "html",
+      config: [
+        {
+          label: "要解析的 HTML",
+          type: "varInput",
+          icon: "html",
+          placeholder: "例如：<div>Hello, World!</div>",
+          width: 12,
+        },
+        {
+          label: "CSS选择器",
+          type: "varInput",
+          icon: "css",
+          placeholder: "例如：.class",
+          width: 7,
+        },
+        {
+          label: "属性",
+          type: "varInput",
+          icon: "colorize",
+          options: {
+            items: [
+              { label: "innerText", value: "innerText" },
+              { label: "innerHTML", value: "innerHTML" },
+              { label: "href", value: "href" },
+              { label: "src", value: "src" },
+              { label: "value", value: "value" },
+            ],
+          },
+          defaultValue: newVarInputVal("str"),
+          width: 5,
+        },
+      ],
+    },
   ],
 };

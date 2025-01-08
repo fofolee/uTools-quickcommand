@@ -4,6 +4,7 @@ const fs = require("fs");
 const kill = require("tree-kill");
 const iconv = require("iconv-lite");
 const path = require("path");
+const axios = require("axios");
 
 const getQuickcommandTempFile = require("./getQuickcommandTempFile");
 const getCommandToLaunchTerminal = require("./getCommandToLaunchTerminal");
@@ -72,9 +73,9 @@ const quickcommand = {
   },
 
   // 下载文件
-  downloadFile: function (url, file = {}) {
+  downloadFile: function (url, file) {
     return new Promise((reslove, reject) => {
-      if (file instanceof Object)
+      if (!file || file instanceof Object)
         file = window.utools.showSaveDialog(JSON.parse(JSON.stringify(file)));
       axios({
         method: "get",
@@ -95,13 +96,13 @@ const quickcommand = {
   },
 
   // 上传文件
-  uploadFile: function (url, file = {}, name = "file", formData = {}) {
+  uploadFile: function (url, file, name = "file", formData = {}) {
     return new Promise((reslove, reject) => {
       var objfile;
       if (file instanceof File) {
         objfile = file;
       } else {
-        if (file instanceof Object)
+        if (!file || file instanceof Object)
           file = window.utools.showOpenDialog(
             JSON.parse(JSON.stringify(file))
           )[0];

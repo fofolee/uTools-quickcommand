@@ -29,12 +29,17 @@
         @update:model-value="$emit('update', index, $event)"
         :label="config.label"
         :options="config.options"
+        :icon="config.icon"
+        :is-collapse="config.isCollapse"
       />
       <DictEditor
         v-else-if="config.type === 'dictEditor'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
+        :label="config.label"
         :options="config.options"
+        :icon="config.icon"
+        :is-collapse="config.isCollapse"
       />
       <q-toggle
         v-else-if="config.type === 'switch'"

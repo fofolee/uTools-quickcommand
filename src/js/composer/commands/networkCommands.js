@@ -1,3 +1,5 @@
+import { newVarInputVal } from "../varInputValManager";
+
 export const networkCommands = {
   label: "网络操作",
   icon: "language",
@@ -310,6 +312,64 @@ export const networkCommands = {
               type: "varInput",
             },
           ],
+        },
+      ],
+    },
+    {
+      value: "quickcommand.downloadFile",
+      label: "下载文件",
+      desc: "下载文件",
+      icon: "file_download",
+      isAsync: true,
+      config: [
+        {
+          label: "文件URL",
+          type: "varInput",
+          icon: "link",
+          defaultValue: newVarInputVal("str", "https://"),
+          width: 12,
+        },
+        {
+          label: "保存路径",
+          type: "varInput",
+          icon: "folder",
+          width: 12,
+          placeholder: "留空则弹出对话框选择保存路径",
+        },
+      ],
+    },
+    {
+      value: "quickcommand.uploadFile",
+      label: "上传文件",
+      desc: "上传文件",
+      icon: "file_upload",
+      isAsync: true,
+      config: [
+        {
+          label: "上传接口地址",
+          type: "varInput",
+          icon: "link",
+          defaultValue: newVarInputVal("str", "https://"),
+          width: 12,
+        },
+        {
+          label: "文件路径",
+          type: "varInput",
+          icon: "file_present",
+          width: 12,
+          placeholder: "留空则弹出对话框选择文件",
+        },
+        {
+          label: "文件名",
+          type: "varInput",
+          icon: "text_fields",
+          defaultValue: newVarInputVal("str", "file"),
+          width: 12,
+        },
+        {
+          label: "额外表单数据（可选）",
+          type: "dictEditor",
+          width: 12,
         },
       ],
     },

@@ -1,12 +1,20 @@
 <template>
   <div class="border-label" :class="{ collapsed }" :data-label="label">
-    <div class="label-header" @click="toggleCollapse">
+    <div class="label-header row items-center" @click="toggleCollapse">
       <q-icon
         :name="collapsed ? 'expand_more' : 'expand_less'"
         size="16px"
         class="collapse-icon"
       />
-      <span class="label-text">{{ label }}</span>
+      <div class="label-text row items-center">
+        <q-icon
+          v-if="icon"
+          :name="icon"
+          size="16px"
+          class="collapse-icon q-pl-sm"
+        />
+        <div class="label-text">{{ label }}</div>
+      </div>
     </div>
     <div class="content" :class="{ collapsed }">
       <slot></slot>
@@ -32,6 +40,10 @@ export default {
     modelValue: {
       type: Boolean,
       default: true,
+    },
+    icon: {
+      type: String,
+      default: "",
     },
   },
   emits: ["update:modelValue"],

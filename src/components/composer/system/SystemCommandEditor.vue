@@ -116,12 +116,12 @@
 
           <!-- 环境变量 -->
           <div class="col-12">
-            <BorderLabel label="环境变量">
-              <DictEditor
-                :model-value="argvs.options.env"
-                @update:model-value="(val) => updateArgvs('options.env', val)"
-              />
-            </BorderLabel>
+            <DictEditor
+              :model-value="argvs.options.env"
+              @update:model-value="(val) => updateArgvs('options.env', val)"
+              label="环境变量"
+              icon="environment"
+            />
           </div>
         </div>
       </q-slide-transition>
@@ -136,7 +136,6 @@ import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import DictEditor from "components/composer/common/DictEditor.vue";
-import BorderLabel from "components/composer/common/BorderLabel.vue";
 
 export default defineComponent({
   name: "SystemCommandEditor",
@@ -144,7 +143,6 @@ export default defineComponent({
     VariableInput,
     NumberInput,
     DictEditor,
-    BorderLabel,
   },
   props: {
     modelValue: {
@@ -166,7 +164,6 @@ export default defineComponent({
       ],
       defaultArgvs: {
         command: newVarInputVal("str"),
-        },
         options: {
           cwd: newVarInputVal("str"),
           env: {},
@@ -174,9 +171,10 @@ export default defineComponent({
           encoding: "buffer",
           timeout: 0,
           maxBuffer: 1024 * 1024, // 1MB
-        shell: newVarInputVal("str"),
-        windowsHide: true,
-      },  
+          shell: newVarInputVal("str"),
+          windowsHide: true,
+        },
+      },
     };
   },
   computed: {
