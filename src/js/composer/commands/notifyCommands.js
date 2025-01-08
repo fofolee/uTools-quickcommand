@@ -1,6 +1,6 @@
 export const notifyCommands = {
-  label: "消息通知",
-  icon: "chat_bubble_outline",
+  label: "输出消息",
+  icon: "output",
   defaultOpened: false,
   commands: [
     {

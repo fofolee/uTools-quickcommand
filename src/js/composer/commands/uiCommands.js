@@ -1,7 +1,7 @@
 import { newVarInputVal } from "js/composer/varInputValManager";
 
 export const uiCommands = {
-  label: "UI操作",
+  label: "用户交互",
   icon: "web",
   defaultOpened: false,
   commands: [
@@ -51,6 +51,12 @@ export const uiCommands = {
               value: newVarInputVal("str"),
             },
           ],
+        },
+        {
+          label: "标题",
+          type: "varInput",
+          defaultValue: newVarInputVal("str", "请选择"),
+          width: 12,
         },
       ],
     },

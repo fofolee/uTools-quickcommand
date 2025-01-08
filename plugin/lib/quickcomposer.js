@@ -4,6 +4,8 @@ const quickcomposer = {
   file: require("./quickcomposer/file"),
   system: require("./quickcomposer/system"),
   network: require("./quickcomposer/network"),
+  coding: require("./quickcomposer/coding"),
+  math: require("./quickcomposer/math"),
 };
 
 module.exports = quickcomposer;

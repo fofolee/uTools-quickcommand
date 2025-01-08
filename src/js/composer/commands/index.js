@@ -7,6 +7,8 @@ import { otherCommands } from "./otherCommands";
 import { simulateCommands } from "./simulateCommands";
 import { controlCommands } from "./controlCommands";
 import { uiCommands } from "./uiCommands";
+import { codingCommands } from "./codingCommand";
+import { mathCommands } from "./mathCommands";
 
 export const commandCategories = [
   fileCommands,
@@ -14,8 +16,10 @@ export const commandCategories = [
   systemCommands,
   notifyCommands,
   dataCommands,
+  codingCommands,
   controlCommands,
   uiCommands,
   simulateCommands,
+  mathCommands,
   otherCommands,
 ];

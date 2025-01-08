@@ -44,10 +44,10 @@ export const RegexEditor = defineAsyncComponent(() =>
 
 // Crypto Components
 export const SymmetricCryptoEditor = defineAsyncComponent(() =>
-  import("src/components/composer/data/SymmetricCryptoEditor.vue")
+  import("src/components/composer/coding/SymmetricCryptoEditor.vue")
 );
 export const AsymmetricCryptoEditor = defineAsyncComponent(() =>
-  import("src/components/composer/data/AsymmetricCryptoEditor.vue")
+  import("src/components/composer/coding/AsymmetricCryptoEditor.vue")
 );
 
 // File Components
