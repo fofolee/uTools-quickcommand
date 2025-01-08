@@ -354,7 +354,7 @@ export default defineComponent({
 }
 
 .variable-item:hover {
-  backg: var(--q-primary-opacity-10);
+  background-color: var(--q-primary-opacity-10);
 }
 
 .variable-label {
@@ -395,12 +395,12 @@ export default defineComponent({
 }
 
 .option-item:hover {
-  backg: var(--q-primary-opacity-10);
+  background-color: var(--q-primary-opacity-10);
 }
 
 /* 暗色模式适配 */
 .body--dark .option-item:hover {
-  backg: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .empty-variables-tip {
