@@ -18,10 +18,30 @@ export const systemCommands = {
     {
       value: "electron.clipboard.readText",
       label: "获取剪贴板内容",
-      config: [],
-      outputVariable: "clipboardText",
+      outputVariable: "clipboardContent",
       saveOutput: true,
-      allowEmptyArgv: true,
+      functionSelector: [
+        {
+          value: "electron.clipboard.readText",
+          label: "剪贴板文本",
+          icon: "content_copy",
+        },
+        {
+          value: "quickcommand.readClipboardImage",
+          label: "剪贴板图片",
+          icon: "image",
+        },
+        {
+          value: "electron.clipboard.readRTF",
+          label: "剪贴板RTF",
+          icon: "text_snippet",
+        },
+        {
+          value: "electron.clipboard.readHTML",
+          label: "剪贴板HTML",
+          icon: "web",
+        },
+      ],
     },
     {
       value: "quickcomposer.system.exec",

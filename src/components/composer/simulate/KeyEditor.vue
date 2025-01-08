@@ -1,6 +1,6 @@
 <template>
   <div class="key-editor">
-    <div class="row items-center q-gutter-x-sm full-width">
+    <div class="row items-center q-gutter-x-sm full-width q-mb-sm">
       <!-- 按键选择/输入区域 -->
       <q-select
         ref="mainKeyInput"
@@ -16,20 +16,21 @@
         map-options
         options-dense
         behavior="menu"
-        class="col q-px-sm"
+        class="col"
+        :input-style="{
+          textAlign: 'center',
+        }"
         placeholder="选择或输入按键"
         @update:model-value="handleKeyInput"
         @input="handleInput"
       >
         <template v-slot:prepend>
           <!-- 修饰键 -->
-          <div class="row items-center q-gutter-x-xs no-wrap">
+          <div class="row items-center q-gutter-x-xs no-wrap q-pa-sm">
             <q-chip
               v-for="(active, key) in argvs.modifiers"
               :key="key"
-              :color="active ? 'primary' : 'grey-4'"
-              :text-color="active ? 'white' : 'grey-7'"
-              dense
+              :class="{ 'modifier-chip-active': active }"
               clickable
               class="modifier-chip"
               @click="toggleModifier(key)"
@@ -49,6 +50,9 @@
             {{ mainKeyDisplay }}
           </q-badge>
         </template>
+        <template v-slot:append>
+          
+        </template>
       </q-select>
       <!-- 录制按钮 -->
       <q-btn
@@ -62,17 +66,54 @@
         <q-tooltip>{{ isRecording ? "停止录制" : "开始录制" }}</q-tooltip>
       </q-btn>
     </div>
+    <!-- 按键控制区 -->
+    <div class="row q-gutter-x-sm full-width">
+      <!-- 重复次数 -->
+      <div class="col">
+        <number-input
+          v-model="argvs.repeatCount"
+          label="重复次数"
+          icon="repeat"
+          @update:model-value="(val) => updateValue({ repeatCount: val })"
+        />
+      </div>
+
+      <!-- 重复间隔 -->
+      <div class="col">
+        <number-input
+          v-model="argvs.repeatInterval"
+          label="重复间隔(ms)"
+          icon="timer"
+          :disable="argvs.repeatCount <= 1"
+          @update:model-value="(val) => updateValue({ repeatInterval: val })"
+        />
+      </div>
+
+      <!-- 按键后延迟 -->
+      <div class="col">
+        <number-input
+          v-model="argvs.keyDelay"
+          label="按键后延迟(ms)"
+          icon="hourglass_empty"
+          @update:model-value="(val) => updateValue({ keyDelay: val })"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+import NumberInput from "../common/NumberInput.vue";
 
 // 检测操作系统
 const isMac = window.utools.isMacOs();
 
 export default defineComponent({
   name: "KeyEditor",
+  components: {
+    NumberInput,
+  },
   props: {
     modelValue: {
       type: Object,
@@ -91,6 +132,9 @@ export default defineComponent({
           shift: false,
           command: false,
         },
+        repeatCount: 1,
+        repeatInterval: 0,
+        keyDelay: 0,
       },
       modifierLabels: isMac
         ? {
@@ -284,6 +328,19 @@ export default defineComponent({
         .map((key) => (!isMac && key === "command" ? "meta" : key));
 
       const args = [argvs.mainKey, ...activeModifiers];
+
+      // 添加重复次数、间隔和延迟参数
+      const options = {};
+      if (argvs.repeatCount > 1) options.repeatCount = argvs.repeatCount;
+      if (argvs.repeatInterval > 0)
+        options.repeatInterval = argvs.repeatInterval;
+      if (argvs.keyDelay > 0) options.keyDelay = argvs.keyDelay;
+
+      if (Object.keys(options).length > 0) {
+        return `${this.modelValue.value}("${args.join(
+          '","'
+        )}", ${JSON.stringify(options)})`;
+      }
       return `${this.modelValue.value}("${args.join('","')}")`;
     },
     updateValue(argv) {
@@ -302,22 +359,40 @@ export default defineComponent({
       if (!code) return argvs;
       try {
         // 移除 keyTap 和引号
-        const cleanVal = val.replace(/^keyTap\("/, "").replace(/"\)$/, "");
+        const cleanVal = code.replace(/^keyTap\("/, "").replace(/"\)$/, "");
         // 分割并移除每个参数的引号
-        const args = cleanVal
+        const parts = cleanVal.split(/,\s*/);
+        const keyParts = parts[0]
           .split('","')
           .map((arg) => arg.replace(/^"|"$/g, ""));
-        if (args.length > 0) {
-          argvs.mainKey = args[0];
+
+        if (keyParts.length > 0) {
+          argvs.mainKey = keyParts[0];
           Object.keys(argvs.modifiers).forEach((key) => {
             // 在非 Mac 系统上，将 meta 转换为 command
-            const modKey = !isMac && args.includes("meta") ? "command" : key;
-            argvs.modifiers[key] = args.includes(modKey);
+            const modKey =
+              !isMac && keyParts.includes("meta") ? "command" : key;
+            argvs.modifiers[key] = keyParts.includes(modKey);
           });
-          return argvs;
         }
+
+        // 解析选项对象
+        if (parts.length > 1) {
+          try {
+            const options = JSON.parse(parts[1]);
+            if (options.repeatCount) argvs.repeatCount = options.repeatCount;
+            if (options.repeatInterval)
+              argvs.repeatInterval = options.repeatInterval;
+            if (options.keyDelay) argvs.keyDelay = options.keyDelay;
+          } catch (e) {
+            console.warn("Failed to parse key options:", e);
+          }
+        }
+
+        return argvs;
       } catch (e) {
         console.error("Failed to parse key string:", e);
+        return argvs;
       }
     },
     handleKeyInput(val) {
@@ -360,14 +435,21 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.key-editor {
-  padding: 4px 0;
-}
-
 .modifier-chip {
   height: 24px;
   font-size: 13px;
   margin: 0 2px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.modifier-chip-active {
+  background-color: var(--q-primary) !important;
+  color: white;
+}
+
+.body--dark .modifier-chip {
+  background-color: rgba(44, 44, 44, 0.5);
 }
 
 .main-key {

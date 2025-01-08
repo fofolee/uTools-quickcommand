@@ -1,8 +1,13 @@
 <template>
   <q-btn-group :stretch="stretch" class="text-primary">
-    <q-btn icon="image" @click="dataUrlToImg" v-show="imagebtn" dense size="sm"
-      ><q-tooltip v-if="!dense">将 DataUrl 转为图片</q-tooltip></q-btn
-    >
+    <q-btn
+      icon="image"
+      label="转为图片"
+      @click="dataUrlToImg"
+      v-show="imagebtn"
+      dense
+      size="sm"
+    ></q-btn>
     <q-btn
       icon="content_paste"
       @click="copyResult"
@@ -14,13 +19,7 @@
     <q-btn icon="send" size="sm" @click="sendResult" v-show="textbtn" dense
       ><q-tooltip v-if="!dense">发送到活动窗口</q-tooltip></q-btn
     >
-    <q-btn
-      icon="close"
-      v-close-popup
-      v-show="closebtn"
-      dense
-      size="sm"
-    />
+    <q-btn icon="close" v-close-popup v-show="closebtn" dense size="sm" />
   </q-btn-group>
 </template>
 

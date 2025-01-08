@@ -9,6 +9,7 @@ import { controlCommands } from "./controlCommands";
 import { uiCommands } from "./uiCommands";
 import { codingCommands } from "./codingCommand";
 import { mathCommands } from "./mathCommands";
+import { userdataCommands } from "./userdataCommands";
 
 export const commandCategories = [
   fileCommands,
@@ -21,5 +22,6 @@ export const commandCategories = [
   uiCommands,
   simulateCommands,
   mathCommands,
+  userdataCommands,
   otherCommands,
 ];

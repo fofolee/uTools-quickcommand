@@ -1,7 +1,7 @@
 <template>
   <component
-    :is="!!label ? 'BorderLabel' : 'div'"
-    :label="label"
+    :is="!!topLabel ? 'BorderLabel' : 'div'"
+    :label="topLabel"
     :icon="icon"
     :model-value="isCollapse"
   >
@@ -140,6 +140,10 @@ export default defineComponent({
       default: () => [],
     },
     label: {
+      type: String,
+      default: "",
+    },
+    topLabel: {
       type: String,
       default: "",
     },

@@ -13,7 +13,7 @@ export const uiCommands = {
       saveOutput: true,
       config: [
         {
-          label: "按钮组",
+          label: "按钮",
           type: "arrayEditor",
           defaultValue: [
             newVarInputVal("str", "是"),
@@ -55,7 +55,7 @@ export const uiCommands = {
         {
           label: "标题",
           type: "varInput",
-          defaultValue: newVarInputVal("str", "请选择"),
+          defaultValue: newVarInputVal("str"),
           width: 12,
         },
       ],

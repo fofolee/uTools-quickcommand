@@ -57,7 +57,7 @@
               v-model="localCommand"
               :class="
                 localCommand.config?.length || localCommand.functionSelector
-                  ? 'col q-mt-sm'
+                  ? 'col q-mt-md'
                   : 'col'
               "
             />
