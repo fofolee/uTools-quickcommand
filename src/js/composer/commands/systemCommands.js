@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const systemCommands = {
   label: "系统操作",
   icon: "computer",
@@ -296,6 +298,27 @@ export const systemCommands = {
               width: 6,
             },
           ],
+        },
+      ],
+    },
+    {
+      value: "quickcommand.kill",
+      label: "关闭进程",
+      desc: "关闭指定进程",
+      icon: "dangerous",
+      config: [
+        {
+          label: "进程ID",
+          type: "numInput",
+          icon: "developer_board",
+          width: 6,
+        },
+        {
+          label: "信号",
+          type: "varInput",
+          icon: "signal_cellular_alt",
+          defaultValue: newVarInputVal("str", "SIGTERM"),
+          width: 6,
         },
       ],
     },

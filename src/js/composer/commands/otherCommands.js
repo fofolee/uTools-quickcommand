@@ -4,18 +4,6 @@ export const otherCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "utools.redirect",
-      label: "转至指定插件",
-      config: [
-        {
-          key: "pluginName",
-          label: "要跳转至的插件名称",
-          type: "varInput",
-          icon: "alt_route",
-        },
-      ],
-    },
-    {
       value: "quickcommand.sleep",
       label: "添加延时",
       config: [

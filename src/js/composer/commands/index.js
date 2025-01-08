@@ -10,12 +10,14 @@ import { uiCommands } from "./uiCommands";
 import { codingCommands } from "./codingCommand";
 import { mathCommands } from "./mathCommands";
 import { userdataCommands } from "./userdataCommands";
+import { utoolsCommands } from "./utoolsCommand";
 
 export const commandCategories = [
   fileCommands,
   networkCommands,
   systemCommands,
   notifyCommands,
+  utoolsCommands,
   dataCommands,
   codingCommands,
   controlCommands,

@@ -4,10 +4,33 @@ export const simulateCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "utools.simulateKeyboardTap",
+      value: "quickcomposer.simulate.keyboardTap",
       label: "模拟按键",
       config: [],
       component: "KeyEditor",
+    },
+    {
+      value: "quickcomposer.simulate.keySequence",
+      label: "按键序列",
+      description: "按顺序执行多个按键操作",
+      component: "KeySequenceEditor",
+    },
+    {
+      value: "quickcommand.simulateCopy",
+      label: "模拟复制粘贴",
+      config: [],
+      functionSelector: [
+        {
+          value: "quickcommand.simulateCopy",
+          label: "复制",
+          icon: "content_copy",
+        },
+        {
+          value: "quickcommand.simulatePaste",
+          label: "粘贴",
+          icon: "content_paste",
+        },
+      ],
     },
     {
       value: "quickcomposer.simulate.sendText",

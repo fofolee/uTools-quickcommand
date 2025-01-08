@@ -51,7 +51,52 @@
           </q-badge>
         </template>
         <template v-slot:append>
-          
+          <q-btn
+            flat
+            dense
+            round
+            icon="more_vert"
+            color="primary"
+            class="q-ml-sm"
+            @click.stop
+          >
+            <q-menu anchor="bottom right" self="top right">
+              <q-list style="min-width: 200px">
+                <template
+                  v-for="(shortcut, index) in commonShortcuts"
+                  :key="index"
+                >
+                  <template v-if="shortcut.header">
+                    <q-item-label
+                      v-if="shortcut.show === undefined || shortcut.show"
+                      header
+                      class="q-mt-sm"
+                    >
+                      {{ shortcut.label }}
+                    </q-item-label>
+                    <q-separator
+                      v-if="shortcut.show === undefined || shortcut.show"
+                    />
+                  </template>
+                  <q-item
+                    v-else-if="shortcut.show === undefined || shortcut.show"
+                    clickable
+                    v-close-popup
+                    @click="applyShortcut(shortcut)"
+                  >
+                    <q-item-section>
+                      <q-item-label>{{ shortcut.label }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-item-label caption>
+                        {{ formatShortcut(shortcut) }}
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-list>
+            </q-menu>
+          </q-btn>
         </template>
       </q-select>
       <!-- 录制按钮 -->
@@ -104,10 +149,249 @@
 
 <script>
 import { defineComponent } from "vue";
-import NumberInput from "../common/NumberInput.vue";
+import NumberInput from "components/composer/common/NumberInput.vue";
+import { parseFunction } from "js/composer/formatString";
 
 // 检测操作系统
 const isMac = window.utools.isMacOs();
+
+// 常用按键列表
+const commonKeys = [
+  { label: "Enter ↵", value: "enter" },
+  { label: "Tab ⇥", value: "tab" },
+  { label: "Space", value: "space" },
+  { label: "Backspace ⌫", value: "backspace" },
+  { label: "Delete ⌦", value: "delete" },
+  { label: "Escape ⎋", value: "escape" },
+  { label: "↑", value: "up" },
+  { label: "↓", value: "down" },
+  { label: "←", value: "left" },
+  { label: "→", value: "right" },
+  { label: "Home", value: "home" },
+  { label: "End", value: "end" },
+  { label: "Page Up", value: "pageup" },
+  { label: "Page Down", value: "pagedown" },
+];
+
+// 常用快捷键列表
+const commonShortcuts = [
+  // Windows 快捷键
+  {
+    label: "Windows 快捷键",
+    header: true,
+    show: !isMac,
+  },
+  {
+    label: "任务管理器",
+    mainKey: "delete",
+    modifiers: { control: true, shift: true, alt: true },
+    show: !isMac,
+  },
+  {
+    label: "运行",
+    mainKey: "r",
+    modifiers: { command: true },
+    show: !isMac,
+  },
+  {
+    label: "切换到地址栏",
+    mainKey: "l",
+    modifiers: { control: true },
+    show: !isMac,
+  },
+  {
+    label: "切换窗口",
+    mainKey: "tab",
+    modifiers: { alt: true },
+    show: !isMac,
+  },
+  {
+    label: "锁定电脑",
+    mainKey: "l",
+    modifiers: { command: true },
+    show: !isMac,
+  },
+  {
+    label: "显示桌面",
+    mainKey: "d",
+    modifiers: { command: true },
+    show: !isMac,
+  },
+  {
+    label: "文件资源管理器",
+    mainKey: "e",
+    modifiers: { command: true },
+    show: !isMac,
+  },
+  {
+    label: "快速访问设置",
+    mainKey: "a",
+    modifiers: { command: true },
+    show: !isMac,
+  },
+  {
+    label: "打开开始菜单",
+    mainKey: "escape",
+    modifiers: { control: true },
+    show: !isMac,
+  },
+  {
+    label: "系统属性",
+    mainKey: "pause",
+    modifiers: { command: true },
+    show: !isMac,
+  },
+
+  // macOS 快捷键
+  {
+    label: "macOS 快捷键",
+    header: true,
+    show: isMac,
+  },
+  {
+    label: "强制退出",
+    mainKey: "escape",
+    modifiers: { command: true, alt: true },
+    show: isMac,
+  },
+  {
+    label: "截图",
+    mainKey: "3",
+    modifiers: { command: true, shift: true },
+    show: isMac,
+  },
+  {
+    label: "区域截图",
+    mainKey: "4",
+    modifiers: { command: true, shift: true },
+    show: isMac,
+  },
+  {
+    label: "前往文件夹",
+    mainKey: "g",
+    modifiers: { command: true, shift: true },
+    show: isMac,
+  },
+  {
+    label: "新建文件夹",
+    mainKey: "n",
+    modifiers: { command: true, shift: true },
+    show: isMac,
+  },
+  {
+    label: "显示隐藏文件",
+    mainKey: ".",
+    modifiers: { command: true, shift: true },
+    show: isMac,
+  },
+  {
+    label: "访达偏好设置",
+    mainKey: ",",
+    modifiers: { command: true },
+    show: isMac,
+  },
+  {
+    label: "清空废纸篓",
+    mainKey: "backspace",
+    modifiers: { command: true, shift: true },
+    show: isMac,
+  },
+  {
+    label: "排序方式",
+    mainKey: "j",
+    modifiers: { command: true },
+    show: isMac,
+  },
+  {
+    label: "显示简介",
+    mainKey: "i",
+    modifiers: { command: true },
+    show: isMac,
+  },
+  {
+    label: "最小化所有窗口",
+    mainKey: "m",
+    modifiers: { command: true, alt: true },
+    show: isMac,
+  },
+  {
+    label: "调度中心",
+    mainKey: "up",
+    modifiers: { control: true },
+    show: isMac,
+  },
+
+  // 通用快捷键（所有系统）
+  {
+    label: "通用操作",
+    header: true,
+  },
+  {
+    label: "复制",
+    mainKey: "c",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "粘贴",
+    mainKey: "v",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "剪切",
+    mainKey: "x",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "撤销",
+    mainKey: "z",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "重做",
+    mainKey: isMac ? "z" : "y",
+    modifiers: isMac ? { command: true, shift: true } : { control: true },
+  },
+  {
+    label: "全选",
+    mainKey: "a",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "保存",
+    mainKey: "s",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "查找",
+    mainKey: "f",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "关闭窗口",
+    mainKey: isMac ? "w" : "f4",
+    modifiers: isMac ? { command: true } : { alt: true },
+  },
+  {
+    label: "刷新",
+    mainKey: "r",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "新建",
+    mainKey: "n",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "打印",
+    mainKey: "p",
+    modifiers: isMac ? { command: true } : { control: true },
+  },
+  {
+    label: "删除",
+    mainKey: "delete",
+    modifiers: {},
+  },
+];
 
 export default defineComponent({
   name: "KeyEditor",
@@ -149,22 +433,6 @@ export default defineComponent({
             shift: "Shift",
             command: "Win",
           },
-      commonKeys: [
-        { label: "Enter ↵", value: "enter" },
-        { label: "Tab ⇥", value: "tab" },
-        { label: "Space", value: "space" },
-        { label: "Backspace ⌫", value: "backspace" },
-        { label: "Delete ⌦", value: "delete" },
-        { label: "Escape ⎋", value: "escape" },
-        { label: "↑", value: "up" },
-        { label: "↓", value: "down" },
-        { label: "←", value: "left" },
-        { label: "→", value: "right" },
-        { label: "Home", value: "home" },
-        { label: "End", value: "end" },
-        { label: "Page Up", value: "pageup" },
-        { label: "Page Down", value: "pagedown" },
-      ],
     };
   },
   computed: {
@@ -195,6 +463,12 @@ export default defineComponent({
           : this.argvs.mainKey.charAt(0).toUpperCase() +
             this.argvs.mainKey.slice(1))
       );
+    },
+    commonKeys() {
+      return commonKeys;
+    },
+    commonShortcuts() {
+      return commonShortcuts;
     },
   },
   methods: {
@@ -327,7 +601,7 @@ export default defineComponent({
         // 在非 Mac 系统上，将 command 换为 meta
         .map((key) => (!isMac && key === "command" ? "meta" : key));
 
-      const args = [argvs.mainKey, ...activeModifiers];
+      const keys = [argvs.mainKey, ...activeModifiers];
 
       // 添加重复次数、间隔和延迟参数
       const options = {};
@@ -337,11 +611,11 @@ export default defineComponent({
       if (argvs.keyDelay > 0) options.keyDelay = argvs.keyDelay;
 
       if (Object.keys(options).length > 0) {
-        return `${this.modelValue.value}("${args.join(
-          '","'
-        )}", ${JSON.stringify(options)})`;
+        return `${this.modelValue.value}(${JSON.stringify(
+          keys
+        )}, ${JSON.stringify(options)})`;
       }
-      return `${this.modelValue.value}("${args.join('","')}")`;
+      return `${this.modelValue.value}(${JSON.stringify(keys)})`;
     },
     updateValue(argv) {
       const newArgvs = {
@@ -358,35 +632,27 @@ export default defineComponent({
       const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
       if (!code) return argvs;
       try {
-        // 移除 keyTap 和引号
-        const cleanVal = code.replace(/^keyTap\("/, "").replace(/"\)$/, "");
-        // 分割并移除每个参数的引号
-        const parts = cleanVal.split(/,\s*/);
-        const keyParts = parts[0]
-          .split('","')
-          .map((arg) => arg.replace(/^"|"$/g, ""));
+        const result = parseFunction(code);
+        if (!result || !result.argvs || !result.argvs[0]) return argvs;
 
-        if (keyParts.length > 0) {
-          argvs.mainKey = keyParts[0];
+        const keys = result.argvs[0];
+        const options = result.argvs[1] || {};
+
+        if (keys.length > 0) {
+          argvs.mainKey = keys[0];
           Object.keys(argvs.modifiers).forEach((key) => {
             // 在非 Mac 系统上，将 meta 转换为 command
-            const modKey =
-              !isMac && keyParts.includes("meta") ? "command" : key;
-            argvs.modifiers[key] = keyParts.includes(modKey);
+            const modKey = !isMac && key === "command" ? "meta" : key;
+            argvs.modifiers[key] = keys.slice(1).includes(modKey);
           });
         }
 
         // 解析选项对象
-        if (parts.length > 1) {
-          try {
-            const options = JSON.parse(parts[1]);
-            if (options.repeatCount) argvs.repeatCount = options.repeatCount;
-            if (options.repeatInterval)
-              argvs.repeatInterval = options.repeatInterval;
-            if (options.keyDelay) argvs.keyDelay = options.keyDelay;
-          } catch (e) {
-            console.warn("Failed to parse key options:", e);
-          }
+        if (options) {
+          if (options.repeatCount) argvs.repeatCount = options.repeatCount;
+          if (options.repeatInterval)
+            argvs.repeatInterval = options.repeatInterval;
+          if (options.keyDelay) argvs.keyDelay = options.keyDelay;
         }
 
         return argvs;
@@ -420,6 +686,22 @@ export default defineComponent({
         this.$refs.mainKeyInput.blur();
         this.updateValue({ mainKey: val.data });
       }
+    },
+    applyShortcut(shortcut) {
+      this.updateValue({
+        mainKey: shortcut.mainKey,
+        modifiers: {
+          ...this.defaultArgvs.modifiers,
+          ...shortcut.modifiers,
+        },
+      });
+    },
+    formatShortcut(shortcut) {
+      const modifiers = Object.entries(shortcut.modifiers)
+        .filter(([_, active]) => active)
+        .map(([key]) => this.modifierLabels[key])
+        .join(" + ");
+      return `${modifiers} + ${shortcut.mainKey}`;
     },
   },
   mounted() {
