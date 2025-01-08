@@ -43,7 +43,7 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "UBrowserFileList",
   components: {
@@ -60,11 +60,7 @@ export default defineComponent({
     addFile() {
       const newValue = [
         ...(this.modelValue || []),
-        {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        newVarInputVal("str"),
       ];
       this.$emit("update:modelValue", newValue);
     },

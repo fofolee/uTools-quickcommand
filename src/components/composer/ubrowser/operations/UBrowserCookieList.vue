@@ -55,7 +55,7 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "UBrowserCookieList",
   components: {
@@ -66,16 +66,8 @@ export default defineComponent({
       type: Array,
       default: () => [
         {
-          name: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          value: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
+          name: newVarInputVal("str"),
+          value: newVarInputVal("str"),
         },
       ],
     },
@@ -86,16 +78,8 @@ export default defineComponent({
       const newValue = [
         ...this.modelValue,
         {
-          name: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          value: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
+          name: newVarInputVal("str"),
+          value: newVarInputVal("str"),
         },
       ];
       this.$emit("update:modelValue", newValue);
@@ -105,16 +89,8 @@ export default defineComponent({
       newValue.splice(index, 1);
       if (newValue.length === 0) {
         newValue.push({
-          name: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          value: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
+          name: newVarInputVal("str"),
+          value: newVarInputVal("str"),
         });
       }
       this.$emit("update:modelValue", newValue);

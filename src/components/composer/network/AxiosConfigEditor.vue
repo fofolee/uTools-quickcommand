@@ -162,6 +162,7 @@ import {
   methods,
   responseTypes,
 } from "js/options/httpOptions";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 export default defineComponent({
   name: "AxiosConfigEditor",
@@ -187,18 +188,10 @@ export default defineComponent({
         .map((h) => h.value),
       activeTab: "headers",
       defaultArgvs: {
-        url: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        url: newVarInputVal("str"),
         method: "GET",
         headers: {
-          "User-Agent": {
-            value: userAgent[0].value,
-            isString: true,
-            __varInputVal__: true,
-          },
+          "User-Agent": newVarInputVal("str", userAgent[0].value),
           "Content-Type": contentTypes[0].value,
         },
         otherHeaders: {},
@@ -208,36 +201,16 @@ export default defineComponent({
         maxRedirects: 5,
         responseType: "json",
         auth: {
-          username: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          password: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
+          username: newVarInputVal("str"),
+          password: newVarInputVal("str"),
         },
-        proxy: {
-          host: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          port: null,
-          auth: {
-            username: {
-              value: "",
-              isString: true,
-              __varInputVal__: true,
-            },
-            password: {
-              value: "",
-              isString: true,
-              __varInputVal__: true,
-            },
-          },
+      },
+      proxy: {
+        host: newVarInputVal("str"),
+        port: null,
+        auth: {
+          username: newVarInputVal("str"),
+          password: newVarInputVal("str"),
         },
       },
       commonPanels: [
@@ -483,9 +456,7 @@ export default defineComponent({
       const formattedHeaders = Object.entries(headers).reduce(
         (acc, [key, value]) => {
           acc[key] =
-            typeof value === "string"
-              ? { value, isString: true, __varInputVal__: true }
-              : value;
+            typeof value === "string" ? newVarInputVal("str", value) : value;
           return acc;
         },
         {}
@@ -501,11 +472,7 @@ export default defineComponent({
       this.updateArgvs("headers", newHeaders);
     },
     setUserAgent(value) {
-      this.updateArgvs("headers.User-Agent", {
-        value,
-        isString: true,
-        __varInputVal__: true,
-      });
+      this.updateArgvs("headers.User-Agent", newVarInputVal("str", value));
     },
     getFieldValue(path) {
       return path.split(".").reduce((obj, key) => obj?.[key], this.argvs);

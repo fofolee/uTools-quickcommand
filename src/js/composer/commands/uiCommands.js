@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const uiCommands = {
   label: "UI操作",
   icon: "web",
@@ -14,16 +16,8 @@ export const uiCommands = {
           label: "按钮组",
           type: "arrayEditor",
           defaultValue: [
-            {
-              value: "是",
-              isString: true,
-              __varInputVal__: true,
-            },
-            {
-              value: "否",
-              isString: true,
-              __varInputVal__: true,
-            },
+            newVarInputVal("str", "是"),
+            newVarInputVal("str", "否"),
           ],
         },
       ],
@@ -53,16 +47,8 @@ export const uiCommands = {
           },
           defaultValue: [
             {
-              label: {
-                value: "请输入",
-                isString: true,
-                __varInputVal__: true,
-              },
-              value: {
-                value: "",
-                isString: true,
-                __varInputVal__: true,
-              },
+              label: newVarInputVal("str", "请输入"),
+              value: newVarInputVal("str"),
             },
           ],
         },

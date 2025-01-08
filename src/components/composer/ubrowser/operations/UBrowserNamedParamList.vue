@@ -47,7 +47,7 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "UBrowserNamedParamList",
   components: {
@@ -56,20 +56,7 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Array,
-      default: () => [
-        {
-          name: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          value: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-        },
-      ],
+      default: () => [newVarInputVal("str"), newVarInputVal("str")],
     },
     label: String,
   },
@@ -79,16 +66,8 @@ export default defineComponent({
       const newValue = [
         ...(this.modelValue || []),
         {
-          name: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          value: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
+          name: newVarInputVal("str"),
+          value: newVarInputVal("str"),
         },
       ];
       this.$emit("update:modelValue", newValue);

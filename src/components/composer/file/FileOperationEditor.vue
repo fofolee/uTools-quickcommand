@@ -383,6 +383,7 @@ import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 // 静态选项数据
 const ENCODING_OPTIONS = [
@@ -463,11 +464,7 @@ export default defineComponent({
       manageOperationOptions: MANAGE_OPERATION_OPTIONS,
       defaultArgvs: {
         operation: "read",
-        filePath: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        filePath: newVarInputVal("str"),
         encoding: "utf8",
         readMode: "all",
         readFlag: "async",

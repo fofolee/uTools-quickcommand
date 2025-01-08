@@ -186,7 +186,7 @@
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "AsymmetricCryptoEditor",
   components: {
@@ -200,11 +200,7 @@ export default defineComponent({
     return {
       defaultArgvs: {
         operation: "encrypt",
-        text: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        text: newVarInputVal("str"),
         algorithm: "RSA",
         keyLength: 1024,
         padding: "RSAES-PKCS1-V1_5",

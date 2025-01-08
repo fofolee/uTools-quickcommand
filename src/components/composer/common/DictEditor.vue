@@ -95,6 +95,7 @@
 
 <script>
 import { defineComponent } from "vue";
+import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
 
 /**
@@ -108,21 +109,15 @@ import VariableInput from "components/composer/common/VariableInput.vue";
  * @example
  * // 基础字典对象
  * {
- *   key: {
- *     value: "", // 输入框的值
- *     isString: true, // 是否是字符串
- *     __varInputVal__: true // 用于标识是变量输入框
- *   }
+ *   key: newVarInputVal("str"),
  * }
  *
  * // 下拉选择模式
  * options.items = ['User-Agent', 'Content-Type', 'Accept']
  * {
- *   "User-Agent": {
- *     value: "Mozilla/5.0",
- *     isString: true,
- *     __varInputVal__: true
- *   }
+ *   "User-Agent": newVarInputVal("str", "Mozilla/5.0"),
+ *   "Content-Type": newVarInputVal("str", "text/html"),
+ *   "Accept": newVarInputVal("str", "text/html")
  * }
  */
 export default defineComponent({
@@ -149,11 +144,7 @@ export default defineComponent({
         : [
             {
               key: "",
-              value: {
-                value: "",
-                isString: true,
-                __varInputVal__: true,
-              },
+              value: newVarInputVal("str"),
             },
           ],
       filterOptions: this.options?.items || [],
@@ -183,7 +174,7 @@ export default defineComponent({
         ...this.items,
         {
           key: "",
-          value: { value: "", isString: true, __varInputVal__: true },
+          value: newVarInputVal("str"),
         },
       ];
     },
@@ -193,7 +184,7 @@ export default defineComponent({
       if (newItems.length === 0) {
         newItems.push({
           key: "",
-          value: { value: "", isString: true, __varInputVal__: true },
+          value: newVarInputVal("str"),
         });
       }
       this.items = newItems;

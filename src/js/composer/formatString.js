@@ -1,13 +1,9 @@
 import { parse } from "@babel/parser";
-
-/**
- * 处理带有 __varInputVal__ 属性的对象
- * @param {Object} argv 要处理的对象
- * @returns {string} 处理后的字符串
- */
-const stringifyVarInputVal = (argv) => {
-  return argv.isString ? `"${argv.value}"` : argv.value;
-};
+import {
+  stringifyVarInputVal,
+  isVarInputVal,
+  newVarInputVal,
+} from "./varInputValManager";
 
 /**
  * 递归移除对象中的空值
@@ -17,12 +13,10 @@ const stringifyVarInputVal = (argv) => {
 const removeEmptyValues = (obj) => {
   return window.lodashM.omitBy(obj, (value) => {
     // 如果value是VariableInput的输出，则取其value值
-    const realValue = value?.hasOwnProperty("__varInputVal__")
-      ? value.value
-      : value;
+    const realValue = isVarInputVal(value) ? value.value : value;
     if (window.lodashM.isNil(realValue) || realValue === "") return true;
     // 如果value是对象，并且不是VariableInput的输出，则递归移除空值
-    if (typeof value === "object" && !value.hasOwnProperty("__varInputVal__"))
+    if (typeof value === "object" && !isVarInputVal(value))
       return window.lodashM.isEmpty(removeEmptyValues(value));
     return false;
   });
@@ -38,7 +32,7 @@ const processObject = (obj, parentPath = "") => {
   // 移除空值
   obj = removeEmptyValues(obj);
   // 如果是 VariableInput 的输出，直接用 stringifyVarInputVal 处理
-  if (obj?.hasOwnProperty("__varInputVal__")) {
+  if (isVarInputVal(obj)) {
     return stringifyVarInputVal(obj);
   }
 
@@ -51,7 +45,7 @@ const processObject = (obj, parentPath = "") => {
     // 处理对象类型
     if (value && typeof value === "object") {
       // 如果是 VariableInput 的输出，直接用 stringifyVarInputVal 处理
-      if (value.hasOwnProperty("__varInputVal__")) {
+      if (isVarInputVal(value)) {
         valueStr = stringifyVarInputVal(value);
       } else {
         valueStr = processObject(value, parentPath + "  ");
@@ -83,7 +77,7 @@ const processObject = (obj, parentPath = "") => {
  * @returns {string} 格式化后的JSON字符串
  */
 const stringifyObject = (jsonObj) => {
-  if (jsonObj?.hasOwnProperty("__varInputVal__")) {
+  if (isVarInputVal(jsonObj)) {
     return stringifyVarInputVal(jsonObj);
   }
   if (jsonObj instanceof Array) {
@@ -126,23 +120,11 @@ export const stringifyArgv = (argv) => {
  */
 export const parseToHasType = (str) => {
   if (!str) {
-    return {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    };
+    return newVarInputVal("str", "");
   }
   return str.startsWith('"') && str.endsWith('"')
-    ? {
-        value: str.slice(1, -1),
-        isString: true,
-        __varInputVal__: true,
-      }
-    : {
-        value: str,
-        isString: false,
-        __varInputVal__: true,
-      };
+    ? newVarInputVal("str", str.slice(1, -1))
+    : newVarInputVal("var", str);
 };
 
 /**
@@ -272,31 +254,23 @@ export const parseFunction = (functionStr, options = {}) => {
         case "StringLiteral":
           // 字符串字面量总是带引号的
           return shouldUseVariableFormat
-            ? { value: node.value, isString: true, __varInputVal__: true }
+            ? newVarInputVal("str", node.value)
             : node.value;
         // 数字、布尔
         case "NumericLiteral":
         case "BooleanLiteral":
           return shouldUseVariableFormat
-            ? {
-                value: JSON.stringify(node.value),
-                isString: false,
-                __varInputVal__: true,
-              }
+            ? newVarInputVal("var", JSON.stringify(node.value))
             : node.value;
         // null
         case "NullLiteral":
           return shouldUseVariableFormat
-            ? {
-                value: "null",
-                isString: false,
-                __varInputVal__: true,
-              }
+            ? newVarInputVal("var", "null")
             : null;
         case "Identifier":
           // 标识符（变量）总是不带引号的
           return shouldUseVariableFormat
-            ? { value: node.name, isString: false, __varInputVal__: true }
+            ? newVarInputVal("var", node.name)
             : node.name;
         case "ObjectExpression":
           return node.properties.reduce((obj, prop) => {
@@ -317,18 +291,14 @@ export const parseFunction = (functionStr, options = {}) => {
               return Object.entries(processedElement).reduce(
                 (acc, [key, value]) => {
                   // 如果值已经是 varInputVal 格式，直接使用
-                  if (value?.__varInputVal__) {
+                  if (isVarInputVal(value)) {
                     acc[key] = value;
                   } else {
                     // 否则转换为 varInputVal 格式
-                    acc[key] = {
-                      value:
-                        typeof value === "string"
-                          ? value
-                          : JSON.stringify(value),
-                      isString: typeof value === "string",
-                      __varInputVal__: true,
-                    };
+                    acc[key] = newVarInputVal(
+                      typeof value === "string" ? "str" : "var",
+                      typeof value === "string" ? value : JSON.stringify(value)
+                    );
                   }
                   return acc;
                 },

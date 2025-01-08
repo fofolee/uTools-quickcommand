@@ -138,7 +138,7 @@
 
 <script>
 import { defineComponent, inject } from "vue";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 /**
  * 变量输入框组件
  * @description 支持变量选择和字符串输入的输入框组件
@@ -179,11 +179,7 @@ export default defineComponent({
     modelValue: {
       type: Object,
       required: true,
-      default: () => ({
-        value: "",
-        isString: true,
-        __varInputVal__: true,
-      }),
+      default: () => newVarInputVal("str"),
     },
     label: String,
     icon: String,
@@ -265,22 +261,14 @@ export default defineComponent({
     insertVariable(variable) {
       this.selectedVariable = variable;
       this.isString = false; // 变量模式下不需要字符串处理
-      this.$emit("update:modelValue", {
-        isString: false,
-        value: variable.name,
-        __varInputVal__: true,
-      });
+      this.$emit("update:modelValue", newVarInputVal("var", variable.name));
     },
 
     // 清除变量时的处理
     clearVariable() {
       this.selectedVariable = null;
       this.isString = true; // 恢复到字符串模式
-      this.$emit("update:modelValue", {
-        isString: true,
-        value: "",
-        __varInputVal__: true,
-      });
+      this.$emit("update:modelValue", newVarInputVal("str"));
     },
 
     // 切换类型
@@ -301,11 +289,7 @@ export default defineComponent({
 
     selectItem(option) {
       const value = this.getItemValue(option);
-      this.$emit("update:modelValue", {
-        value,
-        isString: true,
-        __varInputVal__: true,
-      });
+      this.$emit("update:modelValue", newVarInputVal("str", value));
     },
     escapePath(paths) {
       if (!paths) return null;
@@ -319,26 +303,14 @@ export default defineComponent({
         const files = this.escapePath(utools.showOpenDialog(options));
         if (!files) return;
         if (files.length > 1) {
-          this.$emit("update:modelValue", {
-            value: files,
-            isString: false,
-            __varInputVal__: true,
-          });
+          this.$emit("update:modelValue", newVarInputVal("var", files));
         } else if (files.length === 1) {
-          this.$emit("update:modelValue", {
-            value: files[0],
-            isString: true,
-            __varInputVal__: true,
-          });
+          this.$emit("update:modelValue", newVarInputVal("str", files[0]));
         }
       } else {
         const file = this.escapePath(utools.showSaveDialog(options));
         if (!file) return;
-        this.$emit("update:modelValue", {
-          value: file,
-          isString: true,
-          __varInputVal__: true,
-        });
+        this.$emit("update:modelValue", newVarInputVal("str", file));
       }
     },
   },

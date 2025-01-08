@@ -132,6 +132,7 @@
 <script>
 import { defineComponent } from "vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
+import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import DictEditor from "components/composer/common/DictEditor.vue";
@@ -164,30 +165,18 @@ export default defineComponent({
         { label: "Base64", value: "base64" },
       ],
       defaultArgvs: {
-        command: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
+        command: newVarInputVal("str"),
         },
         options: {
-          cwd: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
+          cwd: newVarInputVal("str"),
           env: {},
           autoEncoding: true,
           encoding: "buffer",
           timeout: 0,
           maxBuffer: 1024 * 1024, // 1MB
-          shell: {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-          windowsHide: true,
-        },
-      },
+        shell: newVarInputVal("str"),
+        windowsHide: true,
+      },  
     };
   },
   computed: {

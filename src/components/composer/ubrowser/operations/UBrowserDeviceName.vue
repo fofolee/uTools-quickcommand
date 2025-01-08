@@ -33,7 +33,7 @@
 import { defineComponent } from "vue";
 import { deviceName } from "js/options/httpOptions";
 import VariableInput from "components/composer/common/VariableInput.vue";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "UBrowserDeviceName",
   components: {
@@ -42,11 +42,7 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Object,
-      default: () => ({
-        value: "",
-        isString: true,
-        __varInputVal__: true,
-      }),
+      default: () => newVarInputVal("str"),
     },
     label: {
       type: String,

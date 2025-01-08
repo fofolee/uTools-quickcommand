@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 // ubrowser 浏览器操作配置
 export const ubrowserOperationConfigs = [
   {
@@ -565,22 +567,10 @@ const defaultUBrowserRunConfigs = {
 export const defaultUBrowserConfigs = {
   // 基础参数
   goto: {
-    url: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    url: newVarInputVal("str"),
     headers: {
-      Referer: {
-        value: "",
-        isString: true,
-        __varInputVal__: true,
-      },
-      userAgent: {
-        value: "",
-        isString: true,
-        __varInputVal__: true,
-      },
+      Referer: newVarInputVal("str"),
+      userAgent: newVarInputVal("str"),
     },
     timeout: 60000,
   },
@@ -590,183 +580,87 @@ export const defaultUBrowserConfigs = {
     timeout: 60000,
   },
   click: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
   },
   css: {
-    value: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    value: newVarInputVal("str"),
   },
   press: {
-    key: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    key: newVarInputVal("str"),
     modifiers: [],
   },
   paste: {
-    text: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    text: newVarInputVal("str"),
   },
   screenshot: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
     rect: { x: 0, y: 0, width: 0, height: 0 },
-    savePath: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    savePath: newVarInputVal("str"),
   },
   pdf: {
     options: {
       marginsType: 0,
       pageSize: "A4",
     },
-    savePath: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    savePath: newVarInputVal("str"),
   },
   device: {
     size: { width: 1280, height: 800 },
-    useragent: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    useragent: newVarInputVal("str"),
   },
   cookies: {
-    name: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    name: newVarInputVal("str"),
   },
   setCookies: {
     items: [
       {
-        name: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
-        value: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        name: newVarInputVal("str"),
+        value: newVarInputVal("str"),
       },
     ],
   },
   removeCookies: {
-    name: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    name: newVarInputVal("str"),
   },
   clearCookies: {
-    url: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    url: newVarInputVal("str"),
   },
   evaluate: {
     function: "",
     params: [],
   },
   when: {
-    condition: {
-      value: "",
-      isString: false,
-      __varInputVal__: true,
-    },
+    condition: newVarInputVal("var"),
   },
   mousedown: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
   },
   mouseup: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
   },
   file: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
     files: [],
   },
   value: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
-    value: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
+    value: newVarInputVal("str"),
   },
   check: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
     checked: false,
   },
   focus: {
-    selector: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    selector: newVarInputVal("str"),
   },
   scroll: {
-    target: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    target: newVarInputVal("str"),
     x: 0,
     y: 0,
   },
   download: {
-    url: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
-    savePath: {
-      value: "",
-      isString: true,
-      __varInputVal__: true,
-    },
+    url: newVarInputVal("str"),
+    savePath: newVarInputVal("str"),
   },
   // 运行参数
   run: defaultUBrowserRunConfigs,

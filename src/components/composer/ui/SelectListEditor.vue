@@ -178,15 +178,8 @@ import VariableInput from "../common/VariableInput.vue";
 import ArrayEditor from "../common/ArrayEditor.vue";
 import OperationCard from "../common/OperationCard.vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
+import { newVarInputVal, isVarInputVal} from "js/composer/varInputValManager";
 
-const newVarInputVal = (type = "str", val = "") => {
-  if (typeof val !== "string") val = JSON.stringify(val);
-  return {
-    value: val,
-    isString: type === "str",
-    __varInputVal__: true,
-  };
-};
 
 const jsonDefaultSelects = new Array(3).fill().map((_, index) => ({
   id: newVarInputVal("var", index),
@@ -228,11 +221,7 @@ export default defineComponent({
         inputMode: "manual",
         selects: defaultSelects.json,
         optionType: "json",
-        placeholder: {
-          value: "搜索...",
-          isString: true,
-          __varInputVal__: true,
-        },
+        placeholder: newVarInputVal("str", "搜索..."),
         enableSearch: true,
         showCancelButton: false,
         closeOnSelect: true,
@@ -303,7 +292,7 @@ export default defineComponent({
         if (!result) return this.defaultArgvs;
 
         const [selects, options = {}] = result.argvs;
-        const inputMode = selects.__varInputVal__ ? "variable" : "manual";
+        const inputMode = isVarInputVal(selects) ? "variable" : "manual";
         return {
           ...this.defaultArgvs,
           inputMode,

@@ -94,35 +94,30 @@
  * @example
  * // 基础数组
  * [
- *   {
- *     value: "张三",
- *     isString: true,
- *     __varInputVal__: true
- *   }
+ *   newVarInputVal("str", "张三")
  * ]
  *
  * // 多键对象数组
  * options.keys = ['name', 'age', 'email']
  * [
  *   {
- *     name: { value: "张三", isString: true, __varInputVal__: true },
- *     age: { value: "18", isString: false, __varInputVal__: true },
- *     email: { value: "zhangsan@example.com", isString: true, __varInputVal__: true }
+ *     name: newVarInputVal("str", "张三"),
+ *     age: newVarInputVal("str", "18"),
+ *     email: newVarInputVal("str", "zhangsan@example.com")
  *   }
  * ]
  *
  * // 下拉选择模式
  * options.items = ['选项1', '选项2', '选项3']
  * [
- *   {
- *     value: "选项1",
- *     isString: true,
- *     __varInputVal__: true
- *   }
+ *   newVarInputVal("str", "选项1"),
+ *   newVarInputVal("str", "选项2"),
+ *   newVarInputVal("str", "选项3")
  * ]
  */
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 export default defineComponent({
   name: "ArrayEditor",
@@ -169,22 +164,12 @@ export default defineComponent({
       if (this.optionsKeys?.length) {
         const item = {};
         this.optionsKeys.forEach((key) => {
-          item[key] = {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          };
+          item[key] = newVarInputVal("str");
         });
         return [item];
       }
 
-      return [
-        {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
-      ];
+      return [newVarInputVal("str")];
     },
     /**
      * 添加新的数组项
@@ -195,22 +180,11 @@ export default defineComponent({
       if (this.options.keys) {
         const newItem = {};
         this.options.keys.forEach((key) => {
-          newItem[key] = {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          };
+          newItem[key] = newVarInputVal("str");
         });
         newItems = [...this.items, newItem];
       } else {
-        newItems = [
-          ...this.items,
-          {
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          },
-        ];
+        newItems = [...this.items, newVarInputVal("str")];
       }
       this.$emit("update:modelValue", newItems);
     },
@@ -225,19 +199,11 @@ export default defineComponent({
         if (this.options.keys) {
           const newItem = {};
           this.options.keys.forEach((key) => {
-            newItem[key] = {
-              value: "",
-              isString: true,
-              __varInputVal__: true,
-            };
+            newItem[key] = newVarInputVal("str");
           });
           newItems.push(newItem);
         } else {
-          newItems.push({
-            value: "",
-            isString: true,
-            __varInputVal__: true,
-          });
+          newItems.push(newVarInputVal("str"));
         }
       }
       this.$emit("update:modelValue", newItems);

@@ -43,17 +43,14 @@
 
 <script>
 import { defineComponent } from "vue";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 export default defineComponent({
   name: "RegexTester",
   props: {
     text: {
       type: Object,
-      default: () => ({
-        value: "",
-        isString: false,
-        __varInputVal__: true,
-      }),
+      default: () => newVarInputVal("var"),
     },
     regex: {
       type: String,
@@ -65,11 +62,7 @@ export default defineComponent({
     },
     replace: {
       type: Object,
-      default: () => ({
-        value: "",
-        isString: false,
-        __varInputVal__: true,
-      }),
+      default: () => newVarInputVal("var"),
     },
     isReplace: {
       type: Boolean,

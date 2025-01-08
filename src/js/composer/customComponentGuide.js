@@ -249,8 +249,7 @@ const customComponentGuide = {
           parseToHasType: {
             description: "将字符串解析为带类型的值",
             usage: "用于解析 VariableInput 类型的值",
-            example:
-              "将 '\"text\"' 解析为 {value: 'text', isString: true, __varInputVal__: true,}",
+            example: "将 '\"text\"' 解析为 newVarInputVal('str', 'text')",
           },
         },
       },
@@ -292,7 +291,7 @@ const customComponentGuide = {
           description: "变量输入组件",
           usage: "用于输入可能包含变量的字符串",
           props: [
-            "model-value - 输入值，需要包含 value、isString、__varInputVal__ 属性",
+            "model-value - 输入值，需要包含 value、isString、__varInputVal__ 属性, 通过 varInputValManager 的 newVarInputVal 创建",
             "label - 输入框标签",
             "icon - 输入框图标",
           ],

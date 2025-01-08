@@ -71,7 +71,7 @@ import { defineComponent, ref, computed } from "vue";
 import { userAgent } from "js/options/httpOptions";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
-
+import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "UBrowserBasic",
   components: {
@@ -109,11 +109,7 @@ export default defineComponent({
       if (!newConfigs.goto.headers) {
         newConfigs.goto.headers = {};
       }
-      newConfigs.goto.headers.userAgent = {
-        value: val,
-        isString: true,
-        __varInputVal__: true,
-      };
+      newConfigs.goto.headers.userAgent = newVarInputVal("str", val);
       emit("update:configs", newConfigs);
       selectedUA.value = null;
     };

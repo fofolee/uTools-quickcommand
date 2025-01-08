@@ -15,6 +15,7 @@ import { defineComponent } from "vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
 import ParamInput from "components/composer/common/ParamInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 export default defineComponent({
   name: "MultiParams",
@@ -52,11 +53,7 @@ export default defineComponent({
       return [...this.commonConfig, ...this.functionConfig].map((item) => {
         const value =
           item.type === "varInput"
-            ? item.defaultValue || {
-                value: "",
-                isString: true,
-                __varInputVal__: true,
-              }
+            ? item.defaultValue || newVarInputVal("str")
             : // 其他类型情况复杂，不做判断，没有默认值返回undefined
               item.defaultValue;
         return {

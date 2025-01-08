@@ -98,6 +98,7 @@ import RegexInput from "./RegexInput.vue";
 import RegexBuilder from "./RegexBuilder.vue";
 import RegexTester from "./RegexTester.vue";
 import { parseToHasType } from "js/composer/formatString";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 export default defineComponent({
   name: "RegexEditor",
@@ -122,17 +123,9 @@ export default defineComponent({
       },
       showBuilder: false,
       defaultArgvs: {
-        textValue: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        textValue: newVarInputVal("str"),
         regexValue: "",
-        replaceValue: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        replaceValue: newVarInputVal("str"),
         isReplace: false,
         flags: {
           ignoreCase: false,

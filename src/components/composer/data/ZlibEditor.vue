@@ -132,6 +132,8 @@ import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export default defineComponent({
   name: "ZlibEditor",
   components: {
@@ -188,11 +190,7 @@ export default defineComponent({
       defaultArgvs: {
         operation: "compressData",
         method: "gzip",
-        data: {
-          value: "",
-          isString: true,
-          __varInputVal__: true,
-        },
+        data: newVarInputVal("str"),
         options: {
           level: -1,
           memLevel: 8,

@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const dataCommands = {
   label: "数据处理",
   icon: "format_color_text",
@@ -552,13 +554,7 @@ export const dataCommands = {
               type: "arrayEditor",
               icon: "memory",
               width: 12,
-              defaultValue: [
-                {
-                  value: "",
-                  isString: false,
-                  __varInputVal__: true,
-                },
-              ],
+              defaultValue: [newVarInputVal("var")],
             },
             {
               label: "总长度（可选）",
