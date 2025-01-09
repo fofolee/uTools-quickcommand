@@ -187,7 +187,7 @@ async function captureLinuxScreen() {
 }
 
 // 统一的截图接口
-async function captureScreen() {
+async function captureFullScreen() {
   try {
     if (process.platform === "darwin") {
       return await captureMacScreen();
@@ -202,4 +202,41 @@ async function captureScreen() {
   return null;
 }
 
-module.exports = { captureScreen };
+function captureAreaScreen() {
+  return new Promise((resolve) => {
+    window.utools.screenCapture((data) => {
+      resolve(data);
+    });
+  });
+}
+
+async function captureScreen(range = "fullscreen") {
+  return range === "fullscreen"
+    ? await captureFullScreen()
+    : await captureAreaScreen();
+}
+
+async function captureScreenToFile(range = "fullscreen", path = null) {
+  if (!path) return null;
+  const result = await captureScreen(range);
+  if (!result) return null;
+  fs.writeFileSync(
+    path,
+    result.replace("data:image/png;base64,", ""),
+    "base64"
+  );
+  return result;
+}
+
+async function captureScreenToClipboard(range = "fullscreen") {
+  const result = await captureScreen(range);
+  if (!result) return null;
+  window.utools.copyImage(result);
+  return result;
+}
+
+module.exports = {
+  captureScreen,
+  captureScreenToFile,
+  captureScreenToClipboard,
+};

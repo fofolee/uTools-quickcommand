@@ -1,10 +1,13 @@
 const { findImage } = require("./imageFinder");
-const { captureScreen } = require("./screenCapture");
 const { keyboardTap, keySequence } = require("./keyboardTap");
+const { screenColorPick } = require("./screenColorPick");
+const screenCapture = require("./screenCapture");
 
 module.exports = {
   findImage,
-  captureScreen,
+  screenCapture,
   keyboardTap,
   keySequence,
+  screenColorPick,
+  ...screenCapture,
 };

@@ -6,20 +6,75 @@ export const systemCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "electron.clipboard.writeText",
-      label: "将内容写入剪贴板",
-      config: [
+      value: "utools.copyText",
+      label: "写入剪贴板",
+      subCommands: [
         {
-          key: "content",
-          label: "要写入剪切板的内容",
-          type: "varInput",
+          value: "utools.copyText",
+          label: "写入文本",
           icon: "content_copy",
+          config: [
+            {
+              key: "content",
+              label: "要写入剪切板的内容",
+              type: "varInput",
+              icon: "content_copy",
+            },
+          ],
+        },
+        {
+          value: "utools.copyImage",
+          label: "写入图片",
+          icon: "image",
+          config: [
+            {
+              key: "image",
+              label: "图片路径/base64",
+              type: "varInput",
+              icon: "image",
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择图片",
+                    properties: ["openFile", "showHiddenFiles"],
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "utools.copyFile",
+          label: "写入文件",
+          icon: "file_copy",
+          config: [
+            {
+              key: "file",
+              label: "文件路径",
+              type: "varInput",
+              icon: "file_copy",
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择文件",
+                    properties: [
+                      "openFile",
+                      "showHiddenFiles",
+                      "multiSelections",
+                    ],
+                  },
+                },
+              },
+            },
+          ],
         },
       ],
     },
     {
       value: "electron.clipboard.readText",
-      label: "获取剪贴板内容",
+      label: "读取剪贴板",
       outputVariable: "clipboardContent",
       saveOutput: true,
       subCommands: [
@@ -32,6 +87,11 @@ export const systemCommands = {
           value: "quickcommand.readClipboardImage",
           label: "剪贴板图片",
           icon: "image",
+        },
+        {
+          value: "utools.getCopyedFiles",
+          label: "剪贴板文件",
+          icon: "file_copy",
         },
         {
           value: "electron.clipboard.readRTF",

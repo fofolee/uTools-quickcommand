@@ -41,16 +41,16 @@ export default defineComponent({
         // 过滤掉特定函数排除的参数, excludeConfig格式为[要排除的参数索引]
         this.modelValue.config?.filter(
           (_, index) =>
-            !this.getSelectFunction()?.excludeConfig?.includes(index)
+            !this.getSelectSubCommand()?.excludeConfig?.includes(index)
         ) || []
       );
     },
     // 特定函数独有参数配置，config格式和通用的config一致
-    functionConfig() {
-      return this.getSelectFunction()?.config || [];
+    subCommandConfig() {
+      return this.getSelectSubCommand()?.config || [];
     },
     localConfig() {
-      return [...this.commonConfig, ...this.functionConfig].map((item) => {
+      return [...this.commonConfig, ...this.subCommandConfig].map((item) => {
         const value =
           item.type === "varInput"
             ? item.defaultValue || newVarInputVal("str")
@@ -79,7 +79,7 @@ export default defineComponent({
         });
 
         // 使用新选择的函数独有配置的默认值
-        this.getSelectFunction(value)?.config?.forEach((config, index) => {
+        this.getSelectSubCommand(value)?.config?.forEach((config, index) => {
           newArgvs[this.commonConfig.length + index] = config.defaultValue;
         });
 
@@ -96,7 +96,7 @@ export default defineComponent({
     },
   },
   methods: {
-    getSelectFunction(funcName = this.funcName) {
+    getSelectSubCommand(funcName = this.funcName) {
       return this.modelValue.subCommands?.find(
         (item) => item.value === funcName
       );
@@ -165,7 +165,7 @@ export default defineComponent({
     },
     getSummary(argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间
-      const funcNameLabel = this.getSelectFunction()?.label;
+      const funcNameLabel = this.getSelectSubCommand()?.label;
       const subFeature = funcNameLabel ? `${funcNameLabel} ` : "";
       const allArgvs = argvs
         .filter((item) => item != null && item != "")

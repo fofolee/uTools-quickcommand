@@ -82,7 +82,10 @@
             "
           />
         </div>
-        <div v-if="item.type !== 'fixed'" class="col-auto">
+        <div
+          v-if="item.type !== 'fixed' && !options?.disableAdd"
+          class="col-auto"
+        >
           <div class="btn-container">
             <template v-if="editableItems.length === 1">
               <q-btn
@@ -145,6 +148,7 @@ import BorderLabel from "components/composer/common/BorderLabel.vue";
  * @property {Object} options - 配置选项
  * @property {String[]|Object[]} [options.optionKeys] - 可选键名
  * @property {String[]|Object[]} [options.fixedKeys] - 固定键名
+ * @property {Boolean} [options.disableAdd] - 禁止添加新的键值对
  *
  * @example
  * // 基础字典对象
@@ -195,30 +199,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   data() {
-    const modelEntries = Object.entries(this.modelValue || {});
-    const fixedKeys = this.normalizeKeys(this.options?.fixedKeys || []);
-    const fixedKeyValues = fixedKeys.map((key) => ({
-      type: "fixed",
-      key: key.value,
-      value:
-        modelEntries.find(([k]) => k === key.value)?.[1] ||
-        newVarInputVal("str"),
-    }));
-
-    const editableEntries = modelEntries.filter(
-      ([key]) => !fixedKeys.some((k) => k.value === key)
-    );
-
     return {
-      fixedItems: fixedKeyValues,
-      localItems: editableEntries.length
-        ? editableEntries.map(([key, value]) => ({
-            type: "editable",
-            key,
-            value,
-          }))
-        : [{ type: "editable", key: "", value: newVarInputVal("str") }],
-      filterOptions: this.normalizeKeys(this.options?.optionKeys || []),
       inputValue: "",
     };
   },
@@ -232,11 +213,49 @@ export default defineComponent({
         this.updateModelValue();
       },
     },
+    normalizedOptionKeys() {
+      return this.filterOptions;
+    },
+    // 规范化的固定键列表
+    normalizedFixedKeys() {
+      return this.normalizeKeys(this.options?.fixedKeys || []);
+    },
+    // 从 modelValue 中提取的所有条目
+    modelEntries() {
+      return Object.entries(this.modelValue || {});
+    },
+    // 固定键项
+    fixedItems() {
+      return this.normalizedFixedKeys.map((key) => ({
+        type: "fixed",
+        key: key.value,
+        value:
+          this.modelEntries.find(([k]) => k === key.value)?.[1] ||
+          newVarInputVal("str"),
+      }));
+    },
+    // 可编辑项
+    localItems() {
+      // 过滤出不在固定键中的条目
+      const editableEntries = this.modelEntries.filter(
+        ([key]) => !this.normalizedFixedKeys.some((k) => k.value === key)
+      );
+
+      return editableEntries.length || this.options?.disableAdd
+        ? editableEntries.map(([key, value]) => ({
+            type: "editable",
+            key,
+            value,
+          }))
+        : [{ type: "editable", key: "", value: newVarInputVal("str") }];
+    },
+    // 所有项目的组合
     allItems() {
       return [...this.fixedItems, ...this.localItems];
     },
-    normalizedOptionKeys() {
-      return this.filterOptions;
+    // 过滤选项
+    filterOptions() {
+      return this.normalizeKeys(this.options?.optionKeys || []);
     },
   },
   methods: {
@@ -251,10 +270,7 @@ export default defineComponent({
 
     getKeyLabel(key) {
       if (typeof key === "object") return key.label;
-      const allKeys = [
-        ...this.normalizeKeys(this.options?.fixedKeys || []),
-        ...this.normalizeKeys(this.options?.optionKeys || []),
-      ];
+      const allKeys = [...this.normalizedFixedKeys, ...this.filterOptions];
       return allKeys.find((k) => k.value === key)?.label || key;
     },
 
@@ -280,62 +296,57 @@ export default defineComponent({
     },
 
     updateItemValue(val, index, isFixed = false) {
-      if (isFixed) {
-        const newItems = [...this.fixedItems];
-        newItems[index].value = val;
-        this.fixedItems = newItems;
-      } else {
-        const newItems = [...this.localItems];
-        newItems[index].value = val;
-        this.localItems = newItems;
+      const dict = { ...this.modelValue };
+      const item = this.allItems[index];
+      if (item.key) {
+        dict[item.key] = val;
+        this.$emit("update:modelValue", dict);
       }
-      this.updateModelValue();
     },
 
     addItem() {
-      this.localItems = [
-        ...this.localItems,
-        {
-          key: "",
-          value: newVarInputVal("str"),
-        },
-      ];
+      if (this.options?.disableAdd) return;
+      const dict = { ...this.modelValue };
+      dict[""] = newVarInputVal("str");
+      this.$emit("update:modelValue", dict);
     },
+
     removeItem(index) {
-      const newItems = [...this.localItems];
-      newItems.splice(index, 1);
-      if (newItems.length === 0) {
-        newItems.push({
-          key: "",
-          value: newVarInputVal("str"),
-        });
+      if (this.options?.disableAdd) return;
+      const dict = { ...this.modelValue };
+      const item = this.localItems[index];
+      if (item.key) {
+        delete dict[item.key];
+        this.$emit("update:modelValue", dict);
       }
-      this.localItems = newItems;
     },
+
     updateItemKey(val, index) {
-      const newItems = [...this.localItems];
-      newItems[index].key = val;
-      this.localItems = newItems;
+      const dict = { ...this.modelValue };
+      const oldItem = this.localItems[index];
+      if (oldItem.key) {
+        delete dict[oldItem.key];
+      }
+      dict[val] = oldItem.value;
+      this.$emit("update:modelValue", dict);
     },
+
     handleInput(val, index) {
       this.inputValue = val;
       if (val) {
-        const newItems = [...this.localItems];
-        newItems[index].key = val;
-        this.localItems = newItems;
-        this.updateModelValue();
+        this.updateItemKey(val, index);
       }
     },
+
     handleSelect(val, index) {
       this.inputValue = "";
-      const newItems = [...this.localItems];
-      newItems[index].key = val.value || val;
-      this.localItems = newItems;
-      this.updateModelValue();
+      this.updateItemKey(val.value || val, index);
     },
+
     handleBlur() {
       this.inputValue = "";
     },
+
     filterFn(val, update) {
       if (!this.options?.optionKeys) return;
 

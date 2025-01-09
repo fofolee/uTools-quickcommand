@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const simulateCommands = {
   label: "模拟操作",
   icon: "ads_click",
@@ -184,6 +186,90 @@ export const simulateCommands = {
       component: "ImageSearchEditor",
       config: [],
       isAsync: true,
+    },
+    {
+      value: "quickcomposer.simulate.screenColorPick",
+      label: "屏幕取色",
+      desc: "获取用户选择的颜色，会弹出一个系统取色器",
+      icon: "colorize",
+      isAsync: true,
+      outputVariable: "{hex,rgb}",
+      saveOutput: true,
+    },
+    {
+      value: "quickcomposer.simulate.captureScreen",
+      label: "屏幕截图",
+      desc: "屏幕截图，进行区域截图或全屏截图",
+      icon: "screenshot_monitor",
+      isAsync: true,
+      outputVariable: "base64Data",
+      saveOutput: true,
+      config: [
+        {
+          key: "range",
+          label: "截图范围",
+          type: "buttonGroup",
+          options: [
+            {
+              label: "全屏截图",
+              value: "fullscreen",
+            },
+            {
+              label: "区域截图",
+              value: "area",
+            },
+          ],
+          defaultValue: "fullscreen",
+          width: 12,
+        },
+      ],
+      subCommands: [
+        {
+          label: "保存到dataUrl",
+          value: "quickcomposer.simulate.captureScreen",
+          icon: "link",
+        },
+        {
+          label: "保存到文件",
+          value: "quickcomposer.simulate.captureScreenToFile",
+          icon: "file_copy",
+          config: [
+            {
+              key: "path",
+              label: "截图保存路径",
+              type: "varInput",
+              defaultValue: newVarInputVal(
+                "str",
+                `${window.utools.getPath("desktop")}${
+                  utools.isWindows() ? "\\" : "/"
+                }quickcommand_screenshot.png`
+              ),
+              options: {
+                dialog: {
+                  type: "save",
+                  options: {
+                    title: "选择保存路径",
+                    properties: ["openFile", "showHiddenFiles"],
+                    filters: [
+                      {
+                        name: "PNG",
+                        extensions: ["png"],
+                      },
+                    ],
+                  },
+                },
+              },
+              icon: "description",
+              width: 12,
+            },
+          ],
+        },
+        {
+          label: "复制到剪贴板",
+          value: "quickcomposer.simulate.captureScreenToClipboard",
+          icon: "content_copy",
+        },
+      ],
     },
   ],
 };

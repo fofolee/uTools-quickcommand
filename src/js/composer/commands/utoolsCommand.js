@@ -110,6 +110,7 @@ export const utoolsCommands = {
               type: "dictEditor",
               icon: "settings",
               options: {
+                disableAdd: true,
                 fixedKeys: [
                   {
                     value: "forward",

@@ -11,6 +11,7 @@ import { codingCommands } from "./codingCommand";
 import { mathCommands } from "./mathCommands";
 import { userdataCommands } from "./userdataCommands";
 import { utoolsCommands } from "./utoolsCommand";
+import { screenCommands } from "./screenCommands";
 
 export const commandCategories = [
   fileCommands,
@@ -25,5 +26,6 @@ export const commandCategories = [
   simulateCommands,
   mathCommands,
   userdataCommands,
+  screenCommands,
   otherCommands,
 ];
