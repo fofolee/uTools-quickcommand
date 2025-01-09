@@ -425,6 +425,10 @@ interface UToolsApi {
    */
   startDrag(file: string | string[]): void;
   /**
+   * 获取当前窗口类型
+   */
+  getWindowType(): "main" | "detach" | "browser";
+  /**
    * 屏幕取色
    */
   screenColorPick(

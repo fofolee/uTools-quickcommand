@@ -102,7 +102,7 @@
               <DictEditor
                 v-model="argvs.otherHeaders"
                 :options="{
-                  items: commonHeaderOptions,
+                  optionKeys: commonHeaderOptions,
                 }"
                 @update:model-value="updateHeaders"
               />

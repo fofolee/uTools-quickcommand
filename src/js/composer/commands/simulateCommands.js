@@ -33,7 +33,7 @@ export const simulateCommands = {
       ],
     },
     {
-      value: "quickcomposer.simulate.sendText",
+      value: "utools.hideMainWindowTypeString",
       label: "发送文本",
       config: [
         {
@@ -41,18 +41,73 @@ export const simulateCommands = {
           label: "要发送的文本内容",
           type: "varInput",
           icon: "send",
-          width: 9,
+          width: 12,
+        },
+      ],
+      subCommands: [
+        {
+          value: "utools.hideMainWindowTypeString",
+          label: "模拟输入",
+          icon: "keyboard",
         },
         {
-          label: "发送方式",
-          type: "select",
-          defaultValue: false,
-          icon: "keyboard",
-          options: [
-            { label: "模拟输入", value: false },
-            { label: "模拟粘贴", value: true },
+          value: "utools.hideMainWindowPasteText",
+          label: "模拟粘贴",
+          icon: "content_paste",
+        },
+      ],
+    },
+    {
+      value: "utools.hideMainWindowPasteFile",
+      label: "模拟粘贴文件/图片",
+      icon: "file_copy",
+      subCommands: [
+        {
+          value: "utools.hideMainWindowPasteFile",
+          label: "粘贴文件",
+          icon: "file_copy",
+          config: [
+            {
+              key: "file",
+              label: "文件路径",
+              type: "varInput",
+              icon: "description",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择文件",
+                    properties: [
+                      "openFile",
+                      "multiSelections",
+                      "showHiddenFiles",
+                    ],
+                  },
+                },
+              },
+            },
           ],
-          width: 3,
+        },
+        {
+          value: "utools.hideMainWindowPasteImage",
+          label: "粘贴图片",
+          icon: "image",
+          config: [
+            {
+              key: "image",
+              label: "图片路径/base64",
+              type: "varInput",
+              icon: "image",
+              width: 12,
+              options: {
+                dialog: {
+                  title: "选择图片",
+                  properties: ["openFile", "showHiddenFiles"],
+                },
+              },
+            },
+          ],
         },
       ],
     },
