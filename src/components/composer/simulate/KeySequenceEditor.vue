@@ -143,21 +143,23 @@
 
     <!-- 序列显示区 -->
     <div v-if="argvs.sequence.length > 0" class="sequence-list q-mb-sm">
-      <div class="row q-col-gutter-sm">
-        <draggable
-          v-model="argvs.sequence"
-          item-key="id"
-          handle=".drag-handle"
-          :animation="200"
-          ghost-class="ghost"
-          class="row full-width"
-          @change="updateValue"
-        >
-          <template #item="{ element, index }">
-            <div class="col-4 q-py-xs">
-              <div
-                class="row items-center justify-center no-wrap hover-show-actions sequence-item"
-              >
+      <draggable
+        v-model="argvs.sequence"
+        item-key="id"
+        handle=".drag-handle"
+        :animation="200"
+        ghost-class="ghost"
+        class="row"
+        style="column-gap: 8px"
+        @change="updateValue"
+      >
+        <template #item="{ element, index }">
+          <div class="q-py-xs" style="flex: 1">
+            <div
+              class="row items-center justify-between no-wrap hover-show-actions sequence-item"
+            >
+              <!-- 左侧区域 -->
+              <div class="row items-center no-wrap">
                 <!-- 拖拽手柄 -->
                 <div class="col-auto q-mr-xs cursor-move drag-handle">
                   <q-icon name="drag_indicator" size="14px" color="grey-7" />
@@ -166,47 +168,52 @@
                 <div class="col-auto q-mr-xs text-grey-7 sequence-number">
                   {{ index + 1 }}.
                 </div>
-                <!-- 按键显示 -->
-                <div class="row items-center justify-center no-wrap">
-                  <!-- 修饰键 -->
-                  <template
-                    v-for="(active, key) in element.modifiers"
-                    :key="key"
-                  >
-                    <q-chip v-if="active" dense square class="modifier-chip">
-                      {{ modifierLabels[key] }}
-                    </q-chip>
-                  </template>
-                  <!-- 主按键 -->
-                  <q-chip
-                    color="primary"
-                    text-color="white"
-                    dense
-                    square
-                    class="main-key"
-                  >
-                    {{ formatMainKey(element.mainKey) }}
-                  </q-chip>
-                </div>
-                <!-- 操作按钮 -->
-                <div class="col-auto action-buttons">
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    size="xs"
-                    color="grey-7"
-                    icon="close"
-                    @click="removeKey(index)"
-                  >
-                    <q-tooltip>删除此按键</q-tooltip>
-                  </q-btn>
-                </div>
+              </div>
+
+              <!-- 中间区域 - 按键显示 -->
+              <div class="row items-center justify-center no-wrap flex-1">
+                <!-- 修饰键 - 始终显示所有修饰键 -->
+                <q-chip
+                  v-for="(active, key) in element.modifiers"
+                  :key="key"
+                  dense
+                  square
+                  :class="['modifier-chip', { 'modifier-inactive': !active }]"
+                  @click.stop.prevent="toggleModifier(index, key)"
+                  clickable
+                >
+                  {{ modifierLabels[key] }}
+                </q-chip>
+                <!-- 主按键 -->
+                <q-chip
+                  color="primary"
+                  text-color="white"
+                  dense
+                  square
+                  class="main-key"
+                >
+                  {{ formatMainKey(element.mainKey) }}
+                </q-chip>
+              </div>
+
+              <!-- 右侧区域 - 操作按钮 -->
+              <div class="col-auto action-buttons">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  size="xs"
+                  color="grey-7"
+                  icon="close"
+                  @click="removeKey(index)"
+                >
+                  <q-tooltip>删除此按键</q-tooltip>
+                </q-btn>
               </div>
             </div>
-          </template>
-        </draggable>
-      </div>
+          </div>
+        </template>
+      </draggable>
     </div>
   </div>
 </template>
@@ -215,52 +222,64 @@
 import { defineComponent } from "vue";
 import NumberInput from "../common/NumberInput.vue";
 import draggable from "vuedraggable";
-import { parseFunction } from "js/composer/formatString";
 
 // 检测操作系统
 const isMac = window.utools.isMacOs();
 
-// 通用快捷键
+// 通用修饰键配置
+const getDefaultModifier = (extraModifiers = {}) => {
+  const baseModifiers = isMac ? { command: true } : { control: true };
+  return { ...baseModifiers, ...extraModifiers };
+};
+
+// 通用快捷键 - 根据操作系统设置不同的快捷键
 const commonShortcuts = [
   {
     label: "复制",
-    sequence: [{ mainKey: "c", modifiers: { command: true } }],
+    sequence: [{ mainKey: "c", modifiers: getDefaultModifier() }],
   },
   {
     label: "粘贴",
-    sequence: [{ mainKey: "v", modifiers: { command: true } }],
+    sequence: [{ mainKey: "v", modifiers: getDefaultModifier() }],
   },
   {
     label: "剪切",
-    sequence: [{ mainKey: "x", modifiers: { command: true } }],
+    sequence: [{ mainKey: "x", modifiers: getDefaultModifier() }],
   },
   {
     label: "全选",
-    sequence: [{ mainKey: "a", modifiers: { command: true } }],
+    sequence: [{ mainKey: "a", modifiers: getDefaultModifier() }],
   },
   {
     label: "撤销",
-    sequence: [{ mainKey: "z", modifiers: { command: true } }],
+    sequence: [{ mainKey: "z", modifiers: getDefaultModifier() }],
   },
   {
     label: "重做",
-    sequence: [{ mainKey: "z", modifiers: { command: true, shift: true } }],
+    sequence: [
+      { mainKey: "z", modifiers: getDefaultModifier({ shift: true }) },
+    ],
   },
   {
     label: "保存",
-    sequence: [{ mainKey: "s", modifiers: { command: true } }],
+    sequence: [{ mainKey: "s", modifiers: getDefaultModifier() }],
   },
   {
     label: "查找",
-    sequence: [{ mainKey: "f", modifiers: { command: true } }],
+    sequence: [{ mainKey: "f", modifiers: getDefaultModifier() }],
   },
   {
     label: "替换",
-    sequence: [{ mainKey: "h", modifiers: { command: true } }],
+    sequence: [{ mainKey: "h", modifiers: getDefaultModifier() }],
   },
   {
     label: "关闭窗口",
-    sequence: [{ mainKey: "w", modifiers: { command: true } }],
+    sequence: [
+      {
+        mainKey: isMac ? "w" : "f4",
+        modifiers: isMac ? { command: true } : { alt: true },
+      },
+    ],
   },
 ];
 
@@ -565,11 +584,11 @@ export default defineComponent({
           : key.charAt(0).toUpperCase() + key.slice(1))
       );
     },
-    generateCode() {
-      if (this.argvs.sequence.length === 0) return;
+    generateCode(argvs = this.argvs) {
+      if (!argvs.sequence.length) return;
 
       // 将每个按键记录转换为按键数组
-      const keySequence = this.argvs.sequence.map((item) => {
+      const keySequence = argvs.sequence.map((item) => {
         const activeModifiers = Object.entries(item.modifiers)
           .filter(([_, active]) => active)
           .map(([key]) => key)
@@ -581,7 +600,7 @@ export default defineComponent({
 
       // 生成代码
       const options =
-        this.argvs.sequence.length > 1 ? { interval: this.argvs.interval } : {};
+        argvs.sequence.length > 1 ? { interval: argvs.interval } : {};
       if (Object.keys(options).length > 0) {
         return `${this.modelValue.value}(${JSON.stringify(
           keySequence
@@ -589,12 +608,14 @@ export default defineComponent({
       }
       return `${this.modelValue.value}(${JSON.stringify(keySequence)})`;
     },
-    updateValue() {
-      this.$emit("update:modelValue", {
+    updateValue(newArgvs) {
+      const updatedModelValue = {
         ...this.modelValue,
-        argvs: this.argvs,
-        code: this.generateCode(),
-      });
+        argvs: newArgvs || this.argvs,
+        code: this.generateCode(newArgvs || this.argvs),
+      };
+
+      this.$emit("update:modelValue", updatedModelValue);
     },
     appendSequence(newSequence) {
       const startId = Date.now();
@@ -637,6 +658,24 @@ export default defineComponent({
       }
       return argvs;
     },
+    toggleModifier(index, key) {
+      // 创建新的 argvs 对象
+      const newArgvs = {
+        sequence: [...this.argvs.sequence],
+        interval: this.argvs.interval,
+      };
+
+      // 修改对应按键的修饰键状态
+      newArgvs.sequence[index] = {
+        ...newArgvs.sequence[index],
+        modifiers: {
+          ...newArgvs.sequence[index].modifiers,
+          [key]: !newArgvs.sequence[index].modifiers[key],
+        },
+      };
+      // 更新 modelValue
+      this.updateValue(newArgvs);
+    },
   },
   mounted() {
     if (!this.modelValue.code && !this.modelValue.argvs) {
@@ -648,7 +687,7 @@ export default defineComponent({
 
 <style scoped>
 .key-sequence-editor {
-  padding: 4px;
+  padding: 8px;
 }
 
 .recording-btn {
@@ -664,39 +703,47 @@ export default defineComponent({
 .sequence-list {
   border: 1px solid var(--q-primary);
   border-radius: 4px;
-  padding: 4px;
+  padding: 8px;
   max-height: 300px;
   overflow-y: auto;
 }
 
+/* 移除多余的嵌套 row */
+.sequence-list :deep(.row.q-col-gutter-sm) {
+  margin: -4px -8px;
+  width: 100%;
+}
+
+.sequence-list :deep(.row.q-col-gutter-sm) > * {
+  padding: 4px 8px;
+}
+
 .sequence-item {
   user-select: none;
-  padding: 2px 4px;
+  padding: 4px 8px;
   border-radius: 4px;
   transition: background-color 0.2s;
   min-height: 28px;
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
-.sequence-item > div {
-  flex: 0 0 auto;
-}
-
-.sequence-item > .row {
-  flex: 1 1 auto;
+.body--dark .sequence-item {
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .sequence-item:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .body--dark .sequence-item:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .sequence-number {
   font-size: 11px;
   min-width: 14px;
   opacity: 0.7;
+  margin-right: 8px;
 }
 
 .modifier-chip {
@@ -707,6 +754,23 @@ export default defineComponent({
   color: white;
   min-width: 32px;
   padding: 0 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modifier-inactive {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.body--dark .modifier-inactive {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modifier-chip:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
 }
 
 .main-key {
@@ -734,7 +798,7 @@ export default defineComponent({
 
 .ghost {
   opacity: 0.5;
-  background: var(--q-primary) !important;
+  background: var(--q-primary-opacity-20) !important;
 }
 
 /* 滚动条样式 */
@@ -757,5 +821,6 @@ export default defineComponent({
 
 .drag-handle {
   cursor: grab;
+  margin-right: 8px;
 }
 </style>
