@@ -45,18 +45,47 @@
         class="options-dropdown prepend-btn"
       >
         <q-list class="options-item-list">
-          <q-item
-            v-for="item in normalizedItems"
-            :key="getItemValue(item)"
-            clickable
-            v-close-popup
-            @click="selectItem(item)"
-            class="option-item"
-          >
-            <q-item-section>
-              {{ getItemLabel(item) }}
-            </q-item-section>
-          </q-item>
+          <template v-if="options.multiSelect">
+            <q-item
+              v-for="item in normalizedItems"
+              :key="getItemValue(item)"
+              clickable
+              class="option-item"
+              @click="toggleSelectItem(item)"
+            >
+              <q-checkbox
+                size="xs"
+                :model-value="isItemSelected(item)"
+                @update:model-value="toggleSelectItem(item)"
+              />
+              <div class="option-item-label">{{ getItemLabel(item) }}</div>
+            </q-item>
+            <q-separator />
+            <q-item
+              clickable
+              class="option-item"
+              @click="confirmMultiSelect"
+              v-close-popup
+            >
+              <q-item-section class="text-primary">
+                确定 (已选择 {{ selectedItems.length }} 项)
+              </q-item-section>
+            </q-item>
+          </template>
+          <template v-else>
+            <q-item
+              v-for="item in normalizedItems"
+              :key="getItemValue(item)"
+              clickable
+              v-close-popup
+              @click="selectItem(item)"
+              class="option-item"
+            >
+              <q-item-section>
+                {{ getItemLabel(item) }}
+              </q-item-section>
+            </q-item>
+          </template>
         </q-list>
       </q-btn-dropdown>
       <q-btn
@@ -147,8 +176,11 @@ import { newVarInputVal } from "js/composer/varInputValManager";
  * @property {Object} modelValue - 输入框的值对象
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
+ *
  * @property {Object} [options] - 可选的配置对象
- * @property {Array} [options.items] - 选项列表
+ * @property {Array} [options.items] - 选项列表，默认单选，选中后，插入值且设置为字符模式
+ * @property {Boolean} [options.multiSelect] - 选项列表支持多选，选中后，插入选择的数组且设置为变量模式
+ *
  * @property {Boolean} [options.dialog] - 是否显示文件选择对话框
  * @property {Object} [options.dialog] - 文件选择对话框配置
  * @property {String} [options.dialog.type] - 对话框类型，open 或 save
@@ -213,6 +245,7 @@ export default defineComponent({
     return {
       selectedVariable: null,
       variables: [],
+      selectedItems: [],
     };
   },
 
@@ -290,8 +323,12 @@ export default defineComponent({
     },
 
     selectItem(option) {
-      const value = this.getItemValue(option);
-      this.$emit("update:modelValue", newVarInputVal("str", value));
+      if (this.options.multiSelect) {
+        this.toggleSelectItem(option);
+      } else {
+        const value = this.getItemValue(option);
+        this.$emit("update:modelValue", newVarInputVal("str", value));
+      }
     },
     handleFileOpen(dialog) {
       let { type, options } = window.lodashM.cloneDeep(dialog);
@@ -310,6 +347,40 @@ export default defineComponent({
         this.$emit("update:modelValue", newVarInputVal("str", file));
       }
     },
+
+    // 新增：判断选项是否被选中
+    isItemSelected(item) {
+      return this.selectedItems.includes(this.getItemValue(item));
+    },
+
+    // 新增：切换选项选中状态
+    toggleSelectItem(item) {
+      const value = this.getItemValue(item);
+      const index = this.selectedItems.indexOf(value);
+      if (index === -1) {
+        this.selectedItems.push(value);
+      } else {
+        this.selectedItems.splice(index, 1);
+      }
+    },
+
+    // 新增：确认多选
+    confirmMultiSelect() {
+      if (this.selectedItems.length === 0) return;
+      this.$emit(
+        "update:modelValue",
+        newVarInputVal(
+          "var",
+          JSON.stringify(this.selectedItems).replace(/,/g, ", ")
+        )
+      );
+      this.selectedItems = []; // 清空选择
+    },
+  },
+
+  // 在组件销毁时清空选择
+  beforeUnmount() {
+    this.selectedItems = [];
   },
 });
 </script>
@@ -333,7 +404,6 @@ export default defineComponent({
 
 .prepend-btn:hover {
   opacity: 1;
-  transform: scale(1.05);
 }
 
 .clear-btn:hover {
@@ -398,6 +468,11 @@ export default defineComponent({
   background-color: var(--q-primary-opacity-10);
 }
 
+.option-item-label {
+  text-align: center;
+  flex: 1;
+}
+
 /* 暗色模式适配 */
 .body--dark .option-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
@@ -412,5 +487,16 @@ export default defineComponent({
 
 .empty-variables-tip:hover {
   opacity: 1;
+}
+
+/* 多选确认按钮样式 */
+.option-item.text-primary {
+  justify-content: center;
+  font-weight: 500;
+}
+
+/* 多选项样式 */
+.option-item .q-checkbox {
+  margin-right: 4px;
 }
 </style>

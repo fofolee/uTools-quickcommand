@@ -17,9 +17,11 @@
             ]"
           >
             <VariableInput
-              :model-value="item[key.value]"
+              :model-value="item[key.value] || key.defaultValue"
               :label="key.label"
               :no-icon="true"
+              :placeholder="key.placeholder"
+              :options="key.options"
               @update:model-value="
                 (val) => updateItemKeyValue(index, key.value, val)
               "
@@ -32,6 +34,7 @@
               :model-value="item"
               :label="`${label || '项目'} ${index + 1}`"
               :icon="icon || 'code'"
+              :placeholder="placeholder"
               :options="{
                 items: options.items,
               }"
@@ -95,9 +98,16 @@
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
  * @property {Object} options - 配置选项
- * @property {String[]} [options.keys] - 多键对象模式的键名列表
- * @property {String[]} [options.items] - 下拉选择模式的选项列表
  *
+ * @property {String[]} [options.keys] - 多键对象模式的键名列表
+ * @property {String[]} [options.keys.value] - 元素为对象时，对象的键名
+ * @property {String[]} [options.keys.label] - 对应varInput的label
+ * @property {String[]} [options.keys.placeholder] - 对应varInput的placeholder
+ * @property {String[]} [options.keys.defaultValue] - 对应varInput的defaultValue
+ * @property {Object} [options.keys.options] - 对应varInput的options
+ *
+ * @property {String[]} [options.items] - 下拉选择模式的选项列表
+ * @property {Object} [options.defaultValue] - 初始化时，默认的值，决定显示几个元素，对应元素内容
  * @example
  * // 基础数组
  * [
@@ -106,6 +116,19 @@
  *
  * // 多键对象数组
  * options.keys = ['name', 'age', 'email']
+ *
+ * options.keys= [
+ *   {
+ *     label: "姓名",
+ *     value: "name",
+ *     placeholder: "姓名",
+ *     options: {
+ *       items: ["张三", "李四", "王五"],
+ *       multiSelect: true,
+ *     },
+ *   }
+ * ]
+ *
  * [
  *   {
  *     name: newVarInputVal("str", "张三"),
@@ -159,6 +182,10 @@ export default defineComponent({
       type: Object,
       default: () => ({}),
     },
+    placeholder: {
+      type: String,
+      default: "",
+    },
   },
   emits: ["update:modelValue"],
   computed: {
@@ -169,9 +196,9 @@ export default defineComponent({
       return (
         this.options?.keys?.map((key) => {
           return {
+            ...key,
             value: key.value || key,
             label: key.label || key,
-            width: key.width,
           };
         }) || []
       );

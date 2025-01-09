@@ -158,5 +158,110 @@ export const uiCommands = {
         },
       ],
     },
+    {
+      value: "quickcomposer.ui.showOpenDialog",
+      label: "文件选择框",
+      desc: "显示一个文件选择框，返回选择的文件路径",
+      outputVariable: "filePaths",
+      saveOutput: true,
+      config: [
+        {
+          label: "标题",
+          type: "varInput",
+          defaultValue: newVarInputVal("str", "请选择文件"),
+          width: 6,
+        },
+        {
+          label: "默认路径",
+          type: "varInput",
+          defaultValue: newVarInputVal("str"),
+          width: 6,
+          placeholder: "默认打开的路径",
+        },
+        {
+          label: "按钮文本",
+          type: "varInput",
+          defaultValue: newVarInputVal("str", "选择"),
+          width: 3,
+        },
+        {
+          label: "提示信息",
+          type: "varInput",
+          defaultValue: newVarInputVal("str"),
+          width: 3,
+          placeholder: "对话框底部的提示信息",
+          defaultValue: newVarInputVal("str", "请选择"),
+        },
+        {
+          label: "扩展名",
+          type: "varInput",
+          width: 6,
+          options: {
+            items: ["*", "jpg", "png", "gif", "txt", "json", "exe"],
+            multiSelect: true,
+          },
+          defaultValue: newVarInputVal("var", '["*"]'),
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcomposer.ui.showOpenDialog",
+          label: "打开文件对话框",
+          desc: "打开文件对话框",
+          icon: "folder_open",
+          config: [
+            {
+              label: "选择选项",
+              type: "checkGroup",
+              icon: "settings",
+              width: 12,
+              options: [
+                { label: "选择文件", value: "openFile" },
+                { label: "选择文件夹", value: "openDirectory" },
+                { label: "允许多选", value: "multiSelections" },
+                { label: "显示隐藏文件", value: "showHiddenFiles" },
+                { label: "提示新建路径（Win）", value: "promptToCreate" },
+                { label: "不添加到最近（Win）", value: "dontAddToRecent" },
+                { label: "允许创建文件夹（Mac）", value: "createDirectory" },
+                { label: "不解析符号链接（Mac）", value: "noResolveAliases" },
+                {
+                  label: "将.App作为目录（Mac）",
+                  value: "treatPackageAsDirectory",
+                },
+              ],
+              defaultValue: ["openFile", "showHiddenFiles"],
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.ui.showSaveDialog",
+          label: "保存文件对话框",
+          desc: "保存文件对话框",
+          icon: "save",
+          config: [
+            {
+              label: "选择选项",
+              type: "checkGroup",
+              icon: "settings",
+              width: 12,
+              options: [
+                { label: "显示隐藏文件", value: "showHiddenFiles" },
+                { label: "允许创建文件夹（Mac）", value: "createDirectory" },
+                {
+                  label: "将.App作为目录（Mac）",
+                  value: "treatPackageAsDirectory",
+                },
+                {
+                  label: "显示覆盖确认（Linux）",
+                  value: "showOverwriteConfirmation",
+                },
+                { label: "不添加到最近（Win）", value: "dontAddToRecent" },
+              ],
+              defaultValue: ["showHiddenFiles"],
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

@@ -81,7 +81,7 @@ const stringifyObject = (jsonObj) => {
     return stringifyVarInputVal(jsonObj);
   }
   if (jsonObj instanceof Array) {
-    return `[${jsonObj.map((item) => stringifyObject(item)).join(",")}]`;
+    return `[${jsonObj.map((item) => stringifyArgv(item)).join(",")}]`;
   }
   try {
     return processObject(jsonObj);

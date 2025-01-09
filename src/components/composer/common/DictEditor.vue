@@ -152,6 +152,10 @@ export default defineComponent({
       type: String,
       default: "",
     },
+    placeholder: {
+      type: String,
+      default: "",
+    },
     isCollapse: {
       type: Boolean,
       default: true,

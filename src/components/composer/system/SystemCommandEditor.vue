@@ -120,7 +120,7 @@
               :model-value="argvs.options.env"
               @update:model-value="(val) => updateArgvs('options.env', val)"
               label="环境变量"
-              icon="environment"
+              icon="attach_money"
             />
           </div>
         </div>

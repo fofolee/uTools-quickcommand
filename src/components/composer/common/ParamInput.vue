@@ -10,51 +10,37 @@
         v-if="config.type === 'controlInput'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :placeholder="config.placeholder"
-        :icon="config.icon"
+        v-bind="config"
       />
       <VariableInput
         v-else-if="config.type === 'varInput'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :placeholder="config.placeholder"
-        :icon="config.icon"
-        :options="config.options"
+        v-bind="config"
       />
       <NumberInput
         v-else-if="config.type === 'numInput'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :icon="config.icon"
-        :placeholder="config.placeholder"
+        v-bind="config"
       />
       <ArrayEditor
         v-else-if="config.type === 'arrayEditor'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :options="config.options"
-        :icon="config.icon"
-        :is-collapse="config.isCollapse"
+        v-bind="config"
       />
       <DictEditor
         v-else-if="config.type === 'dictEditor'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :options="config.options"
-        :icon="config.icon"
-        :is-collapse="config.isCollapse"
+        v-bind="config"
       />
       <q-toggle
         v-else-if="config.type === 'switch'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :icon="config.icon"
+        v-bind="config"
       />
       <q-select
         v-else-if="config.type === 'select'"
@@ -63,7 +49,7 @@
         map-options
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :options="config.options"
+        v-bind="config"
       >
         <template v-slot:prepend>
           <q-icon :name="config.icon || 'code'" />
@@ -74,9 +60,7 @@
         filled
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :icon="config.icon"
-        :placeholder="config.placeholder"
+        v-bind="config"
       >
         <template v-slot:prepend>
           <q-icon :name="config.icon || 'code'" />
@@ -86,14 +70,19 @@
         v-else-if="config.type === 'checkbox'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :label="config.label"
-        :icon="config.icon"
+        v-bind="config"
       />
       <ButtonGroup
         v-else-if="config.type === 'buttonGroup'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        :options="config.options"
+        v-bind="config"
+      />
+      <CheckGroup
+        v-else-if="config.type === 'checkGroup'"
+        :model-value="values[index]"
+        @update:model-value="$emit('update', index, $event)"
+        v-bind="config"
       />
     </div>
   </div>
@@ -107,6 +96,7 @@ import ArrayEditor from "./ArrayEditor.vue";
 import DictEditor from "./DictEditor.vue";
 import ButtonGroup from "./ButtonGroup.vue";
 import ControlInput from "./ControlInput.vue";
+import CheckGroup from "./CheckGroup.vue";
 
 /**
  * 参数输入组件
@@ -128,6 +118,7 @@ export default defineComponent({
     DictEditor,
     ButtonGroup,
     ControlInput,
+    CheckGroup,
   },
   props: {
     configs: {

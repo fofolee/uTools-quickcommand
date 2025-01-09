@@ -197,7 +197,6 @@ export default defineComponent({
 .composer-card .command-item {
   transition: none !important;
   transform: none !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 .command-item {

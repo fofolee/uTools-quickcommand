@@ -113,7 +113,6 @@ export default defineComponent({
        * 变量模式stringify后，null变成'null', ''保持''
        */
       const stringifiedArgvs = argvs.map((argv) => stringifyArgv(argv));
-
       /* 空值处理：
        * 1. 去掉 undefined，'', null
        * 2. varInput在字符串模式下，留空为'""'，所以不会被处理
