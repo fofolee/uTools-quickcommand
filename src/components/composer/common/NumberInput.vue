@@ -6,6 +6,8 @@
     filled
     :label="label"
     :placeholder="placeholder"
+    :max="max"
+    :min="min"
     class="number-input"
   >
     <template v-slot:prepend>
@@ -20,7 +22,7 @@
           icon="keyboard_arrow_up"
           size="xs"
           class="number-btn"
-          @click="updateNumber(100)"
+          @click="updateNumber(step)"
         />
         <q-btn
           flat
@@ -28,7 +30,7 @@
           icon="keyboard_arrow_down"
           size="xs"
           class="number-btn"
-          @click="updateNumber(-100)"
+          @click="updateNumber(-step)"
         />
       </div>
     </template>
@@ -64,6 +66,18 @@ export default defineComponent({
       type: String,
       default: "",
     },
+    max: {
+      type: Number,
+      default: 1000000000,
+    },
+    min: {
+      type: Number,
+      default: -1000000000,
+    },
+    step: {
+      type: Number,
+      default: 1,
+    },
   },
   emits: ["update:modelValue"],
   computed: {
@@ -75,14 +89,28 @@ export default defineComponent({
         if (value === null || value === undefined || value === "") {
           this.$emit("update:modelValue", null);
         } else {
-          this.$emit("update:modelValue", value);
+          const numValue = Number(value);
+          if (numValue > this.max) {
+            this.$emit("update:modelValue", this.max);
+          } else if (numValue < this.min) {
+            this.$emit("update:modelValue", this.min);
+          } else {
+            this.$emit("update:modelValue", numValue);
+          }
         }
       },
     },
   },
   methods: {
     updateNumber(delta) {
-      this.$emit("update:modelValue", (this.localValue || 0) + delta);
+      const newValue = (this.localValue || 0) + delta;
+      if (newValue > this.max) {
+        this.$emit("update:modelValue", this.max);
+      } else if (newValue < this.min) {
+        this.$emit("update:modelValue", this.min);
+      } else {
+        this.$emit("update:modelValue", newValue);
+      }
     },
   },
 });

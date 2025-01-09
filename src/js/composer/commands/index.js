@@ -13,13 +13,14 @@ import { userdataCommands } from "./userdataCommands";
 import { utoolsCommands } from "./utoolsCommand";
 import { screenCommands } from "./screenCommands";
 import { audioCommands } from "./audioCommands";
-console.log(audioCommands);
+import { imageCommands } from "./imageCommands";
 
 export const commandCategories = [
   fileCommands,
   networkCommands,
   systemCommands,
   audioCommands,
+  imageCommands,
   notifyCommands,
   utoolsCommands,
   dataCommands,

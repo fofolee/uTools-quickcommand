@@ -118,6 +118,8 @@ export const uiCommands = {
         {
           label: "显示时间(ms)",
           type: "numInput",
+          min: 0,
+          step: 100,
           width: 6,
           placeholder: "0为手动关闭，留空按文本长度调整",
         },
@@ -152,6 +154,8 @@ export const uiCommands = {
         {
           label: "宽度",
           type: "numInput",
+          min: 0,
+          step: 100,
           defaultValue: 450,
           width: 3,
           placeholder: "对话框宽度",

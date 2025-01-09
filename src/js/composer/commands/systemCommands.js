@@ -370,6 +370,8 @@ export const systemCommands = {
         {
           label: "进程ID",
           type: "numInput",
+          min: 0,
+          step: 100,
           icon: "developer_board",
           width: 7,
         },

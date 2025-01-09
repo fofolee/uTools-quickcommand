@@ -8,6 +8,7 @@ const quickcomposer = {
   math: require("./quickcomposer/math"),
   ui: require("./quickcomposer/ui"),
   audio: require("./quickcomposer/audio"),
+  image: require("./quickcomposer/image"),
 };
 
 module.exports = quickcomposer;

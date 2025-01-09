@@ -26,6 +26,8 @@ export const utoolsCommands = {
           key: "height",
           label: "高度",
           type: "numInput",
+          min: 0,
+          step: 100,
           icon: "straighten",
           width: 12,
         },

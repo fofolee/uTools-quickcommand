@@ -11,6 +11,8 @@ export const otherCommands = {
           key: "ms",
           label: "延迟的毫秒数",
           type: "numInput",
+          min: 0,
+          step: 100,
           icon: "schedule",
           defaultValue: 500,
         },
