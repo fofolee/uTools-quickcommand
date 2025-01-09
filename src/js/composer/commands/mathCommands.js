@@ -17,7 +17,7 @@ export const mathCommands = {
           type: "numInput",
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           label: "正弦(sin)",
           value: "Math.sin",

@@ -19,7 +19,7 @@ export const simulateCommands = {
       value: "quickcommand.simulateCopy",
       label: "模拟复制粘贴",
       config: [],
-      functionSelector: [
+      subCommands: [
         {
           value: "quickcommand.simulateCopy",
           label: "复制",
@@ -73,7 +73,7 @@ export const simulateCommands = {
           width: 6,
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           label: "单击",
           value: "utools.simulateMouseClick",
@@ -94,7 +94,7 @@ export const simulateCommands = {
     {
       value: "utools.simulateMouseMove",
       label: "鼠标位置",
-      functionSelector: [
+      subCommands: [
         {
           label: "移动到坐标",
           value: "utools.simulateMouseMove",

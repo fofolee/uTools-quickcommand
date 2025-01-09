@@ -93,7 +93,7 @@ export const dataCommands = {
       desc: "Buffer创建、转换和操作",
       config: [],
       icon: "memory",
-      functionSelector: [
+      subCommands: [
         {
           value: "quickcomposer.data.buffer.from",
           label: "创建Buffer",

@@ -22,7 +22,7 @@ export const systemCommands = {
       label: "获取剪贴板内容",
       outputVariable: "clipboardContent",
       saveOutput: true,
-      functionSelector: [
+      subCommands: [
         {
           value: "electron.clipboard.readText",
           label: "剪贴板文本",
@@ -59,7 +59,7 @@ export const systemCommands = {
       desc: "获取操作系统相关信息",
       icon: "computer",
       config: [],
-      functionSelector: [
+      subCommands: [
         {
           value: "quickcomposer.system.os.arch",
           label: "系统架构",
@@ -162,7 +162,7 @@ export const systemCommands = {
           width: "auto",
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           value: "quickcomposer.system.path.normalize",
           label: "规范化路径",

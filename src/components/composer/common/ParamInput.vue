@@ -6,8 +6,16 @@
       class="grid-item"
       :style="getColumnStyle(config.width)"
     >
+      <ControlInput
+        v-if="config.type === 'controlInput'"
+        :model-value="values[index]"
+        @update:model-value="$emit('update', index, $event)"
+        :label="config.label"
+        :placeholder="config.placeholder"
+        :icon="config.icon"
+      />
       <VariableInput
-        v-if="config.type === 'varInput'"
+        v-else-if="config.type === 'varInput'"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
         :label="config.label"
@@ -98,6 +106,7 @@ import NumberInput from "./NumberInput.vue";
 import ArrayEditor from "./ArrayEditor.vue";
 import DictEditor from "./DictEditor.vue";
 import ButtonGroup from "./ButtonGroup.vue";
+import ControlInput from "./ControlInput.vue";
 
 /**
  * 参数输入组件
@@ -118,6 +127,7 @@ export default defineComponent({
     ArrayEditor,
     DictEditor,
     ButtonGroup,
+    ControlInput,
   },
   props: {
     configs: {

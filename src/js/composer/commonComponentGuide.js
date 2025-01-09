@@ -56,7 +56,7 @@ const commonComponentGuide = {
             ]
           `,
         },
-        functionSelector: {
+        subCommands: {
           description:
             "可选，函数选择器配置，用于一个命令包含多个相关函数的情况",
           properties: {
@@ -67,7 +67,7 @@ const commonComponentGuide = {
             excludeConfig: "可选，要排除的通用参数索引数组",
           },
           example: `
-            functionSelector: [
+            subCommands: [
               {
                 label: "DNS查询",
                 value: "quickcomposer.network.dns.lookupHost",

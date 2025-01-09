@@ -11,29 +11,6 @@ export const KeySequenceEditor = defineAsyncComponent(() =>
   import("src/components/composer/simulate/KeySequenceEditor.vue")
 );
 
-// 控制流组件
-export const ConditionalJudgment = defineAsyncComponent(() =>
-  import("components/composer/control/ConditionalJudgment.vue")
-);
-export const LoopControl = defineAsyncComponent(() =>
-  import("components/composer/control/LoopControl.vue")
-);
-export const ForEachControl = defineAsyncComponent(() =>
-  import("components/composer/control/ForEachControl.vue")
-);
-export const ForInControl = defineAsyncComponent(() =>
-  import("components/composer/control/ForInControl.vue")
-);
-export const WhileControl = defineAsyncComponent(() =>
-  import("components/composer/control/WhileControl.vue")
-);
-export const SwitchControl = defineAsyncComponent(() =>
-  import("components/composer/control/SwitchControl.vue")
-);
-export const TryCatchControl = defineAsyncComponent(() =>
-  import("components/composer/control/TryCatchControl.vue")
-);
-
 // 网络组件
 export const UBrowserEditor = defineAsyncComponent(() =>
   import("components/composer/ubrowser/UBrowserEditor.vue")

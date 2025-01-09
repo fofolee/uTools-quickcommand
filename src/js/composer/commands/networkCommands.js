@@ -61,7 +61,7 @@ export const networkCommands = {
           width: "auto",
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           value: "quickcomposer.network.url.parse",
           label: "解析URL",
@@ -239,7 +239,7 @@ export const networkCommands = {
           width: "auto",
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           label: "DNS查询",
           value: "quickcomposer.network.dns.lookupHost",

@@ -129,7 +129,8 @@ export default {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin-right: 8px;
 }
 
 .command-label:hover {

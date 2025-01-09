@@ -23,8 +23,7 @@
         >
           <!-- 控制流程组件，直接把组件放在head中 -->
           <template v-if="localCommand.isControlFlow">
-            <component
-              :is="localCommand.component"
+            <ControlCommand
               v-model="localCommand"
               v-bind="localCommand.componentProps || {}"
               class="control-component"
@@ -56,7 +55,7 @@
               v-else
               v-model="localCommand"
               :class="
-                localCommand.config?.length || localCommand.functionSelector
+                localCommand.config?.length || localCommand.subCommands
                   ? 'col q-mt-md'
                   : 'col'
               "
@@ -75,6 +74,7 @@ import MultiParams from "components/composer/MultiParams.vue";
 import CommandHead from "components/composer/card/CommandHead.vue";
 import * as CardComponents from "js/composer/cardComponents";
 import { processVariable } from "js/composer/variableManager";
+import ControlCommand from "components/composer/control/ControlCommand.vue";
 
 export default defineComponent({
   name: "ComposerCard",
@@ -82,6 +82,7 @@ export default defineComponent({
     VariableInput,
     MultiParams,
     CommandHead,
+    ControlCommand,
     ...CardComponents,
   },
   props: {

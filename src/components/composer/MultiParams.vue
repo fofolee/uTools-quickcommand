@@ -1,10 +1,10 @@
 <template>
   <div class="multi-params">
     <OperationCard
-      v-if="hasFunctionSelector"
+      v-if="hasSubCommands"
       :model-value="funcName"
       @update:model-value="funcName = $event"
-      :options="localCommand.functionSelector"
+      :options="localCommand.subCommands"
     />
     <ParamInput :configs="localConfig" :values="argvs" @update="updateArgv" />
   </div>
@@ -91,13 +91,13 @@ export default defineComponent({
         this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
       );
     },
-    hasFunctionSelector() {
-      return !!this.localCommand.functionSelector;
+    hasSubCommands() {
+      return !!this.localCommand.subCommands;
     },
   },
   methods: {
     getSelectFunction(funcName = this.funcName) {
-      return this.modelValue.functionSelector?.find(
+      return this.modelValue.subCommands?.find(
         (item) => item.value === funcName
       );
     },

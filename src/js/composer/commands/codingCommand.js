@@ -17,7 +17,7 @@ export const codingCommands = {
           type: "varInput",
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           label: "Base64编码",
           value: "quickcomposer.coding.base64Encode",
@@ -88,7 +88,7 @@ export const codingCommands = {
           type: "varInput",
         },
       ],
-      functionSelector: [
+      subCommands: [
         {
           label: "MD5",
           value: "quickcomposer.coding.md5Hash",
