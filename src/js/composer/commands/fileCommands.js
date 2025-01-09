@@ -67,5 +67,24 @@ export const fileCommands = {
         },
       ],
     },
+    {
+      value: "utools.shellTrashItem",
+      label: "删除文件到回收站",
+      icon: "delete",
+      config: [
+        {
+          key: "path",
+          label: "文件或文件夹的绝对路径",
+          type: "varInput",
+          icon: "folder_open",
+          options: {
+            dialog: {
+              type: "open",
+              options: {},
+            },
+          },
+        },
+      ],
+    },
   ],
 };

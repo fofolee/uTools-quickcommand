@@ -12,11 +12,14 @@ import { mathCommands } from "./mathCommands";
 import { userdataCommands } from "./userdataCommands";
 import { utoolsCommands } from "./utoolsCommand";
 import { screenCommands } from "./screenCommands";
+import { audioCommands } from "./audioCommands";
+console.log(audioCommands);
 
 export const commandCategories = [
   fileCommands,
   networkCommands,
   systemCommands,
+  audioCommands,
   notifyCommands,
   utoolsCommands,
   dataCommands,

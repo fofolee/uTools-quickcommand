@@ -45,6 +45,7 @@
       <q-select
         v-else-if="config.type === 'select'"
         filled
+        dense
         emit-value
         map-options
         :model-value="values[index]"
@@ -58,6 +59,7 @@
       <q-input
         v-else-if="config.type === 'input'"
         filled
+        dense
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
         v-bind="config"

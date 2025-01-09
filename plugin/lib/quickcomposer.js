@@ -7,6 +7,7 @@ const quickcomposer = {
   coding: require("./quickcomposer/coding"),
   math: require("./quickcomposer/math"),
   ui: require("./quickcomposer/ui"),
+  audio: require("./quickcomposer/audio"),
 };
 
 module.exports = quickcomposer;
