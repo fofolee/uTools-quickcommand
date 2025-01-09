@@ -68,6 +68,68 @@ export const fileCommands = {
       ],
     },
     {
+      value: "quickcomposer.file.archive",
+      label: "文件归档",
+      desc: "压缩和解压文件",
+      icon: "archive",
+      isAsync: true,
+      config: [
+        {
+          key: "operation",
+          label: "操作类型",
+          type: "select",
+          icon: "settings",
+          width: 6,
+          defaultValue: "compress",
+          options: [
+            { label: "压缩", value: "compress" },
+            { label: "解压", value: "extract" },
+          ],
+        },
+        {
+          key: "format",
+          label: "归档格式",
+          type: "select",
+          icon: "format_shapes",
+          width: 6,
+          defaultValue: "zip",
+          options: [
+            { label: "ZIP", value: "zip" },
+            { label: "TAR", value: "tar" },
+            { label: "GZIP", value: "gzip" },
+          ],
+        },
+        {
+          key: "source",
+          label: "源文件/文件夹",
+          type: "varInput",
+          icon: "folder_open",
+          width: 12,
+          options: {
+            dialog: {
+              type: "open",
+              options: {
+                properties: ["openFile", "openDirectory", "multiSelections"],
+              },
+            },
+          },
+        },
+        {
+          key: "destination",
+          label: "目标路径",
+          type: "varInput",
+          icon: "save",
+          width: 12,
+          options: {
+            dialog: {
+              type: "save",
+              options: {},
+            },
+          },
+        },
+      ],
+    },
+    {
       value: "utools.shellTrashItem",
       label: "删除文件到回收站",
       icon: "delete",
