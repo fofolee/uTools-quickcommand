@@ -114,6 +114,100 @@ export const systemCommands = {
       isAsync: true,
     },
     {
+      value: "utools.getPath",
+      label: "获取系统路径",
+      desc: "获取系统路径",
+      outputVariable: "systemPath",
+      saveOutput: true,
+      defaultValue: "home",
+      config: [
+        {
+          label: "路径类型",
+          component: "ButtonGroup",
+          options: [
+            {
+              label: "用户主目录",
+              value: "home",
+            },
+            {
+              label: "应用数据目录",
+              value: "appData",
+            },
+            {
+              label: "用户数据目录",
+              value: "userData",
+            },
+            {
+              label: "缓存目录",
+              value: "cache",
+            },
+            {
+              label: "临时目录",
+              value: "temp",
+            },
+            {
+              label: "桌面",
+              value: "desktop",
+            },
+            {
+              label: "文档",
+              value: "documents",
+            },
+            {
+              label: "下载",
+              value: "downloads",
+            },
+            {
+              label: "音乐",
+              value: "music",
+            },
+            {
+              label: "图片",
+              value: "pictures",
+            },
+            {
+              label: "视频",
+              value: "videos",
+            },
+            {
+              label: "uTools日志目录",
+              value: "logs",
+            },
+            {
+              label: "uTools程序目录",
+              value: "exe",
+            },
+            {
+              label: "uTools模块目录",
+              value: "module",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "utools.isMacOS",
+      label: "判断系统类型",
+      desc: "判断系统类型",
+      subCommands: [
+        {
+          value: "utools.isMacOS",
+          label: "是否Mac",
+          icon: "computer",
+        },
+        {
+          value: "utools.isWindows",
+          label: "是否Windows",
+          icon: "computer",
+        },
+        {
+          value: "utools.isLinux",
+          label: "是否Linux",
+          icon: "computer",
+        },
+      ],
+    },
+    {
       value: "quickcomposer.system.os.arch",
       label: "系统信息",
       desc: "获取操作系统相关信息",

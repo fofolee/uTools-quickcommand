@@ -183,5 +183,19 @@ export const utoolsCommands = {
       outputVariable: "windowType",
       saveOutput: true,
     },
+    {
+      value: "utools.getNativeId",
+      label: "获取本地ID",
+      desc: "获取本地ID",
+      outputVariable: "nativeId",
+      saveOutput: true,
+    },
+    {
+      value: "utools.getAppVersion",
+      label: "获取uTools版本",
+      desc: "获取uTools版本",
+      outputVariable: "appVersion",
+      saveOutput: true,
+    },
   ],
 };

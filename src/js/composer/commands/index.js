@@ -15,11 +15,13 @@ import { screenCommands } from "./screenCommands";
 import { audioCommands } from "./audioCommands";
 import { imageCommands } from "./imageCommands";
 import { windowsCommands } from "./windowsCommands";
+import { statusCommands } from "./statusCommands";
 
 let commands = [
   fileCommands,
   networkCommands,
   systemCommands,
+  statusCommands,
   audioCommands,
   imageCommands,
   notifyCommands,
