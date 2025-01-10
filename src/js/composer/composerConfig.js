@@ -16,7 +16,11 @@ export const availableCommands = categories.reduce((commands, category) => {
 }, []);
 
 export const findCommandByValue = (value) => {
-  return availableCommands.find((cmd) => cmd.value === value);
+  return availableCommands.find(
+    (cmd) =>
+      cmd.value === value ||
+      cmd.subCommands?.find((subCmd) => subCmd.value === value)
+  );
 };
 
 export const commandCategories = categories;

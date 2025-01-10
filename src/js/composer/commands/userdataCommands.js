@@ -40,7 +40,7 @@ export const userdataCommands = {
         },
         {
           label: "不同步",
-          component: "q-checkbox",
+          component: "CheckButton",
           defaultValue: true,
           width: 2,
         },

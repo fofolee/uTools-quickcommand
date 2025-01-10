@@ -34,6 +34,7 @@ import ButtonGroup from "./ButtonGroup.vue";
 import ControlInput from "./ControlInput.vue";
 import CheckGroup from "./CheckGroup.vue";
 import OptionEditor from "./OptionEditor.vue";
+import CheckButton from "./CheckButton.vue";
 
 /**
  * 参数输入组件
@@ -57,6 +58,7 @@ export default defineComponent({
     ControlInput,
     CheckGroup,
     OptionEditor,
+    CheckButton,
   },
   props: {
     configs: {

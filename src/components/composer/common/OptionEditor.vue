@@ -41,7 +41,7 @@ import DictEditor from "./DictEditor.vue";
 import ButtonGroup from "./ButtonGroup.vue";
 import ControlInput from "./ControlInput.vue";
 import CheckGroup from "./CheckGroup.vue";
-
+import CheckButton from "./CheckButton.vue";
 export default defineComponent({
   name: "OptionEditor",
   components: {
@@ -53,6 +53,7 @@ export default defineComponent({
     ButtonGroup,
     ControlInput,
     CheckGroup,
+    CheckButton,
   },
   emits: ["update:modelValue"],
   props: {

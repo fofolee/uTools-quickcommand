@@ -96,7 +96,18 @@ export default defineComponent({
     },
     saveFlow() {
       const flow = window.lodashM.cloneDeep(this.commandFlow);
-      const uselessProps = ["config", "argvs", "label", "component", "subCommands", "options", "defaultValue"];
+      const uselessProps = [
+        "config",
+        "argvs",
+        "label",
+        "component",
+        "subCommands",
+        "options",
+        "defaultValue",
+        "icon",
+        "width",
+        "placeholder",
+      ];
       // 移除不必要属性
       flow.forEach((cmd) => {
         for (const props of uselessProps) {

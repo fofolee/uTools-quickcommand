@@ -6,15 +6,16 @@
     :model-value="isCollapse"
   >
     <div class="array-editor">
-      <div v-for="(row, index) in rows" :key="index" class="row items-center">
-        <template v-if="columns">
+      <div
+        v-for="(row, index) in rows"
+        :key="index"
+        class="row items-center q-gutter-sm"
+      >
+        <template v-if="!!columns">
           <div
             v-for="column in processedColumns"
             :key="column.key"
-            :class="[
-              column.width ? `col-${column.width}` : 'col',
-              Object.keys(columns).length > 1 ? 'q-pr-sm' : '',
-            ]"
+            :class="[column.width ? `col-${column.width}` : 'col']"
           >
             <VariableInput
               :model-value="row[column.key]"

@@ -223,13 +223,12 @@ export default defineComponent({
         },
         title: {
           label: "标题",
-          width: 4,
           noIcon: true,
         },
         description: {
           label: "描述",
-          width: 4,
           noIcon: true,
+          width: 4,
         },
       },
     };

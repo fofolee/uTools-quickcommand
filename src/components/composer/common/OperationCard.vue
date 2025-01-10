@@ -4,6 +4,7 @@
       <div class="cards-wrapper">
         <div
           v-for="option in options"
+          ref="operationCard"
           :key="option.value"
           :class="['operation-card', { active: modelValue === option.value }]"
           :data-value="option.value"
@@ -71,14 +72,19 @@ export default {
     },
   },
   watch: {
-    modelValue(newVal) {
-      document
-        .querySelector(`.operation-card[data-value="${newVal}"]`)
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "nearest",
+    modelValue: {
+      immediate: true,
+      handler(newVal) {
+        this.$nextTick(() => {
+          this.$refs.operationCard
+            ?.find((card) => card.dataset.value === newVal)
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+              inline: "nearest",
+            });
         });
+      },
     },
   },
 };

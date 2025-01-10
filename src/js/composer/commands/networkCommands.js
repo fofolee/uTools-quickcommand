@@ -259,7 +259,7 @@ export const networkCommands = {
             },
             {
               label: "返回所有地址",
-              component: "q-checkbox",
+              component: "CheckButton",
               defaultValue: false,
               width: 2.5,
             },

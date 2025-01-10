@@ -270,7 +270,7 @@ export const systemCommands = {
             },
             {
               label: "包含内部接口",
-              component: "q-checkbox",
+              component: "CheckButton",
               defaultValue: false,
               width: 12,
               condition: "values[0] === 'networkInterfaces'",

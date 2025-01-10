@@ -115,6 +115,7 @@ export const uiCommands = {
       isAsync: true,
       outputVariable: "{id,text}",
       saveOutput: true,
+      width: 12,
       config: [
         {
           label: "按钮",
@@ -133,6 +134,7 @@ export const uiCommands = {
       isAsync: true,
       outputVariable: "[inputValue1]",
       saveOutput: true,
+      width: 12,
       config: [
         {
           label: "输入框",
