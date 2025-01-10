@@ -41,7 +41,7 @@ export const simulateCommands = {
         {
           key: "text",
           label: "要发送的文本内容",
-          type: "varInput",
+          component: "VariableInput",
           icon: "send",
           width: 12,
         },
@@ -72,7 +72,7 @@ export const simulateCommands = {
             {
               key: "file",
               label: "文件路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "description",
               width: 12,
               options: {
@@ -99,7 +99,7 @@ export const simulateCommands = {
             {
               key: "image",
               label: "图片路径/base64",
-              type: "varInput",
+              component: "VariableInput",
               icon: "image",
               width: 12,
               options: {
@@ -120,7 +120,7 @@ export const simulateCommands = {
         {
           label: "X坐标（留空则原地点击）",
           icon: "drag_handle",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 10,
           width: 6,
@@ -128,7 +128,7 @@ export const simulateCommands = {
         {
           label: "Y坐标（留空则原地点击）",
           icon: "drag_handle",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 10,
           width: 6,
@@ -165,7 +165,7 @@ export const simulateCommands = {
               label: "X坐标",
               icon: "drag_handle",
               defaultValue: 0,
-              type: "numInput",
+              component: "NumberInput",
               min: 0,
               step: 10,
               width: 6,
@@ -174,7 +174,7 @@ export const simulateCommands = {
               label: "Y坐标",
               icon: "drag_handle",
               defaultValue: 0,
-              type: "numInput",
+              component: "NumberInput",
               min: 0,
               step: 10,
               width: 6,
@@ -216,7 +216,7 @@ export const simulateCommands = {
         {
           key: "range",
           label: "截图范围",
-          type: "buttonGroup",
+          component: "ButtonGroup",
           options: [
             {
               label: "全屏截图",
@@ -245,7 +245,7 @@ export const simulateCommands = {
             {
               key: "path",
               label: "截图保存路径",
-              type: "varInput",
+              component: "VariableInput",
               defaultValue: newVarInputVal(
                 "str",
                 `${window.utools.getPath("desktop")}${

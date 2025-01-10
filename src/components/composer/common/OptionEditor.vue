@@ -1,31 +1,39 @@
 <template>
-  <div class="param-grid">
-    <div
-      v-for="(config, index) in configs"
-      :key="index"
-      class="grid-item"
-      :style="getColumnStyle(config.width)"
-    >
-      <component
-        :is="config.component"
-        :model-value="values[index]"
-        @update:model-value="$emit('update', index, $event)"
-        v-bind="config"
-        filled
-        dense
-        :emit-value="config.component === 'q-select'"
-        :map-options="config.component === 'q-select'"
+  <component
+    :is="!!label ? 'BorderLabel' : 'div'"
+    :label="label"
+    :icon="icon"
+    :model-value="isCollapse"
+  >
+    <div class="param-grid">
+      <div
+        v-for="([key, config], index) in Object.entries(options)"
+        :key="`${key}-${index}`"
+        class="grid-item"
+        :style="getColumnStyle(config.width)"
       >
-        <template v-slot:prepend v-if="shouldShowQIcon(config)">
-          <q-icon :name="config.icon" />
-        </template>
-      </component>
+        <component
+          :is="config.component"
+          :model-value="localObject[key]"
+          @update:model-value="updateOption(key, $event)"
+          v-bind="config"
+          filled
+          dense
+          :emit-value="config.component === 'q-select'"
+          :map-options="config.component === 'q-select'"
+        >
+          <template v-slot:prepend v-if="shouldShowQIcon(config)">
+            <q-icon :name="config.icon" />
+          </template>
+        </component>
+      </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+import BorderLabel from "./BorderLabel.vue";
 import VariableInput from "./VariableInput.vue";
 import NumberInput from "./NumberInput.vue";
 import ArrayEditor from "./ArrayEditor.vue";
@@ -33,22 +41,11 @@ import DictEditor from "./DictEditor.vue";
 import ButtonGroup from "./ButtonGroup.vue";
 import ControlInput from "./ControlInput.vue";
 import CheckGroup from "./CheckGroup.vue";
-import OptionEditor from "./OptionEditor.vue";
 
-/**
- * 参数输入组件
- * @description 统一处理各种类型的参数输入
- *
- * @property {Object} config - 参数配置对象
- * @property {String} config.type - 输入类型
- * @property {String} [config.label] - 标签文本
- * @property {String} [config.icon] - 图标
- * @property {Object} [config.options] - 配置选项
- * @property {any} value - 输入值
- */
 export default defineComponent({
-  name: "ParamInput",
+  name: "OptionEditor",
   components: {
+    BorderLabel,
     VariableInput,
     NumberInput,
     ArrayEditor,
@@ -56,20 +53,39 @@ export default defineComponent({
     ButtonGroup,
     ControlInput,
     CheckGroup,
-    OptionEditor,
   },
+  emits: ["update:modelValue"],
   props: {
-    configs: {
-      type: Array,
-      required: true,
+    label: {
+      type: String,
+      default: "",
     },
-    values: {
-      type: Array,
-      required: true,
+    icon: {
+      type: String,
+      default: "",
+    },
+    modelValue: {
+      type: Object,
+      default: () => ({}),
+    },
+    options: {
+      type: Object,
+      default: () => ({}),
+    },
+    isCollapse: {
+      type: Boolean,
+      default: false,
     },
   },
-  emits: ["update"],
+  computed: {
+    localObject() {
+      return this.modelValue;
+    },
+  },
   methods: {
+    updateOption(key, value) {
+      this.$emit("update:modelValue", { ...this.localObject, [key]: value });
+    },
     getColumnStyle(width = 12) {
       if (width === "auto") {
         return {

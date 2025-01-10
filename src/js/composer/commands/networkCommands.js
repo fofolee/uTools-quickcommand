@@ -12,7 +12,7 @@ export const networkCommands = {
         {
           key: "visit",
           label: "要访问的网址链接",
-          type: "varInput",
+          component: "VariableInput",
           icon: "language",
         },
       ],
@@ -24,7 +24,7 @@ export const networkCommands = {
         {
           key: "url",
           label: "要访问的网址链接",
-          type: "varInput",
+          component: "VariableInput",
           icon: "public",
         },
       ],
@@ -56,7 +56,7 @@ export const networkCommands = {
       config: [
         {
           label: "URL",
-          type: "varInput",
+          component: "VariableInput",
           icon: "link",
           width: "auto",
         },
@@ -75,42 +75,42 @@ export const networkCommands = {
           config: [
             {
               label: "协议",
-              type: "varInput",
+              component: "VariableInput",
               icon: "security",
               width: 6,
             },
             {
               label: "认证信息",
-              type: "varInput",
+              component: "VariableInput",
               icon: "person",
               width: 6,
             },
             {
               label: "主机名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "dns",
               width: 6,
             },
             {
               label: "端口",
-              type: "varInput",
+              component: "VariableInput",
               icon: "settings_ethernet",
               width: 6,
             },
             {
               label: "路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
             },
             {
               label: "查询字符串",
-              type: "varInput",
+              component: "VariableInput",
               icon: "search",
               width: 6,
             },
             {
               label: "锚点",
-              type: "varInput",
+              component: "VariableInput",
               icon: "tag",
               width: 6,
             },
@@ -124,7 +124,7 @@ export const networkCommands = {
           config: [
             {
               label: "查询字符串",
-              type: "varInput",
+              component: "VariableInput",
               icon: "search",
             },
           ],
@@ -137,7 +137,7 @@ export const networkCommands = {
           config: [
             {
               label: "参数",
-              type: "dictEditor",
+              component: "DictEditor",
               icon: "edit",
             },
           ],
@@ -150,7 +150,7 @@ export const networkCommands = {
           config: [
             {
               label: "路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
             },
           ],
@@ -163,7 +163,7 @@ export const networkCommands = {
           config: [
             {
               label: "主机名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "dns",
             },
           ],
@@ -175,7 +175,7 @@ export const networkCommands = {
           config: [
             {
               label: "参数名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "key",
               width: "auto",
             },
@@ -188,13 +188,13 @@ export const networkCommands = {
           config: [
             {
               label: "参数名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "key",
               width: "auto",
             },
             {
               label: "参数值",
-              type: "varInput",
+              component: "VariableInput",
               icon: "text_fields",
               width: "auto",
             },
@@ -207,7 +207,7 @@ export const networkCommands = {
           config: [
             {
               label: "参数名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "key",
               width: "auto",
             },
@@ -235,7 +235,7 @@ export const networkCommands = {
         {
           label: "要查询的域名",
           icon: "dns",
-          type: "varInput",
+          component: "VariableInput",
           width: "auto",
         },
       ],
@@ -248,7 +248,7 @@ export const networkCommands = {
             {
               label: "IP版本",
               icon: "settings_ethernet",
-              type: "select",
+              component: "q-select",
               options: [
                 { label: "自动", value: 0 },
                 { label: "IPv4", value: 4 },
@@ -259,7 +259,7 @@ export const networkCommands = {
             },
             {
               label: "返回所有地址",
-              type: "checkbox",
+              component: "q-checkbox",
               defaultValue: false,
               width: 2.5,
             },
@@ -309,7 +309,7 @@ export const networkCommands = {
             {
               label: "IP地址",
               icon: "router",
-              type: "varInput",
+              component: "VariableInput",
             },
           ],
         },
@@ -324,14 +324,14 @@ export const networkCommands = {
       config: [
         {
           label: "文件URL",
-          type: "varInput",
+          component: "VariableInput",
           icon: "link",
           defaultValue: newVarInputVal("str", "https://"),
           width: 12,
         },
         {
           label: "保存路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "folder",
           width: 12,
           placeholder: "留空则弹出对话框选择保存路径",
@@ -347,28 +347,28 @@ export const networkCommands = {
       config: [
         {
           label: "上传接口地址",
-          type: "varInput",
+          component: "VariableInput",
           icon: "link",
           defaultValue: newVarInputVal("str", "https://"),
           width: 12,
         },
         {
           label: "文件路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "file_present",
           width: 12,
           placeholder: "留空则弹出对话框选择文件",
         },
         {
           label: "文件名",
-          type: "varInput",
+          component: "VariableInput",
           icon: "text_fields",
           defaultValue: newVarInputVal("str", "file"),
           width: 12,
         },
         {
           label: "额外表单数据（可选）",
-          type: "dictEditor",
+          component: "DictEditor",
           width: 12,
         },
       ],

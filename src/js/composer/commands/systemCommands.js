@@ -17,7 +17,7 @@ export const systemCommands = {
             {
               key: "content",
               label: "要写入剪切板的内容",
-              type: "varInput",
+              component: "VariableInput",
               icon: "content_copy",
             },
           ],
@@ -30,7 +30,7 @@ export const systemCommands = {
             {
               key: "image",
               label: "图片路径/base64",
-              type: "varInput",
+              component: "VariableInput",
               icon: "image",
               options: {
                 dialog: {
@@ -52,7 +52,7 @@ export const systemCommands = {
             {
               key: "file",
               label: "文件路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "file_copy",
               options: {
                 dialog: {
@@ -132,7 +132,7 @@ export const systemCommands = {
           config: [
             {
               label: "信息格式",
-              type: "buttonGroup",
+              component: "ButtonGroup",
               options: [
                 { label: "完整信息", value: "full" },
                 { label: "仅型号和速度", value: "simple" },
@@ -149,7 +149,7 @@ export const systemCommands = {
           config: [
             {
               label: "内存类型",
-              type: "buttonGroup",
+              component: "ButtonGroup",
               options: [
                 { label: "总内存", value: "totalmem" },
                 { label: "空闲内存", value: "freemem" },
@@ -166,7 +166,7 @@ export const systemCommands = {
           config: [
             {
               label: "网络信息类型",
-              type: "buttonGroup",
+              component: "ButtonGroup",
               options: [
                 { label: "主机名", value: "hostname" },
                 { label: "网络接口", value: "networkInterfaces" },
@@ -176,7 +176,7 @@ export const systemCommands = {
             },
             {
               label: "包含内部接口",
-              type: "checkbox",
+              component: "q-checkbox",
               defaultValue: false,
               width: 12,
               condition: "values[0] === 'networkInterfaces'",
@@ -190,7 +190,7 @@ export const systemCommands = {
           config: [
             {
               label: "平台信息类型",
-              type: "buttonGroup",
+              component: "ButtonGroup",
               options: [
                 { label: "操作系统名称", value: "platform" },
                 { label: "操作系统类型", value: "type" },
@@ -217,7 +217,7 @@ export const systemCommands = {
       config: [
         {
           label: "路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "folder",
           width: "auto",
         },
@@ -245,7 +245,7 @@ export const systemCommands = {
           config: [
             {
               label: "要移除的扩展名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "extension",
               width: "auto",
             },
@@ -269,13 +269,13 @@ export const systemCommands = {
           config: [
             {
               label: "路径片段",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: "auto",
             },
             {
               label: "路径片段",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: "auto",
             },
@@ -289,13 +289,13 @@ export const systemCommands = {
           config: [
             {
               label: "路径片段",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: "auto",
             },
             {
               label: "路径片段",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: "auto",
             },
@@ -309,13 +309,13 @@ export const systemCommands = {
           config: [
             {
               label: "起始路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: 6,
             },
             {
               label: "目标路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: 6,
             },
@@ -329,31 +329,31 @@ export const systemCommands = {
           config: [
             {
               label: "根路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: 6,
             },
             {
               label: "目录",
-              type: "varInput",
+              component: "VariableInput",
               icon: "folder",
               width: 6,
             },
             {
               label: "基本名称",
-              type: "varInput",
+              component: "VariableInput",
               icon: "description",
               width: 6,
             },
             {
               label: "文件名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "insert_drive_file",
               width: 6,
             },
             {
               label: "扩展名",
-              type: "varInput",
+              component: "VariableInput",
               icon: "extension",
               width: 6,
             },
@@ -369,7 +369,7 @@ export const systemCommands = {
       config: [
         {
           label: "进程ID",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 100,
           icon: "developer_board",
@@ -377,7 +377,7 @@ export const systemCommands = {
         },
         {
           label: "信号",
-          type: "select",
+          component: "q-select",
           icon: "signal_cellular_alt",
           options: [
             { label: "正常终止 (15)", value: "SIGTERM" },

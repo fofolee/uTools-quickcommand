@@ -30,8 +30,9 @@
       >
         <q-tooltip>{{
           isString
-            ? "当前类型是：字符串，点击切换"
-            : "当前类型是：变量、数字、表达式等，点击切换"
+            ? "当前类型是：字符串"
+            : "当前类型是：变量、数字、表达式等" +
+              (disableToggleType ? "" : "，点击切换")
         }}</q-tooltip>
       </q-btn>
       <!-- 选项下拉按钮 -->
@@ -222,6 +223,10 @@ export default defineComponent({
       type: Object,
       default: () => ({}),
     },
+    disableToggleType: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   emits: ["update:modelValue"],
@@ -308,6 +313,7 @@ export default defineComponent({
 
     // 切换类型
     toggleType() {
+      if (this.disableToggleType) return;
       this.$emit("update:modelValue", {
         ...this.modelValue,
         isString: !this.modelValue.isString,

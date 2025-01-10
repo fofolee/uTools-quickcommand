@@ -10,7 +10,7 @@ export const userdataCommands = {
       config: [
         {
           label: "数据标识",
-          type: "input",
+          component: "q-input",
         },
       ],
       outputVariable: "userData",
@@ -30,17 +30,17 @@ export const userdataCommands = {
       config: [
         {
           label: "数据",
-          type: "varInput",
+          component: "VariableInput",
           width: 7,
         },
         {
           label: "数据标识",
-          type: "input",
+          component: "q-input",
           width: 3,
         },
         {
           label: "不同步",
-          type: "checkbox",
+          component: "q-checkbox",
           defaultValue: true,
           width: 2,
         },
@@ -53,7 +53,7 @@ export const userdataCommands = {
       config: [
         {
           label: "数据标识",
-          type: "input",
+          component: "q-input",
         },
       ],
     },

@@ -5,7 +5,7 @@
  */
 function evaluate(expression) {
   // 移除所有空白字符
-  expression = expression.replace(/\s+/g, "");
+  expression = expression.toString().replace(/\s+/g, "");
 
   // 检查表达式是否为空
   if (!expression) {
@@ -31,18 +31,85 @@ function evaluate(expression) {
   }
 
   try {
+    // 将表达式中的数字转换为整数计算，使用固定精度
+    const scale = Math.pow(10, 15); // 使用固定的15位精度
+    const processedExpression = expression.replace(/\d*\.?\d+/g, (match) => {
+      const num = parseFloat(match);
+      return Math.round(num * scale);
+    });
+
     // 使用 Function 构造函数创建一个安全的计算环境
-    const result = new Function(`return ${expression}`)();
+    const result = new Function(`return ${processedExpression}`)();
 
     // 检查结果是否为有限数
     if (!Number.isFinite(result)) {
       throw new Error("计算结果无效");
     }
 
-    return result;
+    // 还原小数位数
+    return result / scale;
   } catch (error) {
     throw new Error("表达式计算错误: " + error.message);
   }
+}
+
+/**
+ * 处理两个数的加法，避免浮点数精度问题
+ * @param {number} a 第一个数
+ * @param {number} b 第二个数
+ * @returns {number} 计算结果
+ */
+function add(a, b) {
+  const precision = Math.max(
+    (a.toString().split(".")[1] || "").length,
+    (b.toString().split(".")[1] || "").length
+  );
+  const scale = Math.pow(10, precision);
+  return (Math.round(a * scale) + Math.round(b * scale)) / scale;
+}
+
+/**
+ * 处理两个数的减法，避免浮点数精度问题
+ * @param {number} a 第一个数
+ * @param {number} b 第二个数
+ * @returns {number} 计算结果
+ */
+function subtract(a, b) {
+  const precision = Math.max(
+    (a.toString().split(".")[1] || "").length,
+    (b.toString().split(".")[1] || "").length
+  );
+  const scale = Math.pow(10, precision);
+  return (Math.round(a * scale) - Math.round(b * scale)) / scale;
+}
+
+/**
+ * 处理两个数的乘法，避免浮点数精度问题
+ * @param {number} a 第一个数
+ * @param {number} b 第二个数
+ * @returns {number} 计算结果
+ */
+function multiply(a, b) {
+  const precision =
+    (a.toString().split(".")[1] || "").length +
+    (b.toString().split(".")[1] || "").length;
+  const scale = Math.pow(10, precision);
+  return (Math.round(a * scale) * Math.round(b * scale)) / (scale * scale);
+}
+
+/**
+ * 处理两个数的除法，避免浮点数精度问题
+ * @param {number} a 第一个数
+ * @param {number} b 第二个数
+ * @param {number} [precision=10] 精度
+ * @returns {number} 计算结果
+ */
+function divide(a, b, precision = 10) {
+  if (b === 0) {
+    throw new Error("除数不能为零");
+  }
+  const scale = Math.pow(10, precision);
+  return Math.round(a * scale) / Math.round(b * scale);
 }
 
 /**
@@ -74,7 +141,11 @@ function factorial(n) {
  * @returns {number} 绝对值
  */
 function abs(x) {
-  return Math.abs(x);
+  // 将数字转换为整数计算，使用固定精度
+  const scale = Math.pow(10, 15); // 使用固定的15位精度
+  const num = parseFloat(x.toString());
+  const result = Math.abs(Math.round(num * scale));
+  return result / scale;
 }
 
 /**

@@ -1,5 +1,3 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
-
 export const utoolsCommands = {
   label: "uTools功能",
   icon: "insights",
@@ -25,7 +23,7 @@ export const utoolsCommands = {
         {
           key: "height",
           label: "高度",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 100,
           icon: "straighten",
@@ -41,7 +39,7 @@ export const utoolsCommands = {
       config: [
         {
           key: "isKill",
-          type: "select",
+          component: "q-select",
           options: [
             { label: "杀死插件进程", value: true },
             { label: "插件隐藏到后台", value: false },
@@ -74,14 +72,14 @@ export const utoolsCommands = {
         {
           key: "pluginName",
           label: "要跳转至的插件名称",
-          type: "varInput",
+          component: "VariableInput",
           icon: "alt_route",
           width: 6,
         },
         {
           key: "payload",
           label: "传递给插件的文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "alt_route",
           width: 6,
         },
@@ -102,46 +100,53 @@ export const utoolsCommands = {
             {
               key: "text",
               label: "文本",
-              type: "varInput",
+              component: "VariableInput",
               icon: "search",
               width: 12,
             },
             {
               key: "options",
               label: "选项",
-              type: "dictEditor",
+              component: "OptionEditor",
               icon: "settings",
               options: {
-                disableAdd: true,
-                fixedKeys: [
-                  {
-                    value: "forward",
-                    label: "向前查找",
-                  },
-                  {
-                    value: "findNext",
-                    label: "查找下一个",
-                  },
-                  {
-                    value: "matchCase",
-                    label: "区分大小写",
-                  },
-                  {
-                    value: "wordStart",
-                    label: "单词开头",
-                  },
-                  {
-                    value: "medialCapitalAsWordStart",
-                    label: "中缀大写作为单词开头",
-                  },
-                ],
+                forward: {
+                  label: "向前查找",
+                  icon: "arrow_right",
+                  width: 2,
+                  component: "q-checkbox",
+                },
+                findNext: {
+                  label: "查找下一个",
+                  icon: "arrow_down",
+                  width: 2,
+                  component: "q-checkbox",
+                },
+                matchCase: {
+                  label: "区分大小写",
+                  icon: "arrow_up",
+                  width: 2,
+                  component: "q-checkbox",
+                },
+                wordStart: {
+                  label: "单词开头",
+                  icon: "arrow_right",
+                  width: 2,
+                  component: "q-checkbox",
+                },
+                medialCapitalAsWordStart: {
+                  label: "中缀大写作为单词开头",
+                  icon: "arrow_right",
+                  width: 4,
+                  component: "q-checkbox",
+                },
               },
               defaultValue: {
-                forward: newVarInputVal("var", "true"),
-                findNext: newVarInputVal("var", "false"),
-                matchCase: newVarInputVal("var", "false"),
-                wordStart: newVarInputVal("var", "false"),
-                medialCapitalAsWordStart: newVarInputVal("var", "false"),
+                forward: true,
+                findNext: false,
+                matchCase: false,
+                wordStart: false,
+                medialCapitalAsWordStart: false,
               },
               width: 12,
             },
@@ -156,7 +161,7 @@ export const utoolsCommands = {
             {
               key: "action",
               label: "动作",
-              type: "buttonGroup",
+              component: "ButtonGroup",
               icon: "settings",
               width: 12,
               options: [

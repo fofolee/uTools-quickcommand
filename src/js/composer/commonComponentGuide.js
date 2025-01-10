@@ -49,7 +49,7 @@ const commonComponentGuide = {
             config: [
               {
                 label: "域名",
-                type: "varInput",
+                component: "VariableInput",
                 icon: "dns",
                 width: "auto"
               }
@@ -75,7 +75,7 @@ const commonComponentGuide = {
                 config: [
                   {
                     label: "IP版本",
-                    type: "select",
+                    component: "q-select",
                     options: [
                       { label: "自动", value: 0 },
                       { label: "IPv4", value: 4 }
@@ -92,7 +92,7 @@ const commonComponentGuide = {
                 config: [
                   {
                     label: "IP地址",
-                    type: "varInput",
+                    component: "VariableInput",
                     icon: "router"
                   }
                 ]

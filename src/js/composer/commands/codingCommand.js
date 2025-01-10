@@ -14,7 +14,7 @@ export const codingCommands = {
         {
           label: "要编解码的文本",
           icon: "text_fields",
-          type: "varInput",
+          component: "VariableInput",
         },
       ],
       subCommands: [
@@ -85,7 +85,7 @@ export const codingCommands = {
         {
           label: "要计算哈希的文本",
           icon: "text_fields",
-          type: "varInput",
+          component: "VariableInput",
         },
       ],
       subCommands: [

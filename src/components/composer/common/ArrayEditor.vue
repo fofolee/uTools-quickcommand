@@ -22,6 +22,7 @@
               :no-icon="true"
               :placeholder="key.placeholder"
               :options="key.options"
+              :disable-toggle-type="key.disableToggleType"
               @update:model-value="
                 (val) => updateItemKeyValue(index, key.value, val)
               "
@@ -38,6 +39,7 @@
               :options="{
                 items: options.items,
               }"
+              :disable-toggle-type="disableToggleType"
               @update:model-value="(val) => updateItemValue(index, val)"
             />
           </div>
@@ -185,6 +187,10 @@ export default defineComponent({
     placeholder: {
       type: String,
       default: "",
+    },
+    disableToggleType: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ["update:modelValue"],

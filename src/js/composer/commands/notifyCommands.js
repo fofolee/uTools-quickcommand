@@ -10,7 +10,7 @@ export const notifyCommands = {
         {
           key: "log",
           label: "要打印的消息文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "info",
         },
       ],
@@ -22,7 +22,7 @@ export const notifyCommands = {
         {
           key: "notification",
           label: "要发送的系统消息文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "message",
         },
       ],

@@ -1,44 +1,67 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
+const xy = {
+  x: {
+    label: "X坐标",
+    component: "NumberInput",
+    icon: "arrow_right",
+    width: 6,
+    min: 0,
+    step: 10,
+  },
+  y: {
+    label: "Y坐标",
+    component: "NumberInput",
+    icon: "arrow_down",
+    width: 6,
+    min: 0,
+    step: 10,
+  },
+};
 
 const XY_DICT_EDITOR = {
   label: "坐标",
-  type: "dictEditor",
+  component: "OptionEditor",
   icon: "transform",
   isCollapse: false,
   width: 12,
   defaultValue: {
-    x: newVarInputVal("var", "0"),
-    y: newVarInputVal("var", "0"),
+    x: 0,
+    y: 0,
   },
   options: {
-    fixedKeys: [
-      { value: "x", label: "X坐标" },
-      { value: "y", label: "Y坐标" },
-    ],
-    disableAdd: true,
+    ...xy,
   },
 };
 
 const RECT_DICT_EDITOR = {
   label: "区域",
-  type: "dictEditor",
+  component: "DictEditor",
   icon: "transform",
   isCollapse: false,
   width: 12,
   defaultValue: {
-    x: newVarInputVal("var", "0"),
-    y: newVarInputVal("var", "0"),
-    width: newVarInputVal("var", "100"),
-    height: newVarInputVal("var", "100"),
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
   },
   options: {
-    fixedKeys: [
-      { value: "x", label: "X坐标" },
-      { value: "y", label: "Y坐标" },
-      { value: "width", label: "宽度" },
-      { value: "height", label: "高度" },
-    ],
-    disableAdd: true,
+    ...xy,
+    width: {
+      label: "宽度",
+      component: "NumberInput",
+      icon: "swap_horiz",
+      min: 0,
+      step: 10,
+      width: 6,
+    },
+    height: {
+      label: "高度",
+      component: "NumberInput",
+      icon: "height",
+      min: 0,
+      step: 10,
+      width: 6,
+    },
   },
 };
 

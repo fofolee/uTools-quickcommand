@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const mathCommands = {
   label: "数学计算",
   icon: "calculate",
@@ -12,9 +14,11 @@ export const mathCommands = {
         {
           key: "expression",
           label: "表达式",
-          type: "varInput",
+          component: "VariableInput",
           icon: "functions",
-          width: 12,
+          width: "auto",
+          defaultValue: newVarInputVal("var", ""),
+          disableToggleType: true,
         },
       ],
       subCommands: [
@@ -31,9 +35,9 @@ export const mathCommands = {
             {
               key: "decimals",
               label: "小数位数",
-              type: "numInput",
+              component: "NumberInput",
               icon: "pin",
-              width: 6,
+              width: 4,
               min: 0,
               defaultValue: 2,
             },
@@ -70,7 +74,7 @@ export const mathCommands = {
         {
           key: "min",
           label: "最小值",
-          type: "numInput",
+          component: "NumberInput",
           icon: "arrow_downward",
           width: 6,
           defaultValue: 0,
@@ -78,7 +82,7 @@ export const mathCommands = {
         {
           key: "max",
           label: "最大值",
-          type: "numInput",
+          component: "NumberInput",
           icon: "arrow_upward",
           width: 6,
           defaultValue: 100,
@@ -86,7 +90,7 @@ export const mathCommands = {
         {
           key: "count",
           label: "生成数量",
-          type: "numInput",
+          component: "NumberInput",
           icon: "format_list_numbered",
           width: 6,
           min: 1,
@@ -95,7 +99,7 @@ export const mathCommands = {
         {
           key: "decimals",
           label: "小数位数",
-          type: "numInput",
+          component: "NumberInput",
           icon: "pin",
           width: 6,
           min: 0,
@@ -116,7 +120,7 @@ export const mathCommands = {
       ],
     },
     {
-      value: "quickcomposer.math.statistics",
+      value: "quickcomposer.math.statistics.mean",
       label: "统计计算",
       desc: "统计学相关计算",
       icon: "bar_chart",
@@ -124,10 +128,12 @@ export const mathCommands = {
         {
           key: "numbers",
           label: "数据集合",
-          type: "varInput",
+          component: "VariableInput",
           icon: "dataset",
           width: 12,
-          placeholder: "用逗号分隔的数字，如: 1,2,3,4,5",
+          placeholder: "数字数组，如:[1,2,3,4,5]",
+          defaultValue: newVarInputVal("var", ""),
+          disableToggleType: true,
         },
       ],
       subCommands: [
@@ -197,7 +203,7 @@ export const mathCommands = {
             {
               key: "radius",
               label: "半径",
-              type: "numInput",
+              component: "NumberInput",
               icon: "radio_button_checked",
               width: 12,
               min: 0,
@@ -212,15 +218,15 @@ export const mathCommands = {
             {
               key: "width",
               label: "宽度",
-              type: "numInput",
-              icon: "width",
+              component: "NumberInput",
+              icon: "swap_horiz",
               width: 6,
               min: 0,
             },
             {
               key: "height",
               label: "高度",
-              type: "numInput",
+              component: "NumberInput",
               icon: "height",
               width: 6,
               min: 0,
@@ -235,7 +241,7 @@ export const mathCommands = {
             {
               key: "a",
               label: "边长a",
-              type: "numInput",
+              component: "NumberInput",
               icon: "straighten",
               width: 4,
               min: 0,
@@ -243,7 +249,7 @@ export const mathCommands = {
             {
               key: "b",
               label: "边长b",
-              type: "numInput",
+              component: "NumberInput",
               icon: "straighten",
               width: 4,
               min: 0,
@@ -251,7 +257,7 @@ export const mathCommands = {
             {
               key: "c",
               label: "边长c",
-              type: "numInput",
+              component: "NumberInput",
               icon: "straighten",
               width: 4,
               min: 0,
@@ -269,7 +275,7 @@ export const mathCommands = {
         {
           key: "angle",
           label: "角度值",
-          type: "numInput",
+          component: "NumberInput",
           icon: "rotate_right",
           width: 12,
         },
@@ -316,14 +322,14 @@ export const mathCommands = {
         {
           key: "value",
           label: "数值",
-          type: "numInput",
+          component: "NumberInput",
           icon: "pin",
           width: 12,
         },
         {
           key: "from",
           label: "从",
-          type: "select",
+          component: "q-select",
           icon: "input",
           width: 6,
           options: [
@@ -338,7 +344,7 @@ export const mathCommands = {
         {
           key: "to",
           label: "到",
-          type: "select",
+          component: "q-select",
           icon: "output",
           width: 6,
           options: [

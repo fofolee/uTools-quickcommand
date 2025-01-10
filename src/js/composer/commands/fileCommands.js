@@ -17,7 +17,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件、文件夹或软件的绝对路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "folder_open",
           options: {
             dialog: {
@@ -35,7 +35,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件、文件夹或软件的绝对路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "location_on",
           options: {
             dialog: {
@@ -53,7 +53,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件或软件的绝对路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "folder_open",
           options: {
             dialog: {
@@ -77,7 +77,7 @@ export const fileCommands = {
         {
           key: "operation",
           label: "操作类型",
-          type: "select",
+          component: "q-select",
           icon: "settings",
           width: 6,
           defaultValue: "compress",
@@ -89,7 +89,7 @@ export const fileCommands = {
         {
           key: "format",
           label: "归档格式",
-          type: "select",
+          component: "q-select",
           icon: "format_shapes",
           width: 6,
           defaultValue: "zip",
@@ -102,7 +102,7 @@ export const fileCommands = {
         {
           key: "source",
           label: "源文件/文件夹",
-          type: "varInput",
+          component: "VariableInput",
           icon: "folder_open",
           width: 12,
           options: {
@@ -117,7 +117,7 @@ export const fileCommands = {
         {
           key: "destination",
           label: "目标路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 12,
           options: {
@@ -137,7 +137,7 @@ export const fileCommands = {
         {
           key: "path",
           label: "文件或文件夹的绝对路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "folder_open",
           options: {
             dialog: {

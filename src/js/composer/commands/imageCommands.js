@@ -31,7 +31,7 @@ export const imageCommands = {
         {
           key: "file",
           label: "图片文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -62,7 +62,7 @@ export const imageCommands = {
         {
           key: "inputFile",
           label: "输入文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -84,7 +84,7 @@ export const imageCommands = {
         {
           key: "outputFile",
           label: "输出文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 12,
           options: {
@@ -105,7 +105,7 @@ export const imageCommands = {
         {
           key: "width",
           label: "宽度(像素)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "compare_arrows",
           width: 6,
           min: 1,
@@ -115,7 +115,7 @@ export const imageCommands = {
         {
           key: "height",
           label: "高度(像素)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "height",
           width: 6,
           min: 1,
@@ -125,7 +125,7 @@ export const imageCommands = {
         {
           key: "keepAspectRatio",
           label: "保持宽高比",
-          type: "select",
+          component: "q-select",
           icon: "aspect_ratio",
           width: 6,
           defaultValue: "true",
@@ -137,7 +137,7 @@ export const imageCommands = {
         {
           key: "quality",
           label: "图片质量(0-1)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "high_quality",
           width: 6,
           max: 1,
@@ -157,7 +157,7 @@ export const imageCommands = {
         {
           key: "inputFile",
           label: "输入文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -179,7 +179,7 @@ export const imageCommands = {
         {
           key: "outputFile",
           label: "输出文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 12,
           options: {
@@ -200,7 +200,7 @@ export const imageCommands = {
         {
           key: "angle",
           label: "旋转角度",
-          type: "numInput",
+          component: "NumberInput",
           icon: "rotate_right",
           width: 6,
           step: 90,
@@ -209,7 +209,7 @@ export const imageCommands = {
         {
           key: "quality",
           label: "图片质量(0-1)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "high_quality",
           width: 6,
           max: 1,
@@ -229,7 +229,7 @@ export const imageCommands = {
         {
           key: "inputFile",
           label: "输入文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -251,7 +251,7 @@ export const imageCommands = {
         {
           key: "outputFile",
           label: "输出文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 12,
           options: {
@@ -272,7 +272,7 @@ export const imageCommands = {
         {
           key: "x",
           label: "起始X坐标",
-          type: "numInput",
+          component: "NumberInput",
           icon: "arrow_right",
           width: 6,
           min: 0,
@@ -282,7 +282,7 @@ export const imageCommands = {
         {
           key: "y",
           label: "起始Y坐标",
-          type: "numInput",
+          component: "NumberInput",
           icon: "arrow_downward",
           width: 6,
           min: 0,
@@ -292,7 +292,7 @@ export const imageCommands = {
         {
           key: "width",
           label: "裁剪宽度",
-          type: "numInput",
+          component: "NumberInput",
           icon: "compare_arrows",
           width: 6,
           min: 1,
@@ -302,7 +302,7 @@ export const imageCommands = {
         {
           key: "height",
           label: "裁剪高度",
-          type: "numInput",
+          component: "NumberInput",
           icon: "height",
           width: 6,
           min: 1,
@@ -312,9 +312,9 @@ export const imageCommands = {
         {
           key: "quality",
           label: "图片质量(0-1)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "high_quality",
-          width: 6,
+          width: 12,
           max: 1,
           min: 0,
           step: 0.05,
@@ -332,7 +332,7 @@ export const imageCommands = {
         {
           key: "inputFile",
           label: "输入文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -354,7 +354,7 @@ export const imageCommands = {
         {
           key: "outputFile",
           label: "输出文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 12,
           options: {
@@ -375,31 +375,31 @@ export const imageCommands = {
         {
           key: "text",
           label: "水印文字",
-          type: "varInput",
+          component: "VariableInput",
           icon: "text_fields",
           width: 12,
-          defaultValue: newVarInputVal("var", "水印文字"),
+          defaultValue: newVarInputVal("str", "水印文字"),
         },
         {
           key: "font",
           label: "字体设置",
-          type: "varInput",
+          component: "VariableInput",
           icon: "font_download",
           width: 6,
-          defaultValue: newVarInputVal("var", "24px Arial"),
+          defaultValue: newVarInputVal("str", "24px Arial"),
         },
         {
           key: "color",
           label: "文字颜色",
-          type: "varInput",
+          component: "VariableInput",
           icon: "format_color_text",
           width: 6,
-          defaultValue: newVarInputVal("var", "rgba(255, 255, 255, 0.5)"),
+          defaultValue: newVarInputVal("str", "rgba(255, 255, 255, 0.5)"),
         },
         {
           key: "position",
           label: "位置",
-          type: "select",
+          component: "q-select",
           icon: "place",
           width: 6,
           defaultValue: "bottomRight",
@@ -408,7 +408,7 @@ export const imageCommands = {
         {
           key: "margin",
           label: "边距",
-          type: "numInput",
+          component: "NumberInput",
           icon: "space_bar",
           min: 0,
           step: 10,
@@ -418,7 +418,7 @@ export const imageCommands = {
         {
           key: "opacity",
           label: "不透明度(0-1)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "opacity",
           max: 1,
           min: 0,
@@ -429,7 +429,7 @@ export const imageCommands = {
         {
           key: "quality",
           label: "图片质量(0-1)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "high_quality",
           max: 1,
           min: 0,
@@ -449,7 +449,7 @@ export const imageCommands = {
         {
           key: "inputFile",
           label: "输入文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -471,7 +471,7 @@ export const imageCommands = {
         {
           key: "outputFile",
           label: "输出文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 12,
           options: {
@@ -492,7 +492,7 @@ export const imageCommands = {
         {
           key: "format",
           label: "输出格式",
-          type: "select",
+          component: "q-select",
           icon: "transform",
           width: 6,
           defaultValue: "jpeg",
@@ -501,7 +501,7 @@ export const imageCommands = {
         {
           key: "quality",
           label: "图片质量(0-1)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "high_quality",
           width: 6,
           max: 1,
@@ -520,7 +520,7 @@ export const imageCommands = {
         {
           key: "inputFile",
           label: "PNG路径/Base64",
-          type: "varInput",
+          component: "VariableInput",
           icon: "image",
           width: 12,
           options: {
@@ -542,7 +542,7 @@ export const imageCommands = {
         {
           key: "outputDir",
           label: "输出目录",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 9,
           defaultValue: newVarInputVal("str", window.utools.getPath("desktop")),
@@ -560,7 +560,7 @@ export const imageCommands = {
         {
           key: "type",
           label: "输出格式",
-          type: "select",
+          component: "q-select",
           icon: "transform",
           width: 3,
           defaultValue: "ico",

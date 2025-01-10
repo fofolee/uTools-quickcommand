@@ -17,7 +17,7 @@ export const controlCommands = {
             {
               key: "condition",
               label: "条件",
-              type: "controlInput",
+              component: "ControlInput",
               placeholder: "表达式",
               defaultValue: "true",
             },
@@ -38,7 +38,7 @@ export const controlCommands = {
             {
               key: "condition",
               label: "条件",
-              type: "controlInput",
+              component: "ControlInput",
               placeholder: "表达式",
             },
           ],
@@ -67,14 +67,14 @@ export const controlCommands = {
             {
               key: "indexVar",
               label: "变量",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "i",
               width: 3,
             },
             {
               key: "startValue",
               label: "从",
-              type: "controlInput",
+              component: "ControlInput",
               icon: "first_page",
               defaultValue: "0",
               width: 3,
@@ -82,7 +82,7 @@ export const controlCommands = {
             {
               key: "endValue",
               label: "到",
-              type: "controlInput",
+              component: "ControlInput",
               icon: "last_page",
               defaultValue: "10",
               width: 3,
@@ -90,7 +90,7 @@ export const controlCommands = {
             {
               key: "stepValue",
               label: "步进",
-              type: "controlInput",
+              component: "ControlInput",
               icon: "trending_up",
               defaultValue: "1",
               width: 3,
@@ -133,21 +133,21 @@ export const controlCommands = {
             {
               key: "itemVar",
               label: "元素",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "item",
               width: 4,
             },
             {
               key: "indexVar",
               label: "索引",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "i",
               width: 4,
             },
             {
               key: "arrayVar",
               label: "数组",
-              type: "controlInput",
+              component: "ControlInput",
               icon: "list",
               defaultValue: "array",
               width: 4,
@@ -190,21 +190,21 @@ export const controlCommands = {
             {
               key: "keyVar",
               label: "键名",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "key",
               width: 4,
             },
             {
               key: "valueVar",
               label: "值",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "value",
               width: 4,
             },
             {
               key: "objectVar",
               label: "对象",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "object",
               width: 4,
             },
@@ -245,7 +245,7 @@ export const controlCommands = {
             {
               key: "condition",
               label: "条件",
-              type: "controlInput",
+              component: "ControlInput",
               placeholder: "表达式",
               defaultValue: "true",
             },
@@ -286,7 +286,7 @@ export const controlCommands = {
             {
               key: "expression",
               label: "变量",
-              type: "controlInput",
+              component: "ControlInput",
               placeholder: "变量或表达式",
               defaultValue: "expression",
             },
@@ -301,7 +301,7 @@ export const controlCommands = {
             {
               key: "value",
               label: "值",
-              type: "controlInput",
+              component: "ControlInput",
             },
           ],
         },
@@ -340,7 +340,7 @@ export const controlCommands = {
             {
               key: "errorVar",
               label: "错误",
-              type: "controlInput",
+              component: "ControlInput",
               defaultValue: "error",
             },
           ],

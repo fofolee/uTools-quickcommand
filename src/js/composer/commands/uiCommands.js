@@ -14,7 +14,7 @@ export const uiCommands = {
       config: [
         {
           label: "按钮",
-          type: "arrayEditor",
+          component: "ArrayEditor",
           defaultValue: [
             newVarInputVal("str", "是"),
             newVarInputVal("str", "否"),
@@ -31,7 +31,7 @@ export const uiCommands = {
       config: [
         {
           label: "输入框",
-          type: "arrayEditor",
+          component: "ArrayEditor",
           width: 12,
           options: {
             keys: [
@@ -54,7 +54,7 @@ export const uiCommands = {
         },
         {
           label: "标题",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str"),
           width: 12,
         },
@@ -77,13 +77,13 @@ export const uiCommands = {
       config: [
         {
           label: "文本框占位符",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str", "请输入"),
           width: 6,
         },
         {
           label: "文本框默认值",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str"),
           width: 6,
         },
@@ -97,14 +97,14 @@ export const uiCommands = {
       config: [
         {
           label: "提示内容",
-          type: "varInput",
+          component: "VariableInput",
           icon: "info",
           defaultValue: newVarInputVal("str", "这是一条提示消息"),
           width: 12,
         },
         {
           label: "图标类型",
-          type: "select",
+          component: "q-select",
           defaultValue: "success",
           icon: "lightbulb",
           width: 6,
@@ -117,7 +117,7 @@ export const uiCommands = {
         },
         {
           label: "显示时间(ms)",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 100,
           width: 6,
@@ -135,25 +135,25 @@ export const uiCommands = {
       config: [
         {
           label: "提示内容",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str", "确认要执行此操作吗？"),
           width: 12,
         },
         {
           label: "标题",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str", "提示"),
           width: 7,
         },
         {
           label: "支持HTML",
-          type: "switch",
+          component: "q-toggle",
           defaultValue: false,
           width: 2,
         },
         {
           label: "宽度",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 100,
           defaultValue: 450,
@@ -171,26 +171,26 @@ export const uiCommands = {
       config: [
         {
           label: "标题",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str", "请选择文件"),
           width: 6,
         },
         {
           label: "默认路径",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str"),
           width: 6,
           placeholder: "默认打开的路径",
         },
         {
           label: "按钮文本",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str", "选择"),
           width: 3,
         },
         {
           label: "提示信息",
-          type: "varInput",
+          component: "VariableInput",
           defaultValue: newVarInputVal("str"),
           width: 3,
           placeholder: "对话框底部的提示信息",
@@ -198,13 +198,14 @@ export const uiCommands = {
         },
         {
           label: "扩展名",
-          type: "varInput",
+          component: "VariableInput",
           width: 6,
           options: {
             items: ["*", "jpg", "png", "gif", "txt", "json", "exe"],
             multiSelect: true,
           },
           defaultValue: newVarInputVal("var", '["*"]'),
+          disableToggleType: true,
         },
       ],
       subCommands: [
@@ -216,7 +217,7 @@ export const uiCommands = {
           config: [
             {
               label: "选择选项",
-              type: "checkGroup",
+              component: "CheckGroup",
               icon: "settings",
               width: 12,
               options: [
@@ -245,7 +246,7 @@ export const uiCommands = {
           config: [
             {
               label: "选择选项",
-              type: "checkGroup",
+              component: "CheckGroup",
               icon: "settings",
               width: 12,
               options: [

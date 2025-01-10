@@ -12,7 +12,7 @@ export const dataCommands = {
         {
           key: "text",
           label: "要反转的文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "swap_horiz",
         },
       ],
@@ -26,21 +26,21 @@ export const dataCommands = {
         {
           key: "text",
           label: "原始文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "text_fields",
           width: 4,
         },
         {
           key: "oldStr",
           label: "要替换的文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "find_replace",
           width: 4,
         },
         {
           key: "newStr",
           label: "替换为",
-          type: "varInput",
+          component: "VariableInput",
           icon: "text_fields",
           width: 4,
         },
@@ -55,14 +55,14 @@ export const dataCommands = {
         {
           key: "text",
           label: "原始文本",
-          type: "varInput",
+          component: "VariableInput",
           icon: "text_fields",
           width: 6,
         },
         {
           key: "start",
           label: "起始位置",
-          type: "numInput",
+          component: "NumberInput",
           min: 0,
           step: 1,
           icon: "first_page",
@@ -71,7 +71,7 @@ export const dataCommands = {
         {
           key: "end",
           label: "结束位置",
-          type: "numInput",
+          component: "NumberInput",
           icon: "last_page",
           min: 0,
           step: 1,
@@ -105,13 +105,13 @@ export const dataCommands = {
           config: [
             {
               label: "数据",
-              type: "varInput",
+              component: "VariableInput",
               icon: "text_fields",
               width: 9,
             },
             {
               label: "编码",
-              type: "select",
+              component: "q-select",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -135,13 +135,13 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 12,
             },
             {
               label: "编码",
-              type: "select",
+              component: "q-select",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -158,14 +158,14 @@ export const dataCommands = {
             },
             {
               label: "起始位置",
-              type: "numInput",
+              component: "NumberInput",
               step: 1,
               icon: "first_page",
               width: 4,
             },
             {
               label: "结束位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "last_page",
               step: 1,
               width: 4,
@@ -179,31 +179,31 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 6,
             },
             {
               label: "要写入的字符串",
-              type: "varInput",
+              component: "VariableInput",
               icon: "edit",
               width: 6,
             },
             {
               label: "偏移量",
-              type: "numInput",
+              component: "NumberInput",
               icon: "first_page",
               width: 4,
             },
             {
               label: "长度",
-              type: "numInput",
+              component: "NumberInput",
               icon: "straighten",
               width: 4,
             },
             {
               label: "编码",
-              type: "select",
+              component: "q-select",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -227,31 +227,31 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 6,
             },
             {
               label: "填充值",
-              type: "varInput",
+              component: "VariableInput",
               icon: "format_color_fill",
               width: 6,
             },
             {
               label: "起始位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "first_page",
               width: 4,
             },
             {
               label: "结束位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "last_page",
               width: 4,
             },
             {
               label: "编码",
-              type: "select",
+              component: "q-select",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -275,31 +275,31 @@ export const dataCommands = {
           config: [
             {
               label: "源Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "content_copy",
               width: 6,
             },
             {
               label: "目标Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "save",
               width: 6,
             },
             {
               label: "目标起始位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "first_page",
               width: 4,
             },
             {
               label: "源起始位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "first_page",
               width: 4,
             },
             {
               label: "源结束位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "last_page",
               width: 4,
             },
@@ -312,13 +312,13 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer 1",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 6,
             },
             {
               label: "Buffer 2",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 6,
             },
@@ -331,14 +331,15 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "arrayEditor",
+              component: "ArrayEditor",
               icon: "memory",
               width: 12,
               defaultValue: [newVarInputVal("var")],
+              disableToggleType: true,
             },
             {
               label: "总长度（可选）",
-              type: "numInput",
+              component: "NumberInput",
               icon: "straighten",
               width: 12,
             },
@@ -351,19 +352,19 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 12,
             },
             {
               label: "起始位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "first_page",
               width: 6,
             },
             {
               label: "结束位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "last_page",
               width: 6,
             },
@@ -376,25 +377,25 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 12,
             },
             {
               label: "要查找的值",
-              type: "varInput",
+              component: "VariableInput",
               icon: "search",
               width: 4,
             },
             {
               label: "起始位置",
-              type: "numInput",
+              component: "NumberInput",
               icon: "first_page",
               width: 4,
             },
             {
               label: "编码",
-              type: "select",
+              component: "q-select",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -418,13 +419,13 @@ export const dataCommands = {
           config: [
             {
               label: "Buffer",
-              type: "varInput",
+              component: "VariableInput",
               icon: "memory",
               width: 9,
             },
             {
               label: "字节大小",
-              type: "select",
+              component: "q-select",
               icon: "memory",
               options: [
                 { label: "16位", value: 16 },
@@ -454,21 +455,21 @@ export const dataCommands = {
       config: [
         {
           label: "要解析的 HTML",
-          type: "varInput",
+          component: "VariableInput",
           icon: "html",
           placeholder: "例如：<div>Hello, World!</div>",
           width: 12,
         },
         {
           label: "CSS选择器",
-          type: "varInput",
+          component: "VariableInput",
           icon: "css",
           placeholder: "例如：.class",
           width: 7,
         },
         {
           label: "属性",
-          type: "varInput",
+          component: "VariableInput",
           icon: "colorize",
           options: {
             items: [

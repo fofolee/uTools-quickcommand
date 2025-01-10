@@ -10,26 +10,91 @@ const SYSTEM_SOUNDS = [
   { label: "点击音", value: "click" },
 ];
 
+const LANGUAGES = [
+  { label: "中文", value: "zh-CN" },
+  { label: "英文", value: "en-US" },
+  { label: "日语", value: "ja-JP" },
+  { label: "韩语", value: "ko-KR" },
+  { label: "法语", value: "fr-FR" },
+  { label: "德语", value: "de-DE" },
+  { label: "西班牙语", value: "es-ES" },
+];
+
 // 语音朗读配置
 const SPEECH_CONFIG = {
   label: "朗读配置",
-  type: "dictEditor",
+  component: "OptionEditor",
   icon: "settings",
   width: 12,
   defaultValue: {
-    rate: newVarInputVal("var", "1"),
-    pitch: newVarInputVal("var", "1"),
-    volume: newVarInputVal("var", "1"),
-    lang: newVarInputVal("str", "zh-CN"),
+    rate: 0.5,
+    pitch: 1,
+    volume: 1,
+    lang: "zh-CN",
   },
   options: {
-    fixedKeys: [
-      { value: "rate", label: "语速(0.1-10)" },
-      { value: "pitch", label: "音调(0-2)" },
-      { value: "volume", label: "音量(0-1)" },
-      { value: "lang", label: "语言" },
-    ],
-    disableAdd: true,
+    rate: {
+      label: "语速(0.1-10)",
+      component: "NumberInput",
+      min: 0,
+      max: 10,
+      step: 0.1,
+      width: 3,
+    },
+    pitch: {
+      label: "音调(0-2)",
+      component: "NumberInput",
+      min: 0,
+      max: 2,
+      step: 0.1,
+      width: 3,
+    },
+    volume: {
+      label: "音量(0-1)",
+      component: "NumberInput",
+      min: 0,
+      max: 1,
+      step: 0.1,
+      width: 3,
+    },
+    lang: {
+      label: "语言",
+      component: "q-select",
+      options: LANGUAGES,
+      width: 3,
+    },
+  },
+};
+
+const MEDIA_PLAY_CONFIG = {
+  label: "播放配置",
+  component: "OptionEditor",
+  icon: "settings",
+  width: 12,
+  defaultValue: {
+    volume: 1,
+    loop: false,
+    autoPlay: true,
+  },
+  options: {
+    volume: {
+      label: "音量",
+      component: "NumberInput",
+      min: 0,
+      max: 1,
+      step: 0.1,
+      width: 4,
+    },
+    loop: {
+      label: "循环播放",
+      component: "q-toggle",
+      width: 4,
+    },
+    autoPlay: {
+      label: "自动播放",
+      component: "q-toggle",
+      width: 4,
+    },
   },
 };
 
@@ -51,7 +116,7 @@ export const audioCommands = {
           config: [
             {
               label: "朗读文本",
-              type: "varInput",
+              component: "VariableInput",
               icon: "text_fields",
               width: 12,
             },
@@ -70,6 +135,7 @@ export const audioCommands = {
       label: "音频播放",
       desc: "播放音频文件",
       icon: "music_note",
+      isAsync: true,
       subCommands: [
         {
           value: "quickcomposer.audio.media.play",
@@ -78,7 +144,7 @@ export const audioCommands = {
           config: [
             {
               label: "音频文件路径",
-              type: "varInput",
+              component: "VariableInput",
               icon: "audio_file",
               width: 12,
               options: {
@@ -97,30 +163,7 @@ export const audioCommands = {
                 },
               },
             },
-            {
-              label: "音量",
-              type: "numInput",
-              icon: "volume_up",
-              width: 4,
-              defaultValue: 1,
-              min: 0,
-              max: 1,
-              step: 0.1,
-            },
-            {
-              label: "循环播放",
-              type: "switch",
-              icon: "repeat",
-              width: 4,
-              defaultValue: false,
-            },
-            {
-              label: "自动播放",
-              type: "switch",
-              icon: "play_circle",
-              width: 4,
-              defaultValue: true,
-            },
+            MEDIA_PLAY_CONFIG,
           ],
         },
         {
@@ -135,10 +178,11 @@ export const audioCommands = {
       label: "音频录制",
       desc: "录制系统音频",
       icon: "mic",
+      isAsync: true,
       config: [
         {
           label: "录制时长(ms)",
-          type: "numInput",
+          component: "NumberInput",
           icon: "timer",
           width: 6,
           defaultValue: 5000,
@@ -147,7 +191,7 @@ export const audioCommands = {
         },
         {
           label: "保存路径",
-          type: "varInput",
+          component: "VariableInput",
           icon: "save",
           width: 6,
           options: {
@@ -171,11 +215,12 @@ export const audioCommands = {
       value: "quickcomposer.audio.media.beep",
       label: "系统音效",
       desc: "播放系统内置音效",
+      isAsync: true,
       icon: "notifications_active",
       config: [
         {
           label: "音效类型",
-          type: "select",
+          component: "q-select",
           icon: "music_note",
           width: 6,
           options: SYSTEM_SOUNDS,
@@ -183,7 +228,7 @@ export const audioCommands = {
         },
         {
           label: "音量",
-          type: "numInput",
+          component: "NumberInput",
           icon: "volume_up",
           width: 6,
           defaultValue: 1,
@@ -202,7 +247,7 @@ export const audioCommands = {
       config: [
         {
           label: "音频文件",
-          type: "varInput",
+          component: "VariableInput",
           icon: "audio_file",
           width: 12,
           options: {

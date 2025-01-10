@@ -52,7 +52,7 @@ export default defineComponent({
     localConfig() {
       return [...this.commonConfig, ...this.subCommandConfig].map((item) => {
         const value =
-          item.type === "varInput"
+          item.component === "VariableInput"
             ? item.defaultValue || newVarInputVal("str")
             : // 其他类型情况复杂，不做判断，没有默认值返回undefined
               item.defaultValue;
@@ -147,15 +147,27 @@ export default defineComponent({
       if (!code) return argvs;
 
       const variableFormatPaths = [];
+
+      const addVariableFormatPath = (prefix, config) => {
+        if (config.component === "VariableInput") {
+          variableFormatPaths.push(prefix);
+        } else if (config.component === "ArrayEditor") {
+          variableFormatPaths.push(`${prefix}[*]`);
+        } else if (config.component === "DictEditor") {
+          variableFormatPaths.push(`${prefix}.**`);
+        }
+      };
+
       this.localConfig.forEach((item, index) => {
-        if (item.type === "varInput") {
-          variableFormatPaths.push(`arg${index}`);
-        } else if (item.type === "arrayEditor") {
-          variableFormatPaths.push(`arg${index}[*]`);
-        } else if (item.type === "dictEditor") {
-          variableFormatPaths.push(`arg${index}.**`);
+        if (item.component === "OptionEditor") {
+          Object.entries(item.options).forEach(([key, config]) => {
+            addVariableFormatPath(`arg${index}.${key}`, config);
+          });
+        } else {
+          addVariableFormatPath(`arg${index}`, item);
         }
       });
+
       try {
         argvs = parseFunction(code, { variableFormatPaths }).argvs;
       } catch (e) {

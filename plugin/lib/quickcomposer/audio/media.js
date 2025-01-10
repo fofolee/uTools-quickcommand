@@ -7,27 +7,27 @@ let currentAudio = null;
 // 系统音效映射
 const SYSTEM_SOUNDS = {
   beep: {
-    win: "Beep",
+    win: "Windows Ding",
     mac: "Ping.aiff",
   },
   error: {
-    win: "Asterisk",
+    win: "Windows Critical Stop",
     mac: "Basso.aiff",
   },
   warning: {
-    win: "Exclamation",
+    win: "Windows Exclamation",
     mac: "Sosumi.aiff",
   },
   notification: {
-    win: "Notification",
+    win: "Windows Notify",
     mac: "Glass.aiff",
   },
   complete: {
-    win: "SystemAsterisk",
+    win: "Windows Print complete",
     mac: "Hero.aiff",
   },
   click: {
-    win: "MenuCommand",
+    win: "Windows Navigation Start",
     mac: "Tink.aiff",
   },
 };
@@ -40,7 +40,7 @@ const SYSTEM_SOUNDS = {
  * @param {boolean} autoplay 是否自动播放
  */
 async function play(file, volume = 1, loop = false, autoplay = true) {
-  // 停止当前音频
+  // 先停止当前音频
   stop();
 
   // 检查文件是否存在
@@ -50,6 +50,8 @@ async function play(file, volume = 1, loop = false, autoplay = true) {
 
   // 创建新的音频实例
   const audio = new Audio();
+
+  // 设置音频属性
   audio.src = `file://${file}`;
   audio.volume = parseFloat(volume) || 1;
   audio.loop = !!loop;
@@ -59,22 +61,33 @@ async function play(file, volume = 1, loop = false, autoplay = true) {
 
   // 如果设置了自动播放
   if (autoplay !== false) {
-    audio.play();
+    try {
+      await audio.play();
+    } catch (error) {
+      console.warn("播放失败:", error);
+      currentAudio = null;
+      throw error;
+    }
   }
 
-  // 返回 Promise，在播放结束时 resolve
-  return new Promise((resolve, reject) => {
-    audio.onended = () => {
-      if (!audio.loop) {
-        currentAudio = null;
-        resolve();
-      }
-    };
-    audio.onerror = (error) => {
+  // 立即返回，不等待播放完成
+  return Promise.resolve();
+}
+
+/**
+ * 停止音频播放
+ */
+function stop() {
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    } catch (error) {
+      console.warn("停止播放时发生错误:", error);
+    } finally {
       currentAudio = null;
-      reject(error);
-    };
-  });
+    }
+  }
 }
 
 /**
@@ -86,8 +99,8 @@ async function beep(type = "beep", volume = 1) {
   // 在 Windows 上使用 PowerShell 播放系统音效
   if (process.platform === "win32") {
     const soundName = SYSTEM_SOUNDS[type]?.win || SYSTEM_SOUNDS.beep.win;
-    // 使用系统音效
-    const script = `[System.Media.SystemSounds]::${soundName}.Play()`;
+    // 使用 PowerShell 播放 Windows 系统音效
+    const script = `(New-Object System.Media.SoundPlayer "C:\\Windows\\Media\\${soundName}.wav").PlaySync()`;
 
     return new Promise((resolve, reject) => {
       const ps = spawn("powershell", ["-Command", script]);
@@ -117,17 +130,6 @@ async function beep(type = "beep", volume = 1) {
   else {
     utools.shellBeep();
     return Promise.resolve();
-  }
-}
-
-/**
- * 停止音频播放
- */
-function stop() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-    currentAudio = null;
   }
 }
 

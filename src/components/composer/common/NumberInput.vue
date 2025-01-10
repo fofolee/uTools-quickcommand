@@ -103,7 +103,7 @@ export default defineComponent({
   },
   methods: {
     updateNumber(delta) {
-      const newValue = (this.localValue || 0) + delta;
+      const newValue = +((this.localValue || 0) + delta).toFixed(10);
       if (newValue > this.max) {
         this.$emit("update:modelValue", this.max);
       } else if (newValue < this.min) {
