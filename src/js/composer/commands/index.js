@@ -14,8 +14,9 @@ import { utoolsCommands } from "./utoolsCommand";
 import { screenCommands } from "./screenCommands";
 import { audioCommands } from "./audioCommands";
 import { imageCommands } from "./imageCommands";
+import { windowsCommands } from "./windowsCommands";
 
-export const commandCategories = [
+let commands = [
   fileCommands,
   networkCommands,
   systemCommands,
@@ -31,5 +32,12 @@ export const commandCategories = [
   mathCommands,
   userdataCommands,
   screenCommands,
-  otherCommands,
 ];
+
+if (window.utools.isWindows()) {
+  commands.push(windowsCommands);
+}
+
+commands.push(otherCommands);
+
+export const commandCategories = commands;
