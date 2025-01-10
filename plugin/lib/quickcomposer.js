@@ -6,7 +6,6 @@ const quickcomposer = {
   network: require("./quickcomposer/network"),
   coding: require("./quickcomposer/coding"),
   math: require("./quickcomposer/math"),
-  ui: require("./quickcomposer/ui"),
   audio: require("./quickcomposer/audio"),
   image: require("./quickcomposer/image"),
 };

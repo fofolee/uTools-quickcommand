@@ -157,7 +157,7 @@ import BorderLabel from "components/composer/common/BorderLabel.vue";
  * }
  *
  * // 下拉选择模式
- * options.items = ['User-Agent', 'Content-Type', 'Accept']
+ * options.optionKeys = ['User-Agent', 'Content-Type', 'Accept']
  * {
  *   "User-Agent": newVarInputVal("str", "Mozilla/5.0"),
  *   "Content-Type": newVarInputVal("str", "text/html"),

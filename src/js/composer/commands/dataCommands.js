@@ -335,6 +335,7 @@ export const dataCommands = {
               icon: "memory",
               width: 12,
               defaultValue: [newVarInputVal("var")],
+              defaultRowValue: newVarInputVal("var"),
               disableToggleType: true,
             },
             {

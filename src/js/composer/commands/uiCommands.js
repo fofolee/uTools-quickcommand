@@ -1,5 +1,109 @@
 import { newVarInputVal } from "js/composer/varInputValManager";
 
+const SAVE_DIALOG_PROPERTIES = {
+  component: "CheckGroup",
+  icon: "settings",
+  label: "选项",
+  width: 12,
+  options: [
+    { label: "显示隐藏文件", value: "showHiddenFiles" },
+    { label: "允许创建文件夹（Mac）", value: "createDirectory" },
+    {
+      label: "将.App作为目录（Mac）",
+      value: "treatPackageAsDirectory",
+    },
+    {
+      label: "显示覆盖确认（Linux）",
+      value: "showOverwriteConfirmation",
+    },
+    { label: "不添加到最近（Win）", value: "dontAddToRecent" },
+  ],
+};
+
+const OPEN_DIALOG_PROPERTIES = {
+  ...SAVE_DIALOG_PROPERTIES,
+  options: [
+    { label: "选择文件", value: "openFile" },
+    { label: "选择文件夹", value: "openDirectory" },
+    { label: "允许多选", value: "multiSelections" },
+    { label: "显示隐藏文件", value: "showHiddenFiles" },
+    { label: "提示新建路径（Win）", value: "promptToCreate" },
+    { label: "不添加到最近（Win）", value: "dontAddToRecent" },
+    { label: "允许创建文件夹（Mac）", value: "createDirectory" },
+    { label: "不解析符号链接（Mac）", value: "noResolveAliases" },
+    {
+      label: "将.App作为目录（Mac）",
+      value: "treatPackageAsDirectory",
+    },
+  ],
+};
+
+const DIALOG_CONFIG = {
+  options: {
+    title: {
+      label: "标题",
+      component: "VariableInput",
+      icon: "title",
+      width: 6,
+    },
+    defaultPath: {
+      label: "默认路径",
+      component: "VariableInput",
+      icon: "folder",
+      width: 6,
+    },
+    buttonLabel: {
+      label: "按钮文本",
+      component: "VariableInput",
+      icon: "text_fields",
+      width: 6,
+    },
+    message: {
+      label: "提示信息",
+      component: "VariableInput",
+      icon: "info",
+      width: 6,
+    },
+    filters: {
+      topLabel: "过滤器",
+      component: "ArrayEditor",
+      icon: "filter_list",
+      width: 12,
+      defaultRowValue: [newVarInputVal("str"), newVarInputVal("var", "")],
+      columns: {
+        name: {
+          label: "文件类型",
+          noIcon: true,
+          width: 4,
+        },
+        extensions: {
+          label: "扩展名",
+          noIcon: true,
+          width: 7,
+          disableToggleType: true,
+          options: {
+            items: ["*", "jpg", "png", "gif", "txt", "json", "exe"],
+            multiSelect: true,
+          },
+        },
+      },
+    },
+  },
+  defaultValue: {
+    title: newVarInputVal("str", "请选择"),
+    defaultPath: newVarInputVal("str"),
+    buttonLabel: newVarInputVal("str", "选择"),
+    message: newVarInputVal("str", "请选择"),
+    filters: [
+      {
+        name: newVarInputVal("str", "file"),
+        extensions: newVarInputVal("var", '["*"]'),
+      },
+    ],
+    properties: ["openFile", "showHiddenFiles"],
+  },
+};
+
 export const uiCommands = {
   label: "用户交互",
   icon: "web",
@@ -19,6 +123,7 @@ export const uiCommands = {
             newVarInputVal("str", "是"),
             newVarInputVal("str", "否"),
           ],
+          defaultRowValue: newVarInputVal("str"),
         },
       ],
     },
@@ -33,17 +138,13 @@ export const uiCommands = {
           label: "输入框",
           component: "ArrayEditor",
           width: 12,
-          options: {
-            keys: [
-              {
-                label: "标签",
-                value: "label",
-              },
-              {
-                label: "默认值",
-                value: "value",
-              },
-            ],
+          columns: {
+            label: {
+              label: "标签",
+            },
+            value: {
+              label: "默认值",
+            },
           },
           defaultValue: [
             {
@@ -163,106 +264,43 @@ export const uiCommands = {
       ],
     },
     {
-      value: "quickcomposer.ui.showOpenDialog",
+      value: "utools.showOpenDialog",
       label: "文件选择框",
       desc: "显示一个文件选择框，返回选择的文件路径",
       outputVariable: "filePaths",
       saveOutput: true,
-      config: [
-        {
-          label: "标题",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str", "请选择文件"),
-          width: 6,
-        },
-        {
-          label: "默认路径",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str"),
-          width: 6,
-          placeholder: "默认打开的路径",
-        },
-        {
-          label: "按钮文本",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str", "选择"),
-          width: 3,
-        },
-        {
-          label: "提示信息",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str"),
-          width: 3,
-          placeholder: "对话框底部的提示信息",
-          defaultValue: newVarInputVal("str", "请选择"),
-        },
-        {
-          label: "扩展名",
-          component: "VariableInput",
-          width: 6,
-          options: {
-            items: ["*", "jpg", "png", "gif", "txt", "json", "exe"],
-            multiSelect: true,
-          },
-          defaultValue: newVarInputVal("var", '["*"]'),
-          disableToggleType: true,
-        },
-      ],
       subCommands: [
         {
-          value: "quickcomposer.ui.showOpenDialog",
+          value: "utools.showOpenDialog",
           label: "打开文件对话框",
           desc: "打开文件对话框",
           icon: "folder_open",
           config: [
             {
-              label: "选择选项",
-              component: "CheckGroup",
-              icon: "settings",
-              width: 12,
-              options: [
-                { label: "选择文件", value: "openFile" },
-                { label: "选择文件夹", value: "openDirectory" },
-                { label: "允许多选", value: "multiSelections" },
-                { label: "显示隐藏文件", value: "showHiddenFiles" },
-                { label: "提示新建路径（Win）", value: "promptToCreate" },
-                { label: "不添加到最近（Win）", value: "dontAddToRecent" },
-                { label: "允许创建文件夹（Mac）", value: "createDirectory" },
-                { label: "不解析符号链接（Mac）", value: "noResolveAliases" },
-                {
-                  label: "将.App作为目录（Mac）",
-                  value: "treatPackageAsDirectory",
-                },
-              ],
-              defaultValue: ["openFile", "showHiddenFiles"],
+              label: "选项",
+              component: "OptionEditor",
+              defaultValue: DIALOG_CONFIG.defaultValue,
+              options: {
+                ...DIALOG_CONFIG.options,
+                properties: OPEN_DIALOG_PROPERTIES,
+              },
             },
           ],
         },
         {
-          value: "quickcomposer.ui.showSaveDialog",
+          value: "utools.showSaveDialog",
           label: "保存文件对话框",
           desc: "保存文件对话框",
           icon: "save",
           config: [
             {
-              label: "选择选项",
-              component: "CheckGroup",
-              icon: "settings",
-              width: 12,
-              options: [
-                { label: "显示隐藏文件", value: "showHiddenFiles" },
-                { label: "允许创建文件夹（Mac）", value: "createDirectory" },
-                {
-                  label: "将.App作为目录（Mac）",
-                  value: "treatPackageAsDirectory",
-                },
-                {
-                  label: "显示覆盖确认（Linux）",
-                  value: "showOverwriteConfirmation",
-                },
-                { label: "不添加到最近（Win）", value: "dontAddToRecent" },
-              ],
-              defaultValue: ["showHiddenFiles"],
+              label: "选项",
+              component: "OptionEditor",
+              defaultValue: DIALOG_CONFIG.defaultValue,
+              options: {
+                ...DIALOG_CONFIG.options,
+                properties: SAVE_DIALOG_PROPERTIES,
+              },
             },
           ],
         },

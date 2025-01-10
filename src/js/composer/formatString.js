@@ -6,69 +6,101 @@ import {
 } from "./varInputValManager";
 
 /**
- * 递归移除对象中的空值
- * @param {Object} obj 要处理的对象
- * @returns {Object} 处理后的对象
+ * 处理单个值，返回格式化后的字符串
  */
-const removeEmptyValues = (obj) => {
-  return window.lodashM.omitBy(obj, (value) => {
-    // 如果value是VariableInput的输出，则取其value值
-    const realValue = isVarInputVal(value) ? value.value : value;
-    if (window.lodashM.isNil(realValue) || realValue === "") return true;
-    // 如果value是对象，并且不是VariableInput的输出，则递归移除空值
-    if (typeof value === "object" && !isVarInputVal(value))
-      return window.lodashM.isEmpty(removeEmptyValues(value));
-    return false;
-  });
+const processValue = (value, parentPath = "") => {
+  if (!value) return value;
+
+  if (typeof value === "object") {
+    if (isVarInputVal(value)) {
+      return stringifyVarInputVal(value);
+    }
+    return processObject(value, parentPath);
+  }
+
+  return typeof value === "string" ? `"${value}"` : value;
+};
+
+/**
+ * 格式化带缩进的值
+ */
+const formatWithIndent = (value, indent, isLast = true) => {
+  return `${indent}${value}${isLast ? "" : ","}`;
 };
 
 /**
  * 递归处理对象的值并格式化成字符串
- * @param {Object} obj 要处理的对象
- * @param {string} parentPath 父路径(用于缩进)
- * @returns {string} 处理后的字符串
  */
 const processObject = (obj, parentPath = "") => {
   // 移除空值
   obj = removeEmptyValues(obj);
-  // 如果是 VariableInput 的输出，直接用 stringifyVarInputVal 处理
+
   if (isVarInputVal(obj)) {
     return stringifyVarInputVal(obj);
   }
 
-  let result = "{\n";
+  const indentLevel = parentPath.split(".").length;
+  const indent = "  ".repeat(indentLevel + 1);
+  const closingIndent = "  ".repeat(indentLevel);
+
+  // 处理数组
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return "[]";
+
+    const items = obj.map((item, index) =>
+      formatWithIndent(
+        processValue(item, parentPath + "  "),
+        indent,
+        index === obj.length - 1
+      )
+    );
+
+    return `[\n${items.join("\n")}\n${closingIndent}]`;
+  }
+
+  // 处理对象
   const entries = Object.entries(obj);
+  if (entries.length === 0) return "{}";
 
-  entries.forEach(([key, value], index) => {
-    let valueStr = "";
+  const items = entries.map(([key, value], index) =>
+    formatWithIndent(
+      `"${key}": ${processValue(value, parentPath + "  ")}`,
+      indent,
+      index === entries.length - 1
+    )
+  );
 
-    // 处理对象类型
-    if (value && typeof value === "object") {
-      // 如果是 VariableInput 的输出，直接用 stringifyVarInputVal 处理
-      if (isVarInputVal(value)) {
-        valueStr = stringifyVarInputVal(value);
-      } else {
-        valueStr = processObject(value, parentPath + "  ");
-      }
+  return `{\n${items.join("\n")}\n${closingIndent}}`;
+};
+
+/**
+ * 递归移除对象中的空值
+ */
+const removeEmptyValues = (obj) => {
+  const isEmptyValue = (value) => {
+    const realValue = isVarInputVal(value) ? value.value : value;
+    return window.lodashM.isNil(realValue) || realValue === "";
+  };
+
+  const processObjectValue = (value) => {
+    if (typeof value === "object" && !isVarInputVal(value)) {
+      return removeEmptyValues(value);
     }
-    // 处理其他类型
-    else if (value && typeof value === "string") {
-      valueStr = `"${value}"`;
-    } else {
-      valueStr = value;
-    }
+    return value;
+  };
 
-    // 添加缩进
-    const indent = "  ".repeat(parentPath.split(".").length + 1);
-    result += `${indent}"${key}": ${valueStr}`;
-    if (index < entries.length - 1) result += ",";
-    result += "\n";
-  });
+  if (Array.isArray(obj)) {
+    return obj.filter((value) => !isEmptyValue(value)).map(processObjectValue);
+  }
 
-  // 闭合括号的缩进
-  const closingIndent = "  ".repeat(parentPath.split(".").length);
-  result += `${closingIndent}}`;
-  return result;
+  return window.lodashM.omitBy(
+    obj,
+    (value) =>
+      isEmptyValue(value) ||
+      (typeof value === "object" &&
+        !isVarInputVal(value) &&
+        window.lodashM.isEmpty(removeEmptyValues(value)))
+  );
 };
 
 /**
@@ -264,9 +296,7 @@ export const parseFunction = (functionStr, options = {}) => {
             : node.value;
         // null
         case "NullLiteral":
-          return shouldUseVariableFormat
-            ? newVarInputVal("var", "null")
-            : null;
+          return shouldUseVariableFormat ? newVarInputVal("var", "null") : null;
         case "Identifier":
           // 标识符（变量）总是不带引号的
           return shouldUseVariableFormat

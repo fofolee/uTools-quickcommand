@@ -130,23 +130,8 @@
       <template v-if="argvs.optionType === 'json'">
         <ArrayEditor
           :model-value="argvs.selects"
-          :options="{
-            keys: [
-              {
-                value: 'id',
-                label: 'id',
-                width: 3,
-              },
-              {
-                value: 'title',
-                label: '标题',
-              },
-              {
-                value: 'description',
-                label: '描述',
-              },
-            ],
-          }"
+          :columns="arrayEditorColumns"
+          :default-row-value="arrayEditorDefaultRowValue"
           @update:model-value="updateArgvs('selects', $event)"
         >
           <template #header>
@@ -178,8 +163,7 @@ import VariableInput from "../common/VariableInput.vue";
 import ArrayEditor from "../common/ArrayEditor.vue";
 import OperationCard from "../common/OperationCard.vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
-import { newVarInputVal, isVarInputVal} from "js/composer/varInputValManager";
-
+import { newVarInputVal, isVarInputVal } from "js/composer/varInputValManager";
 
 const jsonDefaultSelects = new Array(3).fill().map((_, index) => ({
   id: newVarInputVal("var", index),
@@ -225,6 +209,28 @@ export default defineComponent({
         enableSearch: true,
         showCancelButton: false,
         closeOnSelect: true,
+      },
+      arrayEditorDefaultRowValue: {
+        id: newVarInputVal("var"),
+        title: newVarInputVal("str"),
+        description: newVarInputVal("str"),
+      },
+      arrayEditorColumns: {
+        id: {
+          label: "id",
+          width: 3,
+          noIcon: true,
+        },
+        title: {
+          label: "标题",
+          width: 4,
+          noIcon: true,
+        },
+        description: {
+          label: "描述",
+          width: 4,
+          noIcon: true,
+        },
       },
     };
   },

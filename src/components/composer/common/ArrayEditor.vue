@@ -6,25 +6,21 @@
     :model-value="isCollapse"
   >
     <div class="array-editor">
-      <div v-for="(item, index) in items" :key="index" class="row items-center">
-        <template v-if="optionsKeys.length">
+      <div v-for="(row, index) in rows" :key="index" class="row items-center">
+        <template v-if="columns">
           <div
-            v-for="key in optionsKeys"
-            :key="key.value"
+            v-for="column in processedColumns"
+            :key="column.key"
             :class="[
-              key.width ? `col-${key.width}` : 'col',
-              optionsKeys.length > 1 ? 'q-pr-sm' : '',
+              column.width ? `col-${column.width}` : 'col',
+              Object.keys(columns).length > 1 ? 'q-pr-sm' : '',
             ]"
           >
             <VariableInput
-              :model-value="item[key.value] || key.defaultValue"
-              :label="key.label"
-              :no-icon="true"
-              :placeholder="key.placeholder"
-              :options="key.options"
-              :disable-toggle-type="key.disableToggleType"
+              :model-value="row[column.key]"
+              v-bind="column"
               @update:model-value="
-                (val) => updateItemKeyValue(index, key.value, val)
+                (val) => updateColumn(index, column.key, val)
               "
             />
           </div>
@@ -32,38 +28,32 @@
         <template v-else>
           <div class="col">
             <VariableInput
-              :model-value="item"
-              :label="`${label || '项目'} ${index + 1}`"
-              :icon="icon || 'code'"
-              :placeholder="placeholder"
-              :options="{
-                items: options.items,
-              }"
-              :disable-toggle-type="disableToggleType"
-              @update:model-value="(val) => updateItemValue(index, val)"
+              :model-value="row"
+              v-bind="$attrs"
+              @update:model-value="(val) => updateValue(index, val)"
             />
           </div>
         </template>
         <div class="col-auto">
           <div class="btn-container">
-            <template v-if="items.length === 1">
+            <template v-if="rows.length === 1">
               <q-btn
                 flat
                 dense
                 size="sm"
                 icon="add"
                 class="center-btn"
-                @click="addItem"
+                @click="addRow"
               />
             </template>
-            <template v-else-if="index === items.length - 1">
+            <template v-else-if="index === rows.length - 1">
               <q-btn
                 flat
                 dense
                 size="sm"
                 icon="remove"
                 class="top-btn"
-                @click="removeItem(index)"
+                @click="removeRow(index)"
               />
               <q-btn
                 flat
@@ -71,7 +61,7 @@
                 size="sm"
                 icon="add"
                 class="bottom-btn"
-                @click="addItem"
+                @click="addRow"
               />
             </template>
             <template v-else>
@@ -81,7 +71,7 @@
                 size="sm"
                 icon="remove"
                 class="center-btn"
-                @click="removeItem(index)"
+                @click="removeRow(index)"
               />
             </template>
           </div>
@@ -94,63 +84,62 @@
 <script>
 /**
  * 数组编辑器组件
- * @description 支持单值数组和多键对象数组的编辑
+ * @description 支持简单数组和对象数组的编辑
  *
  * @property {Array} modelValue - 绑定的数组值
- * @property {String} label - 输入框标签
- * @property {String} icon - 输入框图标
- * @property {Object} options - 配置选项
+ * @property {Object} columns - 列配置（可选）
  *
- * @property {String[]} [options.keys] - 多键对象模式的键名列表
- * @property {String[]} [options.keys.value] - 元素为对象时，对象的键名
- * @property {String[]} [options.keys.label] - 对应varInput的label
- * @property {String[]} [options.keys.placeholder] - 对应varInput的placeholder
- * @property {String[]} [options.keys.defaultValue] - 对应varInput的defaultValue
- * @property {Object} [options.keys.options] - 对应varInput的options
- *
- * @property {String[]} [options.items] - 下拉选择模式的选项列表
- * @property {Object} [options.defaultValue] - 初始化时，默认的值，决定显示几个元素，对应元素内容
- * @example
- * // 基础数组
+ * // 1. 简单数组（不传 columns）
+ * // 值示例：
  * [
- *   newVarInputVal("str", "张三")
+ *   newVarInputVal('str', '选项1'),
+ *   newVarInputVal('str', '选项2')
  * ]
  *
- * // 多键对象数组
- * options.keys = ['name', 'age', 'email']
+ * 属性透传：
+ * ArrayEditor属性全部透传给VariableInput
  *
- * options.keys= [
- *   {
- *     label: "姓名",
- *     value: "name",
- *     placeholder: "姓名",
+ * 初始值：
+ * 使用defaultValue属性设置初始值
+ * 使用defaultRowValue属性设置新增行时的初始值
+ *
+ * // 2. 对象数组（传入 columns）
+ * columns = {
+ *   name: {
+ *     label: '姓名',
+ *     placeholder: '请输入姓名',
+ *     width: 6,
  *     options: {
- *       items: ["张三", "李四", "王五"],
- *       multiSelect: true,
+ *       items: ['张三', '李四', '王五']
  *     },
+ *     defaultValue: newVarInputVal('str', '张三')
+ *   },
+ *   age: {
+ *     label: '年龄',
+ *     placeholder: '请输入年龄',
+ *     width: 4,
+ *     defaultValue: newVarInputVal('str', '18')
  *   }
- * ]
- *
+ * }
+ * // 值示例：
  * [
  *   {
- *     name: newVarInputVal("str", "张三"),
- *     age: newVarInputVal("str", "18"),
- *     email: newVarInputVal("str", "zhangsan@example.com")
+ *     name: newVarInputVal('str', '张三'),
+ *     age: newVarInputVal('str', '18')
  *   }
  * ]
  *
- * // 下拉选择模式
- * options.items = ['选项1', '选项2', '选项3']
- * [
- *   newVarInputVal("str", "选项1"),
- *   newVarInputVal("str", "选项2"),
- *   newVarInputVal("str", "选项3")
- * ]
+ * 属性透传：
+ * columns的每一个对象的值的属性全部透传给VariableInput
+ *
+ * 初始值：
+ * 使用defaultValue属性设置初始的每一行
+ * columns的每一个对象的defaultValue属性设置新增行时的初始值
  */
 import { defineComponent } from "vue";
-import VariableInput from "components/composer/common/VariableInput.vue";
+import VariableInput from "./VariableInput.vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
-import BorderLabel from "components/composer/common/BorderLabel.vue";
+import BorderLabel from "./BorderLabel.vue";
 
 export default defineComponent({
   name: "ArrayEditor",
@@ -164,9 +153,17 @@ export default defineComponent({
       required: true,
       default: () => [],
     },
-    label: {
-      type: String,
-      default: "",
+    columns: {
+      type: Object,
+      default: null,
+    },
+    defaultValue: {
+      type: [Object, Array],
+      default: null,
+    },
+    defaultRowValue: {
+      type: [Object, String],
+      default: null,
     },
     topLabel: {
       type: String,
@@ -180,103 +177,89 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    options: {
-      type: Object,
-      default: () => ({}),
-    },
-    placeholder: {
-      type: String,
-      default: "",
-    },
-    disableToggleType: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: ["update:modelValue"],
   computed: {
-    items() {
-      return this.modelValue.length ? this.modelValue : this.initializeItems();
+    rows() {
+      return this.modelValue.length ? this.modelValue : this.initializeRow();
     },
-    optionsKeys() {
-      return (
-        this.options?.keys?.map((key) => {
-          return {
-            ...key,
-            value: key.value || key,
-            label: key.label || key,
-          };
-        }) || []
-      );
+    processedColumns() {
+      if (!this.columns) return null;
+
+      return Object.entries(this.columns).map(([key, config]) => ({
+        key,
+        ...config,
+        width: config.width || null,
+        defaultValue: config.defaultValue || newVarInputVal("str"),
+      }));
     },
   },
   methods: {
-    initializeItems() {
-      if (this.optionsKeys?.length) {
-        const item = {};
-        this.optionsKeys.forEach((key) => {
-          item[key] = newVarInputVal("str");
-        });
-        return [item];
+    initializeRow() {
+      if (!this.columns) {
+        // 简单数组模式：使用 defaultValue 或创建新的 VarInputVal
+        return this.defaultValue || [newVarInputVal("str")];
       }
 
-      return [newVarInputVal("str")];
-    },
-    /**
-     * 添加新的数组项
-     * 根据配置创建相应的数据结构
-     */
-    addItem() {
-      let newItems = [];
-      if (this.options.keys) {
-        const newItem = {};
-        this.options.keys.forEach((key) => {
-          newItem[key] = newVarInputVal("str");
-        });
-        newItems = [...this.items, newItem];
-      } else {
-        newItems = [...this.items, newVarInputVal("str")];
+      // 对象数组模式
+      if (this.defaultValue) {
+        return [this.defaultValue];
       }
-      this.$emit("update:modelValue", newItems);
+
+      const row = {};
+      Object.entries(this.columns).forEach(([key, config]) => {
+        row[key] = config.defaultValue || newVarInputVal("str");
+      });
+      return [row];
     },
-    /**
-     * 移除指定索引的数组项
-     * 如果移除后数组为空，则创建一个新的空项
-     */
-    removeItem(index) {
-      const newItems = [...this.items];
-      newItems.splice(index, 1);
-      if (newItems.length === 0) {
-        if (this.options.keys) {
-          const newItem = {};
-          this.options.keys.forEach((key) => {
-            newItem[key] = newVarInputVal("str");
-          });
-          newItems.push(newItem);
-        } else {
-          newItems.push(newVarInputVal("str"));
+    getNewRowValue() {
+      if (!this.columns) {
+        // 简单数组模式：使用 defaultRowValue 或创建新的 VarInputVal
+        return this.defaultRowValue || newVarInputVal("str");
+      }
+
+      // 对象数组模式
+      if (this.defaultRowValue) {
+        return this.defaultRowValue;
+      }
+
+      const row = {};
+      Object.entries(this.columns).forEach(([key, config]) => {
+        row[key] = config.defaultValue || newVarInputVal("str");
+      });
+      return row;
+    },
+    addRow() {
+      const newRows = [...this.rows, this.getNewRowValue()];
+      this.$emit("update:modelValue", newRows);
+    },
+    removeRow(index) {
+      const newRows = [...this.rows];
+      newRows.splice(index, 1);
+      if (newRows.length === 0) {
+        newRows.push(this.initializeRow()[0]);
+      }
+      this.$emit("update:modelValue", newRows);
+    },
+    updateValue(index, value) {
+      const newRows = [...this.rows];
+      newRows[index] = value;
+      this.$emit("update:modelValue", newRows);
+    },
+    updateColumn(index, columnKey, value) {
+      // 创建一个新的行数组
+      const newRows = this.rows.map((row, i) => {
+        // 只更新指定索引的行
+        if (i === index) {
+          return {
+            ...row,
+            [columnKey]: value,
+          };
         }
-      }
-      this.$emit("update:modelValue", newItems);
-    },
-    /**
-     * 更新单值模式下的值
-     */
-    updateItemValue(index, value) {
-      const newItems = [...this.items];
-      newItems[index] = value;
-      this.$emit("update:modelValue", newItems);
-    },
-    /**
-     * 更新多键模式下指定键的值
-     */
-    updateItemKeyValue(index, key, value) {
-      const newItems = [...this.items];
-      newItems[index] = {
-        ...newItems[index],
-        [key]: value,
-      };
-      this.$emit("update:modelValue", newItems);
+        return row;
+      });
+
+      this.$emit("update:modelValue", newRows);
     },
   },
 });
