@@ -1,21 +1,32 @@
 <template>
-  <div class="button-group">
-    <div
-      v-for="opt in options"
-      :key="opt.value"
-      :class="['button-item', { active: modelValue === opt.value }]"
-      @click="$emit('update:modelValue', opt.value)"
-    >
-      {{ opt.label }}
+  <component
+    :is="!!label ? 'BorderLabel' : 'div'"
+    :label="label"
+    :icon="icon"
+    :model-value="isCollapse"
+  >
+    <div class="button-group">
+      <div
+        v-for="opt in options"
+        :key="opt.value"
+        :class="['button-item', { active: modelValue === opt.value }]"
+        @click="$emit('update:modelValue', opt.value)"
+      >
+        {{ opt.label }}
+      </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+import BorderLabel from "./BorderLabel.vue";
 
 export default defineComponent({
   name: "ButtonGroup",
+  components: {
+    BorderLabel,
+  },
   props: {
     modelValue: {
       required: true,
@@ -23,6 +34,18 @@ export default defineComponent({
     options: {
       type: Array,
       required: true,
+    },
+    label: {
+      type: String,
+      default: "",
+    },
+    icon: {
+      type: String,
+      default: "",
+    },
+    isCollapse: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ["update:modelValue"],

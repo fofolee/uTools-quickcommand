@@ -148,6 +148,8 @@ export default defineComponent({
       }
     },
     runCommand() {
+      if (!this.localCommand.code)
+        return quickcommand.showMessageBox("请检查参数是否正确", "info");
       // 创建一个带临时变量的命令副本
       const tempCommand = {
         ...this.localCommand,

@@ -10,6 +10,6 @@ module.exports = {
   statistics,
   geometry,
   trigonometry,
-  conversion,
   random,
+  conversion,
 };
