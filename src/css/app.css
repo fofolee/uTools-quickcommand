@@ -13,10 +13,63 @@ body {
   color: #333;
 }
 
-.q-tooltip {
-  font-size: 11px;
+/* Monaco Editor 调整行号栏样式 */
+.monaco-editor .margin {
+  width: 40px !important;
 }
 
+.monaco-editor .line-numbers {
+  text-align: center !important;
+  width: 40px !important;
+  padding-right: 5px !important;
+  left: 0 !important;
+}
+
+/* Monaco Editor 当前行高亮样式 */
+.monaco-editor .current-line {
+  border: none !important;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.monaco-editor .line-numbers {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.body--dark .monaco-editor .line-numbers {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.monaco-editor .current-line~.line-numbers {
+  color: var(--q-primary) !important;
+}
+
+.body--dark .monaco-editor .current-line {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.monaco-editor .margin-view-overlays .current-line {
+  background-color: transparent !important;
+}
+
+/* Monaco Editor 滚动条样式 */
+.monaco-editor .scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.monaco-editor .scrollbar.vertical .slider {
+  width: 5px !important;
+  border-radius: 2px !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.monaco-editor .scrollbar.horizontal .slider {
+  height: 5px !important;
+  border-radius: 2px !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 标签样式 */
 .q-chip {
   background: #e3e3e39a;
 }
@@ -54,6 +107,10 @@ body {
 }
 
 /* 优化 Tooltip 样式 */
+.q-tooltip {
+  font-size: 11px;
+}
+
 .q-tooltip {
   background: rgba(255, 255, 255, 0.18) !important;
   border-radius: 6px;

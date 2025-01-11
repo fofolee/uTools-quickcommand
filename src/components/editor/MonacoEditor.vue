@@ -59,16 +59,39 @@ export default {
     initEditor() {
       let monacoEditorPreferences = {
         value: "",
+        // 自动布局
         automaticLayout: true,
+        // 折叠策略
         foldingStrategy: "indentation",
+        // 自动关闭括号
         autoClosingBrackets: true,
+        // 制表符大小
         tabSize: 2,
         minimap: {
           enabled: false,
         },
+        // 自动格式化
         formatOnType: true,
         formatOnPaste: true,
+        // 自动缩进
         autoIndent: "full",
+        // 行号
+        lineNumbersMinChars: 3,
+        renderLineNumbers: "on",
+        // 行装饰宽度
+        lineDecorationsWidth: 0,
+        // 圆角
+        roundedSelection: false,
+        // 行高亮
+        renderLineHighlight: "all",
+        // 仅在聚焦时高亮行
+        renderLineHighlightOnlyWhenFocus: true,
+        // 隐藏光标
+        hideCursorInOverviewRuler: true,
+        // 隐藏概览边框
+        overviewRulerBorder: false,
+        // 隐藏概览线
+        overviewRulerLanes: 0,
         // JavaScript 特定的格式化选项
         "javascript.format.insertSpaceAfterSemicolonInForStatements": true,
         "javascript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
