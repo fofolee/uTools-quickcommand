@@ -34,7 +34,7 @@
           <ResultMenu
             class="no-shadow q-pa-sm"
             :stretch="true"
-            :content="runResult.join('')"
+            :runResult="runResult"
             :closebtn="!fromUtools"
             :textbtn="!enableHtml"
             :imagebtn="!enableHtml && isDataUrl"
