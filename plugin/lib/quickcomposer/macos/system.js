@@ -1,41 +1,8 @@
 module.exports = {
-  // 控制中心
-  controlCenter: async function () {
-    return await quickcommand.runAppleScript(`
-      tell application "System Events"
-        tell process "Control Center"
-          click menu bar item 1 of menu bar 1
-        end tell
-      end tell
-    `);
-  },
-
-  // 通知中心
-  notificationCenter: async function () {
-    return await quickcommand.runAppleScript(`
-      tell application "System Events"
-        tell process "NotificationCenter"
-          click menu bar item 1 of menu bar 1
-        end tell
-      end tell
-    `);
-  },
-
   // 设置系统音量
   setVolume: async function (volume) {
     return await quickcommand.runAppleScript(`
       set volume output volume ${volume}
-    `);
-  },
-
-  // 设置屏幕亮度
-  setBrightness: async function (brightness) {
-    return await quickcommand.runAppleScript(`
-      tell application "System Events"
-        tell process "SystemUIServer"
-          set value of slider 1 of group 1 of window "Display" to ${brightness}
-        end tell
-      end tell
     `);
   },
 
@@ -89,14 +56,6 @@ module.exports = {
           set autohide menu bar to ${enabled}
         end tell
       end tell
-    `);
-  },
-
-  // 设置时钟格式
-  setClockFormat: async function (format) {
-    return await quickcommand.runAppleScript(`
-      do shell script "defaults write com.apple.menuextra.clock DateFormat -string '${format}'"
-      do shell script "killall SystemUIServer"
     `);
   },
 
