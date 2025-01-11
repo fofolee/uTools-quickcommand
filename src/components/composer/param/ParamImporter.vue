@@ -43,7 +43,7 @@ export default defineComponent({
       required: true,
     },
     modelValue: {
-      type: [Object, String, Number, Array, Boolean],
+      type: null,
       required: true,
     },
   },

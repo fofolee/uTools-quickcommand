@@ -288,7 +288,7 @@ export const macosCommands = {
       ],
     },
     {
-      value: "quickcomposer.macos.finder",
+      value: "quickcomposer.macos.finder.getSelection",
       label: "访达管理",
       desc: "访达操作和文件管理功能",
       icon: "folder",
@@ -297,61 +297,16 @@ export const macosCommands = {
         {
           value: "quickcomposer.macos.finder.getSelection",
           label: "获取选中项",
-          desc: "获取访达中当前选中的项目",
           icon: "select_all",
         },
         {
           value: "quickcomposer.macos.finder.getCurrentFolder",
-          label: "获取当前文件夹",
-          desc: "获取访达当前打开的文件夹路径",
+          label: "获取打开的路径",
           icon: "folder_open",
-        },
-        {
-          value: "quickcomposer.macos.finder.newFolder",
-          label: "新建文件夹",
-          desc: "在当前位置创建新文件夹",
-          icon: "create_new_folder",
-          config: [
-            {
-              key: "name",
-              label: "文件夹名称",
-              component: "TextInput",
-              width: 12,
-              placeholder: "新建文件夹",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.macos.finder.moveToTrash",
-          label: "移到废纸篓",
-          desc: "将选中项目移动到废纸篓",
-          icon: "delete",
-        },
-        {
-          value: "quickcomposer.macos.finder.emptyTrash",
-          label: "清空废纸篓",
-          desc: "清空废纸篓",
-          icon: "delete_forever",
-        },
-        {
-          value: "quickcomposer.macos.finder.showPackageContents",
-          label: "显示包内容",
-          desc: "显示应用程序包内容",
-          icon: "folder_zip",
-          config: [
-            {
-              key: "path",
-              label: "应用路径",
-              component: "FilePicker",
-              width: 12,
-              placeholder: "选择应用程序",
-            },
-          ],
         },
         {
           value: "quickcomposer.macos.finder.setShowHiddenFiles",
           label: "显示隐藏文件",
-          desc: "设置是否显示隐藏文件",
           icon: "visibility",
           config: [
             {
@@ -364,47 +319,25 @@ export const macosCommands = {
           ],
         },
         {
-          value: "quickcomposer.macos.finder.setShowPathbar",
-          label: "显示路径栏",
-          desc: "设置是否显示路径栏",
-          icon: "wrap_text",
-          config: [
-            {
-              key: "show",
-              label: "显示",
-              component: "CheckButton",
-              width: 12,
-              defaultValue: true,
-            },
-          ],
+          value: "quickcomposer.macos.finder.getWindows",
+          label: "获取窗口列表",
+          desc: "获取所有访达窗口信息",
+          icon: "window",
         },
         {
-          value: "quickcomposer.macos.finder.setShowStatusBar",
-          label: "显示状态栏",
-          desc: "设置是否显示状态栏",
-          icon: "info",
+          value: "quickcomposer.macos.finder.activateWindow",
+          label: "激活窗口",
+          desc: "激活指定的访达窗口",
+          icon: "open_in_new",
           config: [
             {
-              key: "show",
-              label: "显示",
-              component: "CheckButton",
+              key: "index",
+              label: "窗口索引",
+              component: "NumberInput",
+              icon: "window",
+              min: 1,
+              defaultValue: 1,
               width: 12,
-              defaultValue: true,
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.macos.finder.setShowPreviewPane",
-          label: "显示预览面板",
-          desc: "设置是否显示预览面板",
-          icon: "preview",
-          config: [
-            {
-              key: "show",
-              label: "显示",
-              component: "CheckButton",
-              width: 12,
-              defaultValue: true,
             },
           ],
         },
