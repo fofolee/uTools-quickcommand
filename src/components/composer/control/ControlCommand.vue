@@ -45,7 +45,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import ParamInput from "components/composer/common/ParamInput.vue";
+import ParamInput from "components/composer/param/ParamInput.vue";
 
 export default defineComponent({
   name: "ControlCommand",

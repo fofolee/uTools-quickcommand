@@ -12,20 +12,11 @@
         class="grid-item"
         :style="getColumnStyle(config.width)"
       >
-        <component
-          :is="config.component"
+        <ParamImporter
+          :config="config"
           :model-value="localObject[key]"
           @update:model-value="updateOption(key, $event)"
-          v-bind="config"
-          filled
-          dense
-          :emit-value="config.component === 'q-select'"
-          :map-options="config.component === 'q-select'"
-        >
-          <template v-slot:prepend v-if="shouldShowQIcon(config)">
-            <q-icon :name="config.icon" />
-          </template>
-        </component>
+        />
       </div>
     </div>
   </component>
@@ -33,27 +24,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import ParamImporter from "../param/ParamImporter.vue";
 import BorderLabel from "./BorderLabel.vue";
-import VariableInput from "./VariableInput.vue";
-import NumberInput from "./NumberInput.vue";
-import ArrayEditor from "./ArrayEditor.vue";
-import DictEditor from "./DictEditor.vue";
-import ButtonGroup from "./ButtonGroup.vue";
-import ControlInput from "./ControlInput.vue";
-import CheckGroup from "./CheckGroup.vue";
-import CheckButton from "./CheckButton.vue";
 export default defineComponent({
   name: "OptionEditor",
   components: {
     BorderLabel,
-    VariableInput,
-    NumberInput,
-    ArrayEditor,
-    DictEditor,
-    ButtonGroup,
-    ControlInput,
-    CheckGroup,
-    CheckButton,
+    ParamImporter,
   },
   emits: ["update:modelValue"],
   props: {

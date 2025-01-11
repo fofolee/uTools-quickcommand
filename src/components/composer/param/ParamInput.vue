@@ -6,35 +6,26 @@
       class="grid-item"
       :style="getColumnStyle(config.width)"
     >
-      <component
-        :is="config.component"
+      <OptionEditor
+        v-if="config.component === 'OptionEditor'"
+        v-bind="config"
         :model-value="values[index]"
         @update:model-value="$emit('update', index, $event)"
-        v-bind="config"
-        filled
-        dense
-        :emit-value="config.component === 'q-select'"
-        :map-options="config.component === 'q-select'"
-      >
-        <template v-slot:prepend v-if="shouldShowQIcon(config)">
-          <q-icon :name="config.icon" />
-        </template>
-      </component>
+      />
+      <ParamImporter
+        v-else
+        :config="config"
+        :model-value="values[index]"
+        @update:model-value="$emit('update', index, $event)"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "./VariableInput.vue";
-import NumberInput from "./NumberInput.vue";
-import ArrayEditor from "./ArrayEditor.vue";
-import DictEditor from "./DictEditor.vue";
-import ButtonGroup from "./ButtonGroup.vue";
-import ControlInput from "./ControlInput.vue";
-import CheckGroup from "./CheckGroup.vue";
-import OptionEditor from "./OptionEditor.vue";
-import CheckButton from "./CheckButton.vue";
+import ParamImporter from "components/composer/param/ParamImporter.vue";
+import OptionEditor from "components/composer/common/OptionEditor.vue";
 
 /**
  * 参数输入组件
@@ -50,15 +41,8 @@ import CheckButton from "./CheckButton.vue";
 export default defineComponent({
   name: "ParamInput",
   components: {
-    VariableInput,
-    NumberInput,
-    ArrayEditor,
-    DictEditor,
-    ButtonGroup,
-    ControlInput,
-    CheckGroup,
+    ParamImporter,
     OptionEditor,
-    CheckButton,
   },
   props: {
     configs: {

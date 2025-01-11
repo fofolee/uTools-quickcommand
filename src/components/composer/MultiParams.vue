@@ -13,7 +13,7 @@
 <script>
 import { defineComponent } from "vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
-import ParamInput from "components/composer/common/ParamInput.vue";
+import ParamInput from "components/composer/param/ParamInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
 import { newVarInputVal } from "js/composer/varInputValManager";
 
