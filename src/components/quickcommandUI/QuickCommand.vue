@@ -4,6 +4,7 @@
     :maximized="maximized"
     :transition-show="maximized ? 'fade' : 'scale'"
     :transition-hide="maximized ? 'fade' : 'scale'"
+    @hide="hideDialog"
   >
     <component
       ref="ui"
@@ -262,12 +263,32 @@ export default {
   methods: {
     clickOK() {},
     wbEvent() {},
+    hideDialog() {},
     showUI(uiComponent, options, maximized, reslove) {
       this.showDialog = true;
       this.options = options;
       this.maximized = maximized;
       this.currentUI = uiComponent;
       this.clickOK = reslove;
+      this.hideDialog = () => {
+        switch (uiComponent) {
+          case InputBox:
+            reslove([]);
+            break;
+          case ButtonBox:
+          case SelectList:
+            reslove({});
+            break;
+          case ConfirmBox:
+            reslove(false);
+            break;
+          case TextArea:
+            reslove("");
+            break;
+          default:
+            reslove(false);
+        }
+      };
     },
   },
 };

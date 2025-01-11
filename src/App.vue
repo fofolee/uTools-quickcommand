@@ -24,6 +24,7 @@ export default defineComponent({
     return {
       setCssVar: setCssVar,
       programs: programmings,
+      isRunningCommand: false,
       profile: defaultProfile.common,
       nativeProfile: defaultProfile.native,
       utools: UTOOLS,

@@ -126,6 +126,7 @@ export default {
   methods: {
     // 运行命令
     async runCurrentCommand(currentCommand) {
+      this.$root.isRunningCommand = true;
       await this.getTempPayload(currentCommand);
       if (currentCommand.cmd.includes("{{subinput"))
         return this.setSubInput(currentCommand);
@@ -284,6 +285,7 @@ export default {
       };
     },
     handleResult(stdout, stderr, options) {
+      this.$root.isRunningCommand = false;
       if (stderr) {
         return options.earlyExit
           ? alert(stderr)
@@ -293,6 +295,7 @@ export default {
     },
     // 显示运行结果
     async showRunResult(content, isSuccess) {
+      this.$root.isRunningCommand = false;
       content = await this.handleContent(content);
       this.runResultStatus = isSuccess;
       this.runResult = this.runResult.concat(content);
