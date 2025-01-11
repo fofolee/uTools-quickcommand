@@ -112,15 +112,6 @@ export default {
         }
       },
     },
-    // 监听语言变化
-    language: {
-      immediate: true,
-      handler(newValue) {
-        if (this.editor) {
-          monaco.editor.setModelLanguage(this.editor.getModel(), newValue);
-        }
-      },
-    },
     "$q.dark.isActive": {
       immediate: true,
       handler(newValue) {
@@ -132,6 +123,7 @@ export default {
     this.initEditor();
     // 手动监听窗口大小变化，解决Monaco自动调整大小时导致ResizeObserver loop limit exceeded错误
     window.addEventListener("resize", this.resizeEditor);
+    monaco.editor.setTheme(this.$q.dark.isActive ? "vs-dark" : "vs");
   },
   beforeUnmount() {
     this.destroyEditor();

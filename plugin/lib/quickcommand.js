@@ -297,10 +297,15 @@ window.runPythonCommand = (py) => {
 };
 
 // 在终端中执行
-if (process.platform !== "linux")
+if (process.platform !== "linux") {
   quickcommand.runInTerminal = function (cmdline, dir) {
     let command = getCommandToLaunchTerminal(cmdline, dir);
     child_process.exec(command);
   };
+}
+
+quickcommand.showSystemMessageBox = function (title, content) {
+  window.utools.showNotification(title + "\n" + content);
+};
 
 module.exports = quickcommand;

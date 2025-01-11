@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const macosCommands = {
   label: "MacOS专区",
   icon: "laptop_mac",
@@ -338,6 +340,595 @@ export const macosCommands = {
               min: 1,
               defaultValue: 1,
               width: 12,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.macos.browser.getUrl",
+      label: "浏览器管理",
+      desc: "浏览器管理功能",
+      icon: "web",
+      isAsync: true,
+      subCommands: [
+        {
+          value: "quickcomposer.macos.browser.getUrl",
+          label: "获取当前地址",
+          desc: "获取当前标签页的URL地址",
+          icon: "link",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.setUrl",
+          label: "设置当前地址",
+          desc: "设置当前标签页的URL地址",
+          icon: "link",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "url",
+              label: "网址",
+              component: "VariableInput",
+              icon: "link",
+              width: 12,
+              placeholder: "输入网址",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.getTabs",
+          label: "获取标签列表",
+          desc: "获取所有打开的标签页信息",
+          icon: "tab",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.activateTab",
+          label: "切换标签",
+          desc: "切换到指定的标签页",
+          icon: "tab_unselected",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "index",
+              label: "标签索引",
+              component: "NumberInput",
+              icon: "tab",
+              min: 1,
+              defaultValue: 1,
+              width: 12,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.executeScript",
+          label: "执行脚本",
+          desc: "在当前标签页执行JavaScript脚本",
+          icon: "code",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "script",
+              label: "脚本内容",
+              component: "CodeEditor",
+              icon: "code",
+              width: 12,
+              placeholder: "输入JavaScript代码",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.clickElement",
+          label: "点击元素",
+          desc: "点击指定的页面元素",
+          icon: "mouse",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.inputText",
+          label: "输入文本",
+          desc: "在指定输入框中输入文本",
+          icon: "edit",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+            {
+              key: "text",
+              label: "文本内容",
+              component: "VariableInput",
+              icon: "edit",
+              width: 12,
+              placeholder: "输入要填写的文本",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.getText",
+          label: "获取文本",
+          desc: "获取指定元素的文本内容",
+          icon: "text_fields",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.hideElement",
+          label: "隐藏元素",
+          desc: "隐藏指定的页面元素",
+          icon: "visibility_off",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.showElement",
+          label: "显示元素",
+          desc: "显示指定的页面元素",
+          icon: "visibility",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.injectCSS",
+          label: "注入CSS",
+          desc: "向页面注入CSS样式",
+          icon: "style",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "css",
+              label: "CSS内容",
+              component: "CodeEditor",
+              icon: "style",
+              width: 12,
+              placeholder: "输入CSS代码",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.setCookie",
+          label: "设置Cookie",
+          desc: "设置浏览器Cookie",
+          icon: "cookie",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              label: "Cookie",
+              component: "ArrayEditor",
+              icon: "cookie",
+              width: 12,
+              columns: {
+                name: {
+                  label: "名称",
+                  defaultValue: newVarInputVal("str"),
+                },
+                value: {
+                  label: "值",
+                  defaultValue: newVarInputVal("str"),
+                },
+              },
+            },
+            {
+              label: "选项",
+              component: "DictEditor",
+              icon: "settings",
+              width: 12,
+              options: {
+                optionKeys: ["expires", "path", "domain", "secure", "sameSite"],
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.getCookie",
+          label: "获取Cookie",
+          desc: "获取指定的Cookie值",
+          icon: "cookie",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "name",
+              label: "名称",
+              component: "VariableInput",
+              icon: "label",
+              width: 12,
+              placeholder: "输入Cookie名称",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.scrollTo",
+          label: "滚动到位置",
+          desc: "滚动到指定坐标位置",
+          icon: "open_in_full",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "x",
+              label: "X坐标",
+              component: "NumberInput",
+              icon: "arrow_right",
+              width: 12,
+              defaultValue: 0,
+            },
+            {
+              key: "y",
+              label: "Y坐标",
+              component: "NumberInput",
+              icon: "arrow_drop_down",
+              width: 12,
+              defaultValue: 0,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.scrollToElement",
+          label: "滚动到元素",
+          desc: "滚动到指定元素位置",
+          icon: "open_in_full",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.waitForElement",
+          label: "等待元素",
+          desc: "等待指定元素出现",
+          icon: "hourglass_empty",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+            {
+              key: "timeout",
+              label: "超时时间",
+              component: "NumberInput",
+              icon: "timer",
+              width: 12,
+              defaultValue: 5000,
+              min: 1000,
+              step: 1000,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.macos.browser.observeElement",
+          label: "监听元素",
+          desc: "监听指定元素的变化",
+          icon: "visibility",
+          config: [
+            {
+              key: "browser",
+              component: "ButtonGroup",
+              defaultValue: "Microsoft Edge",
+              options: [
+                {
+                  label: "Edge 浏览器",
+                  value: "Microsoft Edge",
+                },
+                {
+                  label: "Chrome 浏览器",
+                  value: "Google Chrome",
+                },
+              ],
+              width: 12,
+            },
+            {
+              key: "selector",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+            {
+              key: "callback",
+              label: "回调函数",
+              component: "CodeEditor",
+              icon: "code",
+              width: 12,
+              placeholder: "输入回调函数代码",
             },
           ],
         },

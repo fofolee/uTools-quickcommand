@@ -152,7 +152,7 @@ export default defineComponent({
         if (config.component === "VariableInput") {
           variableFormatPaths.push(prefix);
         } else if (config.component === "ArrayEditor") {
-          variableFormatPaths.push(`${prefix}[*]`);
+          variableFormatPaths.push(`${prefix}[*].**`, `${prefix}[*]`);
         } else if (config.component === "DictEditor") {
           variableFormatPaths.push(`${prefix}.**`);
         }
@@ -167,7 +167,6 @@ export default defineComponent({
           addVariableFormatPath(`arg${index}`, item);
         }
       });
-
       try {
         argvs = parseFunction(code, { variableFormatPaths }).argvs;
       } catch (e) {

@@ -5,6 +5,14 @@ import {
   newVarInputVal,
 } from "./varInputValManager";
 
+const processString = (value) => {
+  try {
+    return JSON.stringify(value);
+  } catch (error) {
+    return `"${value}"`;
+  }
+};
+
 /**
  * 处理单个值，返回格式化后的字符串
  */
@@ -12,13 +20,13 @@ const processValue = (value, parentPath = "") => {
   if (!value) return value;
 
   if (typeof value === "object") {
-    if (isVarInputVal(value)) {
-      return stringifyVarInputVal(value);
-    }
     return processObject(value, parentPath);
   }
+  if (typeof value === "string") {
+    return processString(value);
+  }
 
-  return typeof value === "string" ? `"${value}"` : value;
+  return value;
 };
 
 /**
@@ -131,7 +139,7 @@ const stringifyObject = (jsonObj) => {
 export const stringifyArgv = (argv) => {
   // 普通字符串加上引号
   if (typeof argv === "string") {
-    return `"${argv}"`;
+    return processString(argv);
   }
   // null类型是Object，需要单独处理，返回原值
   if (argv === null) {

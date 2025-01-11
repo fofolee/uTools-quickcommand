@@ -58,7 +58,6 @@ export default defineComponent({
   width: 100%;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 10px;
   border-radius: 6px;
 }
 

@@ -27,43 +27,44 @@
             </q-input>
           </template>
           <template v-else>
-            <q-select
+            <q-input
               v-if="options?.optionKeys"
               :model-value="item.key"
-              :options="normalizedOptionKeys"
               label="名称"
               dense
               filled
-              use-input
-              input-debounce="0"
-              :hide-selected="!!inputValue"
-              @filter="filterFn"
-              @update:model-value="
-                (val) => handleSelect(val, getEditableIndex(index))
-              "
-              @input-value="(val) => handleInput(val, getEditableIndex(index))"
-              @blur="handleBlur"
+              @update:model-value="(val) => handleInput(val, index)"
             >
               <template v-slot:prepend>
                 <q-icon name="code" />
               </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    {{ getKeyLabel(scope.opt) }}
-                  </q-item-section>
-                </q-item>
+              <template v-slot:append>
+                <q-btn dense flat icon="arrow_drop_down">
+                  <q-menu>
+                    <q-list dense>
+                      <q-item
+                        v-for="opt in normalizedOptionKeys"
+                        :key="opt.value"
+                        clickable
+                        v-close-popup
+                        @click="handleSelect(opt, index)"
+                      >
+                        <q-item-section>
+                          {{ getKeyLabel(opt) }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-btn>
               </template>
-            </q-select>
+            </q-input>
             <q-input
               v-else
               :model-value="item.key"
               label="名称"
               dense
               filled
-              @update:model-value="
-                (val) => updateItemKey(val, getEditableIndex(index))
-              "
+              @update:model-value="(val) => handleInput(val, index)"
             >
               <template v-slot:prepend>
                 <q-icon name="code" />
@@ -77,9 +78,7 @@
             label="值"
             icon="code"
             class="col-grow"
-            @update:model-value="
-              (val) => updateItemValue(val, index, item.type === 'fixed')
-            "
+            @update:model-value="(val) => updateItemValue(val, index)"
           />
         </div>
         <div
@@ -87,7 +86,7 @@
           class="col-auto"
         >
           <div class="btn-container">
-            <template v-if="editableItems.length === 1">
+            <template v-if="localItems.length === 1">
               <q-btn
                 flat
                 dense
@@ -97,16 +96,14 @@
                 @click="addItem"
               />
             </template>
-            <template
-              v-else-if="getEditableIndex(index) === editableItems.length - 1"
-            >
+            <template v-else-if="index === allItems.length - 1">
               <q-btn
                 flat
                 dense
                 size="sm"
                 icon="remove"
                 class="top-btn"
-                @click="removeItem(getEditableIndex(index))"
+                @click="removeItem(index)"
               />
               <q-btn
                 flat
@@ -124,7 +121,7 @@
                 size="sm"
                 icon="remove"
                 class="center-btn"
-                @click="removeItem(getEditableIndex(index))"
+                @click="removeItem(index)"
               />
             </template>
           </div>
@@ -140,30 +137,6 @@ import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import BorderLabel from "components/composer/common/BorderLabel.vue";
 
-/**
- * 字典编辑器组件
- * @description 支持键值对编辑，键支持变量选择和字符串输入，值为VariableInput特有对象
- *
- * @property {Object} modelValue - 绑定的字典对象
- * @property {Object} options - 配置选项
- * @property {String[]|Object[]} [options.optionKeys] - 可选键名
- * @property {String[]|Object[]} [options.fixedKeys] - 固定键名
- * @property {Boolean} [options.disableAdd] - 禁止添加新的键值对
- *
- * @example
- * // 基础字典对象
- * {
- *   key: newVarInputVal("str"),
- * }
- *
- * // 下拉选择模式
- * options.optionKeys = ['User-Agent', 'Content-Type', 'Accept']
- * {
- *   "User-Agent": newVarInputVal("str", "Mozilla/5.0"),
- *   "Content-Type": newVarInputVal("str", "text/html"),
- *   "Accept": newVarInputVal("str", "text/html")
- * }
- */
 export default defineComponent({
   name: "DictEditor",
   components: {
@@ -173,7 +146,6 @@ export default defineComponent({
   props: {
     modelValue: {
       type: Object,
-      required: true,
       default: () => ({}),
     },
     options: {
@@ -198,35 +170,23 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue"],
+  created() {
+    if (!this.modelValue || Object.keys(this.modelValue).length === 0) {
+      this.$emit("update:modelValue", { "": newVarInputVal("str") });
+    }
+  },
   data() {
     return {
       inputValue: "",
     };
   },
   computed: {
-    editableItems: {
-      get() {
-        return this.localItems;
-      },
-      set(newItems) {
-        this.localItems = newItems;
-        this.updateModelValue();
-      },
-    },
-    normalizedOptionKeys() {
-      return this.filterOptions;
-    },
-    // 规范化的固定键列表
-    normalizedFixedKeys() {
-      return this.normalizeKeys(this.options?.fixedKeys || []);
-    },
-    // 从 modelValue 中提取的所有条目
     modelEntries() {
       return Object.entries(this.modelValue || {});
     },
-    // 固定键项
     fixedItems() {
-      return this.normalizedFixedKeys.map((key) => ({
+      const fixedKeys = this.normalizeKeys(this.options?.fixedKeys || []);
+      return fixedKeys.map((key) => ({
         type: "fixed",
         key: key.value,
         value:
@@ -234,136 +194,84 @@ export default defineComponent({
           newVarInputVal("str"),
       }));
     },
-    // 可编辑项
     localItems() {
-      // 过滤出不在固定键中的条目
-      const editableEntries = this.modelEntries.filter(
-        ([key]) => !this.normalizedFixedKeys.some((k) => k.value === key)
-      );
-
-      return editableEntries.length || this.options?.disableAdd
-        ? editableEntries.map(([key, value]) => ({
-            type: "editable",
-            key,
-            value,
-          }))
-        : [{ type: "editable", key: "", value: newVarInputVal("str") }];
+      return this.modelEntries
+        .filter(
+          ([key]) =>
+            !this.normalizeKeys(this.options?.fixedKeys || []).some(
+              (k) => k.value === key
+            )
+        )
+        .map(([key, value]) => ({
+          type: "editable",
+          key,
+          value,
+        }));
     },
-    // 所有项目的组合
     allItems() {
       return [...this.fixedItems, ...this.localItems];
     },
-    // 过滤选项
-    filterOptions() {
+    normalizedOptionKeys() {
       return this.normalizeKeys(this.options?.optionKeys || []);
     },
   },
   methods: {
     normalizeKeys(keys) {
-      return keys.map((key) => {
-        if (typeof key === "string") {
-          return { value: key, label: key };
-        }
-        return key;
-      });
+      return keys.map((key) =>
+        typeof key === "string" ? { value: key, label: key } : key
+      );
     },
-
     getKeyLabel(key) {
       if (typeof key === "object") return key.label;
-      const allKeys = [...this.normalizedFixedKeys, ...this.filterOptions];
+      const allKeys = [
+        ...this.normalizeKeys(this.options?.fixedKeys || []),
+        ...this.normalizedOptionKeys,
+      ];
       return allKeys.find((k) => k.value === key)?.label || key;
     },
-
-    getEditableIndex(index) {
-      return index - this.fixedItems.length;
-    },
-
-    updateModelValue() {
-      const dict = {};
-      // 先添加固定键
-      this.fixedItems.forEach((item) => {
-        if (item.key) {
-          dict[item.key] = item.value;
-        }
-      });
-      // 再添加可编辑键
-      this.localItems.forEach((item) => {
-        if (item.key) {
-          dict[item.key] = item.value;
-        }
-      });
+    updateItemValue(val, index) {
+      const item = this.allItems[index];
+      const dict = { ...this.modelValue };
+      dict[item.key] = val;
       this.$emit("update:modelValue", dict);
     },
-
-    updateItemValue(val, index, isFixed = false) {
-      const dict = { ...this.modelValue };
-      const item = this.allItems[index];
-      if (item.key) {
-        dict[item.key] = val;
-        this.$emit("update:modelValue", dict);
-      }
-    },
-
     addItem() {
       if (this.options?.disableAdd) return;
       const dict = { ...this.modelValue };
       dict[""] = newVarInputVal("str");
       this.$emit("update:modelValue", dict);
     },
-
     removeItem(index) {
-      if (this.options?.disableAdd) return;
-      const dict = { ...this.modelValue };
       const item = this.localItems[index];
-      if (item.key) {
-        delete dict[item.key];
-        this.$emit("update:modelValue", dict);
-      }
-    },
-
-    updateItemKey(val, index) {
       const dict = { ...this.modelValue };
-      const oldItem = this.localItems[index];
-      if (oldItem.key) {
-        delete dict[oldItem.key];
+      delete dict[item.key];
+
+      // 如果删除后没有条目，添加一个空行
+      if (Object.keys(dict).length === 0) {
+        dict[""] = newVarInputVal("str");
       }
-      dict[val] = oldItem.value;
+
       this.$emit("update:modelValue", dict);
     },
-
     handleInput(val, index) {
       this.inputValue = val;
-      if (val) {
-        this.updateItemKey(val, index);
-      }
+      const item = this.allItems[index];
+      const dict = { ...this.modelValue };
+      delete dict[item.key];
+      dict[val] = item.value;
+      this.$emit("update:modelValue", dict);
     },
-
     handleSelect(val, index) {
       this.inputValue = "";
-      this.updateItemKey(val.value || val, index);
+      const value = val?.value || val;
+      const item = this.allItems[index];
+      const dict = { ...this.modelValue };
+      delete dict[item.key];
+      dict[value] = item.value;
+      this.$emit("update:modelValue", dict);
     },
-
     handleBlur() {
       this.inputValue = "";
-    },
-
-    filterFn(val, update) {
-      if (!this.options?.optionKeys) return;
-
-      update(() => {
-        if (val === "") {
-          this.filterOptions = this.normalizeKeys(this.options.optionKeys);
-        } else {
-          const needle = val.toLowerCase();
-          this.filterOptions = this.normalizeKeys(
-            this.options.optionKeys
-          ).filter(
-            (v) =>
-              v.label.toLowerCase().indexOf(needle) > -1 ||
-              v.value.toLowerCase().indexOf(needle) > -1
-          );
-        }
-      });
     },
   },
 });
