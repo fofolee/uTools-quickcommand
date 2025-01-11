@@ -39,7 +39,7 @@ export default defineComponent({
   },
   props: {
     config: {
-      type: Array,
+      type: Object,
       required: true,
     },
     modelValue: {

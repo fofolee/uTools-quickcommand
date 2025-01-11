@@ -67,7 +67,7 @@ const RECT_DICT_EDITOR = {
 
 export const screenCommands = {
   label: "显示器",
-  icon: "screenshot_monitor",
+  icon: "display_settings",
   commands: [
     {
       value: "utools.getPrimaryDisplay",

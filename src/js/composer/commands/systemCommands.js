@@ -2,7 +2,7 @@ import { newVarInputVal } from "js/composer/varInputValManager";
 
 export const systemCommands = {
   label: "系统操作",
-  icon: "computer",
+  icon: "settings_suggest",
   defaultOpened: false,
   commands: [
     {

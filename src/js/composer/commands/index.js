@@ -16,6 +16,7 @@ import { audioCommands } from "./audioCommands";
 import { imageCommands } from "./imageCommands";
 import { windowsCommands } from "./windowsCommands";
 import { statusCommands } from "./statusCommands";
+import { macosCommands } from "./macosCommands";
 
 let commands = [
   fileCommands,
@@ -38,6 +39,10 @@ let commands = [
 
 if (window.utools.isWindows()) {
   commands.push(windowsCommands);
+}
+
+if (window.utools.isMacOS()) {
+  commands.push(macosCommands);
 }
 
 commands.push(otherCommands);

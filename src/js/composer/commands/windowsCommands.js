@@ -1,7 +1,5 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
-
 export const windowsCommands = {
-  label: "Windows工具",
+  label: "Windows专区",
   icon: "window",
   defaultOpened: false,
   commands: [
