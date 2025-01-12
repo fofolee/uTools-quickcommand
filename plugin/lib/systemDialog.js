@@ -470,24 +470,29 @@ const showSystemSelectList = async function (items, title = "") {
 };
 
 // 系统级按钮组弹窗
-const showSystemButtonBox = async function (buttons, content, title = "") {
+const showSystemButtonBox = async function (buttons, content = "", title = "") {
   const iconPath = getQuickcommandIconPath();
   if (window.utools.isMacOs()) {
-    let iconParam = "note";
-    if (iconPath) {
-      const posixPath = iconPath.replace(/\\/g, "/");
-      iconParam = `alias POSIX file "${posixPath}"`;
+    try {
+      let iconParam = "note";
+      if (iconPath) {
+        const posixPath = iconPath.replace(/\\/g, "/");
+        iconParam = `alias POSIX file "${posixPath}"`;
+      }
+      const buttonList = buttons.map((btn) => `"${btn}"`).join(", ");
+      const script = `display dialog "${content}" with title "${title}" buttons {${buttonList}} default button "${buttons[0]}" with icon ${iconParam}`;
+      const result = await this.runAppleScript(script);
+      const match = result.match(/button returned:(.+)/);
+      if (match) {
+        const text = match[1];
+        const id = buttons.findIndex((btn) => btn === text);
+        return { id, text };
+      }
+      return null;
+    } catch (error) {
+      window.utools.showNotification(error);
+      throw error;
     }
-    const buttonList = buttons.map((btn) => `"${btn}"`).join(", ");
-    const script = `display dialog "${content}" with title "${title}" buttons {${buttonList}} default button "${buttons[0]}" with icon ${iconParam}`;
-    const result = await this.runAppleScript(script);
-    const match = result.match(/button returned:(.+)/);
-    if (match) {
-      const text = match[1];
-      const id = buttons.findIndex((btn) => btn === text);
-      return { id, text };
-    }
-    return null;
   } else if (window.utools.isWindows()) {
     const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `

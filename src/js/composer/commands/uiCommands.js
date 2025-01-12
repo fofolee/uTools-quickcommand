@@ -79,7 +79,6 @@ const DIALOG_CONFIG = {
         extensions: {
           label: "扩展名",
           noIcon: true,
-          width: 7,
           disableToggleType: true,
           options: {
             items: ["*", "jpg", "png", "gif", "txt", "json", "exe"],
@@ -126,6 +125,24 @@ export const uiCommands = {
           ],
           defaultRowValue: newVarInputVal("str"),
         },
+        {
+          label: "标题",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("str", "请选择"),
+          width: 12,
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcommand.showButtonBox",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+        },
+        {
+          value: "quickcommand.showSystemButtonBox",
+          icon: "report",
+          label: "系统弹窗",
+        },
       ],
     },
     {
@@ -134,41 +151,78 @@ export const uiCommands = {
       isAsync: true,
       outputVariable: "[inputValue1]",
       saveOutput: true,
-      width: 12,
-      config: [
+      subCommands: [
         {
-          label: "输入框",
-          component: "ArrayEditor",
-          width: 12,
-          columns: {
-            label: {
-              label: "标签",
-            },
-            value: {
-              label: "默认值",
-            },
-          },
-          defaultValue: [
+          value: "quickcommand.showInputBox",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+          config: [
             {
-              label: newVarInputVal("str", "请输入"),
-              value: newVarInputVal("str"),
+              label: "输入框",
+              component: "ArrayEditor",
+              width: 12,
+              columns: {
+                label: {
+                  label: "标签",
+                },
+                value: {
+                  label: "默认值",
+                },
+              },
+              defaultValue: [
+                {
+                  label: newVarInputVal("str", "请输入"),
+                  value: newVarInputVal("str"),
+                },
+              ],
             },
           ],
         },
         {
-          label: "标题",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str"),
-          width: 12,
+          value: "quickcommand.showSystemInputBox",
+          icon: "report",
+          label: "系统弹窗",
+          config: [
+            {
+              label: "提示信息",
+              component: "ArrayEditor",
+              width: 12,
+            },
+            {
+              label: "标题",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str", "请输入"),
+              width: 12,
+            },
+          ],
         },
       ],
     },
     {
       value: "quickcommand.showSelectList",
-      label: "选择列表",
+      label: "uTools选择列表",
       desc: "显示一个支持搜索的选项列表，可以动态更新选项",
       component: "SelectListEditor",
       isAsync: true,
+    },
+    {
+      value: "quickcommand.showSystemSelectList",
+      label: "系统选择列表",
+      desc: "选择列表（系统）",
+      isAsync: true,
+      config: [
+        {
+          label: "选项",
+          component: "ArrayEditor",
+          width: 12,
+        },
+        {
+          label: "标题",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("str", "请选择"),
+          width: 12,
+        },
+      ],
     },
     {
       value: "quickcommand.showTextArea",
@@ -191,6 +245,18 @@ export const uiCommands = {
           width: 6,
         },
       ],
+      subCommands: [
+        {
+          value: "quickcommand.showTextArea",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+        },
+        {
+          value: "quickcommand.showSystemTextArea",
+          icon: "report",
+          label: "系统弹窗(Mac不支持)",
+        },
+      ],
     },
     {
       value: "quickcommand.showMessageBox",
@@ -205,26 +271,48 @@ export const uiCommands = {
           defaultValue: newVarInputVal("str", "这是一条提示消息"),
           width: 12,
         },
+      ],
+      subCommands: [
         {
-          label: "图标类型",
-          component: "q-select",
-          defaultValue: "success",
-          icon: "lightbulb",
-          width: 6,
-          options: [
-            { label: "成功", value: "success" },
-            { label: "错误", value: "error" },
-            { label: "警告", value: "warning" },
-            { label: "信息", value: "info" },
+          value: "quickcommand.showMessageBox",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+          config: [
+            {
+              label: "图标类型",
+              component: "q-select",
+              defaultValue: "success",
+              icon: "lightbulb",
+              width: 6,
+              options: [
+                { label: "成功", value: "success" },
+                { label: "错误", value: "error" },
+                { label: "警告", value: "warning" },
+                { label: "信息", value: "info" },
+              ],
+            },
+            {
+              label: "显示时间(ms)",
+              component: "NumberInput",
+              min: 0,
+              step: 100,
+              width: 6,
+              placeholder: "0为手动关闭，留空按文本长度调整",
+            },
           ],
         },
         {
-          label: "显示时间(ms)",
-          component: "NumberInput",
-          min: 0,
-          step: 100,
-          width: 6,
-          placeholder: "0为手动关闭，留空按文本长度调整",
+          value: "quickcommand.showSystemMessageBox",
+          icon: "report",
+          label: "系统弹窗",
+          config: [
+            {
+              label: "标题",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str", "提示"),
+              width: 12,
+            },
+          ],
         },
       ],
     },
@@ -246,22 +334,36 @@ export const uiCommands = {
           label: "标题",
           component: "VariableInput",
           defaultValue: newVarInputVal("str", "提示"),
-          width: 7,
+          width: 12,
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcommand.showConfirmBox",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+          config: [
+            {
+              label: "支持HTML",
+              component: "CheckButton",
+              defaultValue: false,
+              width: 6,
+            },
+            {
+              label: "宽度",
+              component: "NumberInput",
+              min: 0,
+              step: 100,
+              defaultValue: 450,
+              width: 6,
+              placeholder: "对话框宽度",
+            },
+          ],
         },
         {
-          label: "支持HTML",
-          component: "q-toggle",
-          defaultValue: false,
-          width: 2,
-        },
-        {
-          label: "宽度",
-          component: "NumberInput",
-          min: 0,
-          step: 100,
-          defaultValue: 450,
-          width: 3,
-          placeholder: "对话框宽度",
+          value: "quickcommand.showSystemConfirmBox",
+          icon: "report",
+          label: "系统弹窗",
         },
       ],
     },
