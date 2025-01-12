@@ -39,7 +39,7 @@
                 <q-icon name="code" />
               </template>
               <template v-slot:append>
-                <q-btn dense flat icon="arrow_drop_down">
+                <q-btn dense flat icon="menu">
                   <q-menu>
                     <q-list dense>
                       <q-item
@@ -256,6 +256,9 @@ export default defineComponent({
     handleInput(val, index) {
       this.inputValue = val;
       const item = this.allItems[index];
+      if (val in this.modelValue && val !== item.key) {
+        return;
+      }
       const dict = { ...this.modelValue };
       delete dict[item.key];
       dict[val] = item.value;
@@ -265,6 +268,9 @@ export default defineComponent({
       this.inputValue = "";
       const value = val?.value || val;
       const item = this.allItems[index];
+      if (value in this.modelValue && value !== item.key) {
+        return;
+      }
       const dict = { ...this.modelValue };
       delete dict[item.key];
       dict[value] = item.value;

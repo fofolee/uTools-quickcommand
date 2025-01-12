@@ -60,16 +60,22 @@ module.exports = {
   executeScript: async function (
     browser = "Microsoft Edge",
     script,
-    newScope = true
+    args = {}
   ) {
     try {
-      // 默认在两边加上括号让脚本每次在新的作用域执行，防止变量污染
-      if (newScope) script = "{" + script + "}";
+      // 构建参数列表
+      const argNames = Object.keys(args);
+      const argValues = Object.values(args).map((v) => JSON.stringify(v));
+
+      script = `
+        (function(${argNames.join(", ")}) {
+          ${script}
+        })(${argValues.join(", ")})
+      `;
       // 使用JSON.stringify处理转义
       const escapedScript = JSON.stringify(script);
-      console.log(escapedScript);
 
-      return await quickcommand.runAppleScript(`
+      let result = await quickcommand.runAppleScript(`
         tell application "${browser}"
           tell front window
             tell active tab
@@ -78,8 +84,23 @@ module.exports = {
           end tell
         end tell
       `);
+
+      result = result?.trim() || "";
+      if (result === "missing value") {
+        // 脚本没有返回值
+        return;
+      } else if (result === "##execute_script_success##") {
+        // 模拟操作执行成功
+        return true;
+      } else if (result === "##execute_script_failed##") {
+        // 模拟操作执行失败
+        return false;
+      }
+
+      return result;
     } catch (error) {
       quickcommand.showSystemMessageBox("执行失败", error.toString());
+      throw error;
     }
   },
 
@@ -89,9 +110,9 @@ module.exports = {
       const element = document.querySelector('${selector}');
       if (element) {
         element.click();
-        'success';
+        return '##execute_script_success##';
       } else {
-        'element not found';
+        return '##execute_script_failed##';
       }
     `;
     return await this.executeScript(browser, script);
@@ -105,9 +126,9 @@ module.exports = {
         element.value = '${text}';
         element.dispatchEvent(new Event('input'));
         element.dispatchEvent(new Event('change'));
-        'success';
+        return '##execute_script_success##';
       } else {
-        'element not found';
+        return '##execute_script_failed##';
       }
     `;
     return await this.executeScript(browser, script);
@@ -117,7 +138,7 @@ module.exports = {
   getText: async function (browser = "Microsoft Edge", selector) {
     const script = `
       const element = document.querySelector('${selector}');
-      element ? element.textContent : '';
+      return element ? element.textContent : '';
     `;
     return await this.executeScript(browser, script);
   },
@@ -126,7 +147,7 @@ module.exports = {
   getHtml: async function (browser = "Microsoft Edge", selector) {
     const script = `
       const element = document.querySelector('${selector}');
-      element ? element.innerHTML : '';
+      return element ? element.innerHTML : '';
     `;
     return await this.executeScript(browser, script);
   },
@@ -137,9 +158,9 @@ module.exports = {
       const element = document.querySelector('${selector}');
       if (element) {
         element.style.display = 'none';
-        'success';
+        return '##execute_script_success##';
       } else {
-        'element not found';
+        return '##execute_script_failed##';
       }
     `;
     return await this.executeScript(browser, script);
@@ -151,9 +172,9 @@ module.exports = {
       const element = document.querySelector('${selector}');
       if (element) {
         element.style.display = '';
-        'success';
+        return '##execute_script_success##';
       } else {
-        'element not found';
+        return '##execute_script_failed##';
       }
     `;
     return await this.executeScript(browser, script);
@@ -165,7 +186,7 @@ module.exports = {
       const style = document.createElement('style');
       style.textContent = \`${css}\`;
       document.head.appendChild(style);
-      'success';
+      return '##execute_script_success##';
     `;
     return await this.executeScript(browser, script);
   },
@@ -176,23 +197,25 @@ module.exports = {
     cookies,
     options = {}
   ) {
-    // 在外部构建所有cookie的设置语句
-    console.log(cookies, options);
     const cookieStatements = cookies
       .map((cookie) => {
         let cookieString = `${cookie.name}=${cookie.value}`;
-        if (options.expires) cookieString += `;expires=${options.expires}`;
+        if (options.expires) {
+          const expiresDate = new Date(
+            Date.now() + options.expires * 60 * 60 * 1000
+          );
+          cookieString += `;expires=${expiresDate.toUTCString()}`;
+        }
         if (options.path) cookieString += `;path=${options.path}`;
         if (options.domain) cookieString += `;domain=${options.domain}`;
         if (options.secure) cookieString += ";secure";
-        if (options.sameSite) cookieString += `;samesite=${options.sameSite}`;
         return `document.cookie = ${JSON.stringify(cookieString)};`;
       })
       .join("\n");
 
     const script = `
       ${cookieStatements}
-      'success';
+      return '##execute_script_success##';
     `;
 
     return await this.executeScript(browser, script);
@@ -205,7 +228,7 @@ module.exports = {
         .split('; ')
         .find(row => row.startsWith('${name}='))
         ?.split('=')[1];
-      value || '';
+      return value || '';
     `;
     return await this.executeScript(browser, script);
   },
@@ -221,7 +244,7 @@ module.exports = {
       document.cookie = '${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT' +
         (${domain ? `'; domain=${domain}'` : "''"}) +
         (${path ? `'; path=${path}'` : "''"});
-      'success';
+      return '##execute_script_success##';
     `;
     return await this.executeScript(browser, script);
   },
@@ -230,7 +253,7 @@ module.exports = {
   scrollTo: async function (browser = "Microsoft Edge", x, y) {
     const script = `
       window.scrollTo(${x}, ${y});
-      'success';
+      return '##execute_script_success##';
     `;
     return await this.executeScript(browser, script);
   },
@@ -241,9 +264,9 @@ module.exports = {
       const element = document.querySelector('${selector}');
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        'success';
+        return '##execute_script_success##';
       } else {
-        'element not found';
+        return '##execute_script_failed##';
       }
     `;
     return await this.executeScript(browser, script);
@@ -252,7 +275,7 @@ module.exports = {
   // 获取滚动位置
   getScrollPosition: async function (browser = "Microsoft Edge") {
     const script = `
-      JSON.stringify({
+      return JSON.stringify({
         x: window.pageXOffset || document.documentElement.scrollLeft,
         y: window.pageYOffset || document.documentElement.scrollTop
       });
@@ -263,7 +286,7 @@ module.exports = {
   // 获取页面尺寸
   getPageSize: async function (browser = "Microsoft Edge") {
     const script = `
-      JSON.stringify({
+      return JSON.stringify({
         width: Math.max(
           document.documentElement.scrollWidth,
           document.documentElement.clientWidth
@@ -283,65 +306,24 @@ module.exports = {
     selector,
     timeout = 5000
   ) {
-    const script = `
-      new Promise((resolve, reject) => {
-        const element = document.querySelector('${selector}');
-        if (element) {
-          resolve('found');
-          return;
-        }
+    const startTime = Date.now();
 
-        const observer = new MutationObserver((mutations, obs) => {
-          const element = document.querySelector('${selector}');
-          if (element) {
-            obs.disconnect();
-            resolve('found');
-          }
-        });
-
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true
-        });
-
-        setTimeout(() => {
-          observer.disconnect();
-          reject('timeout');
-        }, ${timeout});
-      });
-    `;
-    return await this.executeScript(browser, script);
-  },
-
-  // 监听元素变化
-  observeElement: async function (
-    browser = "Microsoft Edge",
-    selector,
-    callback
-  ) {
-    const script = `
+    // 检查元素是否存在的函数
+    const checkScript = `
       const element = document.querySelector('${selector}');
-      if (!element) return 'element not found';
-
-      const observer = new MutationObserver((mutations) => {
-        const data = mutations.map(mutation => ({
-          type: mutation.type,
-          target: mutation.target.outerHTML,
-          addedNodes: Array.from(mutation.addedNodes).map(node => node.outerHTML),
-          removedNodes: Array.from(mutation.removedNodes).map(node => node.outerHTML)
-        }));
-        window.webkit.messageHandlers.callback.postMessage(JSON.stringify(data));
-      });
-
-      observer.observe(element, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-        characterData: true
-      });
-
-      'success';
+      return element ? '##execute_script_success##' : '##execute_script_failed##';
     `;
-    return await this.executeScript(browser, script);
+
+    // 轮询检查元素
+    while (Date.now() - startTime < timeout) {
+      const result = await this.executeScript(browser, checkScript);
+      if (result === true) {
+        return true;
+      }
+      // 等待100ms再次检查
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    return false;
   },
 };
