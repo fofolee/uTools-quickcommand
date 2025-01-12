@@ -1,13 +1,13 @@
 import { newVarInputVal } from "js/composer/varInputValManager";
 
 export const macosCommands = {
-  label: "MacOS专区",
+  label: "Mac自动化",
   icon: "laptop_mac",
   defaultOpened: false,
   commands: [
     {
       value: "quickcomposer.macos.app.getFrontmost",
-      label: "应用管理",
+      label: "应用及窗口控制",
       desc: "应用程序管理功能",
       icon: "apps",
       isAsync: true,
@@ -347,7 +347,7 @@ export const macosCommands = {
     },
     {
       value: "quickcomposer.macos.browser.getUrl",
-      label: "浏览器管理",
+      label: "浏览器控制",
       desc: "浏览器管理功能",
       icon: "web",
       isAsync: true,

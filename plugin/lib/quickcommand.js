@@ -306,6 +306,7 @@ if (process.platform !== "linux") {
 
 quickcommand.showSystemMessageBox = function (title, content) {
   window.utools.showNotification(title + "\n" + content);
+  console.log(title + "\n" + content);
 };
 
 module.exports = quickcommand;

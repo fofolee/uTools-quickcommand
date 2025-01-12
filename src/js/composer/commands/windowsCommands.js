@@ -1,5 +1,5 @@
 export const windowsCommands = {
-  label: "Windows专区",
+  label: "Win自动化",
   icon: "window",
   defaultOpened: false,
   commands: [
