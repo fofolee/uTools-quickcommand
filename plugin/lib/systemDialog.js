@@ -26,7 +26,9 @@ const showSystemMessageBox = async function (content, title = "") {
     const script = `display dialog "${content}" with title "${title}" buttons {"确定"} default button "确定" with icon ${iconParam}`;
     await this.runAppleScript(script);
   } else if (window.utools.isWindows()) {
+    const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
+          using System;
           using System.Windows.Forms;
           using System.Drawing;
           using System.IO;
@@ -34,8 +36,8 @@ const showSystemMessageBox = async function (content, title = "") {
             static void Main() {
               Form form = new Form();
               ${
-                iconPath
-                  ? `using (var bmp = new Bitmap("${iconPath}"))
+                escapedIconPath
+                  ? `using (var bmp = new Bitmap("${escapedIconPath}"))
                 {
                   form.Icon = Icon.FromHandle(bmp.GetHicon());
                 }`
@@ -81,7 +83,9 @@ const showSystemInputBox = async function (placeholders, title = "") {
     }
     return results;
   } else if (window.utools.isWindows()) {
+    const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
+        using System;
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
@@ -95,8 +99,8 @@ const showSystemInputBox = async function (placeholders, title = "") {
             form.MaximizeBox = false;
             form.MinimizeBox = false;
             ${
-              iconPath
-                ? `using (var bmp = new Bitmap("${iconPath}"))
+              escapedIconPath
+                ? `using (var bmp = new Bitmap("${escapedIconPath}"))
               {
                 form.Icon = Icon.FromHandle(bmp.GetHicon());
               }`
@@ -161,7 +165,9 @@ const showSystemConfirmBox = async function (content, title = "") {
     const result = await this.runAppleScript(script);
     return result.includes("button returned:确定");
   } else if (window.utools.isWindows()) {
+    const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
+        using System;
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
@@ -169,8 +175,8 @@ const showSystemConfirmBox = async function (content, title = "") {
           static void Main() {
             Form form = new Form();
             ${
-              iconPath
-                ? `using (var bmp = new Bitmap("${iconPath}"))
+              escapedIconPath
+                ? `using (var bmp = new Bitmap("${escapedIconPath}"))
               {
                 form.Icon = Icon.FromHandle(bmp.GetHicon());
               }`
@@ -200,7 +206,9 @@ const showSystemSelectList = async function (items, title = "") {
     const id = items.findIndex((item) => item === text);
     return { id, text };
   } else if (window.utools.isWindows()) {
+    const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
+        using System;
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
@@ -218,8 +226,8 @@ const showSystemSelectList = async function (items, title = "") {
             form.MaximizeBox = false;
             form.MinimizeBox = false;
             ${
-              iconPath
-                ? `using (var bmp = new Bitmap("${iconPath}"))
+              escapedIconPath
+                ? `using (var bmp = new Bitmap("${escapedIconPath}"))
               {
                 form.Icon = Icon.FromHandle(bmp.GetHicon());
               }`
@@ -228,7 +236,7 @@ const showSystemSelectList = async function (items, title = "") {
 
             listBox.SetBounds(10, 10, 280, 180);
             ${items
-              .map((item, index) => `listBox.Items.Add("${item}");`)
+              .map((item) => `listBox.Items.Add("${item}");`)
               .join("\n          ")}
             listBox.SelectedIndex = 0;
             form.Controls.Add(listBox);
@@ -244,14 +252,14 @@ const showSystemSelectList = async function (items, title = "") {
             form.Controls.Add(cancelButton);
 
             if (form.ShowDialog() == DialogResult.OK && listBox.SelectedItem != null) {
-              Console.WriteLine($"{listBox.SelectedIndex}|{listBox.SelectedItem}");
+              Console.WriteLine(listBox.SelectedIndex.ToString() + "|||||" + listBox.SelectedItem.ToString());
             }
             form.Dispose();
           }
         }`;
     const result = await this.runCsharp(csharpScript);
     if (result.trim()) {
-      const [id, text] = result.trim().split("|");
+      const [id, text] = result.trim().split("|||||");
       return { id: parseInt(id), text };
     }
     return null;
@@ -278,7 +286,9 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
     }
     return null;
   } else if (window.utools.isWindows()) {
+    const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
+        using System;
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
@@ -295,8 +305,8 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
             form.MaximizeBox = false;
             form.MinimizeBox = false;
             ${
-              iconPath
-                ? `using (var bmp = new Bitmap("${iconPath}"))
+              escapedIconPath
+                ? `using (var bmp = new Bitmap("${escapedIconPath}"))
               {
                 form.Icon = Icon.FromHandle(bmp.GetHicon());
               }`
@@ -329,7 +339,7 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
             if (result == DialogResult.OK) {
               foreach (Button btn in buttonPanel.Controls) {
                 if (btn.DialogResult == result) {
-                  Console.WriteLine($"{btn.Tag}|{btn.Text}");
+                  Console.WriteLine(btn.Tag.ToString() + "|||||" + btn.Text);
                   break;
                 }
               }
@@ -339,7 +349,7 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
         }`;
     const result = await this.runCsharp(csharpScript);
     if (result.trim()) {
-      const [id, text] = result.trim().split("|");
+      const [id, text] = result.trim().split("|||||");
       return { id: parseInt(id), text };
     }
     return null;
@@ -354,7 +364,9 @@ const showSystemTextArea = async function (
 ) {
   const iconPath = getQuickcommandIconPath();
   if (window.utools.isWindows()) {
+    const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
+        using System;
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
@@ -373,8 +385,8 @@ const showSystemTextArea = async function (
             form.MaximizeBox = false;
             form.MinimizeBox = false;
             ${
-              iconPath
-                ? `using (var bmp = new Bitmap("${iconPath}"))
+              escapedIconPath
+                ? `using (var bmp = new Bitmap("${escapedIconPath}"))
               {
                 form.Icon = Icon.FromHandle(bmp.GetHicon());
               }`
@@ -389,6 +401,7 @@ const showSystemTextArea = async function (
             textBox.ScrollBars = ScrollBars.Vertical;
             textBox.SetBounds(10, 40, 380, 180);
             textBox.Text = "${defaultText}";
+            textBox.AcceptsReturn = true;
             form.Controls.Add(textBox);
 
             okButton.Text = "确定";
@@ -401,8 +414,18 @@ const showSystemTextArea = async function (
             cancelButton.SetBounds(310, 230, 75, 23);
             form.Controls.Add(cancelButton);
 
-            form.AcceptButton = okButton;
+            // 移除默认的 Enter 键行为
+            form.AcceptButton = null;
             form.CancelButton = cancelButton;
+
+            // 添加快捷键处理
+            form.KeyPreview = true;
+            form.KeyDown += (sender, e) => {
+              if (e.KeyCode == Keys.Enter && e.Control) {
+                okButton.PerformClick();
+                e.Handled = true;
+              }
+            };
 
             if (form.ShowDialog() == DialogResult.OK) {
               Console.WriteLine(textBox.Text);
