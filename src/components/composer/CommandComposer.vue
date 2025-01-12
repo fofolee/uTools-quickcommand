@@ -17,6 +17,9 @@
         />
       </div>
     </div>
+    <q-inner-loading :showing="hasCommandNeedLoading && $root.isRunningCommand">
+      <q-spinner-cube size="50px" color="primary" />
+    </q-inner-loading>
   </div>
 </template>
 
@@ -70,6 +73,7 @@ export default defineComponent({
   data() {
     return {
       availableCommands,
+      hasCommandNeedLoading: false,
     };
   },
   emits: ["use-composer", "update:modelValue"],
@@ -87,11 +91,23 @@ export default defineComponent({
       return generateCode(this.commandFlow);
     },
     handleComposer(type, flow) {
-      if (type === "save") return this.saveFlow();
-      if (type === "load") return this.loadFlow();
-      const code = flow ? generateCode(flow) : generateCode(this.commandFlow);
-      this.$emit("use-composer", { type, code });
-      if (type !== "run") return this.$emit("update:modelValue", false);
+      switch (type) {
+        case "save":
+          return this.saveFlow();
+        case "load":
+          return this.loadFlow();
+        case "run":
+          return this.runFlow(flow);
+        default:
+          this.$emit("use-composer", { type, code });
+          return this.$emit("update:modelValue", false);
+      }
+    },
+    // 传入临时flow说明是运行单独的命令，否则是运行整个命令流
+    runFlow(flow) {
+      this.hasCommandNeedLoading = this.findCommandNeedLoading(flow);
+      const code = generateCode(flow || this.commandFlow);
+      this.$emit("use-composer", { type: "run", code });
       if (!code.includes("console.log")) quickcommand.showMessageBox("已运行");
     },
     saveFlow() {
@@ -128,6 +144,16 @@ export default defineComponent({
           ...cmd,
         };
       });
+    },
+    findCommandNeedLoading(flow) {
+      // 暂时只在运行单独命令时显示载入界面，因为运行整个命令流时，如果不打印输出，是无法判断什么时候运行结束的，
+      // 运行单独命令时，添加了打印流程，且showLoading参数可控
+      if (!flow) return;
+      return flow.some(
+        (cmd) =>
+          cmd.showLoading ||
+          cmd.subCommands?.find((c) => c.value === cmd.value)?.showLoading
+      );
     },
   },
 });
