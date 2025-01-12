@@ -218,7 +218,7 @@ export default defineComponent({
       arrayEditorColumns: {
         id: {
           label: "id",
-          width: 3,
+          width: 2,
           noIcon: true,
         },
         title: {
@@ -228,7 +228,7 @@ export default defineComponent({
         description: {
           label: "描述",
           noIcon: true,
-          width: 4,
+          width: 5,
         },
       },
     };

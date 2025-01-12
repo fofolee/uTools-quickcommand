@@ -29,10 +29,10 @@
         v-if="!hasSelectedVariable"
       >
         <q-tooltip>{{
-          isString
+          (isString
             ? "当前类型是：字符串"
-            : "当前类型是：变量、数字、表达式等" +
-              (disableToggleType ? "" : "，点击切换")
+            : "当前类型是：变量、数字、表达式等") +
+          (disableToggleType ? "" : "，点击切换")
         }}</q-tooltip>
       </q-btn>
       <!-- 选项下拉按钮 -->
@@ -104,10 +104,7 @@
       <q-btn-dropdown
         flat
         dense
-        :class="{
-          'text-primary': hasSelectedVariable,
-          'text-grey-6': !hasSelectedVariable,
-        }"
+        stretch
         class="variable-dropdown prepend-btn"
         size="sm"
         @click="variables = getAvailableVariables()"
@@ -398,18 +395,43 @@ export default defineComponent({
 
 .variable-input :deep(.q-field__control) {
   padding-left: 8px;
-  padding-right: 8px;
+  padding-right: 0px;
+}
+
+.variable-input :deep(.q-field__append) {
+  padding-left: 0;
 }
 
 .prepend-btn {
-  min-width: 24px;
-  padding: 4px;
-  opacity: 0.6;
-  transition: all 0.3s ease;
+  max-width: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+  transition: all 0.6s ease;
 }
 
-.prepend-btn:hover {
+.string-toggle.prepend-btn {
+  transform: translateX(14px);
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
+}
+
+.variable-input:hover .string-toggle.prepend-btn {
+  max-width: 14px;
   opacity: 1;
+  transform: translateX(0);
+  margin-left: 5px;
+  transition: all 0.6s ease;
+}
+
+.variable-dropdown.prepend-btn {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.body--dark .variable-dropdown.prepend-btn {
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .clear-btn:hover {
