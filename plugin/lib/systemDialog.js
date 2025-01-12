@@ -2,6 +2,53 @@ const fs = require("fs");
 const path = require("path");
 const { getQuickcommandFolderFile } = require("./getQuickcommandFile");
 
+// 定义通用样式
+const commonStyles = `
+  static void ApplyModernStyle(Form form) {
+    form.Font = new Font("Microsoft YaHei UI", 9F);
+    form.BackColor = Color.White;
+    form.Padding = new Padding(15);
+  }
+
+  static void ApplyButtonStyle(Button button) {
+    button.FlatStyle = FlatStyle.Flat;
+    button.BackColor = Color.FromArgb(0, 120, 212);
+    button.ForeColor = Color.White;
+    button.Font = new Font("Microsoft YaHei UI", 9F);
+    button.Cursor = Cursors.Hand;
+    button.FlatAppearance.BorderSize = 0;
+    button.Height = 30;
+    button.Width = 85;
+  }
+
+  static void ApplySecondaryButtonStyle(Button button) {
+    button.FlatStyle = FlatStyle.Flat;
+    button.BackColor = Color.FromArgb(240, 240, 240);
+    button.ForeColor = Color.Black;
+    button.Font = new Font("Microsoft YaHei UI", 9F);
+    button.Cursor = Cursors.Hand;
+    button.FlatAppearance.BorderSize = 1;
+    button.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
+    button.Height = 30;
+    button.Width = 85;
+  }
+
+  static void ApplyTextBoxStyle(TextBox textBox) {
+    textBox.BorderStyle = BorderStyle.FixedSingle;
+    textBox.Font = new Font("Microsoft YaHei UI", 9F);
+  }
+
+  static void ApplyLabelStyle(Label label) {
+    label.Font = new Font("Microsoft YaHei UI", 9F);
+    label.ForeColor = Color.FromArgb(51, 51, 51);
+  }
+
+  static void ApplyListBoxStyle(ListBox listBox) {
+    listBox.Font = new Font("Microsoft YaHei UI", 9F);
+    listBox.BorderStyle = BorderStyle.FixedSingle;
+    listBox.BackColor = Color.White;
+  }`;
+
 const getQuickcommandIconPath = () => {
   try {
     const iconPath = getQuickcommandFolderFile("logo", "png");
@@ -28,27 +75,51 @@ const showSystemMessageBox = async function (content, title = "") {
   } else if (window.utools.isWindows()) {
     const escapedIconPath = iconPath ? iconPath.replace(/\\/g, "\\\\") : null;
     const csharpScript = `
-          using System;
-          using System.Windows.Forms;
-          using System.Drawing;
-          using System.IO;
-          class Program {
-            static void Main() {
-              Form form = new Form();
-              ${
-                escapedIconPath
-                  ? `using (var bmp = new Bitmap("${escapedIconPath}"))
-                {
-                  form.Icon = Icon.FromHandle(bmp.GetHicon());
-                }`
-                  : ""
-              }
-              MessageBox.Show(form, "${content}", "${title}",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-              form.Dispose();
+        using System;
+        using System.Windows.Forms;
+        using System.Drawing;
+        using System.IO;
+        class Program {
+          ${commonStyles}
+
+          static void Main() {
+            Form form = new Form();
+            Label label = new Label();
+            Button okButton = new Button();
+
+            ApplyModernStyle(form);
+            form.Text = "${title}";
+            form.ClientSize = new Size(400, 130);
+            form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            form.StartPosition = FormStartPosition.CenterScreen;
+            form.MaximizeBox = false;
+            form.MinimizeBox = false;
+            ${
+              escapedIconPath
+                ? `using (var bmp = new Bitmap("${escapedIconPath}"))
+              {
+                form.Icon = Icon.FromHandle(bmp.GetHicon());
+              }`
+                : ""
             }
-          }`;
+
+            ApplyLabelStyle(label);
+            label.Text = "${content}";
+            label.SetBounds(15, 15, 370, 60);
+            label.AutoSize = true;
+            form.Controls.Add(label);
+
+            ApplyButtonStyle(okButton);
+            okButton.Text = "确定";
+            okButton.DialogResult = DialogResult.OK;
+            okButton.SetBounds(300, 80, 85, 30);
+            form.Controls.Add(okButton);
+
+            form.AcceptButton = okButton;
+            form.ShowDialog();
+            form.Dispose();
+          }
+        }`;
     await this.runCsharp(csharpScript);
   }
 };
@@ -89,11 +160,15 @@ const showSystemInputBox = async function (placeholders, title = "") {
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
+
         class Program {
+          ${commonStyles}
+
           static void Main() {
             Form form = new Form();
+            ApplyModernStyle(form);
             form.Text = "${title}";
-            form.ClientSize = new Size(300, ${50 + placeholders.length * 70});
+            form.ClientSize = new Size(350, ${45 + placeholders.length * 70});
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.MaximizeBox = false;
@@ -111,28 +186,32 @@ const showSystemInputBox = async function (placeholders, title = "") {
               .map(
                 (placeholder, index) => `
             Label label${index} = new Label();
+            ApplyLabelStyle(label${index});
             label${index}.Text = "${placeholder}";
-            label${index}.SetBounds(10, ${10 + index * 70}, 280, 20);
+            label${index}.SetBounds(15, ${15 + index * 70}, 320, 20);
             form.Controls.Add(label${index});
 
             TextBox textBox${index} = new TextBox();
-            textBox${index}.SetBounds(10, ${35 + index * 70}, 280, 20);
+            ApplyTextBoxStyle(textBox${index});
+            textBox${index}.SetBounds(15, ${40 + index * 70}, 320, 25);
             form.Controls.Add(textBox${index});`
               )
               .join("\n")}
 
             Button okButton = new Button();
+            ApplyButtonStyle(okButton);
             okButton.Text = "确定";
             okButton.DialogResult = DialogResult.OK;
-            okButton.SetBounds(120, ${20 + placeholders.length * 70}, 75, 23);
+            okButton.SetBounds(160, ${20 + placeholders.length * 70}, 85, 30);
             form.Controls.Add(okButton);
 
             Button cancelButton = new Button();
+            ApplySecondaryButtonStyle(cancelButton);
             cancelButton.Text = "取消";
             cancelButton.DialogResult = DialogResult.Cancel;
-            cancelButton.SetBounds(210, ${
+            cancelButton.SetBounds(250, ${
               20 + placeholders.length * 70
-            }, 75, 23);
+            }, 85, 30);
             form.Controls.Add(cancelButton);
 
             form.AcceptButton = okButton;
@@ -141,14 +220,13 @@ const showSystemInputBox = async function (placeholders, title = "") {
             if (form.ShowDialog() == DialogResult.OK) {
               ${placeholders
                 .map((_, index) => `Console.WriteLine(textBox${index}.Text);`)
-                .join("\n              ")}
+                .join("\n          ")}
             }
             form.Dispose();
           }
         }`;
     const result = await this.runCsharp(csharpScript);
-    const lines = result.trim().split("\n");
-    return lines.length > 0 && lines[0] !== "" ? lines : null;
+    return result.trim() || null;
   }
 };
 
@@ -172,8 +250,21 @@ const showSystemConfirmBox = async function (content, title = "") {
         using System.Drawing;
         using System.IO;
         class Program {
+          ${commonStyles}
+
           static void Main() {
             Form form = new Form();
+            Label label = new Label();
+            Button okButton = new Button();
+            Button cancelButton = new Button();
+
+            ApplyModernStyle(form);
+            form.Text = "${title}";
+            form.ClientSize = new Size(400, 130);
+            form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            form.StartPosition = FormStartPosition.CenterScreen;
+            form.MaximizeBox = false;
+            form.MinimizeBox = false;
             ${
               escapedIconPath
                 ? `using (var bmp = new Bitmap("${escapedIconPath}"))
@@ -182,9 +273,29 @@ const showSystemConfirmBox = async function (content, title = "") {
               }`
                 : ""
             }
-            DialogResult result = MessageBox.Show(form, "${content}", "${title}",
-              MessageBoxButtons.OKCancel,
-              MessageBoxIcon.Question);
+
+            ApplyLabelStyle(label);
+            label.Text = "${content}";
+            label.SetBounds(15, 15, 370, 60);
+            label.AutoSize = true;
+            form.Controls.Add(label);
+
+            ApplyButtonStyle(okButton);
+            okButton.Text = "确定";
+            okButton.DialogResult = DialogResult.OK;
+            okButton.SetBounds(210, 80, 85, 30);
+            form.Controls.Add(okButton);
+
+            ApplySecondaryButtonStyle(cancelButton);
+            cancelButton.Text = "取消";
+            cancelButton.DialogResult = DialogResult.Cancel;
+            cancelButton.SetBounds(300, 80, 85, 30);
+            form.Controls.Add(cancelButton);
+
+            form.AcceptButton = okButton;
+            form.CancelButton = cancelButton;
+
+            DialogResult result = form.ShowDialog();
             Console.WriteLine(result == DialogResult.OK);
             form.Dispose();
           }
@@ -212,15 +323,20 @@ const showSystemSelectList = async function (items, title = "") {
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
+
         class Program {
+          ${commonStyles}
+
           static void Main() {
             Form form = new Form();
             ListBox listBox = new ListBox();
             Button okButton = new Button();
             Button cancelButton = new Button();
+            Label titleLabel = new Label();
 
+            ApplyModernStyle(form);
             form.Text = "${title}";
-            form.ClientSize = new Size(300, 250);
+            form.ClientSize = new Size(350, 280);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.MaximizeBox = false;
@@ -234,22 +350,34 @@ const showSystemSelectList = async function (items, title = "") {
                 : ""
             }
 
-            listBox.SetBounds(10, 10, 280, 180);
+            titleLabel.Text = "请选择：";
+            titleLabel.AutoSize = true;
+            titleLabel.SetBounds(15, 15, 320, 20);
+            ApplyLabelStyle(titleLabel);
+            form.Controls.Add(titleLabel);
+
+            ApplyListBoxStyle(listBox);
+            listBox.SetBounds(15, 45, 320, 180);
             ${items
               .map((item) => `listBox.Items.Add("${item}");`)
               .join("\n          ")}
             listBox.SelectedIndex = 0;
             form.Controls.Add(listBox);
 
+            ApplyButtonStyle(okButton);
             okButton.Text = "确定";
             okButton.DialogResult = DialogResult.OK;
-            okButton.SetBounds(120, 200, 75, 23);
+            okButton.SetBounds(160, 235, 85, 30);
             form.Controls.Add(okButton);
 
+            ApplySecondaryButtonStyle(cancelButton);
             cancelButton.Text = "取消";
             cancelButton.DialogResult = DialogResult.Cancel;
-            cancelButton.SetBounds(210, 200, 75, 23);
+            cancelButton.SetBounds(250, 235, 85, 30);
             form.Controls.Add(cancelButton);
+
+            form.AcceptButton = okButton;
+            form.CancelButton = cancelButton;
 
             if (form.ShowDialog() == DialogResult.OK && listBox.SelectedItem != null) {
               Console.WriteLine(listBox.SelectedIndex.ToString() + "|||||" + listBox.SelectedItem.ToString());
@@ -292,14 +420,18 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
+
         class Program {
+          ${commonStyles}
+
           static void Main() {
             Form form = new Form();
             Label label = new Label();
             FlowLayoutPanel buttonPanel = new FlowLayoutPanel();
 
+            ApplyModernStyle(form);
             form.Text = "${title}";
-            form.ClientSize = new Size(400, 150);
+            form.ClientSize = new Size(400, 160);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.MaximizeBox = false;
@@ -313,14 +445,16 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
                 : ""
             }
 
+            ApplyLabelStyle(label);
             label.Text = "${content}";
-            label.SetBounds(10, 10, 380, 40);
+            label.SetBounds(15, 15, 370, 60);
             label.AutoSize = true;
             form.Controls.Add(label);
 
-            buttonPanel.SetBounds(10, 60, 380, 40);
+            buttonPanel.SetBounds(15, 90, 370, 40);
             buttonPanel.FlowDirection = FlowDirection.RightToLeft;
             buttonPanel.WrapContents = false;
+            buttonPanel.BackColor = Color.White;
             form.Controls.Add(buttonPanel);
 
             ${buttons
@@ -330,7 +464,10 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
               button${index}.Text = "${btn}";
               button${index}.DialogResult = DialogResult.OK;
               button${index}.Tag = "${index}";
-              button${index}.SetBounds(0, 0, 80, 30);
+              ${
+                index === 0 ? "ApplyButtonStyle" : "ApplySecondaryButtonStyle"
+              }(button${index});
+              button${index}.Margin = new Padding(5, 0, 0, 0);
               buttonPanel.Controls.Add(button${index});`
               )
               .join("\n")}
@@ -370,7 +507,10 @@ const showSystemTextArea = async function (
         using System.Windows.Forms;
         using System.Drawing;
         using System.IO;
+
         class Program {
+          ${commonStyles}
+
           static void Main() {
             Form form = new Form();
             TextBox textBox = new TextBox();
@@ -378,8 +518,9 @@ const showSystemTextArea = async function (
             Button cancelButton = new Button();
             Label label = new Label();
 
+            ApplyModernStyle(form);
             form.Text = "${title}";
-            form.ClientSize = new Size(400, 300);
+            form.ClientSize = new Size(450, 320);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.MaximizeBox = false;
@@ -393,32 +534,34 @@ const showSystemTextArea = async function (
                 : ""
             }
 
+            ApplyLabelStyle(label);
             label.Text = "${placeholder}";
-            label.SetBounds(10, 10, 380, 20);
+            label.SetBounds(15, 15, 420, 20);
             form.Controls.Add(label);
 
+            ApplyTextBoxStyle(textBox);
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
-            textBox.SetBounds(10, 40, 380, 180);
+            textBox.SetBounds(15, 45, 420, 220);
             textBox.Text = "${defaultText}";
             textBox.AcceptsReturn = true;
             form.Controls.Add(textBox);
 
+            ApplyButtonStyle(okButton);
             okButton.Text = "确定";
             okButton.DialogResult = DialogResult.OK;
-            okButton.SetBounds(220, 230, 75, 23);
+            okButton.SetBounds(260, 275, 85, 30);
             form.Controls.Add(okButton);
 
+            ApplySecondaryButtonStyle(cancelButton);
             cancelButton.Text = "取消";
             cancelButton.DialogResult = DialogResult.Cancel;
-            cancelButton.SetBounds(310, 230, 75, 23);
+            cancelButton.SetBounds(350, 275, 85, 30);
             form.Controls.Add(cancelButton);
 
-            // 移除默认的 Enter 键行为
             form.AcceptButton = null;
             form.CancelButton = cancelButton;
 
-            // 添加快捷键处理
             form.KeyPreview = true;
             form.KeyDown += (sender, e) => {
               if (e.KeyCode == Keys.Enter && e.Control) {

@@ -184,7 +184,7 @@ if (process.platform === "win32") {
   // 运行vbs脚本
   quickcommand.runVbs = function (script) {
     return new Promise((reslove, reject) => {
-      var tempfile = getQuickcommandTempFile("vbs", "TempVBSScript");
+      var tempfile = getQuickcommandTempFile("vbs");
       fs.writeFile(tempfile, iconv.encode(script, "gbk"), () => {
         child_process.exec(
           `cscript.exe /nologo "${tempfile}"`,
@@ -243,8 +243,8 @@ if (process.platform === "win32") {
         return reject("未安装.NET Framework");
       }
       // 写入临时文件
-      let tempCsharpFile = getQuickcommandTempFile("cs", "TempCsharpScript");
-      let tempBuildFile = getQuickcommandTempFile("exe", "TempCsharpBuildExe");
+      let tempCsharpFile = getQuickcommandTempFile("cs");
+      let tempBuildFile = getQuickcommandTempFile("exe");
 
       fs.writeFile(tempCsharpFile, iconv.encode(script, "gbk"), (err) => {
         if (err) return reject(err.toString());
