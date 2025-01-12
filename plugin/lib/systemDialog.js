@@ -1,6 +1,33 @@
 const fs = require("fs");
 const path = require("path");
+const { exec } = require("child_process");
 const { getQuickcommandFolderFile } = require("./getQuickcommandFile");
+
+// 添加一个辅助函数来执行命令
+const execCommand = (cmd) => {
+  return new Promise((resolve, reject) => {
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(stderr);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+};
+
+// 添加一个辅助函数来检查命令是否存在
+const checkZenity = async () => {
+  try {
+    await execCommand("which zenity");
+    return true;
+  } catch (error) {
+    window.utools.showNotification(
+      "请先安装 zenity：\nsudo apt install zenity 或\nsudo yum install zenity 或\nsudo pacman -S zenity"
+    );
+    return false;
+  }
+};
 
 // 定义通用样式
 const commonStyles = `
@@ -121,6 +148,14 @@ const showSystemMessageBox = async function (content, title = "") {
           }
         }`;
     await this.runCsharp(csharpScript);
+  } else if (window.utools.isLinux()) {
+    if (!(await checkZenity())) return;
+    try {
+      const script = `zenity --info --title="${title}" --text="${content}" --width=400`;
+      await execCommand(script);
+    } catch (error) {
+      console.error("执行 zenity 命令失败:", error);
+    }
   }
 };
 
@@ -227,6 +262,21 @@ const showSystemInputBox = async function (placeholders, title = "") {
         }`;
     const result = await this.runCsharp(csharpScript);
     return result.trim() || null;
+  } else if (window.utools.isLinux()) {
+    if (!(await checkZenity())) return null;
+    const results = [];
+    for (let i = 0; i < placeholders.length; i++) {
+      try {
+        const script = `zenity --entry --title="${title}" --text="${placeholders[i]}" --width=400`;
+        const result = await execCommand(script);
+        if (!result) return null;
+        results.push(result.trim());
+      } catch (error) {
+        console.error("执行 zenity 命令失败:", error);
+        return null;
+      }
+    }
+    return results;
   }
 };
 
@@ -302,6 +352,15 @@ const showSystemConfirmBox = async function (content, title = "") {
         }`;
     const result = await this.runCsharp(csharpScript);
     return result.trim() === "True";
+  } else if (window.utools.isLinux()) {
+    if (!(await checkZenity())) return false;
+    try {
+      const script = `zenity --question --title="${title}" --text="${content}" --width=400`;
+      await execCommand(script);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 };
 
@@ -391,6 +450,22 @@ const showSystemSelectList = async function (items, title = "") {
       return { id: parseInt(id), text };
     }
     return null;
+  } else if (window.utools.isLinux()) {
+    if (!(await checkZenity())) return null;
+    try {
+      const itemsList = items
+        .map((item, index) => `"${index}" "${item}"`)
+        .join(" ");
+      const script = `zenity --list --title="${title}" --text="请选择：" --column="序号" --column="选项" ${itemsList} --width=400 --height=300`;
+      const result = await execCommand(script);
+      if (!result) return null;
+      const text = result.trim();
+      const id = items.findIndex((item) => item === text);
+      return { id, text };
+    } catch (error) {
+      console.error("执行 zenity 命令失败:", error);
+      return null;
+    }
   }
 };
 
@@ -490,6 +565,25 @@ const showSystemButtonBox = async function (buttons, content, title = "") {
       return { id: parseInt(id), text };
     }
     return null;
+  } else if (window.utools.isLinux()) {
+    if (!(await checkZenity())) return null;
+    try {
+      const script1 = `zenity --info --title="${title}" --text="${content}" --width=400`;
+      await execCommand(script1);
+
+      const itemsList = buttons
+        .map((btn, index) => `"${index}" "${btn}"`)
+        .join(" ");
+      const script2 = `zenity --list --title="${title}" --text="请选择：" --column="序号" --column="选项" ${itemsList} --width=400 --height=300`;
+      const result = await execCommand(script2);
+      if (!result) return null;
+      const text = result.trim();
+      const id = buttons.findIndex((btn) => btn === text);
+      return { id, text };
+    } catch (error) {
+      console.error("执行 zenity 命令失败:", error);
+      return null;
+    }
   }
 };
 
@@ -578,6 +672,16 @@ const showSystemTextArea = async function (
         }`;
     const result = await this.runCsharp(csharpScript);
     return result.trim() || null;
+  } else if (window.utools.isLinux()) {
+    if (!(await checkZenity())) return null;
+    try {
+      const script = `zenity --text-info --title="${title}" --text="${placeholder}" --editable --width=450 --height=350 --filename=<(echo "${defaultText}")`;
+      const result = await execCommand(script);
+      return result ? result.trim() : null;
+    } catch (error) {
+      console.error("执行 zenity 命令失败:", error);
+      return null;
+    }
   }
 };
 
