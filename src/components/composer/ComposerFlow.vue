@@ -9,6 +9,7 @@
       <ComposerButtons
         :generate-code="generateCode"
         :is-all-collapsed="isAllCollapsed"
+        :show-close-button="showCloseButton"
         @action="handleAction"
         class="flex-grow"
       />
@@ -96,6 +97,10 @@ export default defineComponent({
     generateCode: {
       type: Function,
       required: true,
+    },
+    showCloseButton: {
+      type: Boolean,
+      default: true,
     },
   },
   setup() {

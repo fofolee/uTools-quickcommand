@@ -33,6 +33,15 @@
       "icon": "features/code.png"
     },
     {
+      "code": "composer",
+      "explain": "运行可视化编排",
+      "cmds": [
+        "可视化编排",
+        "RunComposer"
+      ],
+      "icon": "features/code.png"
+    },
+    {
       "code": "newcommand",
       "explain": "快速新建快捷命令",
       "cmds": [

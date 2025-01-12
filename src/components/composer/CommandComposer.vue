@@ -12,6 +12,7 @@
         <ComposerFlow
           v-model="commandFlow"
           :generate-code="generateFlowCode"
+          :show-close-button="showCloseButton"
           @add-command="addCommand"
           @action="handleComposer"
         />
@@ -76,7 +77,13 @@ export default defineComponent({
       hasCommandNeedLoading: false,
     };
   },
-  emits: ["use-composer", "update:modelValue"],
+  props: {
+    showCloseButton: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  emits: ["use-composer"],
   methods: {
     addCommand(action) {
       let newAction = window.lodashM.cloneDeep(action);
@@ -99,8 +106,10 @@ export default defineComponent({
         case "run":
           return this.runFlow(flow);
         default:
-          this.$emit("use-composer", { type, code });
-          return this.$emit("update:modelValue", false);
+          return this.$emit("use-composer", {
+            type,
+            code: this.generateFlowCode(),
+          });
       }
     },
     // 传入临时flow说明是运行单独的命令，否则是运行整个命令流

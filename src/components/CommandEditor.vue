@@ -38,7 +38,7 @@
       @program-changed="programChanged"
       @run="runCurrentCommand"
       @save="saveCurrentCommand"
-      @use-composer="handleComposer"
+      @show-composer="showComposer = true"
     />
 
     <!-- 编辑器 -->
@@ -71,6 +71,11 @@
       @toggle-fullscreen="toggleFullscreen"
     />
 
+    <!-- 可视化编排 -->
+    <q-dialog v-model="showComposer" maximized>
+      <CommandComposer ref="composer" @use-composer="handleComposer" />
+    </q-dialog>
+
     <!-- 运行结果 -->
     <CommandRunResult :action="action" ref="result"></CommandRunResult>
   </div>
@@ -82,6 +87,7 @@ import CommandSideBar from "components/editor/CommandSideBar";
 import CommandLanguageBar from "components/editor/CommandLanguageBar";
 import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
+import CommandComposer from "components/composer/CommandComposer.vue";
 
 // 预加载 MonacoEditor
 const MonacoEditorPromise = import("components/editor/MonacoEditor");
@@ -108,6 +114,7 @@ export default {
     CommandSideBar,
     CommandRunResult,
     CommandLanguageBar,
+    CommandComposer,
     EditorTools,
   },
   data() {
@@ -115,7 +122,10 @@ export default {
       programLanguages: Object.keys(this.$root.programs),
       sideBarWidth: 200,
       languageBarHeight: 40,
-      canCommandSave: this.action.type === "code" ? false : true,
+      showComposer: false,
+      isRunCodePage: this.action.type === "run",
+      canCommandSave: this.action.type !== "run",
+      showSidebar: this.action.type !== "run",
       quickcommandInfo: {
         program: "quickcommand",
         cmd: "",
@@ -131,8 +141,6 @@ export default {
         },
       },
       resultMaxLength: 10000,
-      showSidebar: this.action.type !== "run",
-      isRunCodePage: this.action.type === "run",
       listener: null,
       isFullscreen: false,
     };
@@ -162,10 +170,9 @@ export default {
   methods: {
     // 命令初始化
     commandInit() {
-      let quickCommandInfo =
-        this.action.type === "run"
-          ? this.$root.utools.getDB("cfg_codeHistory")
-          : this.action.data;
+      let quickCommandInfo = this.isRunCodePage
+        ? this.$root.utools.getDB("cfg_codeHistory")
+        : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(
           this.quickcommandInfo,

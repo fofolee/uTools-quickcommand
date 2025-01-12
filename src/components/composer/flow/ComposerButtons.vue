@@ -22,17 +22,31 @@
         v-if="isDev"
       >
       </q-btn>
-      <q-btn icon="close" dense flat v-close-popup>
+      <q-btn icon="close" dense flat v-close-popup v-if="showCloseButton">
         <q-tooltip>退出可视化编排</q-tooltip>
       </q-btn>
-      <q-separator vertical />
-      <q-btn dense icon="read_more" flat @click="$emit('action', 'insert')">
+      <q-separator vertical v-if="showCloseButton" />
+      <q-btn
+        dense
+        icon="read_more"
+        flat
+        v-close-popup
+        @click="$emit('action', 'insert')"
+        v-if="showCloseButton"
+      >
         <q-tooltip>插入到编辑器光标处</q-tooltip>
       </q-btn>
-      <q-btn dense flat icon="done_all" @click="$emit('action', 'apply')">
+      <q-btn
+        dense
+        flat
+        v-close-popup
+        icon="done_all"
+        @click="$emit('action', 'apply')"
+        v-if="showCloseButton"
+      >
         <q-tooltip>清空编辑器内容并插入</q-tooltip>
       </q-btn>
-      <q-separator vertical />
+      <q-separator vertical v-if="showCloseButton" />
       <q-btn dense flat icon="save" @click="$emit('action', 'save')">
         <q-tooltip>保存</q-tooltip>
       </q-btn>
@@ -79,6 +93,10 @@ export default defineComponent({
     isAllCollapsed: {
       type: Boolean,
       default: false,
+    },
+    showCloseButton: {
+      type: Boolean,
+      default: true,
     },
   },
 

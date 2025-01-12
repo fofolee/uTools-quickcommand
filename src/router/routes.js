@@ -10,6 +10,11 @@ const routes = [
     component: () => import("pages/RunCodePage.vue"),
   },
   {
+    path: "/composer",
+    name: "composer",
+    component: () => import("pages/RunComposerPage.vue"),
+  },
+  {
     path: "/newcommand",
     name: "newcommand",
     component: () => import("pages/ConfigurationPage.vue"),
