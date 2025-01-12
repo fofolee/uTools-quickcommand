@@ -6,7 +6,10 @@ const iconv = require("iconv-lite");
 const path = require("path");
 const axios = require("axios");
 
-const getQuickcommandTempFile = require("./getQuickcommandTempFile");
+const systemDialog = require("./systemDialog");
+
+const { getQuickcommandTempFile } = require("./getQuickcommandFile");
+
 const getCommandToLaunchTerminal = require("./getCommandToLaunchTerminal");
 
 const ctlKey = window.utools.isMacOs() ? "command" : "control";
@@ -262,6 +265,7 @@ if (process.platform === "win32") {
       });
     });
   };
+  quickcommand.showSystemTextArea = systemDialog.showSystemTextArea;
 }
 
 if (process.platform === "darwin") {
@@ -296,17 +300,18 @@ window.runPythonCommand = (py) => {
   }
 };
 
-// 在终端中执行
 if (process.platform !== "linux") {
+  // 在终端中执行
   quickcommand.runInTerminal = function (cmdline, dir) {
     let command = getCommandToLaunchTerminal(cmdline, dir);
     child_process.exec(command);
   };
+  // 系统级弹窗
+  quickcommand.showSystemMessageBox = systemDialog.showSystemMessageBox;
+  quickcommand.showSystemInputBox = systemDialog.showSystemInputBox;
+  quickcommand.showSystemConfirmBox = systemDialog.showSystemConfirmBox;
+  quickcommand.showSystemSelectList = systemDialog.showSystemSelectList;
+  quickcommand.showSystemButtonBox = systemDialog.showSystemButtonBox;
 }
-
-quickcommand.showSystemMessageBox = function (title, content) {
-  window.utools.showNotification(title + "\n" + content);
-  console.log(title + "\n" + content);
-};
 
 module.exports = quickcommand;

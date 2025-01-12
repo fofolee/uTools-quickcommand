@@ -485,6 +485,118 @@ interface quickcommandApi {
      */
     all(): Array<{ id: string; value: string; isNative: boolean }>;
   };
+
+  /**
+   * 显示一个系统级消息框（不支持Linux）
+   *
+   * ```js
+   * quickcommand.showSystemMessageBox("这是一条消息", "标题")
+   * ```
+   *
+   * @param content 消息内容
+   * @param title 标题，默认为空
+   */
+  showSystemMessageBox(content: string, title?: string): Promise<void>;
+
+  /**
+   * 显示一个系统级输入框组，返回所有输入框的值（不支持Linux）
+   *
+   * ```js
+   * // 单个输入框
+   * quickcommand.showSystemInputBox("请输入：", "标题").then(results => {
+   *   console.log(results[0]) // 第一个输入框的值
+   * })
+   *
+   * // 多个输入框
+   * quickcommand.showSystemInputBox(["姓名：", "年龄：", "地址："], "个人信息").then(results => {
+   *   console.log(results) // ["张三", "25", "北京"]
+   * })
+   * ```
+   *
+   * @param placeholders 输入框的提示文本，可以是单个字符串或字符串数组
+   * @param title 标题，默认为空
+   */
+  showSystemInputBox(
+    placeholders: string | string[],
+    title?: string
+  ): Promise<string[] | null>;
+
+  /**
+   * 显示一个系统级确认框，返回是否点击了确认（不支持Linux）
+   *
+   * ```js
+   * quickcommand.showSystemConfirmBox("确定要删除吗？", "确认删除").then(confirmed => {
+   *   if (confirmed) {
+   *     console.log("用户点击了确定")
+   *   }
+   * })
+   * ```
+   *
+   * @param content 确认内容
+   * @param title 标题，默认为空
+   */
+  showSystemConfirmBox(content: string, title?: string): Promise<boolean>;
+
+  /**
+   * 显示一个系统级选择列表，返回选择的项的索引和文本（不支持Linux）
+   *
+   * ```js
+   * quickcommand.showSystemSelectList(["选项1", "选项2", "选项3"], "请选择").then(result => {
+   *   if (result) {
+   *     console.log(`选择了第${result.id + 1}个选项：${result.text}`)
+   *   }
+   * })
+   * ```
+   *
+   * @param items 选项列表
+   * @param title 标题，默认为空
+   */
+  showSystemSelectList(
+    items: string[],
+    title?: string
+  ): Promise<{ id: number; text: string } | null>;
+
+  /**
+   * 显示一个系统级按钮组对话框，返回点击的按钮的索引和文本（不支持Linux）
+   *
+   * ```js
+   * quickcommand.showSystemButtonBox(["保存", "不保存", "取消"], "是否保存更改？", "保存确认").then(result => {
+   *   if (result) {
+   *     console.log(`点击了第${result.id + 1}个按钮：${result.text}`)
+   *   }
+   * })
+   * ```
+   *
+   * @param buttons 按钮文本数组
+   * @param content 对话框内容
+   * @param title 标题，默认为空
+   */
+  showSystemButtonBox(
+    buttons: string[],
+    content: string,
+    title?: string
+  ): Promise<{ id: number; text: string } | null>;
+
+  /**
+   * 显示一个系统级多行文本输入框（仅Windows支持）
+   *
+   * ```js
+   * quickcommand.showSystemTextArea("请输入多行文本：", "默认内容", "文本编辑").then(text => {
+   *   if (text) {
+   *     console.log("输入的文本：", text)
+   *   }
+   * })
+   * ```
+   *
+   * @param placeholder 提示文本，默认为空
+   * @param defaultText 默认文本，默认为空
+   * @param title 标题，默认为空
+   */
+  showSystemTextArea(
+    placeholder?: string,
+    defaultText?: string,
+    title?: string
+  ): Promise<string | null>;
 }
 
 declare var quickcommand: quickcommandApi;

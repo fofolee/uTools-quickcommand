@@ -41,8 +41,8 @@ window.convertFilePathToUtoolsPayload = convertFilePathToUtoolsPayload;
 window.getuToolsLite = require("./lib/utoolsLite");
 window.quickcommand = require("./lib/quickcommand");
 window.quickcomposer = require("./lib/quickcomposer");
-window.getQuickcommandTempFile = require("./lib/getQuickcommandTempFile");
 window.showUb = require("./lib/showDocs");
+window.getQuickcommandTempFile = require("./lib/getQuickcommandFile").getQuickcommandTempFile;
 
 window.getSharedQcById = async (id) => {
   const url = "https://qc.qaz.ink/home/quick/script/getScript";

@@ -9,4 +9,13 @@ const getQuickcommandTempFile = (ext, name, dir = "quickcommandTempDir") => {
   return path.join(tempDir, `${name}.${ext}`);
 };
 
-module.exports = getQuickcommandTempFile;
+const getQuickcommandFolderFile = (name, ext) => {
+  const quickcommandPath = path.join(
+    window.utools.getPath("userData"),
+    "quickcommand"
+  );
+  if (!fs.existsSync(quickcommandPath)) fs.mkdirSync(quickcommandPath);
+  return path.join(quickcommandPath, `${name}.${ext}`);
+};
+
+module.exports = { getQuickcommandTempFile, getQuickcommandFolderFile };
