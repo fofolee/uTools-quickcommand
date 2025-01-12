@@ -159,7 +159,7 @@ export default {
           this.childProcess = window.runCodeFile(
             currentCommand.cmd,
             this.getCommandOpt(currentCommand),
-            currentCommand.output === "terminal",
+            currentCommand.output === "terminal" ? {} : false,
             (stdout, stderr) => this.handleResult(stdout, stderr, resultOpts)
           );
           this.listenStopSign();

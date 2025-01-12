@@ -18,7 +18,7 @@ const md5 = (input) => {
 
 window.lodashM = require("./lib/lodashMini");
 
-const getCommandToLaunchTerminal = require("./lib/getCommandToLaunchTerminal");
+const createTerminalCommand = require("./lib/createTerminalCommand");
 const shortCodes = require("./lib/shortCodes");
 const { pluginInfo, getUtoolsPlugins } = require("./lib/getUtoolsPlugins");
 const {
@@ -42,7 +42,8 @@ window.getuToolsLite = require("./lib/utoolsLite");
 window.quickcommand = require("./lib/quickcommand");
 window.quickcomposer = require("./lib/quickcomposer");
 window.showUb = require("./lib/showDocs");
-window.getQuickcommandTempFile = require("./lib/getQuickcommandFile").getQuickcommandTempFile;
+window.getQuickcommandTempFile =
+  require("./lib/getQuickcommandFile").getQuickcommandTempFile;
 
 window.getSharedQcById = async (id) => {
   const url = "https://qc.qaz.ink/home/quick/script/getScript";
@@ -211,66 +212,95 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
   }
 };
 
-window.runCodeFile = (cmd, option, terminal, callback, realTime = true) => {
-  let { bin, argv, ext, charset, scptarg, envPath, alias } = option;
-  let script = getQuickcommandTempFile(ext, "quickcommandTempScript");
-  // 批处理和 powershell 默认编码为 GBK, 解决批处理的换行问题
-  if (charset.scriptCode)
-    cmd = iconv.encode(cmd.replace(/\n/g, "\r\n"), charset.scriptCode);
-  fs.writeFileSync(script, cmd);
-  // var argvs = [script]
-  // if (argv) {
-  //     argvs = argv.split(' ')
-  //     argvs.push(script);
-  // }
-  let child, cmdline;
-  if (bin.slice(-7) == "csc.exe") {
-    cmdline = `${bin} ${argv} /out:"${
-      script.slice(0, -2) + "exe"
-    }" "${script}" && "${script.slice(0, -2) + "exe"}" ${scptarg}`;
-  } else if (bin == "gcc") {
-    var suffix = utools.isWindows() ? ".exe" : "";
-    cmdline = `${bin} ${argv} "${script.slice(0, -2)}" "${script}" && "${
-      script.slice(0, -2) + suffix
-    }" ${scptarg}`;
-  } else if (utools.isWindows() && bin == "bash") {
-    cmdline = `${bin} ${argv} "${script
-      .replace(/\\/g, "/")
-      .replace(/C:/i, "/mnt/c")}" ${scptarg}`;
-  } else {
-    cmdline = `${bin} ${argv} "${script}" ${scptarg}`;
+// 构建命令行字符串的工具函数
+const buildCommandLine = (bin, argv, script, scptarg) => {
+  if (bin.slice(-7) === "csc.exe") {
+    const outFile = script.slice(0, -2) + "exe";
+    return `${bin} ${argv} /out:"${outFile}" "${script}" && "${outFile}" ${scptarg}`;
   }
-  let processEnv = window.lodashM.cloneDeep(process.env);
+
+  if (bin === "gcc") {
+    const suffix = utools.isWindows() ? ".exe" : "";
+    const outFile = script.slice(0, -2) + suffix;
+    return `${bin} ${argv} "${script.slice(
+      0,
+      -2
+    )}" "${script}" && "${outFile}" ${scptarg}`;
+  }
+
+  if (utools.isWindows() && bin === "bash") {
+    const wslPath = script.replace(/\\/g, "/").replace(/C:/i, "/mnt/c");
+    return `${bin} ${argv} "${wslPath}" ${scptarg}`;
+  }
+
+  return `${bin} ${argv} "${script}" ${scptarg}`;
+};
+
+// 处理进程输出的工具函数
+const handleProcessOutput = (child, charset, callback, realTime) => {
+  const chunks = [];
+  const errChunks = [];
+
+  child.stdout.on("data", (chunk) => {
+    const decodedChunk = charset.outputCode
+      ? iconv.decode(chunk, charset.outputCode)
+      : chunk;
+    realTime
+      ? callback(decodedChunk.toString(), null)
+      : chunks.push(decodedChunk);
+  });
+
+  child.stderr.on("data", (errChunk) => {
+    const decodedChunk = charset.outputCode
+      ? iconv.decode(errChunk, charset.outputCode)
+      : errChunk;
+    realTime
+      ? callback(null, decodedChunk.toString())
+      : errChunks.push(decodedChunk);
+  });
+
+  if (!realTime) {
+    child.on("close", () => {
+      callback(chunks.join(""), errChunks.join(""));
+    });
+  }
+};
+
+window.runCodeFile = (
+  cmd,
+  option,
+  terminalOptions,
+  callback,
+  realTime = true
+) => {
+  const { bin, argv, ext, charset, scptarg, envPath, alias } = option;
+  const script = getQuickcommandTempFile(ext, "quickcommandTempScript");
+
+  // 处理编码和换行
+  const processedCmd = charset.scriptCode
+    ? iconv.encode(cmd.replace(/\n/g, "\r\n"), charset.scriptCode)
+    : cmd;
+  fs.writeFileSync(script, processedCmd);
+  // 构建命令行
+  let cmdline = buildCommandLine(bin, argv, script, scptarg);
+
+  // 处理环境变量
+  const processEnv = window.lodashM.cloneDeep(process.env);
   if (envPath) processEnv.PATH = envPath;
-  if (alias) cmdline = alias + "\n" + cmdline;
-  // 在终端中输出
-  if (terminal) cmdline = getCommandToLaunchTerminal(cmdline);
-  child = child_process.spawn(cmdline, {
+  if (alias) cmdline = `${alias}\n${cmdline}`;
+  if (!!terminalOptions) {
+    cmdline = createTerminalCommand(cmdline, terminalOptions);
+  }
+
+  // 创建子进程
+  const child = child_process.spawn(cmdline, {
     encoding: "buffer",
     shell: true,
     env: processEnv,
   });
-  let chunks = [],
-    err_chunks = [];
+
   console.log("Running: " + cmdline);
-  child.stdout.on("data", (chunk) => {
-    if (charset.outputCode) chunk = iconv.decode(chunk, charset.outputCode);
-    realTime ? callback(chunk.toString(), null) : chunks.push(chunk);
-  });
-  child.stderr.on("data", (err_chunk) => {
-    if (charset.outputCode)
-      err_chunk = iconv.decode(err_chunk, charset.outputCode);
-    realTime
-      ? callback(null, err_chunk.toString())
-      : err_chunks.push(err_chunk);
-  });
-  if (!realTime) {
-    child.on("close", (code) => {
-      let stdout = chunks.join("");
-      let stderr = err_chunks.join("");
-      callback(stdout, stderr);
-    });
-  }
+  handleProcessOutput(child, charset, callback, realTime);
   return child;
 };
 

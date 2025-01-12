@@ -36,6 +36,7 @@ import ButtonBox from "components/quickcommandUI/ButtonBox";
 import ConfirmBox from "components/quickcommandUI/ConfirmBox";
 import TextArea from "components/quickcommandUI/TextArea";
 import SelectList from "components/quickcommandUI/SelectList";
+import programs from "js/options/programs";
 
 export default {
   components: {
@@ -256,8 +257,26 @@ export default {
         });
       },
     };
+    // 将quickcommandUI添加到quickcommand
     Object.assign(window.quickcommand, quickcommandUI);
+
+    // 获取用户数据
     window.quickcommand.userData = this.$root.utools.userData;
+
+    // 添加runCode方法，不在preload中加是因为programs写在了src中-_-
+    quickcommand.runCode = (code, program, runInTerminal = false) => {
+      return new Promise((reslove, reject) => {
+        window.runCodeFile(
+          code,
+          { ...programs[program], charset: {}, scptarg: "" },
+          runInTerminal,
+          (result, err) => (err ? reject(err) : reslove(result))
+        );
+        false;
+      });
+    };
+
+    // 冻结quickcommand
     Object.freeze(quickcommand);
   },
   methods: {

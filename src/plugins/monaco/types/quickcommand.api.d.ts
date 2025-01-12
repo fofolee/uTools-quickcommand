@@ -378,11 +378,23 @@ interface quickcommandApi {
    * 在终端运行，不支持 Linux
    *
    * @param command 要在终端运行的命令
+   * @param options 终端运行参数
+   * @param options.dir 运行目录
+   * @param options.windows 终端类型，默认wt
+   * @param options.macos 终端类型，默认warp
+   *
    * ```js
    * quickcommand.runInTerminal(`whoami`)
    * ```
    */
-  runInTerminal(command: string);
+  runInTerminal(
+    command: string,
+    options?: {
+      dir?: string;
+      windows?: "wt" | "cmd";
+      macos?: "warp" | "iterm" | "terminal";
+    }
+  );
 
   /**
    * 对应 utools.onPluginEnter 的 `code` `type` 和 `payload`
@@ -597,6 +609,44 @@ interface quickcommandApi {
     defaultText?: string,
     title?: string
   ): Promise<string | null>;
+
+  /**
+   * 运行代码
+   * @param code 代码
+   * @param program 编程语言
+   * @param runInTerminal 终端运行参数，不传则不在终端运行
+   * @param runInTerminal.dir 运行目录
+   * @param runInTerminal.windows windows使用的终端，默认wt
+   * @param runInTerminal.macos macos使用的终端，默认warp
+   *
+   * 支持的编程语言：
+   * shell, applescript, cmd, python, powershell, javascript, ruby, php, lua, perl, csharp, c
+   *
+   * ```js
+   * quickcommand.runCode("print('Hello, World!');", "python");
+   * ```
+   */
+  runCode(
+    code: string,
+    program:
+      | "shell"
+      | "applescript"
+      | "cmd"
+      | "python"
+      | "powershell"
+      | "javascript"
+      | "ruby"
+      | "php"
+      | "lua"
+      | "perl"
+      | "csharp"
+      | "c",
+    runInTerminal?: {
+      dir?: string;
+      windows?: "wt" | "cmd";
+      macos?: "warp" | "iterm" | "terminal";
+    }
+  ): Promise<string>;
 }
 
 declare var quickcommand: quickcommandApi;

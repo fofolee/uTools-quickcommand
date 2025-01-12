@@ -10,7 +10,7 @@ const systemDialog = require("./systemDialog");
 
 const { getQuickcommandTempFile } = require("./getQuickcommandFile");
 
-const getCommandToLaunchTerminal = require("./getCommandToLaunchTerminal");
+const createTerminalCommand = require("./createTerminalCommand");
 
 const ctlKey = window.utools.isMacOs() ? "command" : "control";
 
@@ -302,8 +302,10 @@ window.runPythonCommand = (py) => {
 
 if (process.platform !== "linux") {
   // 在终端中执行
-  quickcommand.runInTerminal = function (cmdline, dir) {
-    let command = getCommandToLaunchTerminal(cmdline, dir);
+  quickcommand.runInTerminal = function (cmdline, options) {
+    // 兼容老版本接口, 老版本第二个参数是dir
+    if (typeof options === "string") options = { dir: options };
+    let command = createTerminalCommand(cmdline, options);
     child_process.exec(command);
   };
   // 系统级弹窗
