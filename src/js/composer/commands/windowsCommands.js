@@ -1,3 +1,50 @@
+const controlClass = [
+  // 基础控件
+  { value: "Button", label: "按钮 (Button)" },
+  { value: "Edit", label: "编辑框 (Edit)" },
+  { value: "Static", label: "静态文本 (Static)" },
+  { value: "ComboBox", label: "下拉框 (ComboBox)" },
+  { value: "ListBox", label: "列表框 (ListBox)" },
+  { value: "CheckBox", label: "复选框 (CheckBox)" },
+  { value: "RadioButton", label: "单选框 (RadioButton)" },
+
+  // 常见对话框控件
+  { value: "SysListView32", label: "列表视图 (SysListView32)" },
+  { value: "SysTreeView32", label: "树形视图 (SysTreeView32)" },
+  { value: "SysTabControl32", label: "选项卡 (SysTabControl32)" },
+  { value: "msctls_progress32", label: "进度条 (msctls_progress32)" },
+  { value: "msctls_trackbar32", label: "滑块 (msctls_trackbar32)" },
+  { value: "msctls_updown32", label: "数字调节器 (msctls_updown32)" },
+
+  // 文件对话框相关
+  { value: "DirectUIHWND", label: "文件浏览器 (DirectUIHWND)" },
+  { value: "ToolbarWindow32", label: "工具栏 (ToolbarWindow32)" },
+  { value: "ComboBoxEx32", label: "扩展下拉框 (ComboBoxEx32)" },
+
+  // 常见应用程序控件
+  { value: "RICHEDIT50W", label: "富文本编辑框 (RICHEDIT50W)" },
+  { value: "Scintilla", label: "代码编辑器 (Scintilla)" },
+  { value: "WebView2", label: "Edge浏览器 (WebView2)" },
+  {
+    value: "Chrome_RenderWidgetHostHWND",
+    label: "Chrome渲染 (Chrome_RenderWidgetHostHWND)",
+  },
+
+  // 系统控件
+  { value: "Shell_TrayWnd", label: "任务栏 (Shell_TrayWnd)" },
+  { value: "TrayNotifyWnd", label: "通知区域 (TrayNotifyWnd)" },
+  { value: "ReBarWindow32", label: "工具条容器 (ReBarWindow32)" },
+  { value: "TaskListThumbnailWnd", label: "任务预览 (TaskListThumbnailWnd)" },
+
+  // 通用容器
+  { value: "Window", label: "窗口 (Window)" },
+  { value: "Dialog", label: "对话框 (Dialog)" },
+  { value: "#32770", label: "标准对话框 (#32770)" },
+  { value: "MDIClient", label: "MDI客户区 (MDIClient)" },
+  { value: "ScrollBar", label: "滚动条 (ScrollBar)" },
+  { value: "GroupBox", label: "分组框 (GroupBox)" },
+];
+
 export const windowsCommands = {
   label: "Win自动化",
   icon: "window",
@@ -202,9 +249,10 @@ export const windowsCommands = {
       isAsync: true,
     },
     {
-      value: "quickcomposer.windows.message.sendMouseClick",
-      label: "发送消息",
-      icon: "send",
+      value: "quickcomposer.windows.automation.inspectWindow",
+      label: "界面自动化",
+      desc: "Windows界面自动化操作",
+      icon: "smart_button",
       isAsync: true,
       config: [
         {
@@ -231,191 +279,177 @@ export const windowsCommands = {
       ],
       subCommands: [
         {
-          value: "quickcomposer.windows.message.sendMouseClick",
-          label: "鼠标点击",
+          value: "quickcomposer.windows.automation.inspectWindow",
+          label: "获取控件树",
+          icon: "account_tree",
+          outputVariable: "controlsTree",
+          saveOutput: true,
+          config: [
+            {
+              key: "options",
+              component: "OptionEditor",
+              width: 12,
+              options: {
+                filter: {
+                  label: "控件过滤",
+                  component: "VariableInput",
+                  icon: "filter_alt",
+                  options: {
+                    items: controlClass,
+                  },
+                  width: 8,
+                  placeholder: "可选，输入要过滤的控件类名或文本",
+                },
+                background: {
+                  label: "后台操作",
+                  component: "CheckButton",
+                  icon: "back_hand",
+                  width: 4,
+                },
+              },
+              defaultValue: {
+                background: true,
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.click",
+          label: "点击控件",
           icon: "mouse",
           config: [
             {
-              key: "type",
-              defaultValue: "click",
-              hidden: true,
-            },
-            {
-              key: "button",
-              label: "按键",
-              component: "q-select",
-              icon: "mouse",
-              width: 4,
+              key: "action",
+              component: "ButtonGroup",
+              width: 12,
               options: [
-                { label: "左键", value: "left" },
-                { label: "右键", value: "right" },
-                { label: "中键", value: "middle" },
+                { label: "单击", value: "click" },
+                { label: "双击", value: "doubleclick" },
+                { label: "右键", value: "rightclick" },
               ],
-              defaultValue: "left",
+              defaultValue: "click",
             },
             {
-              key: "x",
-              label: "X坐标",
-              component: "NumberInput",
-              icon: "arrow_right",
-              width: 4,
-              defaultValue: 0,
-            },
-            {
-              key: "y",
-              label: "Y坐标",
-              component: "NumberInput",
-              icon: "arrow_drop_down",
-              width: 4,
-              defaultValue: 0,
+              key: "options",
+              component: "OptionEditor",
+              width: 12,
+              options: {
+                control: {
+                  label: "控件类名",
+                  component: "VariableInput",
+                  icon: "class",
+                  options: {
+                    items: controlClass,
+                  },
+                  width: 6,
+                  placeholder: "可选，和文本至少输入一个",
+                },
+                text: {
+                  label: "控件文本",
+                  component: "VariableInput",
+                  icon: "text_fields",
+                  width: 6,
+                  placeholder: "可选，和控件类名至少输入一个",
+                },
+                pos: {
+                  label: "坐标",
+                  component: "VariableInput",
+                  icon: "place",
+                  width: 6,
+                  placeholder: "可选，格式：x,y",
+                },
+                background: {
+                  label: "后台操作",
+                  component: "CheckButton",
+                  icon: "back_hand",
+                  width: 6,
+                },
+              },
+              defaultValue: {
+                background: true,
+              },
             },
           ],
         },
         {
-          value: "quickcomposer.windows.message.sendKeyPress",
-          label: "键盘按键",
+          value: "quickcomposer.windows.automation.sendText",
+          label: "发送文本",
           icon: "keyboard",
           config: [
-            {
-              key: "type",
-              defaultValue: "key",
-              hidden: true,
-            },
-            {
-              key: "keyCode",
-              label: "按键码",
-              component: "NumberInput",
-              icon: "keyboard",
-              width: 6,
-              defaultValue: 0,
-            },
-            {
-              key: "ctrl",
-              label: "Ctrl",
-              component: "Switch",
-              width: 3,
-              defaultValue: false,
-            },
-            {
-              key: "alt",
-              label: "Alt",
-              component: "Switch",
-              width: 3,
-              defaultValue: false,
-            },
-            {
-              key: "shift",
-              label: "Shift",
-              component: "Switch",
-              width: 3,
-              defaultValue: false,
-            },
-            {
-              key: "hold",
-              label: "按住",
-              component: "Switch",
-              width: 3,
-              defaultValue: false,
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.windows.message.sendText",
-          label: "文本输入",
-          icon: "text_fields",
-          config: [
-            {
-              key: "type",
-              defaultValue: "text",
-              hidden: true,
-            },
             {
               key: "text",
               label: "文本内容",
               component: "VariableInput",
               icon: "text_fields",
               width: 12,
+              placeholder: "要发送的文本内容",
+            },
+            {
+              key: "options",
+              component: "OptionEditor",
+              width: 12,
+              options: {
+                control: {
+                  label: "目标控件",
+                  component: "VariableInput",
+                  options: {
+                    items: controlClass,
+                  },
+                  icon: "class",
+                  width: 8,
+                  placeholder: "可选，目标控件的类名",
+                },
+                background: {
+                  label: "后台操作",
+                  component: "CheckButton",
+                  icon: "back_hand",
+                  width: 4,
+                },
+              },
+              defaultValue: {
+                background: true,
+              },
             },
           ],
         },
         {
-          value: "quickcomposer.windows.message.sendCommand",
-          label: "窗口命令",
-          icon: "window",
+          value: "quickcomposer.windows.automation.sendKeys",
+          label: "发送按键",
+          icon: "keyboard_alt",
           config: [
             {
-              key: "type",
-              defaultValue: "custom",
-              hidden: true,
-            },
-            {
-              key: "message",
-              label: "命令",
-              component: "q-select",
-              icon: "code",
+              key: "keys",
+              label: "按键序列",
+              component: "VariableInput",
+              icon: "keyboard",
               width: 12,
-              options: [
-                { label: "关闭窗口", value: "0x0010" }, // WM_CLOSE
-                { label: "销毁窗口", value: "0x0002" }, // WM_DESTROY
-                { label: "激活窗口", value: "0x0006" }, // WM_ACTIVATE
-                { label: "显示窗口", value: "0x0018" }, // WM_SHOWWINDOW
-                { label: "重绘窗口", value: "0x000F" }, // WM_PAINT
-                { label: "窗口尺寸", value: "0x0005" }, // WM_SIZE
-                { label: "窗口位置", value: "0x0003" }, // WM_MOVE
-              ],
-              defaultValue: "0x0010",
+              placeholder: "按键组合，多个逗号隔开，如：ctrl+a,a,b",
             },
             {
-              key: "wParam",
-              label: "参数1",
-              component: "NumberInput",
-              icon: "input",
-              width: 6,
-              defaultValue: 0,
-            },
-            {
-              key: "lParam",
-              label: "参数2",
-              component: "NumberInput",
-              icon: "input",
-              width: 6,
-              defaultValue: 0,
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.windows.message.sendCustom",
-          label: "自定义消息",
-          icon: "settings",
-          config: [
-            {
-              key: "type",
-              defaultValue: "custom",
-              hidden: true,
-            },
-            {
-              key: "message",
-              label: "消息ID",
-              component: "NumberInput",
-              icon: "tag",
+              key: "options",
+              component: "OptionEditor",
               width: 12,
-              defaultValue: 0,
-            },
-            {
-              key: "wParam",
-              label: "wParam",
-              component: "NumberInput",
-              icon: "input",
-              width: 6,
-              defaultValue: 0,
-            },
-            {
-              key: "lParam",
-              label: "lParam",
-              component: "NumberInput",
-              icon: "input",
-              width: 6,
-              defaultValue: 0,
+              options: {
+                control: {
+                  label: "目标控件",
+                  component: "VariableInput",
+                  options: {
+                    items: controlClass,
+                  },
+                  icon: "class",
+                  width: 8,
+                  placeholder: "可选，目标控件的类名",
+                },
+                background: {
+                  label: "后台操作",
+                  component: "CheckButton",
+                  icon: "back_hand",
+                  width: 4,
+                },
+              },
+              defaultValue: {
+                background: true,
+              },
             },
           ],
         },

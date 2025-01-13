@@ -208,7 +208,14 @@ const quickcommand = {
         if (err) return reject(err.toString());
         // 添加命令行参数
         const argsStr =
-          args.length > 0 ? " " + args.map((arg) => `"${arg}"`).join(" ") : "";
+          args.length > 0
+            ? " " +
+              args
+                .map((arg) =>
+                  arg.startsWith("-") ? arg : `"${arg}"`
+                )
+                .join(" ")
+            : "";
         child_process.exec(
           `${cscPath} /nologo /out:${tempBuildFile} ${tempCsharpFile} && ${tempBuildFile}${argsStr}`,
           {

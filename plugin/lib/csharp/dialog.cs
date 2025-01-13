@@ -790,4 +790,96 @@ public class DialogGenerator
             public int Bottom;
         }
     }
+
+    private static void ShowHelp()
+    {
+        string help = @"
+Windows 对话框生成工具使用说明
+==========================
+
+基本语法:
+dialog.exe -type <对话框类型> [参数...]
+
+对话框类型:
+----------
+1. message  - 消息对话框，显示一条消息
+2. input    - 输入对话框，支持多个输入框
+3. confirm  - 确认对话框，带确定和取消按钮
+4. buttons  - 按钮对话框，支持多个自定义按钮
+5. textarea - 文本区域对话框，用于编辑大段文本
+
+通用参数:
+--------
+-type      对话框类型（必需）
+          可选值：message, input, confirm, buttons, textarea
+
+-title     对话框标题（必需）
+          示例：-title ""提示""
+
+-content   对话框内容
+          - message/confirm/textarea：显示的文本内容
+          - input：输入框提示文本，多个输入框用|||||分隔
+          - buttons：按钮文本，多个按钮用|||||分隔
+
+-iconpath  对话框图标路径（可选）
+          示例：-iconpath ""D:\icons\app.ico""
+
+使用示例:
+--------
+1. 显示消息对话框：
+   dialog.exe -type message -title ""提示"" -content ""操作已完成""
+
+2. 显示输入对话框（单个输入）：
+   dialog.exe -type input -title ""输入"" -content ""请输入用户名：""
+
+3. 显示输入对话框（多个输入）：
+   dialog.exe -type input -title ""用户信息"" -content ""用户名：|||||密码：|||||邮箱：""
+
+4. 显示确认对话框：
+   dialog.exe -type confirm -title ""确认"" -content ""确定要删除这个文件吗？""
+
+5. 显示按钮对话框：
+   dialog.exe -type buttons -title ""选择操作"" -content ""保存|||||不保存|||||取消""
+
+6. 显示文本区域对话框：
+   dialog.exe -type textarea -title ""编辑文本"" -content ""在这里输入内容...""
+
+返回值:
+------
+1. message对话框：
+   无返回值
+
+2. input对话框：
+   返回JSON数组，包含所有输入框的值
+   示例：[""user"",""123456"",""user@email.com""]
+   用户取消：[]
+
+3. confirm对话框：
+   确定：true
+   取消：false
+   关闭窗口：{}
+
+4. buttons对话框：
+   返回JSON对象，包含按钮id和文本
+   示例：{""id"":0,""text"":""保存""}
+   关闭窗口：{}
+
+5. textarea对话框：
+   返回编辑后的文本内容
+   取消：空字符串
+
+注意事项:
+--------
+1. 包含空格的参数值需要用引号括起来
+2. 多个输入框或按钮的文本用|||||（5个竖线）分隔
+3. 所有对话框都支持自定义图标（使用-iconpath参数）
+4. 对话框会自动适应DPI缩放
+5. 所有对话框都支持文本选择和复制
+
+更多信息:
+--------
+遇到问题请查看错误信息，错误信息会提供详细的原因说明。
+";
+        Console.WriteLine(help);
+    }
 }

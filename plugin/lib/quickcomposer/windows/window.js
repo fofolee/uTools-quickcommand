@@ -489,7 +489,11 @@ async function getWindowInfo(method, value) {
   `;
 
   const result = await quickcommand.runCsharp(script);
-  return JSON.parse(result);
+  try {
+    return JSON.parse(result);
+  } catch (error) {
+    return {};
+  }
 }
 
 /**
