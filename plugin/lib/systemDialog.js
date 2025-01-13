@@ -75,7 +75,7 @@ const showSystemMessageBox = async function (content, title = "") {
       if (result && result.startsWith("Error:")) {
         throw new Error(result.substring(7));
       }
-      return;
+      return true;
     }
     if (window.utools.isMacOs()) {
       let iconParam = "note";
@@ -83,9 +83,9 @@ const showSystemMessageBox = async function (content, title = "") {
         const posixPath = iconPath.replace(/\\/g, "/");
         iconParam = `alias POSIX file "${posixPath}"`;
       }
-      const script = `display dialog "${content}" with title "${title}" buttons {"取消", "确定"} default button "确定" with icon ${iconParam}`;
-      const result = await this.runAppleScript(script);
-      return result.includes("button returned:确定");
+      const script = `display dialog "${content}" with title "${title}" buttons {"确定"} default button "确定" with icon ${iconParam}`;
+      await this.runAppleScript(script);
+      return true;
     } else if (window.utools.isLinux()) {
       if (!(await checkZenity())) return false;
       try {
@@ -115,22 +115,26 @@ const showSystemInputBox = async function (placeholders, title = "") {
       const posixPath = iconPath.replace(/\\/g, "/");
       iconParam = `alias POSIX file "${posixPath}"`;
     }
-
-    const results = [];
-    for (let i = 0; i < placeholders.length; i++) {
-      const isLast = i === placeholders.length - 1;
-      const buttons = isLast ? '{"取消", "确定"}' : '{"取消", "继续"}';
-      const defaultButton = isLast ? '"确定"' : '"继续"';
-      const script = `display dialog "${placeholders[i]}" with title "${title}" default answer "" buttons ${buttons} default button ${defaultButton} with icon ${iconParam}`;
-      const result = await this.runAppleScript(script);
-      const buttonClicked = isLast ? "确定" : "继续";
-      if (!result.includes(`button returned:${buttonClicked}`)) {
-        return null;
+    try {
+      const results = [];
+      for (let i = 0; i < placeholders.length; i++) {
+        const isLast = i === placeholders.length - 1;
+        const buttons = isLast ? '{"取消", "确定"}' : '{"取消", "继续"}';
+        const defaultButton = isLast ? '"确定"' : '"继续"';
+        const script = `display dialog "${placeholders[i]}" with title "${title}" default answer "" buttons ${buttons} default button ${defaultButton} with icon ${iconParam}`;
+        const result = await this.runAppleScript(script);
+        const buttonClicked = isLast ? "确定" : "继续";
+        if (!result.includes(`button returned:${buttonClicked}`)) {
+          return null;
+        }
+        const text = result.match(/text returned:(.+)/)[1];
+        results.push(text);
       }
-      const text = result.match(/text returned:(.+)/)[1];
-      results.push(text);
+      return results;
+    } catch (err) {
+      console.error(err);
+      return [];
     }
-    return results;
   } else if (window.utools.isWindows()) {
     const args = [
       "-type",
@@ -147,8 +151,7 @@ const showSystemInputBox = async function (placeholders, title = "") {
 
     const csharpCode = dialogTemplate;
     const result = await this.runCsharp(csharpCode, args);
-    console.log(result, JSON.parse(result));
-    return result ? JSON.parse(result) : null;
+    return result ? JSON.parse(result) : [];
   } else if (window.utools.isLinux()) {
     if (!(await checkZenity())) return null;
     const results = [];
@@ -156,11 +159,11 @@ const showSystemInputBox = async function (placeholders, title = "") {
       try {
         const script = `zenity --entry --title="${title}" --text="${placeholders[i]}" --width=400`;
         const result = await execCommand(script);
-        if (!result) return null;
+        if (!result) return [];
         results.push(result.trim());
       } catch (error) {
         console.error("执行 zenity 命令失败:", error);
-        return null;
+        return [];
       }
     }
     return results;
@@ -176,8 +179,13 @@ const showSystemConfirmBox = async function (content, title = "") {
       iconParam = `alias POSIX file "${posixPath}"`;
     }
     const script = `display dialog "${content}" with title "${title}" buttons {"取消", "确定"} default button "确定" with icon ${iconParam}`;
-    const result = await this.runAppleScript(script);
-    return result.includes("button returned:确定");
+    try {
+      const result = await this.runAppleScript(script);
+      return result.includes("button returned:确定");
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
   } else if (window.utools.isWindows()) {
     const args = [
       "-type",
@@ -211,12 +219,17 @@ const showSystemButtonBox = async function (buttons, title = "") {
   const iconPath = getQuickcommandIconPath();
   if (window.utools.isMacOs()) {
     const itemList = buttons.map((item) => `"${item}"`).join(", ");
-    const script = `choose from list {${itemList}} with title "${title}" with prompt "请选择：" default items {"${buttons[0]}"}`;
-    const result = await this.runAppleScript(script);
-    if (result.includes("false")) return null;
-    const text = result.trim();
-    const id = buttons.findIndex((item) => item === text);
-    return { id, text };
+    const script = `choose from list {${itemList}} with title "${title}" default items {"${buttons[0]}"}`;
+    try {
+      const result = await this.runAppleScript(script);
+      if (result.includes("false")) return {};
+      const text = result.trim();
+      const id = buttons.findIndex((item) => item === text);
+      return { id, text };
+    } catch (err) {
+      console.error(err);
+      return {};
+    }
   } else if (window.utools.isWindows()) {
     const args = [
       "-type",
@@ -236,7 +249,7 @@ const showSystemButtonBox = async function (buttons, title = "") {
     if (result) {
       return JSON.parse(result);
     }
-    return null;
+    return {};
   } else if (window.utools.isLinux()) {
     if (!(await checkZenity())) return null;
     try {
@@ -248,7 +261,7 @@ const showSystemButtonBox = async function (buttons, title = "") {
         .join(" ");
       const script2 = `zenity --list --title="${title}" --text="请选择：" --column="序号" --column="选项" ${itemsList} --width=400 --height=300`;
       const result = await execCommand(script2);
-      if (!result) return null;
+      if (!result) return {};
       const text = result.trim();
       const id = buttons.findIndex((btn) => btn === text);
       return { id, text };
