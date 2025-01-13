@@ -455,5 +455,70 @@ export const windowsCommands = {
         },
       ],
     },
+    {
+      value: "quickcomposer.windows.monitor.watchClipboard",
+      label: "剪贴板/文件监控",
+      desc: "监控系统变化",
+      icon: "monitor_heart",
+      isAsync: true,
+      outputVariable: "monitorEvent",
+      saveOutput: true,
+      showLoading: true,
+      subCommands: [
+        {
+          value: "quickcomposer.windows.monitor.watchClipboard",
+          label: "等待剪贴板变化",
+          icon: "content_paste",
+        },
+        {
+          value: "quickcomposer.windows.monitor.watchFileSystem",
+          label: "等待文件夹变化",
+          icon: "folder",
+          config: [
+            {
+              label: "监控路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择文件夹",
+                    properties: ["openDirectory"],
+                  },
+                },
+              },
+              placeholder: "要监控的文件夹路径",
+              required: true,
+            },
+            {
+              key: "options",
+              component: "OptionEditor",
+              width: 12,
+              options: {
+                filter: {
+                  label: "文件过滤",
+                  component: "VariableInput",
+                  icon: "filter_alt",
+                  width: 6,
+                  placeholder: "如: *.txt, *.docx",
+                },
+                recursive: {
+                  label: "包含子文件夹",
+                  component: "CheckButton",
+                  icon: "subdirectory_arrow_right",
+                  width: 6,
+                  defaultValue: true,
+                },
+              },
+              defaultValue: {
+                recursive: false,
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
