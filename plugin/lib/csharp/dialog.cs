@@ -11,14 +11,55 @@ public class DialogGenerator
     [DllImport("user32.dll")]
     private static extern bool SetProcessDPIAware();
 
-    private const int DEFAULT_WIDTH = 900;
-    private const int DEFAULT_HEIGHT = 350;
-    private const int PADDING = 30;
-    private const int BUTTON_HEIGHT = 50;
-    private const int BUTTON_WIDTH = 140;
-    private const int INPUT_HEIGHT = 40;
-    private const int SPACING = 20;
-    private const int EM_SETRECT = 0xB3;
+    [DllImport("gdi32.dll")]
+    private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+
+    private const int LOGPIXELSX = 88;
+    private const int LOGPIXELSY = 90;
+
+    // 基础尺寸常量 (96 DPI下的尺寸，当前尺寸/1.75)
+    private const int BASE_WIDTH = 515;        // 900/1.75 ≈ 515
+    private const int BASE_HEIGHT = 200;       // 350/1.75 ≈ 200
+    private const int BASE_PADDING = 17;       // 30/1.75 ≈ 17
+    private const int BASE_BUTTON_HEIGHT = 29; // 50/1.75 ≈ 29
+    private const int BASE_BUTTON_WIDTH = 80;  // 140/1.75 ≈ 80
+    private const int BASE_INPUT_HEIGHT = 23;  // 40/1.75 ≈ 23
+    private const int BASE_SPACING = 11;       // 20/1.75 ≈ 11
+
+    // 实际使用的缩放尺寸
+    private static int DEFAULT_WIDTH;
+    private static int DEFAULT_HEIGHT;
+    private static int PADDING;
+    private static int BUTTON_HEIGHT;
+    private static int BUTTON_WIDTH;
+    private static int INPUT_HEIGHT;
+    private static int SPACING;
+
+    // 添加获取DPI缩放比例的方法
+    private static float GetScaleFactor()
+    {
+        using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+        {
+            IntPtr desktop = g.GetHdc();
+            int dpiX = GetDeviceCaps(desktop, LOGPIXELSX);
+            g.ReleaseHdc(desktop);
+            return dpiX / 96f;
+        }
+    }
+
+    // 初始化缩放尺寸的方法
+    private static void InitializeScaledSizes()
+    {
+        float scaleFactor = GetScaleFactor();
+
+        DEFAULT_WIDTH = (int)(BASE_WIDTH * scaleFactor);
+        DEFAULT_HEIGHT = (int)(BASE_HEIGHT * scaleFactor);
+        PADDING = (int)(BASE_PADDING * scaleFactor);
+        BUTTON_HEIGHT = (int)(BASE_BUTTON_HEIGHT * scaleFactor);
+        BUTTON_WIDTH = (int)(BASE_BUTTON_WIDTH * scaleFactor);
+        INPUT_HEIGHT = (int)(BASE_INPUT_HEIGHT * scaleFactor);
+        SPACING = (int)(BASE_SPACING * scaleFactor);
+    }
 
     private static void InitializeDPIAwareness()
     {
@@ -30,6 +71,8 @@ public class DialogGenerator
 
     public static DialogResult Show(string[] args)
     {
+        InitializeScaledSizes(); // 初始化缩放尺寸
+
         string type = GetArgumentValue(args, "-type");
         string title = GetArgumentValue(args, "-title");
         string content = GetArgumentValue(args, "-content");
@@ -91,14 +134,16 @@ public class DialogGenerator
         dialog.Width = DEFAULT_WIDTH;
         dialog.Height = DEFAULT_HEIGHT;
         dialog.StartPosition = FormStartPosition.CenterScreen;
+        dialog.AutoScaleMode = AutoScaleMode.None; // 禁用自动缩放
 
-        // 使用 Microsoft YaHei UI 字体
-        dialog.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+        // 禁止调整窗口大小
+        dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+        dialog.MaximizeBox = false;
+        dialog.MinimizeBox = false;
 
-        // 设置DPI感知
-        dialog.AutoScaleMode = AutoScaleMode.Dpi;
+        float scaleFactor = GetScaleFactor();
+        dialog.Font = new Font("Microsoft YaHei UI", 9F * scaleFactor, FontStyle.Regular, GraphicsUnit.Pixel);
 
-        // 设置文本渲染质量
         dialog.Paint += delegate(object sender, PaintEventArgs e) {
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
         };
@@ -719,7 +764,10 @@ public class DialogGenerator
 
     public static void Main(string[] args)
     {
-        InitializeDPIAwareness();
+        if (Environment.OSVersion.Version.Major >= 6)
+        {
+            SetProcessDPIAware();
+        }
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
         Show(args);
