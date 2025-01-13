@@ -200,29 +200,10 @@ export const uiCommands = {
     },
     {
       value: "quickcommand.showSelectList",
-      label: "uTools选择列表",
+      label: "选择列表",
       desc: "显示一个支持搜索的选项列表，可以动态更新选项",
       component: "SelectListEditor",
       isAsync: true,
-    },
-    {
-      value: "quickcommand.showSystemSelectList",
-      label: "系统选择列表",
-      desc: "选择列表（系统）",
-      isAsync: true,
-      config: [
-        {
-          label: "选项",
-          component: "ArrayEditor",
-          width: 12,
-        },
-        {
-          label: "标题",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str", "请选择"),
-          width: 12,
-        },
-      ],
     },
     {
       value: "quickcommand.showTextArea",
@@ -231,30 +212,44 @@ export const uiCommands = {
       isAsync: true,
       outputVariable: "textareaValue",
       saveOutput: true,
-      config: [
-        {
-          label: "文本框占位符",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str", "请输入"),
-          width: 6,
-        },
-        {
-          label: "文本框默认值",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str"),
-          width: 6,
-        },
-      ],
       subCommands: [
         {
           value: "quickcommand.showTextArea",
           icon: "call_to_action",
           label: "插件内弹窗",
+          config: [
+            {
+              label: "文本框占位符",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str", "请输入"),
+              width: 6,
+            },
+            {
+              label: "文本框默认值",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str"),
+              width: 6,
+            },
+          ],
         },
         {
           value: "quickcommand.showSystemTextArea",
           icon: "report",
           label: "系统弹窗(Mac不支持)",
+          config: [
+            {
+              label: "文本框默认值",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str"),
+              width: 6,
+            },
+            {
+              label: "标题",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str", "请输入"),
+              width: 6,
+            },
+          ],
         },
       ],
     },

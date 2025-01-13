@@ -178,6 +178,53 @@ const quickcommand = {
     }
     return null;
   },
+
+  // 运行C#脚本
+  runCsharp: function (script, args = []) {
+    return new Promise((reslove, reject) => {
+      let cscPath = path.join(
+        process.env.WINDIR,
+        "Microsoft.NET",
+        "Framework",
+        "v4.0.30319",
+        "csc.exe"
+      );
+      if (!fs.existsSync(cscPath)) {
+        cscPath = path.join(
+          process.env.WINDIR,
+          "Microsoft.NET",
+          "Framework",
+          "v3.5",
+          "csc.exe"
+        );
+      }
+      if (!fs.existsSync(cscPath)) {
+        return reject("未安装.NET Framework");
+      }
+      let tempCsharpFile = getQuickcommandTempFile("cs");
+      let tempBuildFile = getQuickcommandTempFile("exe");
+
+      fs.writeFile(tempCsharpFile, iconv.encode(script, "gbk"), (err) => {
+        if (err) return reject(err.toString());
+        // 添加命令行参数
+        const argsStr =
+          args.length > 0 ? " " + args.map((arg) => `"${arg}"`).join(" ") : "";
+        child_process.exec(
+          `${cscPath} /nologo /out:${tempBuildFile} ${tempCsharpFile} && ${tempBuildFile}${argsStr}`,
+          {
+            encoding: "buffer",
+            windowsHide: true,
+          },
+          (err, stdout) => {
+            if (err) reject(iconv.decode(stdout, "gbk"));
+            else reslove(iconv.decode(stdout, "gbk"));
+            fs.unlink(tempCsharpFile, () => {});
+            fs.unlink(tempBuildFile, () => {});
+          }
+        );
+      });
+    });
+  },
 };
 
 if (process.platform === "win32") {
@@ -219,52 +266,6 @@ if (process.platform === "win32") {
     });
   };
 
-  // 运行C#脚本
-  quickcommand.runCsharp = function (script) {
-    return new Promise((reslove, reject) => {
-      // 找到csc.exe
-      let cscPath = path.join(
-        process.env.WINDIR,
-        "Microsoft.NET",
-        "Framework",
-        "v4.0.30319",
-        "csc.exe"
-      );
-      if (!fs.existsSync(cscPath)) {
-        cscPath = path.join(
-          process.env.WINDIR,
-          "Microsoft.NET",
-          "Framework",
-          "v3.5",
-          "csc.exe"
-        );
-      }
-      if (!fs.existsSync(cscPath)) {
-        return reject("未安装.NET Framework");
-      }
-      // 写入临时文件
-      let tempCsharpFile = getQuickcommandTempFile("cs");
-      let tempBuildFile = getQuickcommandTempFile("exe");
-
-      fs.writeFile(tempCsharpFile, iconv.encode(script, "gbk"), (err) => {
-        if (err) return reject(err.toString());
-        // 运行csc.exe
-        child_process.exec(
-          `${cscPath} /nologo /out:${tempBuildFile} ${tempCsharpFile} && ${tempBuildFile}`,
-          {
-            encoding: "buffer",
-            windowsHide: true,
-          },
-          (err, stdout) => {
-            if (err) reject(iconv.decode(stdout, "gbk"));
-            else reslove(iconv.decode(stdout, "gbk"));
-            fs.unlink(tempCsharpFile, () => {});
-            fs.unlink(tempBuildFile, () => {});
-          }
-        );
-      });
-    });
-  };
   quickcommand.showSystemTextArea = systemDialog.showSystemTextArea;
 }
 
@@ -312,7 +313,6 @@ if (process.platform !== "linux") {
   quickcommand.showSystemMessageBox = systemDialog.showSystemMessageBox;
   quickcommand.showSystemInputBox = systemDialog.showSystemInputBox;
   quickcommand.showSystemConfirmBox = systemDialog.showSystemConfirmBox;
-  quickcommand.showSystemSelectList = systemDialog.showSystemSelectList;
   quickcommand.showSystemButtonBox = systemDialog.showSystemButtonBox;
 }
 

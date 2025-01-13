@@ -549,30 +549,12 @@ interface quickcommandApi {
    */
   showSystemConfirmBox(content: string, title?: string): Promise<boolean>;
 
-  /**
-   * 显示一个系统级选择列表，返回选择的项的索引和文本（不支持Linux）
-   *
-   * ```js
-   * quickcommand.showSystemSelectList(["选项1", "选项2", "选项3"], "请选择").then(result => {
-   *   if (result) {
-   *     console.log(`选择了第${result.id + 1}个选项：${result.text}`)
-   *   }
-   * })
-   * ```
-   *
-   * @param items 选项列表
-   * @param title 标题，默认为空
-   */
-  showSystemSelectList(
-    items: string[],
-    title?: string
-  ): Promise<{ id: number; text: string } | null>;
 
   /**
    * 显示一个系统级按钮组对话框，返回点击的按钮的索引和文本（不支持Linux）
    *
    * ```js
-   * quickcommand.showSystemButtonBox(["保存", "不保存", "取消"], "是否保存更改？", "保存确认").then(result => {
+   * quickcommand.showSystemButtonBox(["保存", "不保存", "取消"], "保存确认").then(result => {
    *   if (result) {
    *     console.log(`点击了第${result.id + 1}个按钮：${result.text}`)
    *   }
@@ -580,12 +562,10 @@ interface quickcommandApi {
    * ```
    *
    * @param buttons 按钮文本数组
-   * @param content 对话框内容
    * @param title 标题，默认为空
    */
   showSystemButtonBox(
     buttons: string[],
-    content: string,
     title?: string
   ): Promise<{ id: number; text: string } | null>;
 
@@ -593,19 +573,17 @@ interface quickcommandApi {
    * 显示一个系统级多行文本输入框（仅Windows支持）
    *
    * ```js
-   * quickcommand.showSystemTextArea("请输入多行文本：", "默认内容", "文本编辑").then(text => {
+   * quickcommand.showSystemTextArea("默认内容", "文本编辑").then(text => {
    *   if (text) {
    *     console.log("输入的文本：", text)
    *   }
    * })
    * ```
    *
-   * @param placeholder 提示文本，默认为空
-   * @param defaultText 默认文本，默认为空
+     * @param defaultText 默认文本，默认为空
    * @param title 标题，默认为空
    */
   showSystemTextArea(
-    placeholder?: string,
     defaultText?: string,
     title?: string
   ): Promise<string | null>;
