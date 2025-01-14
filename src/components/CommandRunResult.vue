@@ -62,7 +62,7 @@
           <q-resize-observer @resize="autoHeight" debounce="0" />
         </div>
         <q-menu v-if="selectText" touch-position @before-hide="clearSelect">
-          <ResultMenu :dense="true" :content="selectText" :textbtn="true" />
+          <ResultMenu :dense="true" :selectText="selectText" :textbtn="true" />
         </q-menu>
       </q-card>
     </q-dialog>

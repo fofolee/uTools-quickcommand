@@ -54,6 +54,7 @@ export default {
     imagebtn: Boolean,
     closebtn: Boolean,
     runResult: Array,
+    selectText: String,
   },
   emits: ["updateResult"],
   computed: {
@@ -133,11 +134,13 @@ export default {
   },
   methods: {
     copyResult() {
-      window.utools.copyText(this.getFormattedContent());
+      window.utools.copyText(this.selectText || this.getFormattedContent());
       quickcommand.showMessageBox("已复制到剪贴板");
     },
     sendResult() {
-      window.utools.hideMainWindowTypeString(this.getFormattedContent());
+      window.utools.hideMainWindowTypeString(
+        this.selectText || this.getFormattedContent()
+      );
     },
     dataUrlToImg() {
       const imagePattern = /data:image\/.*?;base64,.*/g;
@@ -172,15 +175,33 @@ export default {
       ];
       if (!headers.length) return;
 
+      // 计算字符串显示宽度的辅助函数
+      const getDisplayWidth = (str) => {
+        return String(str)
+          .split("")
+          .reduce((width, char) => {
+            // 判断是否为全角字符
+            // 包括：中文字符、全角标点符号、全角空格、日韩字符等
+            return (
+              width +
+              (/[\u2E80-\u2FFF\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3100-\u312F\u3200-\u32FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFFEF]/.test(
+                char
+              )
+                ? 2
+                : 1)
+            );
+          }, 0);
+      };
+
       // 计算每列的最大宽度
       const columnWidths = headers.map((header) => {
         const maxDataWidth = Math.max(
-          header.length,
+          getDisplayWidth(header),
           ...tableData.map((obj) => {
             const value = obj[header];
             return value === undefined || value === null
               ? 0
-              : String(value).replace(/\n/g, "\\n").length;
+              : getDisplayWidth(String(value).replace(/\n/g, "\\n"));
           })
         );
         return maxDataWidth;
@@ -191,10 +212,12 @@ export default {
         "| " +
         cells
           .map((cell, index) => {
+            const cellStr = String(cell);
+            const displayWidth = getDisplayWidth(cellStr);
             const padding = " ".repeat(
-              Math.max(0, columnWidths[index] - String(cell).length)
+              Math.max(0, columnWidths[index] - displayWidth)
             );
-            return String(cell) + padding;
+            return cellStr + padding;
           })
           .join(" | ") +
         " |";
