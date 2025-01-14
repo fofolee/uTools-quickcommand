@@ -3,6 +3,95 @@ const path = require("path");
 const iconv = require("iconv-lite");
 const child_process = require("child_process");
 const { getQuickcommandFolderFile } = require("../getQuickcommandFile");
+
+const getAssemblyPath = (assembly) => {
+  const { version } = getCscPath();
+  const is64bit = process.arch === "x64";
+
+  const paths = [
+    // v4.0 路径
+    path.join(
+      process.env.WINDIR,
+      "Microsoft.NET",
+      "assembly",
+      "GAC_MSIL",
+      assembly,
+      "v4.0_4.0.0.0__31bf3856ad364e35",
+      assembly + ".dll"
+    ),
+    path.join(
+      process.env.WINDIR,
+      "Microsoft.NET",
+      is64bit ? "Framework64" : "Framework",
+      "v4.0.30319",
+      assembly + ".dll"
+    ),
+    path.join(
+      process.env.WINDIR,
+      "Microsoft.NET",
+      is64bit ? "Framework64" : "Framework",
+      "v4.0.30319",
+      "WPF",
+      assembly + ".dll"
+    ),
+
+    // v3.0/v3.5 路径
+    path.join(
+      process.env["ProgramFiles(x86)"] || process.env.ProgramFiles,
+      "Reference Assemblies",
+      "Microsoft",
+      "Framework",
+      "v3.0",
+      assembly + ".dll"
+    ),
+    path.join(
+      process.env.ProgramFiles,
+      "Reference Assemblies",
+      "Microsoft",
+      "Framework",
+      "v3.0",
+      assembly + ".dll"
+    ),
+    path.join(
+      process.env.WINDIR,
+      "assembly",
+      "GAC_MSIL",
+      assembly,
+      "3.0.0.0__31bf3856ad364e35",
+      assembly + ".dll"
+    ),
+  ];
+
+  // 根据csc版本筛选合适的路径
+  const filteredPaths = paths.filter((p) => {
+    if (version === "v4.0") return true; // v4.0可以使用所有版本
+    return !p.includes("v4.0"); // v3.5只使用v3.0及以下版本
+  });
+
+  for (const p of filteredPaths) {
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+};
+
+const getFeatureReferences = (feature) => {
+  let references = "";
+  if (feature === "automation") {
+    const automationDll = getAssemblyPath("UIAutomationClient");
+    const formsDll = getAssemblyPath("System.Windows.Forms");
+    const typesDll = getAssemblyPath("UIAutomationTypes");
+    const baseDll = getAssemblyPath("WindowsBase");
+    if (!automationDll) throw new Error("找不到UIAutomationClient.dll");
+    if (!formsDll) throw new Error("找不到System.Windows.Forms.dll");
+    if (!typesDll) throw new Error("找不到UIAutomationTypes.dll");
+    if (!baseDll) throw new Error("找不到WindowsBase.dll");
+    references =
+      `/reference:"${automationDll}" /reference:"${formsDll}" ` +
+      `/reference:"${typesDll}" /reference:"${baseDll}" `;
+  }
+  return references;
+};
+
 const getCsharpFeatureCs = (feature) => {
   return path.join(__dirname, feature + ".cs");
 };
@@ -20,11 +109,13 @@ const buildCsharpFeature = async (feature) => {
     const exePath = getQuickcommandFolderFile(feature, "exe");
     const srcCsPath = getCsharpFeatureCs(feature);
     const destCsPath = getQuickcommandFolderFile(feature, "cs");
-    const cscPath = getCscPath();
+    const { path: cscPath } = getCscPath();
+    const references = getFeatureReferences(feature);
+
     fs.copyFile(srcCsPath, destCsPath, (err) => {
       if (err) return reject(err.toString());
       child_process.exec(
-        `${cscPath} /nologo /out:${exePath} ${destCsPath}`,
+        `${cscPath} /nologo ${references}/out:"${exePath}" "${destCsPath}"`,
         { encoding: null },
         (err, stdout) => {
           if (err) return reject(iconv.decode(stdout, "gbk"));
@@ -37,13 +128,15 @@ const buildCsharpFeature = async (feature) => {
 };
 
 const getCscPath = () => {
-  const cscPath = path.join(
+  let cscPath = path.join(
     process.env.WINDIR,
     "Microsoft.NET",
     "Framework",
     "v4.0.30319",
     "csc.exe"
   );
+  let version = "v4.0";
+
   if (!fs.existsSync(cscPath)) {
     cscPath = path.join(
       process.env.WINDIR,
@@ -52,11 +145,12 @@ const getCscPath = () => {
       "v3.5",
       "csc.exe"
     );
+    version = "v3.5";
   }
   if (!fs.existsSync(cscPath)) {
     throw new Error("未安装.NET Framework");
   }
-  return cscPath;
+  return { path: cscPath, version };
 };
 
 /**
@@ -71,7 +165,10 @@ const runCsharpFeature = async (feature, args = [], options = {}) => {
   return new Promise(async (reslove, reject) => {
     const { alwaysBuildNewExe = false } = options;
     try {
-      const featureExePath = await getCsharpFeatureExe(feature, alwaysBuildNewExe);
+      const featureExePath = await getCsharpFeatureExe(
+        feature,
+        alwaysBuildNewExe
+      );
       child_process.execFile(
         featureExePath,
         args,
