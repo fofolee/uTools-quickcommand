@@ -45,6 +45,65 @@ const controlClass = [
   { value: "GroupBox", label: "分组框 (GroupBox)" },
 ];
 
+const registryPaths = [
+  // 系统设置
+  {
+    value: "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion",
+    label: "Windows设置",
+  },
+  { value: "HKLM\\SYSTEM\\CurrentControlSet\\Control", label: "系统控制" },
+  {
+    value: "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+    label: "Windows NT设置",
+  },
+
+  // 启动项
+  {
+    value: "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+    label: "系统启动项",
+  },
+  {
+    value: "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+    label: "用户启动项",
+  },
+
+  // 软件设置
+  {
+    value: "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+    label: "已安装软件(64位)",
+  },
+  {
+    value:
+      "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+    label: "已安装软件(32位)",
+  },
+
+  // 文件关联
+  { value: "HKLM\\SOFTWARE\\Classes", label: "系统文件关联" },
+  { value: "HKCU\\SOFTWARE\\Classes", label: "用户文件关联" },
+
+  // 服务
+  { value: "HKLM\\SYSTEM\\CurrentControlSet\\Services", label: "系统服务" },
+
+  // 环境变量
+  {
+    value:
+      "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
+    label: "系统环境变量",
+  },
+  { value: "HKCU\\Environment", label: "用户环境变量" },
+
+  // 网络设置
+  {
+    value: "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+    label: "TCP/IP设置",
+  },
+  {
+    value: "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\NetworkList",
+    label: "网络配置",
+  },
+];
+
 export const windowsCommands = {
   label: "Win自动化",
   icon: "window",
@@ -515,6 +574,524 @@ export const windowsCommands = {
               defaultValue: {
                 recursive: false,
               },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.windows.process.listProcesses",
+      label: "进程管理",
+      desc: "Windows进程操作",
+      icon: "memory",
+      isAsync: true,
+      subCommands: [
+        {
+          value: "quickcomposer.windows.process.listProcesses",
+          label: "进程列表",
+          icon: "list",
+          outputVariable: "processList",
+          saveOutput: true,
+        },
+        {
+          value: "quickcomposer.windows.process.killProcess",
+          label: "终止进程",
+          icon: "stop_circle",
+          config: [
+            {
+              key: "target",
+              label: "进程ID/名称",
+              component: "VariableInput",
+              icon: "tag",
+              width: 12,
+              placeholder: "输入进程ID或名称",
+              required: true,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.process.startProcess",
+          label: "启动进程",
+          icon: "play_circle",
+          config: [
+            {
+              key: "path",
+              label: "程序路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择程序",
+                    filters: [
+                      { name: "可执行文件", extensions: ["exe"] },
+                      { name: "所有文件", extensions: ["*"] },
+                    ],
+                  },
+                },
+              },
+              required: true,
+            },
+            {
+              key: "arguments",
+              label: "启动参数",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "可选的启动参数",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.windows.registry.listKeys",
+      label: "注册表管理",
+      desc: "Windows注册表操作",
+      icon: "settings",
+      isAsync: true,
+      config: [
+        {
+          key: "path",
+          label: "注册表路径",
+          component: "VariableInput",
+          icon: "folder",
+          width: 12,
+          placeholder: "如: HKLM\\SOFTWARE\\Microsoft\\Windows",
+          options: {
+            items: registryPaths,
+          },
+          required: true,
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcomposer.windows.registry.listKeys",
+          label: "列出项",
+          icon: "list",
+          outputVariable: "registryKeys",
+          saveOutput: true,
+        },
+        {
+          value: "quickcomposer.windows.registry.getValue",
+          label: "获取值",
+          icon: "search",
+          config: [
+            {
+              key: "path",
+              label: "注册表路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              placeholder: "如: HKLM\\SOFTWARE\\Microsoft\\Windows",
+              options: {
+                items: registryPaths,
+              },
+              required: true,
+            },
+            {
+              key: "name",
+              label: "值名称",
+              component: "VariableInput",
+              icon: "label",
+              width: 12,
+              placeholder: "要获取的值名称",
+            },
+          ],
+          outputVariable: "registryValue",
+          saveOutput: true,
+        },
+        {
+          value: "quickcomposer.windows.registry.setValue",
+          label: "设置值",
+          icon: "edit",
+          config: [
+            {
+              key: "path",
+              label: "注册表路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              placeholder: "如: HKLM\\SOFTWARE\\Microsoft\\Windows",
+              options: {
+                items: registryPaths,
+              },
+              required: true,
+            },
+            {
+              key: "name",
+              label: "值名称",
+              component: "VariableInput",
+              icon: "label",
+              width: 12,
+              placeholder: "要设置的值名称",
+              required: true,
+            },
+            {
+              key: "value",
+              label: "值内容",
+              component: "VariableInput",
+              icon: "text_fields",
+              width: 8,
+              required: true,
+            },
+            {
+              key: "valueType",
+              label: "值类型",
+              component: "q-select",
+              icon: "category",
+              width: 4,
+              options: [
+                { label: "字符串", value: "string" },
+                { label: "可扩展字符串", value: "expandstring" },
+                { label: "二进制", value: "binary" },
+                { label: "DWORD", value: "dword" },
+                { label: "QWORD", value: "qword" },
+                { label: "多字符串", value: "multistring" },
+              ],
+              defaultValue: "string",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.registry.deleteValue",
+          label: "删除值",
+          icon: "delete",
+          config: [
+            {
+              key: "path",
+              label: "注册表路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              placeholder: "如: HKLM\\SOFTWARE\\Microsoft\\Windows",
+              options: {
+                items: registryPaths,
+              },
+              required: true,
+            },
+            {
+              key: "name",
+              label: "值名称",
+              component: "VariableInput",
+              icon: "label",
+              width: 12,
+              placeholder: "要删除的值名称(留空删除整个项)",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.windows.service.listServices",
+      label: "服务管理",
+      desc: "Windows服务操作",
+      icon: "miscellaneous_services",
+      isAsync: true,
+      subCommands: [
+        {
+          value: "quickcomposer.windows.service.listServices",
+          label: "服务列表",
+          icon: "list",
+          outputVariable: "serviceList",
+          saveOutput: true,
+        },
+        {
+          value: "quickcomposer.windows.service.controlService",
+          label: "控制服务",
+          icon: "settings",
+          config: [
+            {
+              key: "name",
+              label: "服务名称",
+              component: "VariableInput",
+              icon: "label",
+              width: 12,
+              placeholder: "输入服务名称",
+              required: true,
+            },
+            {
+              key: "operation",
+              label: "操作",
+              component: "ButtonGroup",
+              icon: "play_circle",
+              width: 12,
+              options: [
+                { label: "启动", value: "start" },
+                { label: "停止", value: "stop" },
+                { label: "暂停", value: "pause" },
+                { label: "继续", value: "continue" },
+              ],
+              defaultValue: "start",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.windows.software.listSoftware",
+      label: "软件管理",
+      desc: "Windows软件操作",
+      icon: "apps",
+      isAsync: true,
+      subCommands: [
+        {
+          value: "quickcomposer.windows.software.listSoftware",
+          label: "软件列表",
+          icon: "list",
+          outputVariable: "softwareList",
+          saveOutput: true,
+        },
+        {
+          value: "quickcomposer.windows.software.uninstallSoftware",
+          label: "卸载软件",
+          icon: "delete",
+          config: [
+            {
+              key: "target",
+              label: "软件ID",
+              component: "VariableInput",
+              icon: "tag",
+              width: 12,
+              placeholder: "输入软件ID(从软件列表获取)",
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.windows.utils.setWallpaper",
+      label: "系统工具",
+      desc: "Windows系统工具",
+      icon: "build",
+      isAsync: true,
+      subCommands: [
+        {
+          value: "quickcomposer.windows.utils.setWallpaper",
+          label: "设置壁纸",
+          icon: "wallpaper",
+          config: [
+            {
+              key: "path",
+              label: "壁纸路径",
+              component: "VariableInput",
+              icon: "image",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择壁纸",
+                    filters: [
+                      {
+                        name: "图片文件",
+                        extensions: ["jpg", "jpeg", "png", "bmp"],
+                      },
+                    ],
+                  },
+                },
+              },
+              required: true,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.utils.controlMonitor",
+          label: "控制显示器",
+          icon: "desktop_windows",
+          config: [
+            {
+              key: "action",
+              component: "ButtonGroup",
+              icon: "power_settings_new",
+              width: 12,
+              options: [
+                { label: "开启", value: "on" },
+                { label: "关闭", value: "off" },
+              ],
+              defaultValue: "off",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.utils.powerControl",
+          label: "电源控制",
+          icon: "power",
+          config: [
+            {
+              key: "mode",
+              component: "ButtonGroup",
+              icon: "power_settings_new",
+              width: 12,
+              options: [
+                { label: "睡眠", value: "sleep" },
+                { label: "休眠", value: "hibernate" },
+                { label: "保持唤醒", value: "awake" },
+                { label: "正常", value: "normal" },
+              ],
+              defaultValue: "sleep",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.utils.configureNetwork",
+          label: "配置网络",
+          icon: "network_check",
+          config: [
+            {
+              key: "interfaceName",
+              label: "网卡名称",
+              component: "VariableInput",
+              icon: "settings_ethernet",
+              width: 12,
+              placeholder: "输入网卡名称",
+              required: true,
+            },
+            {
+              key: "ip",
+              label: "IP地址",
+              component: "VariableInput",
+              icon: "router",
+              width: 6,
+              placeholder: "如: 192.168.1.100",
+              required: true,
+            },
+            {
+              key: "mask",
+              label: "子网掩码",
+              component: "VariableInput",
+              icon: "filter_alt",
+              width: 6,
+              placeholder: "如: 255.255.255.0",
+              required: true,
+            },
+            {
+              key: "gateway",
+              label: "默认网关",
+              component: "VariableInput",
+              icon: "dns",
+              width: 6,
+              placeholder: "可选",
+            },
+            {
+              key: "dns",
+              label: "DNS服务器",
+              component: "VariableInput",
+              icon: "dns",
+              width: 6,
+              placeholder: "可选",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.utils.manageStartup",
+          label: "开机启动项",
+          icon: "power",
+          config: [
+            {
+              key: "path",
+              label: "程序路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择程序",
+                    filters: [
+                      { name: "可执行文件", extensions: ["exe"] },
+                      { name: "所有文件", extensions: ["*"] },
+                    ],
+                  },
+                },
+              },
+              required: true,
+            },
+            {
+              key: "name",
+              label: "启动项名称",
+              component: "VariableInput",
+              icon: "label",
+              width: 8,
+              required: true,
+            },
+            {
+              key: "remove",
+              label: "移除",
+              component: "CheckButton",
+              icon: "delete",
+              width: 4,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.utils.createShortcut",
+          label: "创建快捷方式",
+          icon: "link",
+          config: [
+            {
+              key: "targetPath",
+              label: "目标路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择目标",
+                    filters: [{ name: "所有文件", extensions: ["*"] }],
+                  },
+                },
+              },
+              required: true,
+            },
+            {
+              key: "shortcutPath",
+              label: "快捷方式路径",
+              component: "VariableInput",
+              icon: "save",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "save",
+                  options: {
+                    title: "保存快捷方式",
+                    filters: [{ name: "快捷方式", extensions: ["lnk"] }],
+                  },
+                },
+              },
+              required: true,
+            },
+            {
+              key: "args",
+              label: "启动参数",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "可选的启动参数",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.utils.setBrightness",
+          label: "设置亮度",
+          icon: "brightness_medium",
+          config: [
+            {
+              key: "level",
+              label: "亮度级别",
+              component: "NumberInput",
+              icon: "brightness_medium",
+              width: 12,
+              min: 0,
+              max: 100,
+              defaultValue: 50,
+              required: true,
             },
           ],
         },
