@@ -53,14 +53,7 @@ export const networkCommands = {
       label: "URL操作",
       desc: "URL解析、格式化和参数处理",
       icon: "link",
-      config: [
-        {
-          label: "URL",
-          component: "VariableInput",
-          icon: "link",
-          width: "auto",
-        },
-      ],
+      config: [],
       subCommands: [
         {
           value: "quickcomposer.network.url.parse",
@@ -71,7 +64,6 @@ export const networkCommands = {
           value: "quickcomposer.network.url.format",
           label: "格式化URL",
           icon: "link",
-          excludeConfig: [0],
           config: [
             {
               label: "协议",
@@ -120,7 +112,6 @@ export const networkCommands = {
           value: "quickcomposer.network.url.parseQuery",
           label: "解析查询字符串",
           icon: "search",
-          excludeConfig: [0],
           config: [
             {
               label: "查询字符串",
@@ -133,7 +124,6 @@ export const networkCommands = {
           value: "quickcomposer.network.url.formatQuery",
           label: "格式化查询字符串",
           icon: "edit",
-          excludeConfig: [0],
           config: [
             {
               label: "参数",
@@ -146,7 +136,6 @@ export const networkCommands = {
           value: "quickcomposer.network.url.parsePath",
           label: "解析路径",
           icon: "folder_open",
-          excludeConfig: [0],
           config: [
             {
               label: "路径",
@@ -159,7 +148,6 @@ export const networkCommands = {
           value: "quickcomposer.network.url.parseHost",
           label: "解析主机名",
           icon: "dns",
-          excludeConfig: [0],
           config: [
             {
               label: "主机名",
@@ -174,6 +162,12 @@ export const networkCommands = {
           icon: "find_in_page",
           config: [
             {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: "auto",
+            },
+            {
               label: "参数名",
               component: "VariableInput",
               icon: "key",
@@ -186,6 +180,12 @@ export const networkCommands = {
           label: "添加参数",
           icon: "add_circle",
           config: [
+            {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: "auto",
+            },
             {
               label: "参数名",
               component: "VariableInput",
@@ -206,6 +206,12 @@ export const networkCommands = {
           icon: "remove_circle",
           config: [
             {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: "auto",
+            },
+            {
               label: "参数名",
               component: "VariableInput",
               icon: "key",
@@ -217,11 +223,27 @@ export const networkCommands = {
           value: "quickcomposer.network.url.isAbsolute",
           label: "检查绝对URL",
           icon: "check_circle",
+          config: [
+            {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.url.parseComponents",
           label: "解析组成部分",
           icon: "category",
+          config: [
+            {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: "auto",
+            },
+          ],
         },
       ],
     },
@@ -231,20 +253,19 @@ export const networkCommands = {
       desc: "DNS解析和查询",
       icon: "dns",
       isAsync: true,
-      config: [
-        {
-          label: "要查询的域名",
-          icon: "dns",
-          component: "VariableInput",
-          width: "auto",
-        },
-      ],
+      config: [],
       subCommands: [
         {
           label: "DNS查询",
           value: "quickcomposer.network.dns.lookupHost",
           icon: "search",
           config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
             {
               label: "IP版本",
               icon: "settings_ethernet",
@@ -269,42 +290,97 @@ export const networkCommands = {
           value: "quickcomposer.network.dns.resolveAll",
           label: "解析所有记录",
           icon: "all_inclusive",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.resolveIpv4",
           label: "解析IPv4",
           icon: "filter_4",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.resolveIpv6",
           label: "解析IPv6",
           icon: "filter_6",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.resolveMxRecords",
           label: "解析MX记录",
           icon: "mail",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.resolveTxtRecords",
           label: "解析TXT记录",
           icon: "text_fields",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.resolveNsRecords",
           label: "解析NS记录",
           icon: "dns",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.resolveCnameRecords",
           label: "解析CNAME记录",
           icon: "link",
+          config: [
+            {
+              label: "要查询的域名",
+              icon: "dns",
+              component: "VariableInput",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.network.dns.reverseResolve",
           label: "反向解析",
           icon: "swap_horiz",
-          excludeConfig: [0],
           config: [
             {
               label: "IP地址",

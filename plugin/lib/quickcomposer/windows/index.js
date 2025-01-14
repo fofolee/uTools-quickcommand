@@ -6,6 +6,7 @@ const registry = require("./registry");
 const service = require("./service");
 const software = require("./software");
 const utils = require("./utils");
+const automation = require("./automation");
 
 module.exports = {
   window,
@@ -16,4 +17,5 @@ module.exports = {
   service,
   software,
   utils,
+  automation,
 };

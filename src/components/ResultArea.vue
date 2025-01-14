@@ -85,7 +85,9 @@ export default {
     },
     // 判断是否是转为表格的结果，表格结果不需要换行，第二行一般包含分隔符---
     isTable() {
-      return this.runResult?.[0]?.split("\n")?.[1]?.includes("---");
+      const result = this.runResult?.[0];
+      if (typeof result !== "string") return false;
+      return result.split("\n")?.[1]?.includes("---");
     },
   },
   mounted() {

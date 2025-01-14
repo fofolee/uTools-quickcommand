@@ -4,6 +4,8 @@ const iconv = require("iconv-lite");
 const child_process = require("child_process");
 const { getQuickcommandFolderFile } = require("../getQuickcommandFile");
 
+let currentChild = null;
+
 const getAssemblyPath = (assembly) => {
   const { version } = getCscPath();
   const is64bit = process.arch === "x64";
@@ -37,15 +39,9 @@ const getAssemblyPath = (assembly) => {
 
     // v3.0/v3.5 路径
     path.join(
-      process.env["ProgramFiles(x86)"] || process.env.ProgramFiles,
-      "Reference Assemblies",
-      "Microsoft",
-      "Framework",
-      "v3.0",
-      assembly + ".dll"
-    ),
-    path.join(
-      process.env.ProgramFiles,
+      process.arch === "x64"
+        ? process.env.ProgramFiles
+        : process.env["ProgramFiles(x86)"],
       "Reference Assemblies",
       "Microsoft",
       "Framework",
@@ -81,13 +77,16 @@ const getFeatureReferences = (feature) => {
     const formsDll = getAssemblyPath("System.Windows.Forms");
     const typesDll = getAssemblyPath("UIAutomationTypes");
     const baseDll = getAssemblyPath("WindowsBase");
+    const drawingDll = getAssemblyPath("System.Drawing");
     if (!automationDll) throw new Error("找不到UIAutomationClient.dll");
     if (!formsDll) throw new Error("找不到System.Windows.Forms.dll");
     if (!typesDll) throw new Error("找不到UIAutomationTypes.dll");
     if (!baseDll) throw new Error("找不到WindowsBase.dll");
+    if (!drawingDll) throw new Error("找不到System.Drawing.dll");
     references =
       `/reference:"${automationDll}" /reference:"${formsDll}" ` +
-      `/reference:"${typesDll}" /reference:"${baseDll}" `;
+      `/reference:"${typesDll}" /reference:"${baseDll}" ` +
+      `/reference:"${drawingDll}" `;
   }
   return references;
 };
@@ -128,10 +127,11 @@ const buildCsharpFeature = async (feature) => {
 };
 
 const getCscPath = () => {
+  const is64bit = process.arch === "x64";
   let cscPath = path.join(
     process.env.WINDIR,
     "Microsoft.NET",
-    "Framework",
+    is64bit ? "Framework64" : "Framework",
     "v4.0.30319",
     "csc.exe"
   );
@@ -141,7 +141,7 @@ const getCscPath = () => {
     cscPath = path.join(
       process.env.WINDIR,
       "Microsoft.NET",
-      "Framework",
+      is64bit ? "Framework64" : "Framework",
       "v3.5",
       "csc.exe"
     );
@@ -163,13 +163,17 @@ const getCscPath = () => {
  */
 const runCsharpFeature = async (feature, args = [], options = {}) => {
   return new Promise(async (reslove, reject) => {
-    const { alwaysBuildNewExe = false } = options;
+    const { alwaysBuildNewExe = window.utools.isDev(), killPrevious = true } =
+      options;
     try {
       const featureExePath = await getCsharpFeatureExe(
         feature,
         alwaysBuildNewExe
       );
-      child_process.execFile(
+      if (killPrevious && currentChild) {
+        quickcommand.kill(currentChild.pid, "SIGKILL");
+      }
+      currentChild = child_process.execFile(
         featureExePath,
         args,
         {

@@ -9,9 +9,16 @@ using System.Web.Script.Serialization;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using System.Drawing;
 
 public class AutomationManager
 {
+    // UIA Control Type IDs
+    private static class UIA_ControlTypeIds
+    {
+        public const int Window = 50032;
+    }
+
     // 用于缓存找到的元素
     private static Dictionary<string, AutomationElement> elementCache = new Dictionary<string, AutomationElement>();
 
@@ -59,6 +66,15 @@ public class AutomationManager
     [DllImport("user32.dll")]
     private static extern short GetAsyncKeyState(int vKey);
 
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+    [DllImport("user32.dll")]
+    private static extern bool BlockInput(bool fBlockIt);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
     public static void Main(string[] args)
     {
         if (args.Length == 0 || args[0] == "-h" || args[0] == "--help")
@@ -79,17 +95,10 @@ public class AutomationManager
             switch (type.ToLower())
             {
                 case "list":
-                    // 列出所有元素
-                    string filter = GetArgumentValue(args, "-filter"); // 可选的过滤条件
-                    ListElements(args, filter);
-                    break;
-
                 case "find":
-                    // 查找元素
-                    string by = GetArgumentValue(args, "-by") ?? "name";
-                    string value = GetArgumentValue(args, "-value");
-                    string scope = GetArgumentValue(args, "-scope") ?? "children";
-                    FindElement(args, by, value, scope);
+                    // 列出所有元素或查找元素
+                    string filter = GetArgumentValue(args, "-value") ?? GetArgumentValue(args, "-filter"); // 兼容两种参数名
+                    ListElements(args, filter);
                     break;
 
                 case "getinfo":
@@ -135,8 +144,8 @@ public class AutomationManager
 
                 case "wait":
                     // 等待元素
-                    by = GetArgumentValue(args, "-by") ?? "name";
-                    value = GetArgumentValue(args, "-value");
+                    string by = GetArgumentValue(args, "-by") ?? "name";
+                    string value = GetArgumentValue(args, "-value");
                     int timeout = int.Parse(GetArgumentValue(args, "-timeout") ?? "30");
                     WaitForElement(args, by, value, timeout);
                     break;
@@ -171,8 +180,7 @@ public class AutomationManager
 
                 case "inspect":
                     // 生成元素识别器
-                    int inspectTimeout = int.Parse(GetArgumentValue(args, "-timeout") ?? "30");
-                    InspectElement(args, inspectTimeout);
+                    InspectElement(args);
                     break;
 
                 default:
@@ -203,6 +211,7 @@ public class AutomationManager
     - process   进程名
     - active    当前活动窗口(默认)
     不指定时默认在整个桌面范围内查找
+  -background       后台操作模式，不激活窗口(可选)
 
 元素识别参数:
   -value <标识值>    要查找的元素的值
@@ -215,10 +224,8 @@ public class AutomationManager
 
 操作类型及示例:
 1. inspect - 生成元素识别器
-  参数:
-    -timeout <超时>    等待超时时间(秒,默认30)
   示例:
-    automation.exe -type inspect -timeout 60
+    automation.exe -type inspect
   说明:
     运行后点击要识别的元素，将返回元素的详细信息和示例命令
 
@@ -465,7 +472,9 @@ public class AutomationManager
         var info = new Dictionary<string, object>();
         info.Add("name", element.Current.Name);
         info.Add("class", element.Current.ClassName);
-        info.Add("type", element.Current.ControlType.ProgrammaticName);
+        info.Add("controlType", element.Current.ControlType.ProgrammaticName);
+        info.Add("controlClass", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+        info.Add("localizedType", element.Current.LocalizedControlType);
         info.Add("automationId", element.Current.AutomationId);
         info.Add("processId", element.Current.ProcessId);
         info.Add("boundingRectangle", new
@@ -486,7 +495,18 @@ public class AutomationManager
         string identifier = GetArgumentValue(args, "-value");
         string by = GetArgumentValue(args, "-by");
         string pattern = GetArgumentValue(args, "-pattern") ?? "invoke";
+        bool background = HasArgument(args, "-background");
+
         var element = GetElementByIdentifier(args, identifier, by);
+
+        // 只在非后台操作时激活窗口
+        if (!background)
+        {
+            var hwnd = new IntPtr(element.Current.NativeWindowHandle);
+            SetForegroundWindow(hwnd);
+            Thread.Sleep(50); // 等待窗口激活
+        }
+
         switch (pattern.ToLower())
         {
             case "invoke":
@@ -512,6 +532,11 @@ public class AutomationManager
         throw new Exception("元素不支持指定的操作模式");
     }
 
+    private static bool HasArgument(string[] args, string key)
+    {
+        return args.Contains(key, StringComparer.OrdinalIgnoreCase);
+    }
+
     private static string[] GetSupportedPatterns(AutomationElement element)
     {
         var patterns = new List<string>();
@@ -527,7 +552,17 @@ public class AutomationManager
     {
         string identifier = GetArgumentValue(args, "-value");
         string by = GetArgumentValue(args, "-by");
+        bool background = HasArgument(args, "-background");
+
         var element = GetElementByIdentifier(args, identifier, by);
+
+        // 只在非后台操作时激活窗口
+        if (!background)
+        {
+            var hwnd = new IntPtr(element.Current.NativeWindowHandle);
+            SetForegroundWindow(hwnd);
+            Thread.Sleep(50); // 等待窗口激活
+        }
 
         // 尝试ValuePattern
         var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
@@ -698,7 +733,7 @@ public class AutomationManager
         {
             try
             {
-                FindElement(args, by, value, "subtree");
+                ListElements(args, value);
                 Console.WriteLine("成功找到元素");
                 return;
             }
@@ -734,14 +769,24 @@ public class AutomationManager
 
     private static void SendKeys(string[] args, string keys)
     {
+        string identifier = GetArgumentValue(args, "-value");
+        string by = GetArgumentValue(args, "-by");
+        bool background = HasArgument(args, "-background");
+
+        var element = GetElementByIdentifier(args, identifier, by);
+
+        // 只在非后台操作时激活窗口
+        if (!background)
+        {
+            var hwnd = new IntPtr(element.Current.NativeWindowHandle);
+            SetForegroundWindow(hwnd);
+            Thread.Sleep(50); // 等待窗口激活
+        }
+
         if (string.IsNullOrEmpty(keys))
         {
             throw new Exception("必须指定要发送的按键");
         }
-
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
 
         // 确保元素可以接收输入
         if (!element.Current.IsKeyboardFocusable)
@@ -824,7 +869,9 @@ public class AutomationManager
             childInfo.Add("id", CacheElement(child));
             childInfo.Add("name", child.Current.Name);
             childInfo.Add("class", child.Current.ClassName);
-            childInfo.Add("type", child.Current.ControlType.ProgrammaticName);
+            childInfo.Add("controlType", child.Current.ControlType.ProgrammaticName);
+            childInfo.Add("type", child.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+            childInfo.Add("localizedType", child.Current.LocalizedControlType);
             childInfo.Add("automationId", child.Current.AutomationId);
             result.Add(childInfo);
         }
@@ -846,7 +893,9 @@ public class AutomationManager
             parentInfo.Add("id", CacheElement(parent));
             parentInfo.Add("name", parent.Current.Name);
             parentInfo.Add("class", parent.Current.ClassName);
-            parentInfo.Add("type", parent.Current.ControlType.ProgrammaticName);
+            parentInfo.Add("controlType", parent.Current.ControlType.ProgrammaticName);
+            parentInfo.Add("type", parent.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+            parentInfo.Add("localizedType", parent.Current.LocalizedControlType);
             parentInfo.Add("automationId", parent.Current.AutomationId);
 
             var serializer = new JavaScriptSerializer();
@@ -891,32 +940,131 @@ public class AutomationManager
     {
         var root = GetRootElement(args);
         var result = new List<Dictionary<string, string>>();
+        string window = GetArgumentValue(args, "-window");
+        string method = GetArgumentValue(args, "-method") ?? "active";
+        string by = GetArgumentValue(args, "-by") ?? "name";
+        string scope = GetArgumentValue(args, "-scope") ?? "children";
 
-        // 获取所有元素
-        var elements = root.FindAll(
-            TreeScope.Subtree,
-            Condition.TrueCondition
-        );
-
-        foreach (AutomationElement element in elements)
+        // 确定搜索范围
+        TreeScope searchScope = TreeScope.Children;
+        switch (scope.ToLower())
         {
-            // 如果指定了过滤条件，检查元素名称是否包含过滤文本
-            if (!string.IsNullOrEmpty(filter) &&
-                !element.Current.Name.Contains(filter) &&
-                !element.Current.ClassName.Contains(filter) &&
-                !element.Current.AutomationId.Contains(filter))
-            {
-                continue;
-            }
+            case "descendants":
+                searchScope = TreeScope.Descendants;
+                break;
+            case "subtree":
+                searchScope = TreeScope.Subtree;
+                break;
+        }
 
-            var elementInfo = new Dictionary<string, string>();
-            elementInfo.Add("id", CacheElement(element));
-            elementInfo.Add("name", element.Current.Name);
-            elementInfo.Add("class", element.Current.ClassName);
-            elementInfo.Add("type", element.Current.ControlType.ProgrammaticName);
-            elementInfo.Add("automationId", element.Current.AutomationId);
-            elementInfo.Add("path", GetElementPath(element));
-            result.Add(elementInfo);
+        Condition searchCondition = Condition.TrueCondition;
+
+        // 如果指定了过滤条件，创建一个组合条件
+        if (!string.IsNullOrEmpty(filter))
+        {
+            // 尝试直接使用ControlType
+            if (filter.StartsWith("ControlType."))
+            {
+                string controlTypeName = filter.Substring("ControlType.".Length);
+                ControlType controlType = (ControlType)typeof(ControlType).GetField(controlTypeName).GetValue(null);
+                searchCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, controlType);
+            }
+            else
+            {
+                switch (by.ToLower())
+                {
+                    case "name":
+                        searchCondition = new PropertyCondition(AutomationElement.NameProperty, filter, PropertyConditionFlags.IgnoreCase);
+                        break;
+                    case "class":
+                        searchCondition = new PropertyCondition(AutomationElement.ClassNameProperty, filter, PropertyConditionFlags.IgnoreCase);
+                        break;
+                    case "automation":
+                        searchCondition = new PropertyCondition(AutomationElement.AutomationIdProperty, filter, PropertyConditionFlags.IgnoreCase);
+                        break;
+                    case "xpath":
+                        // XPath暂不支持
+                        throw new Exception("XPath查找暂未实现");
+                    default:
+                        // 如果没有指定查找方式，则使用组合条件
+                        searchCondition = new OrCondition(
+                            new PropertyCondition(AutomationElement.NameProperty, filter, PropertyConditionFlags.IgnoreCase),
+                            new PropertyCondition(AutomationElement.ClassNameProperty, filter, PropertyConditionFlags.IgnoreCase),
+                            new PropertyCondition(AutomationElement.AutomationIdProperty, filter, PropertyConditionFlags.IgnoreCase)
+                        );
+                        break;
+                }
+            }
+        }
+
+        // 如果是按标题搜索，先找到所有匹配的窗口
+        if (method.ToLower() == "title" && !string.IsNullOrEmpty(window))
+        {
+            searchScope = TreeScope.Children;
+            var windows = root.FindAll(searchScope, Condition.TrueCondition);
+            foreach (AutomationElement win in windows)
+            {
+                if (win.Current.Name.Contains(window))
+                {
+                    // 对每个匹配的窗口进行处理
+                    var windowElements = win.FindAll(TreeScope.Subtree, searchCondition);
+                    foreach (AutomationElement element in windowElements)
+                    {
+                        var elementInfo = new Dictionary<string, string>();
+                        elementInfo.Add("id", CacheElement(element));
+                        elementInfo.Add("name", element.Current.Name);
+                        elementInfo.Add("class", element.Current.ClassName);
+                        elementInfo.Add("controlType", element.Current.ControlType.ProgrammaticName);
+                        elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+                        elementInfo.Add("localizedType", element.Current.LocalizedControlType);
+                        elementInfo.Add("automationId", element.Current.AutomationId);
+                        elementInfo.Add("path", GetElementPath(element));
+
+                        // 添加控件文本值
+                        try
+                        {
+                            var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+                            if (valuePattern != null)
+                            {
+                                elementInfo.Add("value", valuePattern.Current.Value);
+                            }
+                        }
+                        catch { }
+
+                        result.Add(elementInfo);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 其他查找方式保持原有逻辑
+            var elements = root.FindAll(searchScope, searchCondition);
+            foreach (AutomationElement element in elements)
+            {
+                var elementInfo = new Dictionary<string, string>();
+                elementInfo.Add("id", CacheElement(element));
+                elementInfo.Add("name", element.Current.Name);
+                elementInfo.Add("class", element.Current.ClassName);
+                elementInfo.Add("controlType", element.Current.ControlType.ProgrammaticName);
+                elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+                elementInfo.Add("localizedType", element.Current.LocalizedControlType);
+                elementInfo.Add("automationId", element.Current.AutomationId);
+                elementInfo.Add("path", GetElementPath(element));
+
+                // 添加控件文本值
+                try
+                {
+                    var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+                    if (valuePattern != null)
+                    {
+                        elementInfo.Add("value", valuePattern.Current.Value);
+                    }
+                }
+                catch { }
+
+                result.Add(elementInfo);
+            }
         }
 
         var serializer = new JavaScriptSerializer();
@@ -963,7 +1111,15 @@ public class AutomationManager
         string window = GetArgumentValue(args, "-window");
         string method = GetArgumentValue(args, "-method") ?? "active";
 
-        if (string.IsNullOrEmpty(window) && method == "active")
+        // 如果是active方法，直接返回当前活动窗口
+        if (method.ToLower() == "active")
+        {
+            IntPtr activeHandle = GetForegroundWindow();
+            return AutomationElement.FromHandle(activeHandle);
+        }
+
+        // 其他方法需要检查window参数
+        if (string.IsNullOrEmpty(window))
         {
             return AutomationElement.RootElement;
         }
@@ -977,10 +1133,15 @@ public class AutomationManager
 
             case "class":
                 // 通过窗口类名查找
-                return AutomationElement.RootElement.FindFirst(
+                var classElements = AutomationElement.RootElement.FindAll(
                     TreeScope.Children,
                     new PropertyCondition(AutomationElement.ClassNameProperty, window)
                 );
+                if (classElements.Count > 0)
+                {
+                    return classElements[0];
+                }
+                break;
 
             case "process":
                 // 通过进程名查找
@@ -991,151 +1152,199 @@ public class AutomationManager
                 }
                 break;
 
-            case "active":
-                // 获取当前活动窗口
-                IntPtr activeHandle = GetForegroundWindow();
-                return AutomationElement.FromHandle(activeHandle);
-
             case "title":
             default:
-                // 通过窗口标题查找(支持模糊匹配)
-                var windows = AutomationElement.RootElement.FindAll(
-                    TreeScope.Children,
-                    Condition.TrueCondition
-                );
-                foreach (AutomationElement win in windows)
-                {
-                    if (win.Current.Name.Contains(window))
-                    {
-                        return win;
-                    }
-                }
-                break;
+                // 返回根元素，让调用方自己处理查找逻辑
+                return AutomationElement.RootElement;
         }
 
         throw new Exception("找不到指定的窗口");
     }
 
-    private static void FindElement(string[] args, string by, string value, string scope)
+    private static void InspectElement(string[] args)
     {
-        if (string.IsNullOrEmpty(value))
-        {
-            throw new Exception("必须指定查找值 (-value)");
-        }
+        // 创建一个半透明的全屏窗口来捕获鼠标事件
+        Form overlayForm = new Form();
+        overlayForm.FormBorderStyle = FormBorderStyle.None;
+        overlayForm.WindowState = FormWindowState.Maximized;
+        overlayForm.TopMost = true;
+        overlayForm.BackColor = Color.Black;
+        overlayForm.Opacity = 0.1;  // 设置为淡淡的蒙版效果
+        overlayForm.Cursor = Cursors.Cross;
+        overlayForm.ShowInTaskbar = false;
 
-        AutomationElement root = GetRootElement(args);
-        TreeScope treeScope = TreeScope.Children;
-        switch (scope.ToLower())
-        {
-            case "descendants":
-                treeScope = TreeScope.Descendants;
-                break;
-            case "subtree":
-                treeScope = TreeScope.Subtree;
-                break;
-        }
+        bool completed = false;
 
-        Condition condition;
-        switch (by.ToLower())
-        {
-            case "name":
-                condition = new PropertyCondition(AutomationElement.NameProperty, value);
-                break;
-            case "class":
-                condition = new PropertyCondition(AutomationElement.ClassNameProperty, value);
-                break;
-            case "automation":
-                condition = new PropertyCondition(AutomationElement.AutomationIdProperty, value);
-                break;
-            case "xpath":
-                FindElementByXPath(value);
-                return;
-            default:
-                throw new Exception("不支持的查找方式: " + by);
-        }
+        overlayForm.MouseClick += (sender, e) => {
+            if (e.Button == MouseButtons.Left) {
+                try {
+                    Point clickPosition;
+                    GetCursorPos(out clickPosition);
 
-        var elements = root.FindAll(treeScope, condition);
-        var result = new List<Dictionary<string, string>>();
+                    // 先关闭覆盖窗口
+                    overlayForm.Hide();
 
-        foreach (AutomationElement element in elements)
-        {
-            var elementInfo = new Dictionary<string, string>();
-            elementInfo.Add("id", CacheElement(element));
-            elementInfo.Add("name", element.Current.Name);
-            elementInfo.Add("class", element.Current.ClassName);
-            elementInfo.Add("type", element.Current.ControlType.ProgrammaticName);
-            elementInfo.Add("automationId", element.Current.AutomationId);
-            result.Add(elementInfo);
-        }
+                    // 等待一小段时间确保窗口完全消失
+                    Thread.Sleep(100);
 
-        var serializer = new JavaScriptSerializer();
-        Console.Write(serializer.Serialize(result));
-    }
+                    // 获取点击位置的元素
+                    var element = AutomationElement.FromPoint(clickPosition.ToWindowsPoint());
 
-    private static void InspectElement(string[] args, int timeout)
-    {
-        Console.WriteLine("请在" + timeout + "秒内点击要识别的元素...");
-
-        // 记录当前鼠标位置
-        DateTime endTime = DateTime.Now.AddSeconds(timeout);
-        AutomationElement clickedElement = null;
-        bool wasPressed = false;
-
-        while (DateTime.Now < endTime)
-        {
-            // 检测鼠标左键点击
-            bool isPressed = (GetAsyncKeyState(0x01) & 0x8000) != 0;
-            if (isPressed && !wasPressed)  // 鼠标按下瞬间
-            {
-                // 获取当前鼠标位置
-                Point currentPosition;
-                GetCursorPos(out currentPosition);
-
-                try
-                {
-                    // 从鼠标位置获取元素
-                    clickedElement = AutomationElement.FromPoint(currentPosition.ToWindowsPoint());
-                    if (clickedElement != null && clickedElement != AutomationElement.RootElement)
-                    {
-                        // 构建元素信息
-                        var elementInfo = new Dictionary<string, object>();
-                        elementInfo.Add("id", CacheElement(clickedElement));
-                        elementInfo.Add("name", clickedElement.Current.Name);
-                        elementInfo.Add("class", clickedElement.Current.ClassName);
-                        elementInfo.Add("type", clickedElement.Current.ControlType.ProgrammaticName);
-                        elementInfo.Add("automationId", clickedElement.Current.AutomationId);
-                        elementInfo.Add("path", GetElementPath(clickedElement));
-                        elementInfo.Add("location", new {
-                            x = clickedElement.Current.BoundingRectangle.X,
-                            y = clickedElement.Current.BoundingRectangle.Y,
-                            width = clickedElement.Current.BoundingRectangle.Width,
-                            height = clickedElement.Current.BoundingRectangle.Height
-                        });
-                        elementInfo.Add("patterns", GetSupportedPatterns(clickedElement));
-
-                        // 生成示例命令
-                        var commands = new List<string>();
-                        if (!string.IsNullOrEmpty(clickedElement.Current.Name))
-                            commands.Add(string.Format("automation.exe -type find -by name -value \"{0}\"", clickedElement.Current.Name));
-                        if (!string.IsNullOrEmpty(clickedElement.Current.AutomationId))
-                            commands.Add(string.Format("automation.exe -type find -by automationid -value \"{0}\"", clickedElement.Current.AutomationId));
-                        elementInfo.Add("commands", commands);
-
-                        var serializer = new JavaScriptSerializer();
-                        Console.Write(serializer.Serialize(elementInfo));
-                        return;
+                    if (element != null && element != AutomationElement.RootElement) {
+                        InspectElementInfo(element);
+                        completed = true;
                     }
                 }
-                catch
-                {
-                    // 忽略获取元素时的错误
+                catch (Exception ex) {
+                    Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
+                }
+                finally {
+                    overlayForm.Close();
                 }
             }
+        };
 
-            wasPressed = isPressed;
-            Thread.Sleep(100);
+        overlayForm.KeyPress += (sender, e) => {
+            if (e.KeyChar == (char)27) { // ESC键
+                overlayForm.Close();
+                Environment.Exit(0); // 直接退出程序
+            }
+        };
+
+        // 在新线程中显示窗口
+        Thread thread = new Thread(() => {
+            overlayForm.Show();
+            while (!completed) {
+                Application.DoEvents();
+                Thread.Sleep(100);
+            }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+    }
+
+    private static void InspectElementInfo(AutomationElement element)
+    {
+        Dictionary<string, object> elementInfo = new Dictionary<string, object>();
+
+        // 基本信息
+        elementInfo.Add("id", element.Current.AutomationId);
+        elementInfo.Add("name", element.Current.Name);
+        elementInfo.Add("class", element.Current.ClassName);
+        elementInfo.Add("controlType", element.Current.ControlType.ProgrammaticName);
+        elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+        elementInfo.Add("localizedType", element.Current.LocalizedControlType);
+        elementInfo.Add("automationId", element.Current.AutomationId);
+        elementInfo.Add("path", GetElementPath(element));
+        elementInfo.Add("handle", element.Current.NativeWindowHandle);
+
+        // 添加控件文本值
+        try
+        {
+            var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+            if (valuePattern != null)
+            {
+                elementInfo.Add("value", valuePattern.Current.Value);
+            }
+        }
+        catch { }
+
+        // 获取窗口信息
+        var walker = TreeWalker.ControlViewWalker;
+        var parent = element;
+        while (parent != null && parent != AutomationElement.RootElement && parent.Current.ControlType.Id != UIA_ControlTypeIds.Window)
+        {
+            parent = walker.GetParent(parent);
         }
 
-        throw new Exception("操作超时");
+        // 添加窗口详细信息
+        if (parent != null && parent != AutomationElement.RootElement)
+        {
+            var processId = parent.Current.ProcessId;
+            var process = System.Diagnostics.Process.GetProcessById(processId);
+            elementInfo.Add("window", new
+            {
+                title = parent.Current.Name,
+                @class = parent.Current.ClassName,
+                handle = parent.Current.NativeWindowHandle,
+                processName = process.ProcessName,
+                processId = processId,
+                processPath = process.MainModule.FileName
+            });
+        }
+
+        // 添加父元素信息
+        var immediateParent = walker.GetParent(element);
+        if (immediateParent != null && immediateParent != AutomationElement.RootElement)
+        {
+            elementInfo.Add("parent", new
+            {
+                handle = immediateParent.Current.NativeWindowHandle,
+                path = GetElementPath(immediateParent),
+                @class = immediateParent.Current.ClassName,
+                name = immediateParent.Current.Name,
+                controlType = immediateParent.Current.ControlType.ProgrammaticName,
+                type = immediateParent.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""),
+                localizedType = immediateParent.Current.LocalizedControlType,
+                automationId = immediateParent.Current.AutomationId
+            });
+        }
+
+        // 位置信息
+        elementInfo.Add("location", new {
+            x = element.Current.BoundingRectangle.X,
+            y = element.Current.BoundingRectangle.Y,
+            width = element.Current.BoundingRectangle.Width,
+            height = element.Current.BoundingRectangle.Height
+        });
+
+        // 支持的模式
+        List<string> patterns = new List<string>();
+        foreach (AutomationPattern pattern in element.GetSupportedPatterns())
+        {
+            patterns.Add(pattern.ProgrammaticName);
+        }
+        elementInfo.Add("patterns", patterns);
+
+        // 输出 JSON
+        var serializer = new JavaScriptSerializer();
+        Console.Write(serializer.Serialize(elementInfo));
+    }
+
+    // 序列化为 JSON 字符串
+    private static string JsonSerialize(object obj)
+    {
+        if (obj == null) return "null";
+
+        if (obj is string)
+        {
+            return string.Format("\"{0}\"", ((string)obj).Replace("\"", "\\\""));
+        }
+
+        if (obj is bool)
+        {
+            return obj.ToString().ToLower();
+        }
+
+        if (obj is int || obj is long || obj is float || obj is double)
+        {
+            return obj.ToString();
+        }
+
+        if (obj is Dictionary<string, object>)
+        {
+            var dict = obj as Dictionary<string, object>;
+            var pairs = dict.Select(kvp => string.Format("\"{0}\": {1}", kvp.Key, JsonSerialize(kvp.Value)));
+            return string.Format("{{{0}}}", string.Join(", ", pairs));
+        }
+
+        if (obj is System.Collections.IEnumerable)
+        {
+            var items = ((System.Collections.IEnumerable)obj).Cast<object>().Select(item => JsonSerialize(item));
+            return string.Format("[{0}]", string.Join(", ", items));
+        }
+
+        return "null";
     }
 }

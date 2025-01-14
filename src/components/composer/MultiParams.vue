@@ -37,13 +37,7 @@ export default defineComponent({
     },
     // 通用参数配置
     commonConfig() {
-      return (
-        // 过滤掉特定函数排除的参数, excludeConfig格式为[要排除的参数索引]
-        this.modelValue.config?.filter(
-          (_, index) =>
-            !this.getSelectSubCommand()?.excludeConfig?.includes(index)
-        ) || []
-      );
+      return this.modelValue.config || [];
     },
     // 特定函数独有参数配置，config格式和通用的config一致
     subCommandConfig() {

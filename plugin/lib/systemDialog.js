@@ -48,7 +48,7 @@ const getQuickcommandIconPath = () => {
 };
 
 // 修改对话框函数，使用新的 dialog.cs
-const showSystemMessageBox = async function (content, title = "") {
+const showSystemMessageBox = async function (content, title = "提示") {
   try {
     const iconPath = getQuickcommandIconPath();
     if (window.utools.isWindows()) {
@@ -97,7 +97,7 @@ const showSystemMessageBox = async function (content, title = "") {
   }
 };
 
-const showSystemInputBox = async function (placeholders, title = "") {
+const showSystemInputBox = async function (placeholders, title = "请输入") {
   if (!Array.isArray(placeholders)) {
     placeholders = [placeholders];
   }
@@ -163,7 +163,7 @@ const showSystemInputBox = async function (placeholders, title = "") {
   }
 };
 
-const showSystemConfirmBox = async function (content, title = "") {
+const showSystemConfirmBox = async function (content, title = "请确认") {
   const iconPath = getQuickcommandIconPath();
   if (window.utools.isMacOs()) {
     let iconParam = "note";
@@ -207,7 +207,7 @@ const showSystemConfirmBox = async function (content, title = "") {
   }
 };
 
-const showSystemButtonBox = async function (buttons, title = "") {
+const showSystemButtonBox = async function (buttons, title = "请选择") {
   const iconPath = getQuickcommandIconPath();
   if (window.utools.isMacOs()) {
     const itemList = buttons.map((item) => `"${item}"`).join(", ");
@@ -250,7 +250,7 @@ const showSystemButtonBox = async function (buttons, title = "") {
       const itemsList = buttons
         .map((btn, index) => `"${index}" "${btn}"`)
         .join(" ");
-      const script2 = `zenity --list --title="${title}" --text="请选择：" --column="序号" --column="选项" ${itemsList} --width=400 --height=300`;
+      const script2 = `zenity --list --title="${title}" --column="序号" --column="选项" ${itemsList} --width=400 --height=300`;
       const result = await execCommand(script2);
       if (!result) return {};
       const text = result.trim();
@@ -263,7 +263,7 @@ const showSystemButtonBox = async function (buttons, title = "") {
   }
 };
 
-const showSystemTextArea = async function (defaultText = "", title = "") {
+const showSystemTextArea = async function (defaultText = "", title = "请输入") {
   const iconPath = getQuickcommandIconPath();
   if (window.utools.isWindows()) {
     const args = [

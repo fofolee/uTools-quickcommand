@@ -104,6 +104,32 @@ const registryPaths = [
   },
 ];
 
+const searchWindowConfig = [
+  {
+    key: "method",
+    label: "查找方式",
+    component: "q-select",
+    icon: "search",
+    width: 3,
+    options: [
+      { label: "标题", value: "title" },
+      // { label: "类名", value: "class" },
+      { label: "句柄", value: "handle" },
+      // { label: "进程", value: "process" },
+      { label: "活动窗口", value: "active" },
+    ],
+    defaultValue: "title",
+  },
+  {
+    key: "value",
+    label: "窗口标题/句柄",
+    component: "VariableInput",
+    icon: "title",
+    width: 9,
+    placeholder: "标题支持模糊匹配，选择活动窗口无需输入",
+  },
+];
+
 export const windowsCommands = {
   label: "Win自动化",
   icon: "window",
@@ -114,29 +140,7 @@ export const windowsCommands = {
       label: "窗口控制",
       desc: "Windows窗口操作",
       icon: "window",
-      config: [
-        {
-          key: "method",
-          label: "查找方式",
-          component: "q-select",
-          icon: "search",
-          width: 3,
-          options: [
-            { label: "标题", value: "title" },
-            { label: "句柄", value: "handle" },
-            { label: "活动窗口", value: "active" },
-          ],
-          defaultValue: "title",
-        },
-        {
-          key: "value",
-          label: "窗口标题/句柄",
-          component: "VariableInput",
-          icon: "title",
-          width: 9,
-          placeholder: "标题支持模糊匹配，选择活动窗口无需输入",
-        },
-      ],
+      config: searchWindowConfig,
       subCommands: [
         {
           value: "quickcomposer.windows.window.getWindowInfo",
@@ -357,7 +361,7 @@ export const windowsCommands = {
                     items: controlClass,
                   },
                   width: 8,
-                  placeholder: "可选，输入要过滤的控件类名或文本",
+                  placeholder: "可选，输入要过滤的控件类型或文本",
                 },
                 background: {
                   label: "后台操作",
@@ -394,7 +398,7 @@ export const windowsCommands = {
               width: 12,
               options: {
                 control: {
-                  label: "控件类名",
+                  label: "控件类型",
                   component: "VariableInput",
                   icon: "class",
                   options: {
@@ -408,7 +412,7 @@ export const windowsCommands = {
                   component: "VariableInput",
                   icon: "text_fields",
                   width: 6,
-                  placeholder: "可选，和控件类名至少输入一个",
+                  placeholder: "可选，和控件类型至少输入一个",
                 },
                 pos: {
                   label: "坐标",
@@ -1092,6 +1096,176 @@ export const windowsCommands = {
               max: 100,
               defaultValue: 50,
               required: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.windows.automation.inspectElement",
+      label: "UI自动化",
+      desc: "Windows界面自动化操作",
+      icon: "smart_button",
+      isAsync: true,
+      config: [],
+      subCommands: [
+        {
+          value: "quickcomposer.windows.automation.inspectElement",
+          label: "检查元素",
+          icon: "search",
+        },
+        {
+          value: "quickcomposer.windows.automation.listElements",
+          label: "列出元素",
+          icon: "list",
+          config: [
+            ...searchWindowConfig,
+            {
+              component: "OptionEditor",
+              icon: "settings",
+              width: 12,
+              options: {
+                scope: {
+                  label: "范围",
+                  component: "q-select",
+                  icon: "account_tree",
+                  width: 3,
+                  options: [
+                    { label: "子元素", value: "children" },
+                    { label: "所有后代", value: "descendants" },
+                    { label: "整个子树", value: "subtree" },
+                  ],
+                },
+                filter: {
+                  label: "过滤条件",
+                  component: "VariableInput",
+                  icon: "filter_alt",
+                  width: 9,
+                  placeholder: "可选，按名称/类名/ControlType/AutomationId过滤",
+                },
+              },
+              defaultValue: {
+                scope: "children",
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.clickElement",
+          label: "点击元素",
+          icon: "mouse",
+          config: [
+            ...searchWindowConfig,
+            {
+              key: "by",
+              label: "查找方式",
+              component: "q-select",
+              icon: "search",
+              width: 4,
+              options: [
+                { label: "名称", value: "name" },
+                { label: "类名", value: "class" },
+                { label: "类型", value: "type" },
+                { label: "AutomationId", value: "automationid" },
+              ],
+              defaultValue: "name",
+            },
+            {
+              key: "value",
+              label: "查找值",
+              component: "VariableInput",
+              icon: "text_fields",
+              width: 8,
+              placeholder: "要点击的元素值",
+            },
+            {
+              key: "pattern",
+              label: "点击模式",
+              component: "ButtonGroup",
+              icon: "touch_app",
+              width: 12,
+              options: [
+                { label: "普通点击", value: "invoke" },
+                { label: "切换状态", value: "toggle" },
+              ],
+              defaultValue: "invoke",
+            },
+            {
+              key: "background",
+              label: "后台操作",
+              component: "CheckButton",
+              icon: "back_hand",
+              width: 12,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.setElementValue",
+          label: "设置值",
+          icon: "edit",
+          config: [
+            ...searchWindowConfig,
+            {
+              key: "by",
+              label: "查找方式",
+              component: "q-select",
+              icon: "search",
+              width: 4,
+              options: [
+                { label: "名称", value: "name" },
+                { label: "类名", value: "class" },
+                { label: "类型", value: "type" },
+                { label: "AutomationId", value: "automationid" },
+              ],
+              defaultValue: "name",
+            },
+            {
+              key: "value",
+              label: "查找值",
+              component: "VariableInput",
+              icon: "text_fields",
+              width: 8,
+              placeholder: "要设置值的元素",
+            },
+            {
+              key: "newValue",
+              label: "新值",
+              component: "VariableInput",
+              icon: "edit",
+              width: 12,
+              placeholder: "要设置的新值",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.getElementValue",
+          label: "获取值",
+          icon: "content_paste",
+          outputVariable: "elementValue",
+          saveOutput: true,
+          config: [
+            ...searchWindowConfig,
+            {
+              key: "by",
+              label: "查找方式",
+              component: "q-select",
+              icon: "search",
+              width: 4,
+              options: [
+                { label: "名称", value: "name" },
+                { label: "类名", value: "class" },
+                { label: "类型", value: "type" },
+                { label: "AutomationId", value: "automationid" },
+              ],
+              defaultValue: "name",
+            },
+            {
+              key: "value",
+              label: "查找值",
+              component: "VariableInput",
+              icon: "text_fields",
+              width: 8,
+              placeholder: "要获取值的元素",
             },
           ],
         },

@@ -308,35 +308,58 @@ export const systemCommands = {
       label: "路径操作",
       desc: "路径解析和处理",
       icon: "folder",
-      config: [
-        {
-          label: "路径",
-          component: "VariableInput",
-          icon: "folder",
-          width: "auto",
-        },
-      ],
+      config: [],
       subCommands: [
         {
           value: "quickcomposer.system.path.normalize",
           label: "规范化路径",
           icon: "straighten",
+          config: [
+            {
+              label: "路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.system.path.parse",
           label: "解析路径",
           icon: "account_tree",
+          config: [
+            {
+              label: "路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.system.path.dirname",
           label: "获取目录名",
           icon: "folder",
+          config: [
+            {
+              label: "路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.system.path.basename",
           label: "获取文件名",
           icon: "description",
           config: [
+            {
+              label: "路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: "auto",
+            },
             {
               label: "要移除的扩展名",
               component: "VariableInput",
@@ -349,17 +372,32 @@ export const systemCommands = {
           value: "quickcomposer.system.path.extname",
           label: "获取扩展名",
           icon: "extension",
+          config: [
+            {
+              label: "路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.system.path.isAbsolute",
           label: "判断绝对路径",
           icon: "check_circle",
+          config: [
+            {
+              label: "路径",
+              component: "VariableInput",
+              icon: "folder",
+              width: "auto",
+            },
+          ],
         },
         {
           value: "quickcomposer.system.path.join",
           label: "连接路径",
           icon: "add_link",
-          excludeConfig: [0],
           config: [
             {
               label: "路径片段",
@@ -379,7 +417,6 @@ export const systemCommands = {
           value: "quickcomposer.system.path.resolve",
           label: "解析绝对路径",
           icon: "assistant_direction",
-          excludeConfig: [0],
           config: [
             {
               label: "路径片段",
@@ -399,7 +436,6 @@ export const systemCommands = {
           value: "quickcomposer.system.path.relative",
           label: "计算相对路径",
           icon: "compare_arrows",
-          excludeConfig: [0],
           config: [
             {
               label: "起始路径",
@@ -419,7 +455,6 @@ export const systemCommands = {
           value: "quickcomposer.system.path.format",
           label: "格式化路径",
           icon: "format_shapes",
-          excludeConfig: [0],
           config: [
             {
               label: "根路径",
