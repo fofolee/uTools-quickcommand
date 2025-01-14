@@ -39,6 +39,7 @@
             :textbtn="!enableHtml"
             :imagebtn="!enableHtml && isDataUrl"
             @showImg="showBase64Img"
+            @updateResult="runResult = $event"
             :style="{
               height: headerHeight + 'px',
             }"

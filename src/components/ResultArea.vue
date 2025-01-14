@@ -22,7 +22,12 @@
           v-else-if="typeof item === 'undefined'"
           v-text="'undefined'"
         />
-        <pre class="result" v-text="item" v-else />
+        <pre
+          class="result"
+          :class="{ wrapLine: !isTable }"
+          v-text="item"
+          v-else
+        />
       </div>
     </div>
   </div>
@@ -77,6 +82,10 @@ export default {
             })
           )
         : "";
+    },
+    // 判断是否是转为表格的结果，表格结果不需要换行，第二行一般包含分隔符---
+    isTable() {
+      return this.runResult?.[0]?.split("\n")?.[1]?.includes("---");
     },
   },
   mounted() {
@@ -135,16 +144,22 @@ export default {
 .text {
   font-family: Consolas, Monaco, "Courier New";
 }
+
 .result {
-  white-space: pre-wrap;
   word-wrap: break-word;
   max-width: 100%;
   margin: 0;
 }
+
+.result.wrapLine {
+  white-space: pre-wrap;
+}
+
 .undefined {
   color: #999;
   font-style: italic;
 }
+
 iframe {
   width: 100%;
   display: block;
