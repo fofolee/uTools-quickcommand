@@ -51,7 +51,7 @@ export const windowsCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.windows.window.setTopMost",
+      value: "quickcomposer.windows.window.getWindowInfo",
       label: "窗口控制",
       desc: "Windows窗口操作",
       icon: "window",
@@ -79,6 +79,13 @@ export const windowsCommands = {
         },
       ],
       subCommands: [
+        {
+          value: "quickcomposer.windows.window.getWindowInfo",
+          label: "窗口信息",
+          icon: "info",
+          outputVariable: "windowInfo",
+          saveOutput: true,
+        },
         {
           value: "quickcomposer.windows.window.setTopMost",
           label: "窗口置顶",
@@ -238,19 +245,12 @@ export const windowsCommands = {
             },
           ],
         },
-        {
-          value: "quickcomposer.windows.window.getWindowInfo",
-          label: "窗口信息",
-          icon: "info",
-          outputVariable: "windowInfo",
-          saveOutput: true,
-        },
       ],
       isAsync: true,
     },
     {
-      value: "quickcomposer.windows.automation.inspectWindow",
-      label: "界面自动化",
+      value: "quickcomposer.windows.sendmessage.inspectWindow",
+      label: "界面自动化(sendmessage)",
       desc: "Windows界面自动化操作",
       icon: "smart_button",
       isAsync: true,
@@ -279,7 +279,7 @@ export const windowsCommands = {
       ],
       subCommands: [
         {
-          value: "quickcomposer.windows.automation.inspectWindow",
+          value: "quickcomposer.windows.sendmessage.inspectWindow",
           label: "获取控件树",
           icon: "account_tree",
           outputVariable: "controlsTree",
@@ -314,7 +314,7 @@ export const windowsCommands = {
           ],
         },
         {
-          value: "quickcomposer.windows.automation.click",
+          value: "quickcomposer.windows.sendmessage.click",
           label: "点击控件",
           icon: "mouse",
           config: [
@@ -372,7 +372,7 @@ export const windowsCommands = {
           ],
         },
         {
-          value: "quickcomposer.windows.automation.sendText",
+          value: "quickcomposer.windows.sendmessage.sendText",
           label: "发送文本",
           icon: "keyboard",
           config: [
@@ -413,7 +413,7 @@ export const windowsCommands = {
           ],
         },
         {
-          value: "quickcomposer.windows.automation.sendKeys",
+          value: "quickcomposer.windows.sendmessage.sendKeys",
           label: "发送按键",
           icon: "keyboard_alt",
           config: [

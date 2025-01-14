@@ -63,6 +63,7 @@ public class AutomationTool
 
     private const uint WM_KEYDOWN = 0x0100;
     private const uint WM_KEYUP = 0x0101;
+    private const uint WM_KEYPRESS = 0x0102;
     private const uint WM_CHAR = 0x0102;
     private const uint WM_SETTEXT = 0x000C;
     private const uint WM_LBUTTONDOWN = 0x0201;
@@ -123,6 +124,9 @@ public class AutomationTool
 
     [DllImport("user32.dll")]
     private static extern bool SendMessage(IntPtr hWnd, uint Msg, int wParam, ref RECT lParam);
+
+    [DllImport("user32.dll")]
+    private static extern uint MapVirtualKey(uint uCode, uint uMapType);
     #endregion
 
     public static void Main(string[] args)
@@ -172,46 +176,60 @@ public class AutomationTool
         }
     }
 
-    private static List<IntPtr> FindTargetWindows(string window)
+    private static List<IntPtr> FindTargetWindows(string[] args)
     {
         List<IntPtr> targetWindows = new List<IntPtr>();
-        if (string.IsNullOrEmpty(window))
+        string method = GetArgumentValue(args, "-method") ?? "title";
+        string value = GetArgumentValue(args, "-window") ?? "";
+
+        if (method == "active")
         {
             targetWindows.Add(GetForegroundWindow());
+            return targetWindows;
         }
-        else
+
+        if (method == "handle")
         {
-            // 查找所有匹配的窗口
-            EnumWindows((hwnd, param) =>
+            targetWindows.Add(new IntPtr(long.Parse(value)));
+            return targetWindows;
+        }
+
+        // title方式
+        if (string.IsNullOrEmpty(value))
+        {
+            return targetWindows;
+        }
+
+        // 查找所有匹配的窗口
+        EnumWindows((hwnd, param) =>
+        {
+            StringBuilder title = new StringBuilder(256);
+            GetWindowText(hwnd, title, title.Capacity);
+            string windowTitle = title.ToString();
+
+            if (!string.IsNullOrEmpty(windowTitle) &&
+                windowTitle.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                targetWindows.Add(hwnd);
+            }
+            return true;
+        }, IntPtr.Zero);
+
+        if (targetWindows.Count == 0)
+        {
+            Console.WriteLine("Error: 未找到匹配的窗口");
+            return targetWindows;
+        }
+
+        // 如果找到多个窗口，输出所有窗口信息
+        if (targetWindows.Count > 1)
+        {
+            Console.WriteLine("找到 {0} 个匹配窗口:", targetWindows.Count);
+            foreach (IntPtr hwnd in targetWindows)
             {
                 StringBuilder title = new StringBuilder(256);
                 GetWindowText(hwnd, title, title.Capacity);
-                string windowTitle = title.ToString();
-
-                if (!string.IsNullOrEmpty(windowTitle) &&
-                    windowTitle.IndexOf(window, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    targetWindows.Add(hwnd);
-                }
-                return true;
-            }, IntPtr.Zero);
-
-            if (targetWindows.Count == 0)
-            {
-                Console.WriteLine("Error: 未找到匹配的窗口");
-                return targetWindows;
-            }
-
-            // 如果找到多个窗口，输出所有窗口信息
-            if (targetWindows.Count > 1)
-            {
-                Console.WriteLine("找到 {0} 个匹配窗口:", targetWindows.Count);
-                foreach (IntPtr hwnd in targetWindows)
-                {
-                    StringBuilder title = new StringBuilder(256);
-                    GetWindowText(hwnd, title, title.Capacity);
-                    Console.WriteLine("0x{0:X} - {1}", hwnd.ToInt64(), title);
-                }
+                Console.WriteLine("0x{0:X} - {1}", hwnd.ToInt64(), title);
             }
         }
 
@@ -220,7 +238,6 @@ public class AutomationTool
 
     private static void HandleKeyboardOperation(string[] args)
     {
-        string window = GetArgumentValue(args, "-window");
         string control = GetArgumentValue(args, "-control");
         string action = GetArgumentValue(args, "-action");
         string value = GetArgumentValue(args, "-value");
@@ -232,7 +249,7 @@ public class AutomationTool
             return;
         }
 
-        var targetWindows = FindTargetWindows(window);
+        var targetWindows = FindTargetWindows(args);
         if (targetWindows.Count == 0)
         {
             return;
@@ -293,7 +310,6 @@ public class AutomationTool
 
     private static void HandleMouseOperation(string[] args)
     {
-        string window = GetArgumentValue(args, "-window");
         string control = GetArgumentValue(args, "-control");
         string controlText = GetArgumentValue(args, "-text");
         string action = GetArgumentValue(args, "-action");
@@ -306,7 +322,7 @@ public class AutomationTool
             return;
         }
 
-        var targetWindows = FindTargetWindows(window);
+        var targetWindows = FindTargetWindows(args);
         if (targetWindows.Count == 0)
         {
             return;
@@ -416,18 +432,17 @@ public class AutomationTool
                 PostMessage(hWnd, WM_KEYDOWN, modifier, 0);
             }
 
-            // 按下主键
+            // 发送主键字符
             if (mainKey > 0)
             {
-                PostMessage(hWnd, WM_KEYDOWN, mainKey, 0);
-                Thread.Sleep(10);
-                PostMessage(hWnd, WM_KEYUP, mainKey, 0);
+                PostMessage(hWnd, WM_CHAR, mainKey, 0);
             }
 
             // 释放修饰键
             for (int i = modifierKeys.Count - 1; i >= 0; i--)
             {
-                PostMessage(hWnd, WM_KEYUP, modifierKeys[i], 0);
+                byte modifier = modifierKeys[i];
+                PostMessage(hWnd, WM_KEYUP, modifier, 0);
             }
 
             // 如果有多个按键组合，等待一下
@@ -435,6 +450,58 @@ public class AutomationTool
             {
                 Thread.Sleep(50);
             }
+        }
+    }
+
+    private static bool IsSpecialKey(byte vKey)
+    {
+        switch (vKey)
+        {
+            // 修饰键
+            case 0xA0: // VK_LSHIFT
+            case 0xA2: // VK_LCONTROL
+            case 0xA4: // VK_LMENU
+            case 0x5B: // VK_LWIN
+            // 控制键
+            case 0x08: // VK_BACK
+            case 0x09: // VK_TAB
+            case 0x0D: // VK_RETURN
+            case 0x1B: // VK_ESCAPE
+            case 0x20: // VK_SPACE
+            case 0x2E: // VK_DELETE
+            // 方向键
+            case 0x25: // VK_LEFT
+            case 0x26: // VK_UP
+            case 0x27: // VK_RIGHT
+            case 0x28: // VK_DOWN
+            // 导航键
+            case 0x24: // VK_HOME
+            case 0x23: // VK_END
+            case 0x21: // VK_PRIOR (PageUp)
+            case 0x22: // VK_NEXT (PageDown)
+            case 0x2D: // VK_INSERT
+            // 功能键
+            case 0x70: // VK_F1
+            case 0x71: // VK_F2
+            case 0x72: // VK_F3
+            case 0x73: // VK_F4
+            case 0x74: // VK_F5
+            case 0x75: // VK_F6
+            case 0x76: // VK_F7
+            case 0x77: // VK_F8
+            case 0x78: // VK_F9
+            case 0x79: // VK_F10
+            case 0x7A: // VK_F11
+            case 0x7B: // VK_F12
+            // 其他常用键
+            case 0x14: // VK_CAPITAL
+            case 0x90: // VK_NUMLOCK
+            case 0x91: // VK_SCROLL
+            case 0x2C: // VK_SNAPSHOT
+            case 0x13: // VK_PAUSE
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -465,16 +532,47 @@ public class AutomationTool
     {
         switch (key.ToLower())
         {
-            case "ctrl": return 0x11;
-            case "alt": return 0x12;
-            case "shift": return 0x10;
-            case "win": return 0x5B;
+            case "ctrl":
+            case "^": return 0xA2;  // VK_LCONTROL
+            case "alt": return 0xA4;  // VK_LMENU
+            case "shift": return 0xA0;  // VK_LSHIFT
+            case "win": return 0x5B;    // VK_LWIN
             case "enter": return 0x0D;
             case "tab": return 0x09;
             case "esc": return 0x1B;
             case "space": return 0x20;
             case "backspace": return 0x08;
             case "delete": return 0x2E;
+            // 方向键
+            case "left": return 0x25;    // VK_LEFT
+            case "up": return 0x26;      // VK_UP
+            case "right": return 0x27;   // VK_RIGHT
+            case "down": return 0x28;    // VK_DOWN
+            // 导航键
+            case "home": return 0x24;    // VK_HOME
+            case "end": return 0x23;     // VK_END
+            case "pageup": return 0x21;  // VK_PRIOR
+            case "pagedown": return 0x22; // VK_NEXT
+            case "insert": return 0x2D;  // VK_INSERT
+            // 功能键
+            case "f1": return 0x70;      // VK_F1
+            case "f2": return 0x71;
+            case "f3": return 0x72;
+            case "f4": return 0x73;
+            case "f5": return 0x74;
+            case "f6": return 0x75;
+            case "f7": return 0x76;
+            case "f8": return 0x77;
+            case "f9": return 0x78;
+            case "f10": return 0x79;
+            case "f11": return 0x7A;
+            case "f12": return 0x7B;
+            // 其他常用键
+            case "capslock": return 0x14; // VK_CAPITAL
+            case "numlock": return 0x90;  // VK_NUMLOCK
+            case "scrolllock": return 0x91; // VK_SCROLL
+            case "printscreen": return 0x2C; // VK_SNAPSHOT
+            case "pause": return 0x13;    // VK_PAUSE
             default:
                 if (key.Length == 1)
                 {
@@ -628,11 +726,10 @@ public class AutomationTool
 
     private static void HandleInspectOperation(string[] args)
     {
-        string window = GetArgumentValue(args, "-window");
         string filter = GetArgumentValue(args, "-filter");
         bool background = bool.Parse(GetArgumentValue(args, "-background") ?? "false");
 
-        var targetWindows = FindTargetWindows(window);
+        var targetWindows = FindTargetWindows(args);
         if (targetWindows.Count == 0)
         {
             return;
@@ -739,7 +836,7 @@ Windows 界面自动化工具使用说明
 ==========================
 
 基本语法:
-automation.exe -type <操作类型> [参数...]
+sendmessage.exe -type <操作类型> [参数...]
 
 操作类型:
 --------
@@ -749,6 +846,9 @@ automation.exe -type <操作类型> [参数...]
 
 通用参数:
 --------
++-method    窗口查找方式（可选，默认title）
++          可选值：title（标题）, handle（句柄）, active（活动窗口）
++
 -window    窗口标题或句柄（支持模糊匹配）
 -control   控件类名
 -background 后台操作，不激活窗口，默认激活
@@ -771,19 +871,25 @@ automation.exe -type <操作类型> [参数...]
 使用示例:
 --------
 1. 发送按键到指定窗口：
-   automation.exe -type keyboard -action keys -window ""记事本"" -value ""ctrl+a""
+   sendmessage.exe -type keyboard -action keys -window ""记事本"" -value ""ctrl+a""
 
 2. 发送文本到指定控件：
-   automation.exe -type keyboard -action text -window ""记事本"" -control ""Edit"" -value ""Hello World""
+   sendmessage.exe -type keyboard -action text -window ""记事本"" -control ""Edit"" -value ""Hello World""
 
 3. 点击指定控件：
-   automation.exe -type mouse -action click -window ""记事本"" -control ""Button"" -text ""确定""
+   sendmessage.exe -type mouse -action click -window ""记事本"" -control ""Button"" -text ""确定""
 
 4. 后台发送文本：
-   automation.exe -type keyboard -action text -window ""记事本"" -value ""Hello"" -background
+   sendmessage.exe -type keyboard -action text -window ""记事本"" -value ""Hello"" -background
 
 5. 获取窗口控件树：
-   automation.exe -type inspect -window ""记事本"" -filter ""button""
+   sendmessage.exe -type inspect -window ""记事本"" -filter ""button""
+
+6. 使用句柄查找窗口：
+   sendmessage.exe -type keyboard -method handle -window ""0x12345"" -value ""Hello""
+
+7. 操作当前活动窗口：
+   sendmessage.exe -type keyboard -method active -value ""ctrl+s""
 
 注意事项:
 --------
@@ -791,6 +897,8 @@ automation.exe -type <操作类型> [参数...]
 2. 控件类名需要完全匹配
 3. 后台操作可能会影响某些程序的响应
 4. 建议先用inspect获取正确的控件信息再进行操作
+5. handle方式查找窗口时需要提供正确的窗口句柄
+6. active方式不需要提供window参数，直接操作当前活动窗口
 ";
         Console.WriteLine(help);
     }

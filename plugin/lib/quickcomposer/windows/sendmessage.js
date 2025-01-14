@@ -1,16 +1,8 @@
-const fs = require("fs");
-const path = require("path");
-const quickcommand = require("../../quickcommand");
-
-// 读取 automation.cs 模板
-const automationTemplate = fs.readFileSync(
-  path.join(__dirname, "..", "..", "csharp", "automation.cs"),
-  "utf8"
-);
+const { runCsharpFeature } = require("../../csharp");
 
 /**
  * 键盘操作
- * @param {string} windowType 窗口类型：title/handle/active
+ * @param {string} method 窗口类型：title/handle/active
  * @param {string} window 窗口标题/句柄
  * @param {string} keys 键盘按键
  * @param {object} options 选项
@@ -18,15 +10,15 @@ const automationTemplate = fs.readFileSync(
  * @param {boolean} options.background 是否后台操作
  * @returns {boolean} 是否成功
  */
-const sendKeys = async function (windowType, window, keys, options = {}) {
+const sendKeys = async function (method, window, keys, options = {}) {
   const { control, background = false } = options;
   const args = ["-type", "keyboard", "-action", "keys", "-value", keys];
-
-  if (windowType !== "active" && window) args.push("-window", window);
+  args.push("-method", method);
+  if (method !== "active" && window) args.push("-window", window);
   if (control) args.push("-control", control);
   args.push("-background", background.toString());
 
-  const result = await quickcommand.runCsharp(automationTemplate, args);
+  const result = await runCsharpFeature("sendmessage", args);
   if (result && result.startsWith("Error:")) {
     throw new Error(result.substring(7));
   }
@@ -35,7 +27,7 @@ const sendKeys = async function (windowType, window, keys, options = {}) {
 
 /**
  * 发送文本
- * @param {string} windowType 窗口类型：title/handle/active
+ * @param {string} method 窗口类型：title/handle/active
  * @param {string} window 窗口标题/句柄
  * @param {string} text 文本
  * @param {object} options 选项
@@ -43,15 +35,16 @@ const sendKeys = async function (windowType, window, keys, options = {}) {
  * @param {boolean} options.background 是否后台操作
  * @returns {boolean} 是否成功
  */
-const sendText = async function (windowType, window, text, options = {}) {
+const sendText = async function (method, window, text, options = {}) {
   const { control, background = false } = options;
   const args = ["-type", "keyboard", "-action", "text", "-value", text];
 
-  if (windowType !== "active" && window) args.push("-window", window);
+  args.push("-method", method);
+  if (method !== "active" && window) args.push("-window", window);
   if (control) args.push("-control", control);
   args.push("-background", background.toString());
 
-  const result = await quickcommand.runCsharp(automationTemplate, args);
+  const result = await runCsharpFeature("sendmessage", args);
   if (result && result.startsWith("Error:")) {
     throw new Error(result.substring(7));
   }
@@ -60,7 +53,7 @@ const sendText = async function (windowType, window, text, options = {}) {
 
 /**
  * 鼠标点击
- * @param {string} windowType 窗口类型：title/handle/active
+ * @param {string} method 窗口类型：title/handle/active
  * @param {string} window 窗口标题/句柄
  * @param {string} action 动作：click/doubleClick/rightClick
  * @param {object} options 选项
@@ -71,7 +64,7 @@ const sendText = async function (windowType, window, text, options = {}) {
  * @returns {boolean} 是否成功
  */
 const click = async function (
-  windowType,
+  method,
   window,
   action = "click",
   options = {}
@@ -79,13 +72,14 @@ const click = async function (
   const { control, text, pos, background = false } = options;
   const args = ["-type", "mouse", "-action", action];
 
-  if (windowType !== "active" && window) args.push("-window", window);
+  args.push("-method", method);
+  if (method !== "active" && window) args.push("-window", window);
   if (control) args.push("-control", control);
   if (text) args.push("-text", text);
   if (pos) args.push("-pos", pos);
   args.push("-background", background.toString());
 
-  const result = await quickcommand.runCsharp(automationTemplate, args);
+  const result = await runCsharpFeature("sendmessage", args);
   if (result && result.startsWith("Error:")) {
     throw new Error(result.substring(7));
   }
@@ -94,22 +88,23 @@ const click = async function (
 
 /**
  * 获取窗口控件树
- * @param {string} windowType 窗口类型：title/handle/active
+ * @param {string} method 窗口类型：title/handle/active
  * @param {string} window 窗口标题/句柄
  * @param {object} options 选项
  * @param {string} options.filter 过滤条件
  * @param {boolean} options.background 是否后台操作
  * @returns {object} 控件树
  */
-const inspectWindow = async function (windowType, window, options = {}) {
+const inspectWindow = async function (method, window, options = {}) {
   const { filter, background = false } = options;
   const args = ["-type", "inspect"];
 
-  if (windowType !== "active" && window) args.push("-window", window);
+  args.push("-method", method);
+  if (method !== "active" && window) args.push("-window", window);
   if (filter) args.push("-filter", filter);
   args.push("-background", background.toString());
 
-  const result = await quickcommand.runCsharp(automationTemplate, args);
+  const result = await runCsharpFeature("sendmessage", args);
   if (result && result.startsWith("Error:")) {
     throw new Error(result.substring(7));
   }

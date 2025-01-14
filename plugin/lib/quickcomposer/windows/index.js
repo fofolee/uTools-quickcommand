@@ -1,11 +1,9 @@
 const window = require("./window");
-const message = require("./message");
-const automation = require("./automation");
+const sendmessage = require("./sendmessage");
 const monitor = require("./monitor");
 
 module.exports = {
   window,
-  message,
-  automation,
+  sendmessage,
   monitor,
 };

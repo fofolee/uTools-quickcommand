@@ -109,6 +109,115 @@ export const uiCommands = {
   defaultOpened: false,
   commands: [
     {
+      value: "quickcommand.showMessageBox",
+      label: "消息提示",
+      desc: "显示一个自动消失的提示框",
+      isAsync: true,
+      config: [
+        {
+          label: "提示内容",
+          component: "VariableInput",
+          icon: "info",
+          defaultValue: newVarInputVal("str", "这是一条提示消息"),
+          width: 12,
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcommand.showMessageBox",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+          config: [
+            {
+              label: "图标类型",
+              component: "q-select",
+              defaultValue: "success",
+              icon: "lightbulb",
+              width: 6,
+              options: [
+                { label: "成功", value: "success" },
+                { label: "错误", value: "error" },
+                { label: "警告", value: "warning" },
+                { label: "信息", value: "info" },
+              ],
+            },
+            {
+              label: "显示时间(ms)",
+              component: "NumberInput",
+              min: 0,
+              step: 100,
+              width: 6,
+              placeholder: "0为手动关闭，留空按文本长度调整",
+            },
+          ],
+        },
+        {
+          value: "quickcommand.showSystemMessageBox",
+          icon: "report",
+          label: "系统弹窗",
+          config: [
+            {
+              label: "标题",
+              component: "VariableInput",
+              defaultValue: newVarInputVal("str", "提示"),
+              width: 12,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: "quickcommand.showConfirmBox",
+      label: "确认框",
+      desc: "显示一个确认框，返回是否点击了确认",
+      isAsync: true,
+      outputVariable: "confirmed",
+      saveOutput: true,
+      config: [
+        {
+          label: "提示内容",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("str", "确认要执行此操作吗？"),
+          width: 12,
+        },
+        {
+          label: "标题",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("str", "提示"),
+          width: 12,
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcommand.showConfirmBox",
+          icon: "call_to_action",
+          label: "插件内弹窗",
+          config: [
+            {
+              label: "支持HTML",
+              component: "CheckButton",
+              defaultValue: false,
+              width: 6,
+            },
+            {
+              label: "宽度",
+              component: "NumberInput",
+              min: 0,
+              step: 100,
+              defaultValue: 450,
+              width: 6,
+              placeholder: "对话框宽度",
+            },
+          ],
+        },
+        {
+          value: "quickcommand.showSystemConfirmBox",
+          icon: "report",
+          label: "系统弹窗",
+        },
+      ],
+    },
+    {
       value: "quickcommand.showButtonBox",
       label: "按钮组",
       isAsync: true,
@@ -250,115 +359,6 @@ export const uiCommands = {
               width: 6,
             },
           ],
-        },
-      ],
-    },
-    {
-      value: "quickcommand.showMessageBox",
-      label: "消息提示",
-      desc: "显示一个自动消失的提示框",
-      isAsync: true,
-      config: [
-        {
-          label: "提示内容",
-          component: "VariableInput",
-          icon: "info",
-          defaultValue: newVarInputVal("str", "这是一条提示消息"),
-          width: 12,
-        },
-      ],
-      subCommands: [
-        {
-          value: "quickcommand.showMessageBox",
-          icon: "call_to_action",
-          label: "插件内弹窗",
-          config: [
-            {
-              label: "图标类型",
-              component: "q-select",
-              defaultValue: "success",
-              icon: "lightbulb",
-              width: 6,
-              options: [
-                { label: "成功", value: "success" },
-                { label: "错误", value: "error" },
-                { label: "警告", value: "warning" },
-                { label: "信息", value: "info" },
-              ],
-            },
-            {
-              label: "显示时间(ms)",
-              component: "NumberInput",
-              min: 0,
-              step: 100,
-              width: 6,
-              placeholder: "0为手动关闭，留空按文本长度调整",
-            },
-          ],
-        },
-        {
-          value: "quickcommand.showSystemMessageBox",
-          icon: "report",
-          label: "系统弹窗",
-          config: [
-            {
-              label: "标题",
-              component: "VariableInput",
-              defaultValue: newVarInputVal("str", "提示"),
-              width: 12,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      value: "quickcommand.showConfirmBox",
-      label: "确认框",
-      desc: "显示一个确认框，返回是否点击了确认",
-      isAsync: true,
-      outputVariable: "confirmed",
-      saveOutput: true,
-      config: [
-        {
-          label: "提示内容",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str", "确认要执行此操作吗？"),
-          width: 12,
-        },
-        {
-          label: "标题",
-          component: "VariableInput",
-          defaultValue: newVarInputVal("str", "提示"),
-          width: 12,
-        },
-      ],
-      subCommands: [
-        {
-          value: "quickcommand.showConfirmBox",
-          icon: "call_to_action",
-          label: "插件内弹窗",
-          config: [
-            {
-              label: "支持HTML",
-              component: "CheckButton",
-              defaultValue: false,
-              width: 6,
-            },
-            {
-              label: "宽度",
-              component: "NumberInput",
-              min: 0,
-              step: 100,
-              defaultValue: 450,
-              width: 6,
-              placeholder: "对话框宽度",
-            },
-          ],
-        },
-        {
-          value: "quickcommand.showSystemConfirmBox",
-          icon: "report",
-          label: "系统弹窗",
         },
       ],
     },

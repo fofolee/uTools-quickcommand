@@ -2,12 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
 const { getQuickcommandFolderFile } = require("./getQuickcommandFile");
-
-// 读取 dialog.cs 模板
-const dialogTemplate = fs.readFileSync(
-  path.join(__dirname, "csharp", "dialog.cs"),
-  "utf8"
-);
+const { runCsharpFeature } = require("./csharp");
 
 // 辅助函数
 const execCommand = (cmd) => {
@@ -70,8 +65,7 @@ const showSystemMessageBox = async function (content, title = "") {
         args.push("-iconpath", iconPath.replace(/\\/g, "\\\\"));
       }
 
-      const csharpCode = dialogTemplate;
-      const result = await this.runCsharp(csharpCode, args);
+      const result = await runCsharpFeature("dialog", args);
       if (result && result.startsWith("Error:")) {
         throw new Error(result.substring(7));
       }
@@ -149,8 +143,7 @@ const showSystemInputBox = async function (placeholders, title = "") {
       args.push("-iconpath", iconPath.replace(/\\/g, "\\\\"));
     }
 
-    const csharpCode = dialogTemplate;
-    const result = await this.runCsharp(csharpCode, args);
+    const result = await runCsharpFeature("dialog", args);
     return result ? JSON.parse(result) : [];
   } else if (window.utools.isLinux()) {
     if (!(await checkZenity())) return null;
@@ -200,8 +193,7 @@ const showSystemConfirmBox = async function (content, title = "") {
       args.push("-iconpath", iconPath.replace(/\\/g, "\\\\"));
     }
 
-    const csharpCode = dialogTemplate;
-    const result = await this.runCsharp(csharpCode, args);
+    const result = await runCsharpFeature("dialog", args);
     return result === "true";
   } else if (window.utools.isLinux()) {
     if (!(await checkZenity())) return false;
@@ -244,8 +236,7 @@ const showSystemButtonBox = async function (buttons, title = "") {
       args.push("-iconpath", iconPath.replace(/\\/g, "\\\\"));
     }
 
-    const csharpCode = dialogTemplate;
-    const result = await this.runCsharp(csharpCode, args);
+    const result = await runCsharpFeature("dialog", args);
     if (result) {
       return JSON.parse(result);
     }
@@ -288,8 +279,7 @@ const showSystemTextArea = async function (defaultText = "", title = "") {
       args.push("-iconpath", iconPath.replace(/\\/g, "\\\\"));
     }
 
-    const csharpCode = dialogTemplate;
-    const result = await this.runCsharp(csharpCode, args);
+    const result = await runCsharpFeature("dialog", args);
     return result || null;
   } else if (window.utools.isLinux()) {
     if (!(await checkZenity())) return null;

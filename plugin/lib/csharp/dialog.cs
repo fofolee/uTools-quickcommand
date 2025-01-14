@@ -17,14 +17,14 @@ public class DialogGenerator
     private const int LOGPIXELSX = 88;
     private const int LOGPIXELSY = 90;
 
-    // 基础尺寸常量 (96 DPI下的尺寸，当前尺寸/1.75)
-    private const int BASE_WIDTH = 515;        // 900/1.75 ≈ 515
-    private const int BASE_HEIGHT = 200;       // 350/1.75 ≈ 200
-    private const int BASE_PADDING = 17;       // 30/1.75 ≈ 17
-    private const int BASE_BUTTON_HEIGHT = 29; // 50/1.75 ≈ 29
-    private const int BASE_BUTTON_WIDTH = 80;  // 140/1.75 ≈ 80
-    private const int BASE_INPUT_HEIGHT = 23;  // 40/1.75 ≈ 23
-    private const int BASE_SPACING = 11;       // 20/1.75 ≈ 11
+    // 基础尺寸常量 (96 DPI下的尺寸，当前尺寸/2)
+    private const int BASE_WIDTH = 450;        // 900/2 = 450
+    private const int BASE_HEIGHT = 175;       // 350/2 = 175
+    private const int BASE_PADDING = 15;       // 30/2 = 15
+    private const int BASE_BUTTON_HEIGHT = 25; // 50/2 = 25
+    private const int BASE_BUTTON_WIDTH = 70;  // 140/2 = 70
+    private const int BASE_INPUT_HEIGHT = 20;  // 40/2 = 20
+    private const int BASE_SPACING = 10;       // 20/2 = 10
 
     // 实际使用的缩放尺寸
     private static int DEFAULT_WIDTH;
@@ -80,7 +80,7 @@ public class DialogGenerator
 
         if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(title))
         {
-            MessageBox.Show("必须指定 -type 和 -title 参数");
+            ShowHelp();
             return DialogResult.None;
         }
 
