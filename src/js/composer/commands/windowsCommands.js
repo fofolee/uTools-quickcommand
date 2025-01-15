@@ -107,26 +107,26 @@ const registryPaths = [
 const searchWindowConfig = [
   {
     key: "method",
-    label: "查找方式",
+    label: "窗口查找方式",
     component: "q-select",
     icon: "search",
     width: 3,
     options: [
       { label: "标题", value: "title" },
-      // { label: "类名", value: "class" },
+      { label: "类名", value: "class" },
       { label: "句柄", value: "handle" },
-      // { label: "进程", value: "process" },
+      { label: "进程名", value: "process" },
       { label: "活动窗口", value: "active" },
     ],
     defaultValue: "title",
   },
   {
     key: "value",
-    label: "窗口标题/句柄",
+    label: "窗口标题/类名/句柄/进程名/活动窗口",
     component: "VariableInput",
     icon: "title",
     width: 9,
-    placeholder: "标题支持模糊匹配，选择活动窗口无需输入",
+    placeholder: "标题、类名支持模糊匹配，选择活动窗口无需输入",
   },
 ];
 
@@ -245,24 +245,6 @@ export const windowsCommands = {
           ],
         },
         {
-          value: "quickcomposer.windows.window.setVisible",
-          label: "窗口可见性",
-          icon: "visibility",
-          config: [
-            {
-              key: "visible",
-              component: "ButtonGroup",
-              icon: "visibility",
-              width: 12,
-              options: [
-                { label: "显示", value: true },
-                { label: "隐藏", value: false },
-              ],
-              defaultValue: true,
-            },
-          ],
-        },
-        {
           value: "quickcomposer.windows.window.closeWindow",
           label: "关闭窗口",
           icon: "close",
@@ -317,29 +299,7 @@ export const windowsCommands = {
       desc: "Windows界面自动化操作",
       icon: "smart_button",
       isAsync: true,
-      config: [
-        {
-          key: "method",
-          label: "查找方式",
-          component: "q-select",
-          icon: "search",
-          width: 3,
-          options: [
-            { label: "标题", value: "title" },
-            { label: "句柄", value: "handle" },
-            { label: "活动窗口", value: "active" },
-          ],
-          defaultValue: "title",
-        },
-        {
-          key: "value",
-          label: "窗口标题/句柄",
-          component: "VariableInput",
-          icon: "title",
-          width: 9,
-          placeholder: "标题支持模糊匹配，选择活动窗口无需输入",
-        },
-      ],
+      config: searchWindowConfig,
       subCommands: [
         {
           value: "quickcomposer.windows.sendmessage.inspectWindow",
@@ -1158,10 +1118,10 @@ export const windowsCommands = {
             ...searchWindowConfig,
             {
               key: "by",
-              label: "查找方式",
+              label: "元素查找方式",
               component: "q-select",
               icon: "search",
-              width: 4,
+              width: 3,
               options: [
                 { label: "名称", value: "name" },
                 { label: "类名", value: "class" },
@@ -1175,7 +1135,7 @@ export const windowsCommands = {
               label: "查找值",
               component: "VariableInput",
               icon: "text_fields",
-              width: 8,
+              width: 9,
               placeholder: "要点击的元素值",
             },
             {

@@ -193,6 +193,31 @@ export default {
           }, 0);
       };
 
+      const formatValue = (value) => {
+        const liteView = (obj) => {
+          if (Array.isArray(obj)) {
+            return `[${obj.slice(0, 3).join(",")} ${
+              obj.length > 3 ? "..." : ""
+            }]`;
+          }
+          const keys = Object.keys(obj);
+          return `{${keys.slice(0, 3).join(",")} ${
+            keys.length > 3 ? "..." : ""
+          }}`;
+        };
+
+        if (value == null) return "";
+
+        switch (typeof value) {
+          case "string":
+            return value.replace(/\n/g, "\\n");
+          case "object":
+            return liteView(value);
+          default:
+            return String(value);
+        }
+      };
+
       // 计算每列的最大宽度
       const columnWidths = headers.map((header) => {
         const maxDataWidth = Math.max(
@@ -201,7 +226,7 @@ export default {
             const value = obj[header];
             return value === undefined || value === null
               ? 0
-              : getDisplayWidth(String(value).replace(/\n/g, "\\n"));
+              : getDisplayWidth(formatValue(value));
           })
         );
         return maxDataWidth;
@@ -236,7 +261,7 @@ export default {
               const value = obj[header];
               return value === undefined || value === null
                 ? ""
-                : String(value).replace(/\n/g, "\\n");
+                : formatValue(value);
             })
           )
         ),

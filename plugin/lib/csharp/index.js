@@ -173,15 +173,16 @@ const runCsharpFeature = async (feature, args = [], options = {}) => {
       if (killPrevious && currentChild) {
         quickcommand.kill(currentChild.pid, "SIGKILL");
       }
+      console.log(featureExePath, args.join(" "));
       currentChild = child_process.execFile(
         featureExePath,
         args,
         {
           encoding: null,
         },
-        (err, stdout) => {
-          console.log(iconv.decode(stdout, "gbk"));
-          if (err) reject(iconv.decode(stdout, "gbk"));
+        (err, stdout, stderr) => {
+          if (err || Buffer.byteLength(stderr) > 0)
+            reject(iconv.decode(stderr || stdout, "gbk"));
           else reslove(iconv.decode(stdout, "gbk"));
         }
       );

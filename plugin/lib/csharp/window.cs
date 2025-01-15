@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
 using System.Web.Script.Serialization;
+using System.Collections.Generic;
 
 public class WindowManager
 {
@@ -110,33 +111,47 @@ public class WindowManager
             return;
         }
 
-        string type = GetArgumentValue(args, "-type");
-        if (string.IsNullOrEmpty(type))
-        {
-            Console.Error.WriteLine("Error: 必须指定操作类型 (-type)");
-            return;
-        }
-
         try
         {
-            IntPtr hwnd = GetWindowHandle(args);
-            if (hwnd == IntPtr.Zero)
+            List<IntPtr> targetWindows = GetTargetWindows(args);
+            if (targetWindows.Count == 0)
             {
-                Console.Error.WriteLine("Error: 未找到目标窗口");
+                throw new Exception("未找到目标窗口");
+            }
+
+            string type = GetArgumentValue(args, "-type");
+            if (type.ToLower() == "info")
+            {
+                var allWindowInfo = new List<Dictionary<string, object>>();
+                foreach (IntPtr windowHandle in targetWindows)
+                {
+                    var windowInfo = GetBasicWindowInfo(windowHandle);
+                    if (windowInfo != null)
+                    {
+                        allWindowInfo.Add(windowInfo);
+                    }
+                }
+                var serializer = new JavaScriptSerializer();
+                Console.WriteLine(serializer.Serialize(allWindowInfo));
                 return;
             }
+
+            IntPtr targetHandle = targetWindows[0];
+            Dictionary<string, object> operatedWindow = null;
 
             switch (type.ToLower())
             {
                 case "topmost":
                     bool isTopMost = bool.Parse(GetArgumentValue(args, "-value") ?? "true");
-                    SetWindowPos(hwnd, isTopMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                    SetWindowPos(targetHandle, isTopMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "opacity":
                     int opacity = int.Parse(GetArgumentValue(args, "-value") ?? "100");
-                    SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-                    SetLayeredWindowAttributes(hwnd, 0, (byte)(opacity * 2.55), LWA_ALPHA);
+                    SetWindowLong(targetHandle, GWL_EXSTYLE, GetWindowLong(targetHandle, GWL_EXSTYLE) | WS_EX_LAYERED);
+                    SetLayeredWindowAttributes(targetHandle, 0, (byte)(opacity * 2.55), LWA_ALPHA);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "rect":
@@ -147,56 +162,69 @@ public class WindowManager
                         int y = int.Parse(rectValues[1]);
                         int width = int.Parse(rectValues[2]);
                         int height = int.Parse(rectValues[3]);
-                        MoveWindow(hwnd, x, y, width, height, true);
+                        MoveWindow(targetHandle, x, y, width, height, true);
                     }
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "state":
                     string state = GetArgumentValue(args, "-value") ?? "normal";
                     int cmdShow = state == "maximize" ? SW_MAXIMIZE :
                                 state == "minimize" ? SW_MINIMIZE : SW_NORMAL;
-                    ShowWindow(hwnd, cmdShow);
+                    ShowWindow(targetHandle, cmdShow);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "visible":
                     bool visible = bool.Parse(GetArgumentValue(args, "-value") ?? "true");
-                    ShowWindow(hwnd, visible ? SW_SHOW : SW_HIDE);
+                    ShowWindow(targetHandle, visible ? SW_SHOW : SW_HIDE);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "close":
-                    PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                    PostMessage(targetHandle, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "focus":
-                    if (IsIconic(hwnd))
+                    if (IsIconic(targetHandle))
                     {
-                        ShowWindow(hwnd, SW_RESTORE);
+                        ShowWindow(targetHandle, SW_RESTORE);
                     }
-                    SetForegroundWindow(hwnd);
+                    SetForegroundWindow(targetHandle);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "border":
                     bool hasBorder = bool.Parse(GetArgumentValue(args, "-value") ?? "true");
-                    int style = GetWindowLong(hwnd, GWL_STYLE);
+                    int style = GetWindowLong(targetHandle, GWL_STYLE);
                     style = hasBorder ? style | WS_CAPTION : style & ~WS_CAPTION;
-                    SetWindowLong(hwnd, GWL_STYLE, style);
+                    SetWindowLong(targetHandle, GWL_STYLE, style);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "clickthrough":
                     bool isTransparent = bool.Parse(GetArgumentValue(args, "-value") ?? "true");
-                    int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+                    int exStyle = GetWindowLong(targetHandle, GWL_EXSTYLE);
                     exStyle |= WS_EX_LAYERED;
                     exStyle = isTransparent ? exStyle | WS_EX_TRANSPARENT : exStyle & ~WS_EX_TRANSPARENT;
-                    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
+                    SetWindowLong(targetHandle, GWL_EXSTYLE, exStyle);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 case "info":
-                    GetWindowInfo(hwnd);
+                    operatedWindow = GetBasicWindowInfo(targetHandle);
                     break;
 
                 default:
                     Console.Error.WriteLine("Error: 不支持的操作类型");
-                    break;
+                    return;
+            }
+
+            if (operatedWindow != null)
+            {
+                var serializer = new JavaScriptSerializer();
+                Console.WriteLine(serializer.Serialize(operatedWindow));
             }
         }
         catch (Exception ex)
@@ -205,148 +233,106 @@ public class WindowManager
         }
     }
 
-    private static IntPtr GetWindowHandle(string[] args)
+    private static List<IntPtr> GetTargetWindows(string[] args)
     {
+        List<IntPtr> targetWindows = new List<IntPtr>();
         string method = GetArgumentValue(args, "-method") ?? "title";
         string value = GetArgumentValue(args, "-window") ?? "";
 
         switch (method.ToLower())
         {
             case "handle":
-                return new IntPtr(long.Parse(value));
-            case "active":
-                return GetForegroundWindow();
-            default: // title
-                if (string.IsNullOrEmpty(value))
-                {
-                    return IntPtr.Zero;
-                }
+                targetWindows.Add(new IntPtr(long.Parse(value)));
+                break;
 
-                IntPtr foundWindow = IntPtr.Zero;
+            case "active":
+                targetWindows.Add(GetForegroundWindow());
+                break;
+
+            case "process":
+                var processes = Process.GetProcessesByName(value);
+                foreach (var process in processes)
+                {
+                    if (process.MainWindowHandle != IntPtr.Zero)
+                    {
+                        targetWindows.Add(process.MainWindowHandle);
+                    }
+                }
+                break;
+
+            case "class":
                 EnumWindows((hwnd, param) =>
                 {
-                    StringBuilder title = new StringBuilder(256);
-                    GetWindowText(hwnd, title, title.Capacity);
-                    string windowTitle = title.ToString();
-
-                    if (!string.IsNullOrEmpty(windowTitle) &&
-                        windowTitle.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (!IsWindowVisible(hwnd))
                     {
-                        foundWindow = hwnd;
-                        return false; // 找到后停止枚举
+                        return true;
+                    }
+
+                    StringBuilder className = new StringBuilder(256);
+                    GetClassName(hwnd, className, className.Capacity);
+                    string windowClassName = className.ToString();
+
+                    if (windowClassName.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        targetWindows.Add(hwnd);
                     }
                     return true;
                 }, IntPtr.Zero);
+                break;
 
-                return foundWindow;
+            case "title":
+            default:
+                if (!string.IsNullOrEmpty(value))
+                {
+                    EnumWindows((hwnd, param) =>
+                    {
+                        StringBuilder title = new StringBuilder(256);
+                        GetWindowText(hwnd, title, title.Capacity);
+                        string windowTitle = title.ToString();
+
+                        if (!string.IsNullOrEmpty(windowTitle) &&
+                            windowTitle.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            targetWindows.Add(hwnd);
+                        }
+                        return true;
+                    }, IntPtr.Zero);
+                }
+                break;
         }
+
+        if (targetWindows.Count == 0)
+        {
+            throw new Exception("未找到匹配的窗口");
+        }
+
+        return targetWindows;
     }
 
-    private static void GetWindowInfo(IntPtr hwnd)
+    private static Dictionary<string, object> GetBasicWindowInfo(IntPtr hwnd)
     {
-        var windowRect = new RECT();
-        GetWindowRect(hwnd, out windowRect);
-
-        var clientRect = new RECT();
-        GetClientRect(hwnd, out clientRect);
-
-        var titleText = new StringBuilder(256);
-        GetWindowText(hwnd, titleText, 256);
-
-        var className = new StringBuilder(256);
-        GetClassName(hwnd, className, 256);
+        StringBuilder title = new StringBuilder(256);
+        StringBuilder className = new StringBuilder(256);
+        GetWindowText(hwnd, title, title.Capacity);
+        GetClassName(hwnd, className, className.Capacity);
 
         uint processId = 0;
         GetWindowThreadProcessId(hwnd, out processId);
-
         string processName = "";
-        string processPath = "";
         try
         {
-            Process process = Process.GetProcessById((int)processId);
+            var process = Process.GetProcessById((int)processId);
             processName = process.ProcessName;
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "wmic",
-                Arguments = string.Format("process where ProcessId={0} get ExecutablePath /value", processId),
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-            using (var proc = Process.Start(startInfo))
-            {
-                string output = proc.StandardOutput.ReadToEnd();
-                if (!string.IsNullOrEmpty(output))
-                {
-                    string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string line in lines)
-                    {
-                        if (line.StartsWith("ExecutablePath="))
-                        {
-                            processPath = line.Substring("ExecutablePath=".Length);
-                            break;
-                        }
-                    }
-                }
-            }
         }
         catch { }
 
-        int style = GetWindowLong(hwnd, GWL_STYLE);
-        int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-
-        var data = new
+        return new Dictionary<string, object>
         {
-            handle = hwnd.ToInt64(),
-            processId = processId,
-            process = new
-            {
-                name = processName,
-                path = processPath
-            },
-            title = titleText.ToString(),
-            className = className.ToString(),
-            window = new
-            {
-                x = windowRect.Left,
-                y = windowRect.Top,
-                width = windowRect.Right - windowRect.Left,
-                height = windowRect.Bottom - windowRect.Top
-            },
-            client = new
-            {
-                width = clientRect.Right - clientRect.Left,
-                height = clientRect.Bottom - clientRect.Top
-            },
-            state = new
-            {
-                visible = IsWindowVisible(hwnd),
-                minimized = IsIconic(hwnd),
-                maximized = IsZoomed(hwnd),
-                focused = GetForegroundWindow() == hwnd
-            },
-            style = new
-            {
-                border = (style & WS_BORDER) != 0,
-                caption = (style & WS_CAPTION) != 0,
-                child = (style & WS_CHILD) != 0,
-                popup = (style & WS_POPUP) != 0,
-                sysmenu = (style & WS_SYSMENU) != 0,
-                minimizeBox = (style & WS_MINIMIZEBOX) != 0,
-                maximizeBox = (style & WS_MAXIMIZEBOX) != 0
-            },
-            exStyle = new
-            {
-                topmost = (exStyle & WS_EX_TOPMOST) != 0,
-                transparent = (exStyle & WS_EX_TRANSPARENT) != 0,
-                toolWindow = (exStyle & WS_EX_TOOLWINDOW) != 0,
-                layered = (exStyle & WS_EX_LAYERED) != 0
-            }
+            { "handle", hwnd.ToInt64() },
+            { "title", title.ToString() },
+            { "class", className.ToString() },
+            { "process", processName }
         };
-
-        var serializer = new JavaScriptSerializer();
-        Console.WriteLine(serializer.Serialize(data));
     }
 
     private static string GetArgumentValue(string[] args, string key)
@@ -384,12 +370,14 @@ window.exe -type <操作类型> [参数...]
 通用参数:
 --------
 -method    窗口查找方式（可选，默认title）
-          可选值：title, handle, active
+          可选值：
+          - title     窗口标题（支持模糊匹配）
+          - handle    窗口句柄
+          - active    当前活动窗口
+          - process   进程名
+          - class     窗口类名（支持模糊匹配）
 
--window    窗口标题或句柄
-          示例：-window ""记事本""
-
--value     操作值，根据不同操作类型有不同含义
+-window    要查找的窗口值（根据method解释）
 
 操作参数说明:
 -----------
@@ -437,17 +425,23 @@ window.exe -type <操作类型> [参数...]
 7. 获取窗口信息：
    window.exe -type info -window ""记事本""
 
+8. 通过进程名查找窗口：
+   window.exe -type info -method process -window ""notepad""
+
+9. 通过窗口类名查找：
+   window.exe -type info -method class -window ""Chrome""  # 会匹配 Chrome_WidgetWin_1
+
 返回值:
 ------
-1. info操作返回JSON格式的窗口信息
-2. 其他操作无返回值，执行失败时输出错误信息
+1. 均为JSON格式
+2. info操作返回所有匹配窗口信息
+3. 其他操作返回操作的窗口信息
+4. 失败均抛出异常
 
 注意事项:
 --------
-1. 窗口标题支持模糊匹配
-2. handle方式查找窗口时需要提供正确的窗口句柄
-3. active方式不需要提供window参数，直接操作当前活动窗口
-4. 某些操作可能需要管理员权限
+1. 窗口标题、类名支持模糊匹配，active方式可不提供window参数
+2. 只有info操作会返回所有匹配窗口的信息，其他操作只会操作第一个匹配的窗口
 ";
         Console.WriteLine(help);
     }

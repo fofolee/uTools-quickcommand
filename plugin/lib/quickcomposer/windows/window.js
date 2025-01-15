@@ -1,10 +1,12 @@
 const { runCsharpFeature } = require("../../csharp");
 
 /**
- * 窗口置顶
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
- * @param {boolean} isTopMost 是否置顶
+ * 窗口置顶，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被置顶的窗口信息
  */
 async function setTopMost(method, value, isTopMost) {
   const args = [
@@ -17,14 +19,29 @@ async function setTopMost(method, value, isTopMost) {
     "-value",
     isTopMost.toString(),
   ];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return {
+        success: true,
+        window: JSON.parse(windowInfo),
+      };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 设置窗口透明度
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
+ * 设置窗口透明度，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
  * @param {number} opacity 透明度 0-100
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被设置透明度的窗口信息
  */
 async function setOpacity(method, value, opacity) {
   const args = [
@@ -37,17 +54,29 @@ async function setOpacity(method, value, opacity) {
     "-value",
     opacity.toString(),
   ];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 设置窗口位置和大小
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
+ * 设置窗口位置和大小，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
  * @param {number} x X坐标
  * @param {number} y Y坐标
  * @param {number} width 宽度
  * @param {number} height 高度
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被设置位置和大小的窗口信息
  */
 async function setWindowRect(method, value, x, y, width, height) {
   const args = [
@@ -60,14 +89,26 @@ async function setWindowRect(method, value, x, y, width, height) {
     "-value",
     `${x},${y},${width},${height}`,
   ];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 设置窗口状态
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
- * @param {string} state 状态：normal/maximize/minimize
+ * 设置窗口状态，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
+ * @param {string} state 状态："normal"|"maximize"|"minimize"
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被设置状态的窗口信息
  */
 async function setWindowState(method, value, state) {
   const args = [
@@ -80,34 +121,70 @@ async function setWindowState(method, value, state) {
     "-value",
     state,
   ];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 关闭窗口
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
+ * 关闭窗口，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被关闭的窗口信息
  */
 async function closeWindow(method, value) {
   const args = ["-type", "close", "-method", method, "-window", value];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 设置窗口焦点
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
+ * 设置窗口焦点，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被设置焦点的窗口信息
  */
 async function setFocus(method, value) {
   const args = ["-type", "focus", "-method", method, "-window", value];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 设置窗口边框
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
+ * 设置窗口边框，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
  * @param {boolean} hasBorder 是否显示边框
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被设置边框的窗口信息
  */
 async function setBorder(method, value, hasBorder) {
   const args = [
@@ -120,14 +197,26 @@ async function setBorder(method, value, hasBorder) {
     "-value",
     hasBorder.toString(),
   ];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 设置窗口点击穿透
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
+ * 设置窗口点击穿透，只操作第一个找到的窗口
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
  * @param {boolean} isTransparent 是否点击穿透
+ * @param {Object} result 结果
+ * @param {boolean} result.success 是否成功
+ * @param {Object} result.window 被设置点击穿透的窗口信息
  */
 async function setClickThrough(method, value, isTransparent) {
   const args = [
@@ -140,43 +229,33 @@ async function setClickThrough(method, value, isTransparent) {
     "-value",
     isTransparent.toString(),
   ];
-  await runCsharpFeature("window", args);
+  let error;
+  try {
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) {
+      return { success: true, window: JSON.parse(windowInfo) };
+    }
+  } catch (err) {
+    error = err.toString();
+  }
+  return { success: false, error };
 }
 
 /**
- * 获取窗口信息
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
- * @returns {Object} 窗口信息
+ * 获取窗口信息，返回所有匹配的窗口信息
+ * @param {string} method 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} value 窗口标题、句柄、进程名、类名
+ * @returns {Object} 所有匹配的窗口信息
  */
 async function getWindowInfo(method, value) {
   const args = ["-type", "info", "-method", method, "-window", value];
-  const result = await runCsharpFeature("window", args);
   try {
-    return JSON.parse(result);
-  } catch (error) {
-    return {};
+    const windowInfo = await runCsharpFeature("window", args);
+    if (windowInfo) return JSON.parse(windowInfo);
+  } catch (err) {
+    console.log(err);
   }
-}
-
-/**
- * 设置窗口可见性
- * @param {string} method 查找方式：title/handle/active
- * @param {string} value 查找值（handle时为数字）
- * @param {boolean} visible 是否可见
- */
-async function setVisible(method, value, visible) {
-  const args = [
-    "-type",
-    "visible",
-    "-method",
-    method,
-    "-window",
-    value,
-    "-value",
-    visible.toString(),
-  ];
-  await runCsharpFeature("window", args);
+  return [];
 }
 
 module.exports = {
@@ -184,7 +263,6 @@ module.exports = {
   setOpacity,
   setWindowRect,
   setWindowState,
-  setVisible,
   closeWindow,
   setFocus,
   setBorder,

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Script.Serialization;
 
 public class AutomationTool
 {
@@ -127,6 +128,9 @@ public class AutomationTool
 
     [DllImport("user32.dll")]
     private static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+    [DllImport("user32.dll")]
+    private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
     #endregion
 
     public static void Main(string[] args)
@@ -137,42 +141,61 @@ public class AutomationTool
             return;
         }
 
-        string type = GetArgumentValue(args, "-type");
-        if (string.IsNullOrEmpty(type))
-        {
-            Console.Error.WriteLine("Error: 必须指定操作类型 (-type)");
-            return;
-        }
-
-        string action = GetArgumentValue(args, "-action");
-        string value = GetArgumentValue(args, "-value");
-        string window = GetArgumentValue(args, "-window");
-        string control = GetArgumentValue(args, "-control");
-        string filter = GetArgumentValue(args, "-filter");
-        string pos = GetArgumentValue(args, "-pos");
-        bool background = HasArgument(args, "-background");
-
         try
         {
+            List<IntPtr> targetWindows = FindTargetWindows(args);
+            if (targetWindows.Count == 0)
+            {
+                throw new Exception("未找到目标窗口");
+            }
+
+            string type = GetArgumentValue(args, "-type");
+            IntPtr targetHandle = targetWindows[0];  // 总是使用第一个窗口
+            Dictionary<string, object> operatedWindow = null;
+
             switch (type.ToLower())
             {
-                case "keyboard":
-                    HandleKeyboardOperation(args);
-                    break;
-                case "mouse":
-                    HandleMouseOperation(args);
-                    break;
                 case "inspect":
-                    HandleInspectOperation(args);
+                    // inspect 操作只获取第一个匹配窗口的控件树
+                    string filter = GetArgumentValue(args, "-filter");
+                    bool background = bool.Parse(GetArgumentValue(args, "-background") ?? "false");
+
+                    // 只在非后台操作时激活窗口
+                    if (!background)
+                    {
+                        SetForegroundWindow(targetHandle);
+                        Thread.Sleep(50);
+                    }
+
+                    string treeJson = GetControlsTree(targetHandle, filter);
+                    if (!string.IsNullOrEmpty(treeJson))
+                    {
+                        Console.WriteLine("[" + treeJson + "]");
+                    }
+                    return;  // 直接返回，不输出窗口信息
+
+                case "keyboard":
+                    operatedWindow = HandleKeyboardOperation(targetHandle, args);
                     break;
+
+                case "mouse":
+                    operatedWindow = HandleMouseOperation(targetHandle, args);
+                    break;
+
                 default:
-                    Console.WriteLine("Error: 不支持的操作类型");
-                    break;
+                    throw new Exception("不支持的操作类型");
+            }
+
+            // 输出操作的窗口信息
+            if (operatedWindow != null)
+            {
+                var serializer = new JavaScriptSerializer();
+                Console.WriteLine(serializer.Serialize(operatedWindow));
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(string.Format("Error: {0}", ex.Message));
+            Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
         }
     }
 
@@ -182,133 +205,145 @@ public class AutomationTool
         string method = GetArgumentValue(args, "-method") ?? "title";
         string value = GetArgumentValue(args, "-window") ?? "";
 
-        if (method == "active")
+        // 如果是active方法，直接返回当前活动窗口
+        if (method.ToLower() == "active")
         {
             targetWindows.Add(GetForegroundWindow());
             return targetWindows;
         }
 
-        if (method == "handle")
+        // 如果是handle方法，直接返回指定句柄
+        if (method.ToLower() == "handle")
         {
             targetWindows.Add(new IntPtr(long.Parse(value)));
             return targetWindows;
         }
 
-        // title方式
+        // 如果没有指定窗口值，返回空列表
         if (string.IsNullOrEmpty(value))
         {
             return targetWindows;
         }
 
-        // 查找所有匹配的窗口
-        EnumWindows((hwnd, param) =>
+        switch (method.ToLower())
         {
-            StringBuilder title = new StringBuilder(256);
-            GetWindowText(hwnd, title, title.Capacity);
-            string windowTitle = title.ToString();
+            case "process":
+                // 通过进程名查找
+                var processes = System.Diagnostics.Process.GetProcessesByName(value);
+                foreach (var process in processes)
+                {
+                    if (process.MainWindowHandle != IntPtr.Zero)
+                    {
+                        targetWindows.Add(process.MainWindowHandle);
+                    }
+                }
+                break;
 
-            if (!string.IsNullOrEmpty(windowTitle) &&
-                windowTitle.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                targetWindows.Add(hwnd);
-            }
-            return true;
-        }, IntPtr.Zero);
+            case "class":
+                // 通过窗口类名查找
+                EnumWindows((hwnd, param) =>
+                {
+                    if (!IsWindowVisible(hwnd))
+                    {
+                        return true;
+                    }
+
+                    StringBuilder className = new StringBuilder(256);
+                    GetClassName(hwnd, className, className.Capacity);
+                    string windowClassName = className.ToString();
+
+                    if (windowClassName.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        targetWindows.Add(hwnd);
+                    }
+                    return true;
+                }, IntPtr.Zero);
+                break;
+
+            case "title":
+            default:
+                // 通过窗口标题查找（支持模糊匹配）
+                EnumWindows((hwnd, param) =>
+                {
+                    StringBuilder title = new StringBuilder(256);
+                    GetWindowText(hwnd, title, title.Capacity);
+                    string windowTitle = title.ToString();
+
+                    if (!string.IsNullOrEmpty(windowTitle) &&
+                        windowTitle.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        targetWindows.Add(hwnd);
+                    }
+                    return true;
+                }, IntPtr.Zero);
+                break;
+        }
 
         if (targetWindows.Count == 0)
         {
-            Console.WriteLine("Error: 未找到匹配的窗口");
-            return targetWindows;
-        }
-
-        // 如果找到多个窗口，输出所有窗口信息
-        if (targetWindows.Count > 1)
-        {
-            Console.WriteLine("找到 {0} 个匹配窗口:", targetWindows.Count);
-            foreach (IntPtr hwnd in targetWindows)
-            {
-                StringBuilder title = new StringBuilder(256);
-                GetWindowText(hwnd, title, title.Capacity);
-                Console.WriteLine("0x{0:X} - {1}", hwnd.ToInt64(), title);
-            }
+            Console.WriteLine(string.Format("Error: 未找到匹配的窗口 (method={0}, value={1})", method, value));
         }
 
         return targetWindows;
     }
 
-    private static void HandleKeyboardOperation(string[] args)
+    private static Dictionary<string, object> HandleKeyboardOperation(IntPtr targetHandle, string[] args)
     {
         string control = GetArgumentValue(args, "-control");
         string action = GetArgumentValue(args, "-action");
         string value = GetArgumentValue(args, "-value");
         bool background = bool.Parse(GetArgumentValue(args, "-background") ?? "false");
 
-        if (string.IsNullOrEmpty(action))
+        // 如果指定了控件，递归查找控件句柄
+        IntPtr controlHandle = IntPtr.Zero;
+        if (!string.IsNullOrEmpty(control))
         {
-            Console.WriteLine("Error: keyboard操作需要指定 -action 参数");
-            return;
-        }
+            StringBuilder windowTitle = new StringBuilder(256);
+            GetWindowText(targetHandle, windowTitle, windowTitle.Capacity);
 
-        var targetWindows = FindTargetWindows(args);
-        if (targetWindows.Count == 0)
-        {
-            return;
-        }
-
-        foreach (IntPtr hWnd in targetWindows)
-        {
-            IntPtr targetHandle = hWnd;
-
-            // 如果指定了控件，递归查找控件句柄
-            if (!string.IsNullOrEmpty(control))
+            controlHandle = FindControl(targetHandle, control);
+            if (controlHandle == IntPtr.Zero)
             {
-                IntPtr hControl = FindControl(hWnd, control);
-                if (hControl != IntPtr.Zero)
+                throw new Exception(string.Format("在窗口中未找到指定控件 (窗口句柄={0}, 标题=\"{1}\", 控件类名=\"{2}\")",
+                    targetHandle.ToInt64(), windowTitle.ToString(), control));
+            }
+            targetHandle = controlHandle;
+        }
+
+        // 只在非后台操作时激活窗口
+        if (!background)
+        {
+            SetForegroundWindow(targetHandle);
+            Thread.Sleep(50);
+        }
+
+        switch (action.ToLower())
+        {
+            case "keys":
+                if (string.IsNullOrEmpty(value))
                 {
-                    targetHandle = hControl;
+                    throw new Exception("发送按键需要指定 -value 参数");
                 }
-                else
+                SendKeys(targetHandle, value);
+                break;
+
+            case "text":
+                if (string.IsNullOrEmpty(value))
                 {
-                    Console.WriteLine(string.Format("Warning: 在窗口 0x{0:X} 中未找到指定控件", hWnd.ToInt64()));
-                    continue;
+                    throw new Exception("发送文本需要指定 -value 参数");
                 }
-            }
+                SendText(targetHandle, value);
+                break;
 
-            // 只在非后台操作时激活窗口
-            if (!background)
-            {
-                SetForegroundWindow(hWnd);
-                Thread.Sleep(50); // 等待窗口激活
-            }
-
-            switch (action.ToLower())
-            {
-                case "keys":
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        Console.WriteLine("Error: 发送按键需要指定 -value 参数");
-                        return;
-                    }
-                    SendKeys(targetHandle, value);
-                    break;
-
-                case "text":
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        Console.WriteLine("Error: 发送文本需要指定 -value 参数");
-                        return;
-                    }
-                    SendText(targetHandle, value);
-                    break;
-
-                default:
-                    Console.WriteLine("Error: 不支持的keyboard操作类型");
-                    break;
-            }
+            default:
+                throw new Exception("不支持的keyboard操作类型");
         }
+
+        // 返回操作结果
+        return GetBasicWindowInfo(targetHandle, controlHandle);
     }
 
-    private static void HandleMouseOperation(string[] args)
+    private static Dictionary<string, object> HandleMouseOperation(IntPtr targetHandle, string[] args)
     {
         string control = GetArgumentValue(args, "-control");
         string controlText = GetArgumentValue(args, "-text");
@@ -318,87 +353,83 @@ public class AutomationTool
 
         if (string.IsNullOrEmpty(action))
         {
-            Console.WriteLine("Error: mouse操作需要指定 -action 参数");
-            return;
+            throw new Exception("mouse操作需要指定 -action 参数");
         }
 
-        var targetWindows = FindTargetWindows(args);
-        if (targetWindows.Count == 0)
+        // 如果指定了控件类名和文本，查找匹配的控件
+        IntPtr controlHandle = IntPtr.Zero;
+        if (!string.IsNullOrEmpty(control) || !string.IsNullOrEmpty(controlText))
         {
-            return;
+            StringBuilder windowTitle = new StringBuilder(256);
+            GetWindowText(targetHandle, windowTitle, windowTitle.Capacity);
+
+            controlHandle = FindControlByTextAndClass(targetHandle, controlText, control);
+            if (controlHandle == IntPtr.Zero)
+            {
+                throw new Exception(string.Format("在窗口中未找到指定控件 (窗口句柄={0}, 标题=\"{1}\", 控件类名=\"{2}\", 控件文本=\"{3}\")",
+                    targetHandle.ToInt64(), windowTitle.ToString(), control ?? "", controlText ?? ""));
+            }
+            targetHandle = controlHandle;
         }
 
-        foreach (IntPtr hWnd in targetWindows)
+        // 只在非后台操作时激活窗口
+        if (!background)
         {
-            IntPtr targetHandle = hWnd;
+            SetForegroundWindow(targetHandle);
+            Thread.Sleep(50);
+        }
 
-            // 如果指定了控件类名和文本，查找匹配的控件
-            if (!string.IsNullOrEmpty(control) || !string.IsNullOrEmpty(controlText))
+        // 获取点击坐标
+        int x = 0, y = 0;
+        if (!string.IsNullOrEmpty(position))
+        {
+            // 使用指定坐标
+            string[] pos = position.Split(',');
+            if (pos.Length == 2)
             {
-                targetHandle = FindControlByTextAndClass(hWnd, controlText, control);
-                if (targetHandle == IntPtr.Zero)
-                {
-                    Console.WriteLine(string.Format("Warning: 在窗口 0x{0:X} 中未找到指定控件", hWnd.ToInt64()));
-                    continue;
-                }
-            }
-
-            // 只在非后台操作时激活窗口
-            if (!background)
-            {
-                SetForegroundWindow(hWnd);
-                Thread.Sleep(50);
-            }
-
-            // 获取点击坐标
-            int x = 0, y = 0;
-            if (!string.IsNullOrEmpty(position))
-            {
-                // 使用指定坐标
-                string[] pos = position.Split(',');
-                if (pos.Length == 2)
-                {
-                    x = int.Parse(pos[0]);
-                    y = int.Parse(pos[1]);
-                }
-            }
-            else
-            {
-                // 如果没有指定坐标，点击控件中心
-                RECT rect;
-                if (GetWindowRect(targetHandle, out rect))
-                {
-                    x = (rect.Right - rect.Left) / 2;
-                    y = (rect.Bottom - rect.Top) / 2;
-                }
-            }
-
-            int lParam = (y << 16) | (x & 0xFFFF);
-
-            switch (action.ToLower())
-            {
-                case "click":
-                    SendMessage(targetHandle, WM_LBUTTONDOWN, 0, lParam);
-                    SendMessage(targetHandle, WM_LBUTTONUP, 0, lParam);
-                    break;
-
-                case "rightclick":
-                    SendMessage(targetHandle, WM_RBUTTONDOWN, 0, lParam);
-                    SendMessage(targetHandle, WM_RBUTTONUP, 0, lParam);
-                    break;
-
-                case "doubleclick":
-                    SendMessage(targetHandle, WM_LBUTTONDOWN, 0, lParam);
-                    SendMessage(targetHandle, WM_LBUTTONUP, 0, lParam);
-                    SendMessage(targetHandle, WM_LBUTTONDBLCLK, 0, lParam);
-                    SendMessage(targetHandle, WM_LBUTTONUP, 0, lParam);
-                    break;
-
-                default:
-                    Console.WriteLine("Error: 不支持的mouse操作类型");
-                    break;
+                x = int.Parse(pos[0]);
+                y = int.Parse(pos[1]);
             }
         }
+        else
+        {
+            // 如果没有指定坐标，点击控件中心
+            RECT rect;
+            if (GetWindowRect(targetHandle, out rect))
+            {
+                x = (rect.Right - rect.Left) / 2;
+                y = (rect.Bottom - rect.Top) / 2;
+            }
+        }
+
+        int lParam = (y << 16) | (x & 0xFFFF);
+
+        switch (action.ToLower())
+        {
+            case "click":
+                SendMessage(targetHandle, WM_LBUTTONDOWN, 0, lParam);
+                SendMessage(targetHandle, WM_LBUTTONUP, 0, lParam);
+                break;
+
+            case "rightclick":
+                SendMessage(targetHandle, WM_RBUTTONDOWN, 0, lParam);
+                SendMessage(targetHandle, WM_RBUTTONUP, 0, lParam);
+                break;
+
+            case "doubleclick":
+                SendMessage(targetHandle, WM_LBUTTONDOWN, 0, lParam);
+                SendMessage(targetHandle, WM_LBUTTONUP, 0, lParam);
+                SendMessage(targetHandle, WM_LBUTTONDBLCLK, 0, lParam);
+                SendMessage(targetHandle, WM_LBUTTONUP, 0, lParam);
+                break;
+
+            default:
+                Console.WriteLine("Error: 不支持的mouse操作类型");
+                break;
+        }
+
+        // 返回操作结果
+        return GetBasicWindowInfo(targetHandle, controlHandle);
     }
 
     private static void SendKeys(IntPtr hWnd, string keys)
@@ -735,10 +766,8 @@ public class AutomationTool
             return;
         }
 
-        // 输出所有匹配窗口的信息
-        StringBuilder json = new StringBuilder();
-        json.Append("[");
-        bool firstWindow = true;
+        // 创建一个列表存储所有窗口的控件树数组
+        List<string> allWindowTrees = new List<string>();
 
         foreach (IntPtr hWnd in targetWindows)
         {
@@ -749,17 +778,18 @@ public class AutomationTool
                 Thread.Sleep(50);
             }
 
-            if (!firstWindow)
+            // 获取当前窗口的控件树并添加到列表
+            // 注意：每个控件树已经是一个数组
+            string treeJson = GetControlsTree(hWnd, filter);
+            if (!string.IsNullOrEmpty(treeJson) && treeJson != "{}")
             {
-                json.Append(",");
+                // 将每个控件树作为一个数组元素添加
+                allWindowTrees.Add("[" + treeJson + "]");
             }
-            firstWindow = false;
-
-            json.Append(GetControlsTree(hWnd, filter));
         }
 
-        json.Append("]");
-        Console.WriteLine(json.ToString());
+        // 将所有窗口的控件树数组合并成一个大数组
+        Console.WriteLine("[" + string.Join(",", allWindowTrees) + "]");
     }
 
     private static string GetControlsTree(IntPtr parentHandle, string filter, int depth = 0)
@@ -791,10 +821,10 @@ public class AutomationTool
                 className.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        // 添加节点信息
+        // 添加节点信息 - 将句柄改为十进制格式
         json.AppendFormat(
-            "\"handle\":\"0x{0:X}\",\"class\":\"{1}\",\"text\":\"{2}\",\"visible\":{3},\"location\":{{\"x\":{4},\"y\":{5},\"width\":{6},\"height\":{7}}},\"matched\":{8},\"children\":[",
-            parentHandle.ToInt64(),
+            "\"handle\":\"{0}\",\"class\":\"{1}\",\"text\":\"{2}\",\"visible\":{3},\"location\":{{\"x\":{4},\"y\":{5},\"width\":{6},\"height\":{7}}},\"matched\":{8},\"children\":[",
+            parentHandle.ToInt64(),  // 直接使用十进制格式
             className.ToString().Replace("\"", "\\\""),
             title.ToString().Replace("\"", "\\\""),
             isVisible.ToString().ToLower(),
@@ -846,10 +876,15 @@ sendmessage.exe -type <操作类型> [参数...]
 
 通用参数:
 --------
-+-method    窗口查找方式（可选，默认title）
-+          可选值：title（标题）, handle（句柄）, active（活动窗口）
-+
--window    窗口标题或句柄（支持模糊匹配）
+-method    窗口查找方式（可选，默认title）
+          可选值：
+          - title     窗口标题（支持模糊匹配）
+          - handle    窗口句柄
+          - active    当前活动窗口
+          - process   进程名
+          - class     窗口类名（支持模糊匹配）
+
+-window    要查找的窗口值（根据method解释）
 -control   控件类名
 -background 后台操作，不激活窗口，默认激活
 
@@ -891,15 +926,77 @@ sendmessage.exe -type <操作类型> [参数...]
 7. 操作当前活动窗口：
    sendmessage.exe -type keyboard -method active -value ""ctrl+s""
 
+8. 通过进程名查找窗口：
+   sendmessage.exe -type keyboard -method process -window ""notepad"" -value ""Hello""
+
+9. 通过窗口类名查找：
+   sendmessage.exe -type keyboard -method class -window ""Chrome"" -value ""Hello""  # 会匹配 Chrome_WidgetWin_1
+   sendmessage.exe -type keyboard -method class -window ""Chrome_WidgetWin_1"" -value ""Hello""  # 精确匹配
+
+返回值:
+------
+1. 均为JSON格式
+2. inspect操作返回控件树信息
+3. 其他操作返回操作的控件信息及其所在窗口信息
+4. 失败均抛出异常
+
 注意事项:
 --------
-1. 窗口标题支持模糊匹配
-2. 控件类名需要完全匹配
-3. 后台操作可能会影响某些程序的响应
-4. 建议先用inspect获取正确的控件信息再进行操作
-5. handle方式查找窗口时需要提供正确的窗口句柄
-6. active方式不需要提供window参数，直接操作当前活动窗口
+1. 窗口标题、类名支持模糊匹配，active方式可不提供window参数
+2. 所有操作都只会处理第一个匹配的窗口
 ";
         Console.WriteLine(help);
+    }
+
+    private static Dictionary<string, object> GetBasicWindowInfo(IntPtr hwnd, IntPtr controlHandle = default(IntPtr))
+    {
+        var info = new Dictionary<string, object>();
+
+        // 获取窗口信息
+        StringBuilder title = new StringBuilder(256);
+        StringBuilder className = new StringBuilder(256);
+        GetWindowText(hwnd, title, title.Capacity);
+        GetClassName(hwnd, className, className.Capacity);
+
+        int processId = 0;
+        GetWindowThreadProcessId(hwnd, out processId);
+        string processName = "";
+        try
+        {
+            var process = System.Diagnostics.Process.GetProcessById(processId);
+            processName = process.ProcessName;
+        }
+        catch { }
+
+        // 窗口信息放在 window 键下
+        info["window"] = new Dictionary<string, object>
+        {
+            { "handle", hwnd.ToInt64() },
+            { "title", title.ToString() },
+            { "class", className.ToString() },
+            { "process", processName }
+        };
+
+        // 如果有控件信息，添加到顶层
+        if (controlHandle != IntPtr.Zero)
+        {
+            StringBuilder controlTitle = new StringBuilder(256);
+            StringBuilder controlClassName = new StringBuilder(256);
+            GetWindowText(controlHandle, controlTitle, controlTitle.Capacity);
+            GetClassName(controlHandle, controlClassName, controlClassName.Capacity);
+
+            info["handle"] = controlHandle.ToInt64();
+            info["title"] = controlTitle.ToString();
+            info["class"] = controlClassName.ToString();
+        }
+        else
+        {
+            // 如果没有控件，设置为 null
+            info["handle"] = null;
+            info["title"] = null;
+            info["class"] = null;
+        }
+
+        return info;
     }
 }

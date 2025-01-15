@@ -2,11 +2,10 @@ const { runCsharpFeature } = require("../../csharp");
 
 /**
  * 列出所有元素
- * @param {string} method 窗口类型：title/handle/active
- * @param {string} window 窗口标题/句柄
+ * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
+ * @param {string} window 窗口标题、句柄、进程名、类名
  * @param {object} options 选项
  * @param {string} options.filter 过滤条件
- * @param {boolean} options.background 是否后台操作
  * @returns {object[]} 元素列表
  */
 const listElements = async function (method, window, options = {}) {
@@ -17,28 +16,29 @@ const listElements = async function (method, window, options = {}) {
   if (method !== "active" && window) args.push("-window", window);
   if (filter) args.push("-filter", filter);
   if (scope) args.push("-scope", scope);
-  const result = await runCsharpFeature("automation", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
-  }
   try {
-    return JSON.parse(result);
-  } catch (error) {
-    console.error("解析元素列表失败:", error);
-    return null;
+    const result = await runCsharpFeature("automation", args);
+    console.log(result);
+    if (result) return JSON.parse(result);
+  } catch (err) {
+    console.log(err);
   }
+  return [];
 };
 
 /**
  * 点击元素
- * @param {string} method 窗口类型：title/handle/active
- * @param {string} window 窗口标题/句柄
- * @param {string} by 查找方式：name/class/type/automationid
+ * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
+ * @param {string} window 窗口标题、句柄、进程名、类名
+ * @param {string} by 查找方式："name"|"class"|"type"|"automationid"
  * @param {string} value 查找值
  * @param {object} options 选项
- * @param {string} options.pattern 点击模式：invoke/toggle
+ * @param {string} options.pattern 点击模式："invoke"|"toggle"
  * @param {boolean} options.background 是否后台操作
- * @returns {boolean} 是否成功
+ * @returns {Object} 操作结果
+ * @property {boolean} success 是否成功
+ * @property {Object} element 操作的元素信息
+ * @property {Object} element.window 操作的元素所在的窗口信息
  */
 const clickElement = async function (method, window, by, value, options = {}) {
   const { pattern = "invoke", background = false } = options;
@@ -48,24 +48,31 @@ const clickElement = async function (method, window, by, value, options = {}) {
   if (method !== "active" && window) args.push("-window", window);
   if (pattern) args.push("-pattern", pattern);
   if (background) args.push("-background");
-
-  const result = await runCsharpFeature("automation", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
+  let error;
+  try {
+    const result = await runCsharpFeature("automation", args);
+    if (result) {
+      return { success: true, element: JSON.parse(result) };
+    }
+  } catch (err) {
+    error = err.toString();
   }
-  return true;
+  return { success: true, error };
 };
 
 /**
  * 设置元素值
- * @param {string} method 窗口类型：title/handle/active
- * @param {string} window 窗口标题/句柄
- * @param {string} by 查找方式：name/class/type/automationid
+ * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
+ * @param {string} window 窗口标题、句柄、进程名、类名
+ * @param {string} by 查找方式："name"|"class"|"type"|"automationid"
  * @param {string} value 查找值
  * @param {string} newValue 要设置的值
  * @param {object} options 选项
  * @param {boolean} options.background 是否后台操作
- * @returns {boolean} 是否成功
+ * @returns {Object} 操作结果
+ * @property {boolean} success 是否成功
+ * @property {Object} element 操作的元素信息
+ * @property {Object} element.window 操作的元素所在的窗口信息
  */
 const setElementValue = async function (
   method,
@@ -90,19 +97,21 @@ const setElementValue = async function (
   args.push("-method", method);
   if (method !== "active" && window) args.push("-window", window);
   if (background) args.push("-background");
-
-  const result = await runCsharpFeature("automation", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
+  let error;
+  try {
+    const result = await runCsharpFeature("automation", args);
+    if (result) return { success: true, element: JSON.parse(result) };
+  } catch (err) {
+    error = err.toString();
   }
-  return true;
+  return { success: false, error };
 };
 
 /**
  * 获取元素值
- * @param {string} method 窗口类型：title/handle/active
- * @param {string} window 窗口标题/句柄
- * @param {string} by 查找方式：name/class/type/automationid
+ * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
+ * @param {string} window 窗口标题、句柄、进程名、类名
+ * @param {string} by 查找方式："name"|"class"|"type"|"automationid"
  * @param {string} value 查找值
  * @param {object} options 选项
  * @param {boolean} options.background 是否后台操作
@@ -122,38 +131,32 @@ const getElementValue = async function (
   if (method !== "active" && window) args.push("-window", window);
   if (background) args.push("-background");
 
-  const result = await runCsharpFeature("automation", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
-  }
+  let error;
   try {
-    return JSON.parse(result);
-  } catch (error) {
-    console.error("解析元素值失败:", error);
-    return null;
+    const result = await runCsharpFeature("automation", args);
+    if (result) return JSON.parse(result);
+  } catch (err) {
+    error = err.toString();
   }
+  return { success: false, error };
 };
 
 /**
  * 检查元素
  * @param {object} options 选项
  * @param {number} options.timeout 超时时间(秒)
- * @param {boolean} options.background 是否后台操作
  * @returns {object} 元素信息
  */
 const inspectElement = async function () {
   const args = ["-type", "inspect"];
 
-  const result = await runCsharpFeature("automation", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
-  }
   try {
-    return JSON.parse(result);
-  } catch (error) {
-    console.error("解析元素信息失败:", error);
-    return null;
+    const result = await runCsharpFeature("automation", args);
+    if (result) return JSON.parse(result);
+  } catch (err) {
+    console.log(err);
   }
+  return [];
 };
 
 module.exports = {
