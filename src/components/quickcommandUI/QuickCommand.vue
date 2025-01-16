@@ -186,6 +186,9 @@ export default {
        * initItems = [{title: "1", description: "1"},     {title: "2", description: "2"}, {title: "3", description: "3"}]
        * options = {placeholder: "输入进行筛选，支持拼音", optionType: "json", enableSearch: true, showCancelButton: false, closeOnSelect: true}
        *
+       * 如需对每个选项单独注册点击事件，可以在initItems的元素中添加id和clickFn，如：
+       * initItems = [{id:1, title: "1", description: "1", clickFn:function(e){console.log(e)}}, {id:2, title: "2", description: "2", clickFn:function(e){console.log(e)}}]
+       * 
        * @example
        * initItems = ["<div>1</div>", "<div>2</div>", "<div>3</div>"]
        * options = {placeholder: "输入进行筛选，支持拼音", optionType: "html", enableSearch: true, showCancelButton: false, closeOnSelect: true}

@@ -55,8 +55,15 @@ interface quickcommandApi {
    * // json
    * var opt = []
    * for (var i = 0; i < 15; i++) {
-   *     // 每一个选项为 json 格式
-   *     opt.push({title: `选项${i}`, description: `选项${i}的描述`, icon: `http://www.u.tools/favicon.ico`,abcd: `选项${i}的自定义属性`})
+   *     // 每一个选项为 json 格式, 使用clickFn注册选项单击事件时id属性是必需的
+   *     opt.push({
+   *        id: i, 
+   *        title: `选项${i}`, 
+   *        description: `选项${i}的描述`, 
+   *        icon: `http://www.u.tools/favicon.ico`,
+   *        abcd: `选项${i}的自定义属性`, 
+   *        clickFn:function(e){console.log(e)}
+   *     })
    * }
    * quickcommand.showSelectList(opt, {optionType: 'json'}).then(choise => {
    *     console.log(`选择的选项为${choise.title}`)

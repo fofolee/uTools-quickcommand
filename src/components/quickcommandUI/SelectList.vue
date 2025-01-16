@@ -144,7 +144,7 @@ export default {
             id: this.currentIndex,
             text: this.matchedItems[this.currentIndex],
           };
-      this.$emit("clickOK", selected);
+      this.is.json && selected.clickFn ? selected.clickFn(this.matchedItems[this.currentIndex].id) : this.$emit("clickOK", selected);
       this.options.options.closeOnSelect && this.hide();
     },
 
