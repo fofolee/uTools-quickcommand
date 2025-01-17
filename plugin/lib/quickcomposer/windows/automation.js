@@ -46,7 +46,7 @@ async function runAutomation(
   // 特定命令的参数处理
   switch (type) {
     case "inspect":
-      if (params) {
+      if (params.usePosition) {
         args.push("-position");
         if (params.x && params.y) {
           args.push(`${params.x},${params.y}`);
@@ -130,7 +130,10 @@ async function runAutomation(
 module.exports = {
   inspect: () => runAutomation("inspect"),
   inspectPosition: (position) =>
-    runAutomation("inspect", null, null, null, position || {}),
+    runAutomation("inspect", null, null, null, {
+      ...position,
+      usePosition: true,
+    }),
   click: (...args) => runAutomation("click", ...args),
   setvalue: (...args) => runAutomation("setvalue", ...args),
   getvalue: (...args) => runAutomation("getvalue", ...args),

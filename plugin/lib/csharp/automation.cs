@@ -64,6 +64,9 @@ public class AutomationManager
   private static extern bool GetCursorPos(out Point lpPoint);
 
   [DllImport("user32.dll")]
+  private static extern IntPtr WindowFromPoint(Point point);
+
+  [DllImport("user32.dll")]
   static extern int GetWindowLong(IntPtr hwnd, int index);
 
   [DllImport("user32.dll")]
@@ -335,7 +338,14 @@ public class AutomationManager
     {
       // 通过窗口句柄查找
       int handle = int.Parse(windowArg);
-      root = AutomationElement.FromHandle(new IntPtr(handle));
+      try
+      {
+        root = AutomationElement.FromHandle(new IntPtr(handle));
+      }
+      catch
+      {
+        throw new Exception("无法获取指定的窗口");
+      }
     }
     else
     {
@@ -439,95 +449,175 @@ public class AutomationManager
 
   private static void ShowHelp()
   {
-    string help = @"UI自动化工具
+    Console.WriteLine(@"UI自动化工具 v1.0
 
-用法: automation.exe -type <操作类型> [参数]
-
-通用参数:
--window <窗口句柄>  指定要操作的窗口，如果不指定则使用当前活动窗口
+用法: automation.exe <操作类型> [参数]
 
 操作类型:
+
 1. inspect - 检查元素
    无需其他参数，点击要检查的元素即可
 
-2. click - 点击元素
-   -xpath <XPath路径> 或
-   -id <AutomationId> 或
-   -name <名称> 或
-   -condition ""name=xx;type=Button""
+2. click - 点击指定元素
+   参数: -xpath <XPath路径> [-window <窗口句柄>]
+   适用控件: 所有可点击的控件，包括：
+   - Button (按钮)
+   - MenuItem (菜单项)
+   - TreeItem (树项)
+   - ListItem (列表项)
+   - TabItem (标签页)
+   - RadioButton (单选按钮)
+   - CheckBox (复选框)
+   示例:
+   - 点击按钮: -xpath ""//Button[@Name='确定']""
+   - 点击菜单项: -xpath ""//MenuBar/MenuItem[@Name='文件']/MenuItem[@Name='打开']""
+   - 点击树节点: -xpath ""//Tree/TreeItem[@Name='节点1']""
 
 3. setvalue - 设置值
-   -xpath <XPath路径> -value <新值>
+   参数: -xpath <XPath路径> -value <新值> [-window <窗口句柄>]
 
 4. getvalue - 获取值
-   -xpath <XPath路径>
+   参数: -xpath <XPath路径> [-window <窗口句柄>]
 
-5. select - 选择项目
-   -xpath <XPath路径> -item <项目名称>
+5. select - 选择指定项目
+   参数: -xpath <XPath路径> -item <项目名称> [-window <窗口句柄>]
+   适用控件及其特性:
+   - ComboBox (组合框)
+     * 自动展开下拉列表
+     * 支持选择 ListItem
+   - TreeView (树视图)
+     * 支持选择所有层级的 TreeItem
+     * 使用完整路径查找
+   - ListBox (列表框)
+     * 支持选择直接子项 ListItem
+   - DataGrid (数据网格)
+     * 支持选择 DataItem 和 ListItem
+   - Table (表格)
+     * 支持选择 DataItem 和 ListItem
+   - Tab (标签页)
+     * 支持选择直接子项 TabItem
+   - MenuBar/Menu (菜单)
+     * 支持选择所有层级的 MenuItem
+   - RadioButton (单选按钮)
+     * 直接选择匹配名称的按钮
+   - CheckBox (复选框)
+     * 直接选择匹配名称的复选框
+   示例:
+   - 选择下拉框选项: -xpath ""//ComboBox"" -item ""选项1""
+   - 选择树节点: -xpath ""//Tree"" -item ""父节点/子节点""
+   - 选择列表项: -xpath ""//List"" -item ""列表项1""
+   - 选择标签页: -xpath ""//Tab"" -item ""标签页2""
+   - 选择菜单项: -xpath ""//MenuBar"" -item ""文件""
+   - 选择单选按钮: -xpath ""//RadioButton[@Name='选项1']"" -item ""选项1""
 
 6. expand - 展开/折叠
-   -xpath <XPath路径> -expand <true/false>
+   参数: -xpath <XPath路径> -expand <true/false> [-window <窗口句柄>]
+   适用控件及其特性:
+   - TreeItem (树节点) 展开/折叠子节点
+   - ComboBox (组合框) 展开/折叠下拉列表
+   - Menu (菜单) 支持展开/折叠子菜单
+   - GroupBox (分组框) 展开/折叠内容区域
+   - Expander (展开器) 展开/折叠详细内容
+   示例:
+   - 展开树节点: -xpath ""//Tree/TreeItem[@Name='父节点']"" -expand true
+   - 折叠树节点: -xpath ""//Tree/TreeItem[@Name='父节点']"" -expand false
+   - 展开下拉框: -xpath ""//ComboBox"" -expand true
+   - 折叠下拉框: -xpath ""//ComboBox"" -expand false
+   - 展开菜单: -xpath ""//Menu/MenuItem[@Name='文件']"" -expand true
+   - 展开分组: -xpath ""//GroupBox[@Name='详细信息']"" -expand true
+   - 展开内容: -xpath ""//Expander"" -expand true
 
 7. scroll - 滚动
-   -xpath <XPath路径> -direction <vertical/horizontal> -amount <0-100>
+   参数: -xpath <XPath路径> -direction <vertical/horizontal> -amount <0-100> [-window <窗口句柄>]
+   适用控件及其特性:
+   - ScrollBar (滚动条)
+   - ListBox (列表框)
+   - ComboBox (组合框)
+   - DataGrid (数据网格)
+   - TreeView (树视图)
+   - TextBox (文本框)
+   - Document (文档)
+   示例:
+   - 垂直滚动列表到底部: -xpath ""//List"" -direction vertical -amount 100
+   - 水平滚动表格到中间: -xpath ""//DataGrid"" -direction horizontal -amount 50
+   - 垂直滚动文本框到顶部: -xpath ""//Edit"" -direction vertical -amount 0
+   - 水平滚动文档到最右: -xpath ""//Document"" -direction horizontal -amount 100
 
 8. wait - 等待元素
-   -xpath <XPath路径> -timeout <秒数>
+   参数: -xpath <XPath路径> -timeout <秒数> [-window <窗口句柄>]
 
 9. focus - 设置焦点
-   -xpath <XPath路径>
+   参数: -xpath <XPath路径> [-window <窗口句柄>]
 
 10. highlight - 高亮显示
-    -xpath <XPath路径> -duration <秒数>
+    参数: -xpath <XPath路径> -duration <秒数> [-window <窗口句柄>]
 
 11. sendkeys - 发送按键
-   -xpath <XPath路径> -keys <按键>
+    参数: -xpath <XPath路径> -keys <按键> [-window <窗口句柄>]
     按键格式说明:
     - 普通字符直接输入，如 ""abc""
-    - 特殊按键用 {} 包围，如 {ENTER}、{TAB}
-    - 组合键，如 ^c 表示 Ctrl+C
-    - 支持的特殊按键:
-      {BACKSPACE}, {BS}, {BKSP}  - 退格键
-      {BREAK}                    - Break键
-      {CAPSLOCK}                 - Caps Lock键
-      {DELETE}, {DEL}           - Delete键
-      {DOWN}                    - 向下键
-      {END}                     - End键
-      {ENTER}, {RETURN}        - Enter键
-      {ESC}                     - Esc键
-      {HELP}                    - Help键
-      {HOME}                    - Home键
-      {INSERT}, {INS}          - Insert键
-      {LEFT}                    - 向左键
-      {NUMLOCK}                - Num Lock键
-      {PGDN}                   - Page Down键
-      {PGUP}                   - Page Up键
-      {PRTSC}                  - Print Screen键
-      {RIGHT}                  - 向右键
-      {SCROLLLOCK}             - Scroll Lock键
-      {TAB}                    - Tab键
-      {UP}                     - 向上键
-      {F1} - {F12}            - 功能键
-      {ADD}                    - 数字键盘加号键
-      {SUBTRACT}               - 数字键盘减号键
-      {MULTIPLY}               - 数字键盘乘号键
-      {DIVIDE}                 - 数字键盘除号键
-      {NUMPAD0} - {NUMPAD9}   - 数字键盘数字键
+    - 特殊按键用 {} 包围，如 ""{ENTER}""、""{TAB}""
+    - 组合键，如 ""^c"" 表示 Ctrl+C
+    支持的特殊按键:
+    - {BACKSPACE}, {BS}, {BKSP} - 退格键
+    - {BREAK} - Break键
+    - {CAPSLOCK} - Caps Lock键
+    - {DELETE}, {DEL} - Delete键
+    - {DOWN} - 向下键
+    - {END} - End键
+    - {ENTER}, {RETURN} - Enter键
+    - {ESC} - Esc键
+    - {HELP} - Help键
+    - {HOME} - Home键
+    - {INSERT}, {INS} - Insert键
+    - {LEFT} - 向左键
+    - {NUMLOCK} - Num Lock键
+    - {PGDN} - Page Down键
+    - {PGUP} - Page Up键
+    - {PRTSC} - Print Screen键
+    - {RIGHT} - 向右键
+    - {SCROLLLOCK} - Scroll Lock键
+    - {TAB} - Tab键
+    - {UP} - 向上键
+    - {F1} - {F12} - 功能键
+    - {ADD} - 数字键盘加号键
+    - {SUBTRACT} - 数字键盘减号键
+    - {MULTIPLY} - 数字键盘乘号键
+    - {DIVIDE} - 数字键盘除号键
+    - {NUMPAD0} - {NUMPAD9} - 数字键盘数字键
 
     修饰键:
-      + (加号)     - SHIFT
-      ^ (脱字号)   - CTRL
-      % (百分号)   - ALT
+    + (加号) - SHIFT
+    ^ (脱字号) - CTRL
+    % (百分号) - ALT
 
     示例:
-      ""Hello""       - 输入 Hello
-      ""{ENTER}""     - 按 Enter 键
-      ""^c""          - 按 Ctrl+C
-      ""^{HOME}""     - 按 Ctrl+Home
-      ""%{F4}""       - 按 Alt+F4
-      ""+{TAB}""      - 按 Shift+Tab";
+    - 输入文本: -keys ""Hello""
+    - 按Enter键: -keys ""{ENTER}""
+    - 按Ctrl+C: -keys ""^c""
+    - 按Ctrl+Home: -keys ""^{HOME}""
+    - 按Alt+F4: -keys ""%{F4}""
+    - 按Shift+Tab: -keys ""+{TAB}""
 
-    Console.WriteLine(help);
+通用参数:
+-window <窗口句柄> 指定要操作的窗口，如果不指定则使用当前活动窗口
+
+元素定位方式:
+1. XPath定位（推荐）
+   -xpath <XPath路径>
+   示例: -xpath ""//Button[@Name='确定']""
+
+2. AutomationId定位
+   -id <AutomationId>
+   示例: -id ""btnOK""
+
+3. Name定位
+   -name <名称>
+   示例: -name ""确定""
+
+4. 组合条件定位
+   -condition ""name=xx;type=Button;class=xx;automation=xx""
+   示例: -condition ""name=确定;type=Button""");
   }
 
   private static string GetArgumentValue(string[] args, string key, bool checkNextArg = true)
@@ -600,34 +690,105 @@ public class AutomationManager
       throw new Exception("必须指定要选择的项目");
     }
 
-    try
+    // 根据控件类型使用不同的查找策略
+    TreeScope searchScope;
+    Condition searchCondition;
+
+    int controlTypeId = element.Current.ControlType.Id;
+
+    if (controlTypeId == ControlType.ComboBox.Id)
     {
+      // ComboBox需要先展开
+      var expandPattern = element.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+      if (expandPattern != null)
+      {
+        expandPattern.Expand();
+        System.Threading.Thread.Sleep(100);
+      }
+      searchScope = TreeScope.Descendants;
+      searchCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem);
+    }
+    else if (controlTypeId == ControlType.Tree.Id)
+    {
+      // TreeView查找所有TreeItem
+      searchScope = TreeScope.Descendants;
+      searchCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.TreeItem);
+    }
+    else if (controlTypeId == ControlType.List.Id || controlTypeId == ControlType.DataGrid.Id || controlTypeId == ControlType.Table.Id)
+    {
+      // ListBox, DataGrid, Table 查找直接子项
+      searchScope = TreeScope.Children;
+      searchCondition = new OrCondition(
+        new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
+        new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)
+      );
+    }
+    else if (controlTypeId == ControlType.Tab.Id)
+    {
+      // Tab查找直接子项
+      searchScope = TreeScope.Children;
+      searchCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.TabItem);
+    }
+    else if (controlTypeId == ControlType.MenuBar.Id || controlTypeId == ControlType.Menu.Id)
+    {
+      // 菜单项查找
+      searchScope = TreeScope.Descendants;
+      searchCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.MenuItem);
+    }
+    else if (controlTypeId == ControlType.RadioButton.Id || controlTypeId == ControlType.CheckBox.Id)
+    {
+      // 单选框和复选框直接选择自身
+      if (element.Current.Name == item)
+      {
+        var selectionItemPattern = element.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
+        if (selectionItemPattern != null)
+        {
+          selectionItemPattern.Select();
+          Console.WriteLine("true");
+          return;
+        }
+      }
+      throw new Exception(string.Format("找不到指定的选项: {0}", item));
+    }
+    else
+    {
+      // 对于其他类型的控件，尝试直接使用SelectionPattern
       var selectionPattern = element.GetCurrentPattern(SelectionPattern.Pattern) as SelectionPattern;
       if (selectionPattern != null)
       {
-        var children = element.FindAll(TreeScope.Children, Condition.TrueCondition);
-        foreach (AutomationElement child in children)
-        {
-          if (child.Current.Name == item)
-          {
-            var selectionItemPattern = child.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
-            if (selectionItemPattern != null)
-            {
-              selectionItemPattern.Select();
-              Console.WriteLine("true");
-              return;
-            }
-          }
-        }
-        throw new Exception("找不到指定的项目: " + item);
+        searchScope = TreeScope.Children;
+        searchCondition = Condition.TrueCondition;
       }
+      else
+      {
+        throw new Exception("不支持的控件类型");
+      }
+    }
 
-      throw new Exception("元素不支持选择操作");
-    }
-    catch (Exception ex)
+    // 查找所有子项
+    var children = element.FindAll(searchScope, searchCondition);
+    if (children.Count == 0)
     {
-      throw new Exception("选择操作失败: " + ex.Message);
+      throw new Exception("未找到可选择的项目");
     }
+
+    // 遍历查找匹配项并选择
+    foreach (AutomationElement child in children)
+    {
+      if (child.Current.Name == item)
+      {
+        // 尝试使用SelectionItemPattern选择
+        var selectionItemPattern = child.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
+        if (selectionItemPattern != null)
+        {
+          selectionItemPattern.Select();
+          Console.WriteLine("true");
+          return;
+        }
+      }
+    }
+
+    throw new Exception(string.Format("找不到指定的项目: {0}", item));
   }
 
   private static void ExpandElement(AutomationElement element, bool expand)
@@ -655,24 +816,82 @@ public class AutomationManager
 
   private static void ScrollElement(AutomationElement element, string direction, double amount)
   {
+    if (element == null)
+    {
+      throw new Exception("未找到目标元素");
+    }
+
     try
     {
-      var scrollPattern = element.GetCurrentPattern(ScrollPattern.Pattern) as ScrollPattern;
-      if (scrollPattern != null)
+      // 首先尝试使用 ScrollPattern
+      object scrollPattern;
+      if (element.TryGetCurrentPattern(ScrollPattern.Pattern, out scrollPattern))
       {
+        var scroll = scrollPattern as ScrollPattern;
         if (direction.ToLower() == "horizontal")
-          scrollPattern.SetScrollPercent(amount, ScrollPattern.NoScroll);
+        {
+          if (!scroll.Current.HorizontallyScrollable)
+          {
+            throw new Exception("元素不支持水平滚动");
+          }
+          scroll.SetScrollPercent(amount, ScrollPattern.NoScroll);
+        }
         else
-          scrollPattern.SetScrollPercent(ScrollPattern.NoScroll, amount);
+        {
+          if (!scroll.Current.VerticallyScrollable)
+          {
+            throw new Exception("元素不支持垂直滚动");
+          }
+          scroll.SetScrollPercent(ScrollPattern.NoScroll, amount);
+        }
         Console.WriteLine("true");
         return;
+      }
+
+      // 尝试使用 ScrollItemPattern
+      object scrollItemPattern;
+      if (element.TryGetCurrentPattern(ScrollItemPattern.Pattern, out scrollItemPattern))
+      {
+        var scrollItem = scrollItemPattern as ScrollItemPattern;
+        scrollItem.ScrollIntoView();
+        Console.WriteLine("true");
+        return;
+      }
+
+      // 检查是否有滚动条子元素
+      var scrollBars = element.FindAll(TreeScope.Children, new PropertyCondition(
+          AutomationElement.ControlTypeProperty, ControlType.ScrollBar));
+
+      if (scrollBars.Count > 0)
+      {
+        foreach (AutomationElement scrollBar in scrollBars)
+        {
+          // 获取滚动条的方向
+          bool isHorizontal = scrollBar.Current.BoundingRectangle.Width > scrollBar.Current.BoundingRectangle.Height;
+
+          if ((direction.ToLower() == "horizontal" && isHorizontal) ||
+              (direction.ToLower() == "vertical" && !isHorizontal))
+          {
+            // 使用 RangeValuePattern 设置滚动条的值
+            var rangeValuePattern = scrollBar.GetCurrentPattern(RangeValuePattern.Pattern) as RangeValuePattern;
+            if (rangeValuePattern != null)
+            {
+              double maxValue = rangeValuePattern.Current.Maximum;
+              double minValue = rangeValuePattern.Current.Minimum;
+              double targetValue = minValue + ((maxValue - minValue) * amount / 100);
+              rangeValuePattern.SetValue(targetValue);
+              Console.WriteLine("true");
+              return;
+            }
+          }
+        }
       }
 
       throw new Exception("元素不支持滚动操作");
     }
     catch (Exception ex)
     {
-      throw new Exception("滚动操作失败: " + ex.Message);
+      throw new Exception(string.Format("滚动操作失败: {0}", ex.Message));
     }
   }
 
@@ -842,48 +1061,63 @@ public class AutomationManager
     // 循环直到找到根元素
     while (current != null && current != AutomationElement.RootElement)
     {
-      var parent = walker.GetParent(current);
-      // 是否是最后一个元素
-      bool isLastElement = (parent == AutomationElement.RootElement || parent == null);
-      // 是否是句柄不为0的窗口
-      bool isValidWindow = (current.Current.ControlType.Id == UIA_ControlTypeIds.Window && current.Current.NativeWindowHandle != 0);
-      // 是否是任务栏
-      bool isTaskbar = (current.Current.ClassName == "Shell_TrayWnd" ||
-                         current.Current.ClassName == "Shell_SecondaryTrayWnd");
-
-      // 如果是窗口/任务栏，或者是最后一个元素，获取其句柄
-      if (isValidWindow || isTaskbar || isLastElement)
+      // 获取父元素,如果获取失败，则停止遍历
+      AutomationElement parent;
+      try
       {
-        windowHandle = new IntPtr(current.Current.NativeWindowHandle);
-        break;  // 获取到句柄后就停止遍历
+        parent = walker.GetParent(current);
+        // 是否是最后一个元素
+        bool isLastElement = (parent == AutomationElement.RootElement || parent == null);
+        // 是否是句柄不为0的窗口
+        bool isValidWindow = (current.Current.ControlType.Id == UIA_ControlTypeIds.Window && current.Current.NativeWindowHandle != 0);
+        // 是否是任务栏
+        bool isTaskbar = (current.Current.ClassName == "Shell_TrayWnd" ||
+                           current.Current.ClassName == "Shell_SecondaryTrayWnd");
+
+        // 如果是窗口/任务栏，或者是最后一个元素，获取其句柄
+        if (isValidWindow || isTaskbar || isLastElement)
+        {
+          windowHandle = new IntPtr(current.Current.NativeWindowHandle);
+          break;  // 获取到句柄后就停止遍历
+        }
+        else
+        {
+          // 获取同级元素中的索引
+          int index = 1;
+          var siblings = parent.FindAll(TreeScope.Children, new PropertyCondition(
+              AutomationElement.ControlTypeProperty, current.Current.ControlType));
+
+          foreach (AutomationElement sibling in siblings)
+          {
+            if (sibling == current) break;
+            index++;
+          }
+
+          // 构建路径段
+          string type = current.Current.ControlType.ProgrammaticName.Replace("ControlType.", "");
+          string pathSegment = type;
+
+          // 如果有多个同类型元素，添加索引
+          if (siblings.Count > 1)
+          {
+            pathSegment = string.Format("{0}[{1}]", type, index);
+          }
+
+          path.Insert(0, pathSegment);
+        }
       }
-      else
+      catch
       {
-        // 获取同级元素中的索引
-        int index = 1;
-        var siblings = parent.FindAll(TreeScope.Children, new PropertyCondition(
-            AutomationElement.ControlTypeProperty, current.Current.ControlType));
-
-        foreach (AutomationElement sibling in siblings)
-        {
-          if (sibling == current) break;
-          index++;
-        }
-
-        // 构建路径段
-        string type = current.Current.ControlType.ProgrammaticName.Replace("ControlType.", "");
-        string pathSegment = type;
-
-        // 如果有多个同类型元素，添加索引
-        if (siblings.Count > 1)
-        {
-          pathSegment = string.Format("{0}[{1}]", type, index);
-        }
-
-        path.Insert(0, pathSegment);
+        break;
       }
-
       current = parent;
+
+    }
+    if (windowHandle == IntPtr.Zero)
+    {
+      Point currentMousePosition;
+      GetCursorPos(out currentMousePosition);
+      windowHandle = WindowFromPoint(currentMousePosition);
     }
 
     return new ElementHierarchyInfo
@@ -999,32 +1233,6 @@ public class AutomationManager
     catch (Exception ex)
     {
       throw new Exception("发送按键失败: " + ex.Message);
-    }
-  }
-
-  // 将 HandleKeyPress 方法移到类级别
-  private static void HandleKeyPress(object sender, KeyPressEventArgs e)
-  {
-    if (e.KeyChar == (char)27)  // ESC键
-    {
-      mouseTimer.Stop();
-      overlayForm.Close();
-      previewForm.Close();
-      Environment.Exit(0);
-    }
-    else if (e.KeyChar == 'c' || e.KeyChar == 'C')  // 添加复制功能
-    {
-      if (lastElement != null)
-      {
-        try
-        {
-          Clipboard.SetText(lastElement.Current.Name);
-        }
-        catch (Exception ex)
-        {
-          Console.Error.WriteLine(string.Format("Error copying name: {0}", ex.Message));
-        }
-      }
     }
   }
 
@@ -1243,7 +1451,8 @@ public class AutomationManager
               "名称: {2}\r\n" +
               "大小: {3}x{4}\r\n" +
               "类型: {5}\r\n" +
-              "C：复制名称，ESC：退出",
+              "C：复制名称，X：复制名称并退出\r\n" +
+              "ESC：退出",
               cursorPos.X,
               cursorPos.Y,
               elementName,
@@ -1451,5 +1660,40 @@ public class AutomationManager
 
     return element;
   }
+
+  private static void stopInspect()
+  {
+    mouseTimer.Stop();
+    overlayForm.Close();
+    previewForm.Close();
+    Environment.Exit(0);
+  }
+
+  private static void HandleKeyPress(object sender, KeyPressEventArgs e)
+  {
+    if (e.KeyChar == (char)27)  // ESC键
+    {
+      stopInspect();
+    }
+    else if (e.KeyChar == 'c' || e.KeyChar == 'C' || e.KeyChar == 'x' || e.KeyChar == 'X')  // 添加复制功能
+    {
+      if (lastElement != null)
+      {
+        try
+        {
+          Clipboard.SetText(lastElement.Current.Name);
+          if (e.KeyChar == 'x' || e.KeyChar == 'X')
+          {
+            stopInspect();
+          }
+        }
+        catch (Exception ex)
+        {
+          Console.Error.WriteLine(string.Format("Error copying name: {0}", ex.Message));
+        }
+      }
+    }
+  }
+
 
 }

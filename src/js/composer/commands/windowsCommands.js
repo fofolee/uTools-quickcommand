@@ -630,7 +630,7 @@ export const windowsCommands = {
     // sendmessage
     {
       value: "quickcomposer.windows.sendmessage.inspectWindow",
-      label: "界面自动化(后台)",
+      label: "发送控制消息",
       desc: "Windows界面自动化操作",
       icon: "smart_button",
       isAsync: true,

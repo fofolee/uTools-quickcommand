@@ -164,31 +164,43 @@ const runCsharpFeature = async (feature, args = [], options = {}) => {
     const { alwaysBuildNewExe = window.utools.isDev(), killPrevious = true } =
       options;
     try {
+      if (killPrevious && currentChild) {
+        currentChild.kill();
+      }
       const featureExePath = await getCsharpFeatureExe(
         feature,
         alwaysBuildNewExe
       );
-      if (killPrevious && currentChild) {
-        quickcommand.kill(currentChild.pid, "SIGKILL");
-      }
       console.log(featureExePath, args.join(" "));
-      currentChild = child_process.execFile(
-        featureExePath,
-        args,
-        {
-          encoding: null,
-        },
-        (err, stdout, stderr) => {
-          console.log({
-            err,
-            stdout: iconv.decode(stdout, "gbk"),
-            stderr: iconv.decode(stderr, "gbk"),
-          });
-          if (err || Buffer.byteLength(stderr) > 0)
-            reject(iconv.decode(stderr || stdout, "gbk"));
-          else reslove(iconv.decode(stdout, "gbk"));
+      currentChild = child_process.spawn(featureExePath, args, {
+        encoding: null,
+        windowsHide: true,
+      });
+
+      let stdoutData = Buffer.from([]);
+      let stderrData = Buffer.from([]);
+
+      currentChild.stdout.on("data", (data) => {
+        stdoutData = Buffer.concat([stdoutData, data]);
+      });
+
+      currentChild.stderr.on("data", (data) => {
+        stderrData = Buffer.concat([stderrData, data]);
+      });
+
+      currentChild.on("error", (err) => {
+        reject(err.toString());
+      });
+
+      currentChild.on("close", (code) => {
+        if (code !== 0 || stderrData.length > 0) {
+          reject(
+            iconv.decode(stderrData.length ? stderrData : stdoutData, "gbk")
+          );
+        } else {
+          reslove(iconv.decode(stdoutData, "gbk"));
         }
-      );
+      });
     } catch (error) {
       return reject(error.toString());
     }
