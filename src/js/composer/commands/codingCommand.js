@@ -6,7 +6,6 @@ export const codingCommands = {
     {
       value: "quickcomposer.coding.base64Encode",
       label: "编解码",
-      desc: "文本编解码",
       icon: "code",
       outputVariable: "processedText",
       saveOutput: true,
@@ -77,7 +76,6 @@ export const codingCommands = {
     {
       value: "quickcomposer.coding.md5Hash",
       label: "哈希计算",
-      desc: "计算文本的哈希值",
       icon: "enhanced_encryption",
       outputVariable: "hashValue",
       saveOutput: true,

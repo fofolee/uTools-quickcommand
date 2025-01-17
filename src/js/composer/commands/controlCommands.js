@@ -15,7 +15,6 @@ export const controlCommands = {
           codeTemplate: "if (${condition}) {",
           config: [
             {
-              key: "condition",
               label: "条件",
               component: "ControlInput",
               placeholder: "表达式",
@@ -36,7 +35,6 @@ export const controlCommands = {
           codeTemplate: "} else if (${condition}) {",
           config: [
             {
-              key: "condition",
               label: "条件",
               component: "ControlInput",
               placeholder: "表达式",
@@ -65,14 +63,12 @@ export const controlCommands = {
             "for (let ${indexVar} = ${startValue}; ${indexVar} <= ${endValue}; ${indexVar} += ${stepValue}) {",
           config: [
             {
-              key: "indexVar",
               label: "变量",
               component: "ControlInput",
               defaultValue: "i",
               width: 3,
             },
             {
-              key: "startValue",
               label: "从",
               component: "ControlInput",
               icon: "first_page",
@@ -80,7 +76,6 @@ export const controlCommands = {
               width: 3,
             },
             {
-              key: "endValue",
               label: "到",
               component: "ControlInput",
               icon: "last_page",
@@ -88,7 +83,6 @@ export const controlCommands = {
               width: 3,
             },
             {
-              key: "stepValue",
               label: "步进",
               component: "ControlInput",
               icon: "trending_up",
@@ -131,21 +125,18 @@ export const controlCommands = {
             "for (let [${indexVar}, ${itemVar}] of ${arrayVar}.entries()) {",
           config: [
             {
-              key: "itemVar",
               label: "元素",
               component: "ControlInput",
               defaultValue: "item",
               width: 4,
             },
             {
-              key: "indexVar",
               label: "索引",
               component: "ControlInput",
               defaultValue: "i",
               width: 4,
             },
             {
-              key: "arrayVar",
               label: "数组",
               component: "ControlInput",
               icon: "list",
@@ -188,21 +179,18 @@ export const controlCommands = {
             "for (const ${keyVar} in ${objectVar}) { const ${valueVar} = ${objectVar}[${keyVar}];",
           config: [
             {
-              key: "keyVar",
               label: "键名",
               component: "ControlInput",
               defaultValue: "key",
               width: 4,
             },
             {
-              key: "valueVar",
               label: "值",
               component: "ControlInput",
               defaultValue: "value",
               width: 4,
             },
             {
-              key: "objectVar",
               label: "对象",
               component: "ControlInput",
               defaultValue: "object",
@@ -243,7 +231,6 @@ export const controlCommands = {
           codeTemplate: "while (${condition}) {",
           config: [
             {
-              key: "condition",
               label: "条件",
               component: "ControlInput",
               placeholder: "表达式",
@@ -284,7 +271,6 @@ export const controlCommands = {
           codeTemplate: "switch (${expression}) {",
           config: [
             {
-              key: "expression",
               label: "变量",
               component: "ControlInput",
               placeholder: "变量或表达式",
@@ -299,7 +285,6 @@ export const controlCommands = {
           codeTemplate: "case ${value}:",
           config: [
             {
-              key: "value",
               label: "值",
               component: "ControlInput",
             },
@@ -338,7 +323,6 @@ export const controlCommands = {
           codeTemplate: "} catch (${errorVar}) {",
           config: [
             {
-              key: "errorVar",
               label: "错误",
               component: "ControlInput",
               defaultValue: "error",

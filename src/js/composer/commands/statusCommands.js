@@ -5,7 +5,6 @@ export const statusCommands = {
     {
       value: "utools.readCurrentFolderPath",
       label: "获取当前文件管理器路径",
-      desc: "获取当前文件管理器窗口路径",
       icon: "folder",
       isAsync: true,
       outputVariable: "currentFolderPath",
@@ -14,7 +13,6 @@ export const statusCommands = {
     {
       value: "utools.readCurrentBrowserUrl",
       label: "获取当前浏览器地址",
-      desc: "获取当前浏览器窗口URL",
       icon: "language",
       isAsync: true,
       outputVariable: "currentBrowserUrl",
@@ -23,7 +21,6 @@ export const statusCommands = {
     {
       value: "quickcomposer.status.getSelectedText",
       label: "获取选中文本",
-      desc: "获取选中的文本",
       icon: "text_fields",
       isAsync: true,
       outputVariable: "selectedText",
@@ -32,7 +29,6 @@ export const statusCommands = {
     {
       value: "quickcomposer.status.getSelectedImage",
       label: "获取选中的图片",
-      desc: "获取选中的图片",
       icon: "image",
       isAsync: true,
       outputVariable: "selectedImage",
@@ -41,7 +37,6 @@ export const statusCommands = {
     {
       value: "quickcomposer.status.getSelectedFiles",
       label: "获取选中的文件",
-      desc: "获取选中的文件",
       icon: "file_present",
       isAsync: true,
       outputVariable: "selectedFiles",

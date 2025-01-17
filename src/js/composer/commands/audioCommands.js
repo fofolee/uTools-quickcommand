@@ -106,7 +106,6 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.speech.speak",
       label: "文本朗读",
-      desc: "系统语音朗读",
       icon: "record_voice_over",
       subCommands: [
         {
@@ -133,7 +132,6 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.media.play",
       label: "音频播放",
-      desc: "播放音频文件",
       icon: "music_note",
       isAsync: true,
       subCommands: [
@@ -176,7 +174,6 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.record",
       label: "音频录制",
-      desc: "录制系统音频",
       icon: "mic",
       isAsync: true,
       config: [
@@ -214,7 +211,6 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.media.beep",
       label: "系统音效",
-      desc: "播放系统内置音效",
       isAsync: true,
       icon: "notifications_active",
       config: [
@@ -241,7 +237,6 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.media.analyze",
       label: "音频信息",
-      desc: "分析音频文件信息",
       icon: "analytics",
       isAsync: true,
       config: [

@@ -15,7 +15,6 @@ export const systemCommands = {
           icon: "content_copy",
           config: [
             {
-              key: "content",
               label: "要写入剪切板的内容",
               component: "VariableInput",
               icon: "content_copy",
@@ -28,7 +27,6 @@ export const systemCommands = {
           icon: "image",
           config: [
             {
-              key: "image",
               label: "图片路径/base64",
               component: "VariableInput",
               icon: "image",
@@ -50,7 +48,6 @@ export const systemCommands = {
           icon: "file_copy",
           config: [
             {
-              key: "file",
               label: "文件路径",
               component: "VariableInput",
               icon: "file_copy",
@@ -108,7 +105,6 @@ export const systemCommands = {
     {
       value: "quickcomposer.system.exec",
       label: "执行系统命令",
-      desc: "执行系统命令并返回输出结果",
       component: "SystemCommandEditor",
       icon: "terminal",
       isAsync: true,
@@ -116,7 +112,6 @@ export const systemCommands = {
     {
       value: "utools.getPath",
       label: "获取系统路径",
-      desc: "获取系统路径",
       outputVariable: "systemPath",
       saveOutput: true,
       defaultValue: "home",
@@ -188,7 +183,6 @@ export const systemCommands = {
     {
       value: "utools.isMacOS",
       label: "判断系统类型",
-      desc: "判断系统类型",
       subCommands: [
         {
           value: "utools.isMacOS",
@@ -210,7 +204,6 @@ export const systemCommands = {
     {
       value: "quickcomposer.system.os.arch",
       label: "系统信息",
-      desc: "获取操作系统相关信息",
       icon: "computer",
       config: [],
       subCommands: [
@@ -306,7 +299,6 @@ export const systemCommands = {
     {
       value: "quickcomposer.system.path.normalize",
       label: "路径操作",
-      desc: "路径解析和处理",
       icon: "folder",
       config: [],
       subCommands: [
@@ -493,7 +485,6 @@ export const systemCommands = {
     {
       value: "quickcommand.kill",
       label: "关闭进程",
-      desc: "关闭指定进程",
       icon: "dangerous",
       config: [
         {

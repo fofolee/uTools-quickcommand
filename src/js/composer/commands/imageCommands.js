@@ -24,12 +24,10 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.analyze",
       label: "图片信息",
-      desc: "分析图片基本信息",
       icon: "analytics",
       isAsync: true,
       config: [
         {
-          key: "file",
           label: "图片文件",
           component: "VariableInput",
           icon: "image",
@@ -55,12 +53,10 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.resize",
       label: "调整大小",
-      desc: "调整图片尺寸",
       icon: "aspect_ratio",
       isAsync: true,
       config: [
         {
-          key: "inputFile",
           label: "输入文件",
           component: "VariableInput",
           icon: "image",
@@ -82,7 +78,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "outputFile",
           label: "输出文件",
           component: "VariableInput",
           icon: "save",
@@ -103,7 +98,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "width",
           label: "宽度(像素)",
           component: "NumberInput",
           icon: "compare_arrows",
@@ -113,7 +107,6 @@ export const imageCommands = {
           defaultValue: "",
         },
         {
-          key: "height",
           label: "高度(像素)",
           component: "NumberInput",
           icon: "height",
@@ -123,7 +116,6 @@ export const imageCommands = {
           defaultValue: "",
         },
         {
-          key: "keepAspectRatio",
           label: "保持宽高比",
           component: "q-select",
           icon: "aspect_ratio",
@@ -135,7 +127,6 @@ export const imageCommands = {
           ],
         },
         {
-          key: "quality",
           label: "图片质量(0-1)",
           component: "NumberInput",
           icon: "high_quality",
@@ -150,12 +141,10 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.rotate",
       label: "旋转图片",
-      desc: "旋转图片角度",
       icon: "rotate_right",
       isAsync: true,
       config: [
         {
-          key: "inputFile",
           label: "输入文件",
           component: "VariableInput",
           icon: "image",
@@ -177,7 +166,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "outputFile",
           label: "输出文件",
           component: "VariableInput",
           icon: "save",
@@ -198,7 +186,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "angle",
           label: "旋转角度",
           component: "NumberInput",
           icon: "rotate_right",
@@ -207,7 +194,6 @@ export const imageCommands = {
           defaultValue: 90,
         },
         {
-          key: "quality",
           label: "图片质量(0-1)",
           component: "NumberInput",
           icon: "high_quality",
@@ -222,12 +208,10 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.crop",
       label: "裁剪图片",
-      desc: "裁剪图片区域",
       icon: "crop",
       isAsync: true,
       config: [
         {
-          key: "inputFile",
           label: "输入文件",
           component: "VariableInput",
           icon: "image",
@@ -249,7 +233,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "outputFile",
           label: "输出文件",
           component: "VariableInput",
           icon: "save",
@@ -270,7 +253,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "x",
           label: "起始X坐标",
           component: "NumberInput",
           icon: "arrow_right",
@@ -280,7 +262,6 @@ export const imageCommands = {
           defaultValue: 0,
         },
         {
-          key: "y",
           label: "起始Y坐标",
           component: "NumberInput",
           icon: "arrow_downward",
@@ -290,7 +271,6 @@ export const imageCommands = {
           defaultValue: 0,
         },
         {
-          key: "width",
           label: "裁剪宽度",
           component: "NumberInput",
           icon: "compare_arrows",
@@ -300,7 +280,6 @@ export const imageCommands = {
           defaultValue: "",
         },
         {
-          key: "height",
           label: "裁剪高度",
           component: "NumberInput",
           icon: "height",
@@ -310,7 +289,6 @@ export const imageCommands = {
           defaultValue: "",
         },
         {
-          key: "quality",
           label: "图片质量(0-1)",
           component: "NumberInput",
           icon: "high_quality",
@@ -325,12 +303,10 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.watermark",
       label: "添加水印",
-      desc: "添加文字水印",
       icon: "format_color_text",
       isAsync: true,
       config: [
         {
-          key: "inputFile",
           label: "输入文件",
           component: "VariableInput",
           icon: "image",
@@ -352,7 +328,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "outputFile",
           label: "输出文件",
           component: "VariableInput",
           icon: "save",
@@ -373,7 +348,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "text",
           label: "水印文字",
           component: "VariableInput",
           icon: "text_fields",
@@ -381,7 +355,6 @@ export const imageCommands = {
           defaultValue: newVarInputVal("str", "水印文字"),
         },
         {
-          key: "font",
           label: "字体设置",
           component: "VariableInput",
           icon: "font_download",
@@ -389,7 +362,6 @@ export const imageCommands = {
           defaultValue: newVarInputVal("str", "24px Arial"),
         },
         {
-          key: "color",
           label: "文字颜色",
           component: "VariableInput",
           icon: "format_color_text",
@@ -397,7 +369,6 @@ export const imageCommands = {
           defaultValue: newVarInputVal("str", "rgba(255, 255, 255, 0.5)"),
         },
         {
-          key: "position",
           label: "位置",
           component: "q-select",
           icon: "place",
@@ -406,7 +377,6 @@ export const imageCommands = {
           options: WATERMARK_POSITIONS,
         },
         {
-          key: "margin",
           label: "边距",
           component: "NumberInput",
           icon: "space_bar",
@@ -416,7 +386,6 @@ export const imageCommands = {
           defaultValue: 20,
         },
         {
-          key: "opacity",
           label: "不透明度(0-1)",
           component: "NumberInput",
           icon: "opacity",
@@ -427,7 +396,6 @@ export const imageCommands = {
           defaultValue: 0.5,
         },
         {
-          key: "quality",
           label: "图片质量(0-1)",
           component: "NumberInput",
           icon: "high_quality",
@@ -442,12 +410,10 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.convert",
       label: "格式转换",
-      desc: "转换图片格式",
       icon: "transform",
       isAsync: true,
       config: [
         {
-          key: "inputFile",
           label: "输入文件",
           component: "VariableInput",
           icon: "image",
@@ -469,7 +435,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "outputFile",
           label: "输出文件",
           component: "VariableInput",
           icon: "save",
@@ -490,7 +455,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "format",
           label: "输出格式",
           component: "q-select",
           icon: "transform",
@@ -499,7 +463,6 @@ export const imageCommands = {
           options: IMAGE_FORMATS,
         },
         {
-          key: "quality",
           label: "图片质量(0-1)",
           component: "NumberInput",
           icon: "high_quality",
@@ -514,11 +477,9 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.pngToIcon",
       label: "PNG转图标",
-      desc: "将PNG图片转换为图标",
       icon: "transform",
       config: [
         {
-          key: "inputFile",
           label: "PNG路径/Base64",
           component: "VariableInput",
           icon: "image",
@@ -540,7 +501,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "outputDir",
           label: "输出目录",
           component: "VariableInput",
           icon: "save",
@@ -558,7 +518,6 @@ export const imageCommands = {
           },
         },
         {
-          key: "type",
           label: "输出格式",
           component: "q-select",
           icon: "transform",

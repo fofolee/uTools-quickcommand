@@ -8,7 +8,6 @@ export const otherCommands = {
       label: "添加延时",
       config: [
         {
-          key: "ms",
           label: "延迟的毫秒数",
           component: "NumberInput",
           min: 0,

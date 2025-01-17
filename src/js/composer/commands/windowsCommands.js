@@ -155,7 +155,6 @@ const registryPaths = [
 
 const searchWindowConfig = [
   {
-    key: "method",
     label: "窗口查找方式",
     component: "q-select",
     icon: "search",
@@ -170,7 +169,6 @@ const searchWindowConfig = [
     defaultValue: "title",
   },
   {
-    key: "value",
     label: "窗口标题/类名/句柄/进程名/活动窗口",
     component: "VariableInput",
     icon: "title",
@@ -219,7 +217,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.window.getWindowInfo",
       label: "搜索/选择窗口",
-      desc: "搜索/选择窗口",
       icon: "window",
       isAsync: true,
       config: [],
@@ -269,7 +266,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.window.setTopMost",
       label: "窗口控制",
-      desc: "Windows窗口操作",
       icon: "window",
       config: searchWindowConfig,
       subCommands: [
@@ -279,7 +275,6 @@ export const windowsCommands = {
           icon: "vertical_align_top",
           config: [
             {
-              key: "isTopMost",
               component: "ButtonGroup",
               icon: "push_pin",
               width: 12,
@@ -297,7 +292,6 @@ export const windowsCommands = {
           icon: "opacity",
           config: [
             {
-              key: "opacity",
               label: "透明度",
               component: "NumberInput",
               icon: "opacity",
@@ -314,7 +308,6 @@ export const windowsCommands = {
           icon: "aspect_ratio",
           config: [
             {
-              key: "x",
               label: "X坐标",
               component: "NumberInput",
               icon: "arrow_right",
@@ -322,7 +315,6 @@ export const windowsCommands = {
               defaultValue: 0,
             },
             {
-              key: "y",
               label: "Y坐标",
               component: "NumberInput",
               icon: "arrow_drop_down",
@@ -330,7 +322,6 @@ export const windowsCommands = {
               defaultValue: 0,
             },
             {
-              key: "width",
               label: "宽度",
               component: "NumberInput",
               icon: "swap_horiz",
@@ -339,7 +330,6 @@ export const windowsCommands = {
               defaultValue: 800,
             },
             {
-              key: "height",
               label: "高度",
               component: "NumberInput",
               icon: "height",
@@ -355,7 +345,6 @@ export const windowsCommands = {
           icon: "open_in_full",
           config: [
             {
-              key: "state",
               component: "ButtonGroup",
               icon: "aspect_ratio",
               width: 12,
@@ -384,7 +373,6 @@ export const windowsCommands = {
           icon: "border_style",
           config: [
             {
-              key: "hasBorder",
               component: "ButtonGroup",
               icon: "border_style",
               width: 12,
@@ -402,7 +390,6 @@ export const windowsCommands = {
           icon: "touch_app",
           config: [
             {
-              key: "isTransparent",
               component: "ButtonGroup",
               icon: "touch_app",
               width: 12,
@@ -421,7 +408,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.automation.click",
       label: "界面自动化",
-      desc: "Windows界面自动化操作",
       icon: "smart_button",
       isAsync: true,
       config: searchElementConfig,
@@ -631,7 +617,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.sendmessage.inspectWindow",
       label: "发送控制消息",
-      desc: "Windows界面自动化操作",
       icon: "smart_button",
       isAsync: true,
       config: searchWindowConfig,
@@ -644,7 +629,6 @@ export const windowsCommands = {
           saveOutput: true,
           config: [
             {
-              key: "options",
               component: "OptionEditor",
               width: 12,
               options: {
@@ -677,7 +661,6 @@ export const windowsCommands = {
           icon: "mouse",
           config: [
             {
-              key: "action",
               component: "ButtonGroup",
               width: 12,
               options: [
@@ -688,7 +671,6 @@ export const windowsCommands = {
               defaultValue: "click",
             },
             {
-              key: "options",
               component: "OptionEditor",
               width: 12,
               options: {
@@ -735,7 +717,6 @@ export const windowsCommands = {
           icon: "keyboard",
           config: [
             {
-              key: "text",
               label: "文本内容",
               component: "VariableInput",
               icon: "text_fields",
@@ -743,7 +724,6 @@ export const windowsCommands = {
               placeholder: "要发送的文本内容",
             },
             {
-              key: "options",
               component: "OptionEditor",
               width: 12,
               options: {
@@ -776,7 +756,6 @@ export const windowsCommands = {
           icon: "keyboard_alt",
           config: [
             {
-              key: "keys",
               label: "按键序列",
               component: "VariableInput",
               icon: "keyboard",
@@ -788,7 +767,6 @@ export const windowsCommands = {
               },
             },
             {
-              key: "options",
               component: "OptionEditor",
               width: 12,
               options: {
@@ -821,7 +799,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.monitor.watchClipboard",
       label: "剪贴板/文件监控",
-      desc: "监控系统变化",
       icon: "monitor_heart",
       isAsync: true,
       outputVariable: "monitorEvent",
@@ -856,7 +833,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "options",
               component: "OptionEditor",
               width: 12,
               options: {
@@ -887,7 +863,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.process.listProcesses",
       label: "进程管理",
-      desc: "Windows进程操作",
       icon: "memory",
       isAsync: true,
       subCommands: [
@@ -904,7 +879,6 @@ export const windowsCommands = {
           icon: "stop_circle",
           config: [
             {
-              key: "target",
               label: "进程ID/名称",
               component: "VariableInput",
               icon: "tag",
@@ -920,7 +894,6 @@ export const windowsCommands = {
           icon: "play_circle",
           config: [
             {
-              key: "path",
               label: "程序路径",
               component: "VariableInput",
               icon: "folder",
@@ -940,7 +913,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "arguments",
               label: "启动参数",
               component: "VariableInput",
               icon: "code",
@@ -955,12 +927,10 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.registry.listKeys",
       label: "注册表管理",
-      desc: "Windows注册表操作",
       icon: "settings",
       isAsync: true,
       config: [
         {
-          key: "path",
           label: "注册表路径",
           component: "VariableInput",
           icon: "folder",
@@ -986,7 +956,6 @@ export const windowsCommands = {
           icon: "search",
           config: [
             {
-              key: "path",
               label: "注册表路径",
               component: "VariableInput",
               icon: "folder",
@@ -998,7 +967,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "name",
               label: "值名称",
               component: "VariableInput",
               icon: "label",
@@ -1015,7 +983,6 @@ export const windowsCommands = {
           icon: "edit",
           config: [
             {
-              key: "path",
               label: "注册表路径",
               component: "VariableInput",
               icon: "folder",
@@ -1027,7 +994,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "name",
               label: "值名称",
               component: "VariableInput",
               icon: "label",
@@ -1036,7 +1002,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "value",
               label: "值内容",
               component: "VariableInput",
               icon: "text_fields",
@@ -1044,7 +1009,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "valueType",
               label: "值类型",
               component: "q-select",
               icon: "category",
@@ -1067,7 +1031,6 @@ export const windowsCommands = {
           icon: "delete",
           config: [
             {
-              key: "path",
               label: "注册表路径",
               component: "VariableInput",
               icon: "folder",
@@ -1079,7 +1042,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "name",
               label: "值名称",
               component: "VariableInput",
               icon: "label",
@@ -1094,7 +1056,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.service.listServices",
       label: "服务管理",
-      desc: "Windows服务操作",
       icon: "miscellaneous_services",
       isAsync: true,
       subCommands: [
@@ -1111,7 +1072,6 @@ export const windowsCommands = {
           icon: "settings",
           config: [
             {
-              key: "name",
               label: "服务名称",
               component: "VariableInput",
               icon: "label",
@@ -1120,7 +1080,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "operation",
               label: "操作",
               component: "ButtonGroup",
               icon: "play_circle",
@@ -1141,7 +1100,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.software.listSoftware",
       label: "软件管理",
-      desc: "Windows软件操作",
       icon: "apps",
       isAsync: true,
       subCommands: [
@@ -1158,7 +1116,6 @@ export const windowsCommands = {
           icon: "delete",
           config: [
             {
-              key: "target",
               label: "软件ID",
               component: "VariableInput",
               icon: "tag",
@@ -1174,7 +1131,6 @@ export const windowsCommands = {
     {
       value: "quickcomposer.windows.utils.setWallpaper",
       label: "系统工具",
-      desc: "Windows系统工具",
       icon: "build",
       isAsync: true,
       subCommands: [
@@ -1184,7 +1140,6 @@ export const windowsCommands = {
           icon: "wallpaper",
           config: [
             {
-              key: "path",
               label: "壁纸路径",
               component: "VariableInput",
               icon: "image",
@@ -1213,7 +1168,6 @@ export const windowsCommands = {
           icon: "desktop_windows",
           config: [
             {
-              key: "action",
               component: "ButtonGroup",
               icon: "power_settings_new",
               width: 12,
@@ -1231,7 +1185,6 @@ export const windowsCommands = {
           icon: "power",
           config: [
             {
-              key: "mode",
               component: "ButtonGroup",
               icon: "power_settings_new",
               width: 12,
@@ -1251,7 +1204,6 @@ export const windowsCommands = {
           icon: "network_check",
           config: [
             {
-              key: "interfaceName",
               label: "网卡名称",
               component: "VariableInput",
               icon: "settings_ethernet",
@@ -1260,7 +1212,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "ip",
               label: "IP地址",
               component: "VariableInput",
               icon: "router",
@@ -1269,7 +1220,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "mask",
               label: "子网掩码",
               component: "VariableInput",
               icon: "filter_alt",
@@ -1278,7 +1228,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "gateway",
               label: "默认网关",
               component: "VariableInput",
               icon: "dns",
@@ -1286,7 +1235,6 @@ export const windowsCommands = {
               placeholder: "可选",
             },
             {
-              key: "dns",
               label: "DNS服务器",
               component: "VariableInput",
               icon: "dns",
@@ -1301,7 +1249,6 @@ export const windowsCommands = {
           icon: "power",
           config: [
             {
-              key: "path",
               label: "程序路径",
               component: "VariableInput",
               icon: "folder",
@@ -1321,7 +1268,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "name",
               label: "启动项名称",
               component: "VariableInput",
               icon: "label",
@@ -1329,7 +1275,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "remove",
               label: "移除",
               component: "CheckButton",
               icon: "delete",
@@ -1343,7 +1288,6 @@ export const windowsCommands = {
           icon: "link",
           config: [
             {
-              key: "targetPath",
               label: "目标路径",
               component: "VariableInput",
               icon: "folder",
@@ -1360,7 +1304,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "shortcutPath",
               label: "快捷方式路径",
               component: "VariableInput",
               icon: "save",
@@ -1377,7 +1320,6 @@ export const windowsCommands = {
               required: true,
             },
             {
-              key: "args",
               label: "启动参数",
               component: "VariableInput",
               icon: "code",
@@ -1392,7 +1334,6 @@ export const windowsCommands = {
           icon: "brightness_medium",
           config: [
             {
-              key: "level",
               label: "亮度级别",
               component: "NumberInput",
               icon: "brightness_medium",

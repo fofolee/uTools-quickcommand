@@ -10,7 +10,6 @@ export const networkCommands = {
       label: "默认浏览器打开网址",
       config: [
         {
-          key: "visit",
           label: "要访问的网址链接",
           component: "VariableInput",
           icon: "language",
@@ -22,7 +21,6 @@ export const networkCommands = {
       label: "ubrowser打开网址",
       config: [
         {
-          key: "url",
           label: "要访问的网址链接",
           component: "VariableInput",
           icon: "public",
@@ -51,7 +49,6 @@ export const networkCommands = {
     {
       value: "quickcomposer.network.url.parse",
       label: "URL操作",
-      desc: "URL解析、格式化和参数处理",
       icon: "link",
       config: [],
       subCommands: [
@@ -250,7 +247,6 @@ export const networkCommands = {
     {
       value: "quickcomposer.network.dns.lookupHost",
       label: "DNS操作",
-      desc: "DNS解析和查询",
       icon: "dns",
       isAsync: true,
       config: [],
@@ -394,7 +390,6 @@ export const networkCommands = {
     {
       value: "quickcommand.downloadFile",
       label: "下载文件",
-      desc: "下载文件",
       icon: "file_download",
       isAsync: true,
       config: [
@@ -417,7 +412,6 @@ export const networkCommands = {
     {
       value: "quickcommand.uploadFile",
       label: "上传文件",
-      desc: "上传文件",
       icon: "file_upload",
       isAsync: true,
       config: [

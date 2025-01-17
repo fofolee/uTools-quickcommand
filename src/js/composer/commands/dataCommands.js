@@ -8,7 +8,6 @@ export const dataCommands = {
     {
       value: "quickcomposer.data.string.reverse",
       label: "字符串处理",
-      desc: "字符串处理和转换",
       icon: "text_fields",
       subCommands: [
         {
@@ -17,7 +16,6 @@ export const dataCommands = {
           icon: "swap_horiz",
           config: [
             {
-              key: "text",
               label: "要反转的文本",
               component: "VariableInput",
               icon: "text_fields",
@@ -31,21 +29,18 @@ export const dataCommands = {
           icon: "find_replace",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 12,
             },
             {
-              key: "oldStr",
               label: "要替换的文本",
               component: "VariableInput",
               icon: "find_replace",
               width: 6,
             },
             {
-              key: "newStr",
               label: "替换为",
               component: "VariableInput",
               icon: "text_fields",
@@ -59,14 +54,12 @@ export const dataCommands = {
           icon: "content_cut",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 12,
             },
             {
-              key: "start",
               label: "起始位置",
               component: "NumberInput",
               min: 0,
@@ -75,7 +68,6 @@ export const dataCommands = {
               width: 6,
             },
             {
-              key: "end",
               label: "结束位置",
               component: "NumberInput",
               icon: "last_page",
@@ -91,14 +83,12 @@ export const dataCommands = {
           icon: "format_align_justify",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "mode",
               label: "模式",
               component: "q-select",
               icon: "settings",
@@ -118,14 +108,12 @@ export const dataCommands = {
           icon: "text_fields",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "mode",
               label: "转换为",
               component: "q-select",
               icon: "settings",
@@ -149,14 +137,12 @@ export const dataCommands = {
           icon: "format_size",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 12,
             },
             {
-              key: "length",
               label: "目标长度",
               component: "NumberInput",
               min: 0,
@@ -165,7 +151,6 @@ export const dataCommands = {
               width: 4,
             },
             {
-              key: "padString",
               label: "填充字符",
               component: "VariableInput",
               icon: "space_bar",
@@ -173,7 +158,6 @@ export const dataCommands = {
               defaultValue: newVarInputVal("str", " "),
             },
             {
-              key: "mode",
               label: "填充位置",
               component: "q-select",
               icon: "settings",
@@ -193,14 +177,12 @@ export const dataCommands = {
           icon: "splitscreen",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "separator",
               label: "分隔符",
               component: "VariableInput",
               icon: "space_bar",
@@ -215,14 +197,12 @@ export const dataCommands = {
           icon: "merge",
           config: [
             {
-              key: "array",
               label: "字符串数组",
               component: "VariableInput",
               icon: "view_list",
               width: 8,
             },
             {
-              key: "separator",
               label: "连接符",
               component: "VariableInput",
               icon: "space_bar",
@@ -237,14 +217,12 @@ export const dataCommands = {
           icon: "copy_all",
           config: [
             {
-              key: "text",
               label: "要重复的文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "count",
               label: "重复次数",
               component: "NumberInput",
               min: 0,
@@ -261,14 +239,12 @@ export const dataCommands = {
           icon: "content_cut",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "mode",
               label: "提取类型",
               component: "q-select",
               icon: "settings",
@@ -290,14 +266,12 @@ export const dataCommands = {
           icon: "numbers",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "mode",
               label: "统计类型",
               component: "q-select",
               icon: "settings",
@@ -321,14 +295,12 @@ export const dataCommands = {
           icon: "wrap_text",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 8,
             },
             {
-              key: "width",
               label: "每行字符数",
               component: "NumberInput",
               min: 1,
@@ -345,14 +317,12 @@ export const dataCommands = {
           icon: "format_align_center",
           config: [
             {
-              key: "text",
               label: "原始文本",
               component: "VariableInput",
               icon: "text_fields",
               width: 12,
             },
             {
-              key: "mode",
               label: "对齐方式",
               component: "q-select",
               icon: "settings",
@@ -366,7 +336,6 @@ export const dataCommands = {
               width: 6,
             },
             {
-              key: "width",
               label: "总宽度",
               component: "NumberInput",
               min: 1,
@@ -392,7 +361,6 @@ export const dataCommands = {
     {
       value: "quickcomposer.data.buffer.from",
       label: "Buffer操作",
-      desc: "Buffer创建、转换和操作",
       config: [],
       icon: "memory",
       subCommands: [
@@ -741,7 +709,6 @@ export const dataCommands = {
     {
       value: "quickcomposer.data.zlib",
       label: "数据压缩解压",
-      desc: "使用 zlib 进行数据压缩和解压",
       component: "ZlibEditor",
       icon: "compress",
       isAsync: true,
@@ -749,7 +716,6 @@ export const dataCommands = {
     {
       value: "quickcomposer.data.htmlParser",
       label: "HTML解析",
-      desc: "解析 HTML 字符串",
       icon: "html",
       config: [
         {
@@ -787,7 +753,6 @@ export const dataCommands = {
     {
       value: "JSON.stringify",
       label: "JSON处理",
-      desc: "JSON处理",
       icon: "data_object",
       subCommands: [
         {
@@ -840,7 +805,6 @@ export const dataCommands = {
     {
       value: "quickcomposer.data.array.filter",
       label: "数组处理",
-      desc: "对象数组的常用操作",
       icon: "view_list",
       subCommands: [
         {
@@ -849,7 +813,6 @@ export const dataCommands = {
           icon: "filter_alt",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -860,7 +823,6 @@ export const dataCommands = {
                 '[{"id":1,"name":"张三","age":20},{"id":2,"name":"李四","age":18}]',
             },
             {
-              key: "condition",
               label: "过滤条件",
               component: "VariableInput",
               icon: "code",
@@ -875,7 +837,6 @@ export const dataCommands = {
           icon: "transform",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -884,7 +845,6 @@ export const dataCommands = {
                 '[{"id":1,"name":"张三","age":20},{"id":2,"name":"李四","age":18}]',
             },
             {
-              key: "transform",
               label: "转换函数",
               component: "VariableInput",
               icon: "code",
@@ -899,7 +859,6 @@ export const dataCommands = {
           icon: "sort",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -908,7 +867,6 @@ export const dataCommands = {
                 '[{"id":1,"name":"张三","age":20},{"id":2,"name":"李四","age":18}]',
             },
             {
-              key: "key",
               label: "排序字段",
               component: "VariableInput",
               icon: "key",
@@ -916,7 +874,6 @@ export const dataCommands = {
               placeholder: "age",
             },
             {
-              key: "order",
               label: "排序方式",
               component: "q-select",
               icon: "sort",
@@ -935,7 +892,6 @@ export const dataCommands = {
           icon: "group_work",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -944,7 +900,6 @@ export const dataCommands = {
                 '[{"id":1,"name":"张三","dept":"技术"},{"id":2,"name":"李四","dept":"技术"}]',
             },
             {
-              key: "key",
               label: "分组字段",
               component: "VariableInput",
               icon: "key",
@@ -959,7 +914,6 @@ export const dataCommands = {
           icon: "filter_1",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -967,7 +921,6 @@ export const dataCommands = {
               placeholder: '[{"id":1,"dept":"技术"},{"id":2,"dept":"技术"}]',
             },
             {
-              key: "key",
               label: "去重字段",
               component: "VariableInput",
               icon: "key",
@@ -982,7 +935,6 @@ export const dataCommands = {
           icon: "search",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -990,7 +942,6 @@ export const dataCommands = {
               placeholder: '[{"id":1,"name":"张三"},{"id":2,"name":"李四"}]',
             },
             {
-              key: "condition",
               label: "查找条件",
               component: "VariableInput",
               icon: "code",
@@ -1005,7 +956,6 @@ export const dataCommands = {
           icon: "functions",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -1013,7 +963,6 @@ export const dataCommands = {
               placeholder: '[{"id":1,"amount":100},{"id":2,"amount":200}]',
             },
             {
-              key: "operation",
               label: "聚合操作",
               component: "q-select",
               icon: "functions",
@@ -1028,7 +977,6 @@ export const dataCommands = {
               width: 6,
             },
             {
-              key: "key",
               label: "聚合字段",
               component: "VariableInput",
               icon: "key",
@@ -1043,7 +991,6 @@ export const dataCommands = {
           icon: "content_cut",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -1051,7 +998,6 @@ export const dataCommands = {
               placeholder: "[1,2,3,4,5]",
             },
             {
-              key: "start",
               label: "起始位置",
               component: "NumberInput",
               icon: "first_page",
@@ -1061,7 +1007,6 @@ export const dataCommands = {
               placeholder: "1",
             },
             {
-              key: "end",
               label: "结束位置",
               component: "NumberInput",
               icon: "last_page",
@@ -1078,7 +1023,6 @@ export const dataCommands = {
           icon: "unfold_less",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -1086,7 +1030,6 @@ export const dataCommands = {
               placeholder: "[[1,2],[3,4],[[5,6]]]",
             },
             {
-              key: "depth",
               label: "扁平化深度",
               component: "NumberInput",
               icon: "format_indent_decrease",
@@ -1103,7 +1046,6 @@ export const dataCommands = {
           icon: "difference",
           config: [
             {
-              key: "array1",
               label: "数组1",
               component: "VariableInput",
               icon: "view_list",
@@ -1111,7 +1053,6 @@ export const dataCommands = {
               placeholder: "[1,2,3,4]",
             },
             {
-              key: "array2",
               label: "数组2",
               component: "VariableInput",
               icon: "view_list",
@@ -1119,7 +1060,6 @@ export const dataCommands = {
               placeholder: "[3,4,5,6]",
             },
             {
-              key: "key",
               label: "比较字段",
               component: "VariableInput",
               icon: "key",
@@ -1134,7 +1074,6 @@ export const dataCommands = {
           icon: "join_full",
           config: [
             {
-              key: "array1",
               label: "数组1",
               component: "VariableInput",
               icon: "view_list",
@@ -1142,7 +1081,6 @@ export const dataCommands = {
               placeholder: "[1,2,3,4]",
             },
             {
-              key: "array2",
               label: "数组2",
               component: "VariableInput",
               icon: "view_list",
@@ -1150,7 +1088,6 @@ export const dataCommands = {
               placeholder: "[3,4,5,6]",
             },
             {
-              key: "key",
               label: "比较字段",
               component: "VariableInput",
               icon: "key",
@@ -1165,7 +1102,6 @@ export const dataCommands = {
           icon: "join_inner",
           config: [
             {
-              key: "array1",
               label: "数组1",
               component: "VariableInput",
               icon: "view_list",
@@ -1173,7 +1109,6 @@ export const dataCommands = {
               placeholder: "[1,2,3,4]",
             },
             {
-              key: "array2",
               label: "数组2",
               component: "VariableInput",
               icon: "view_list",
@@ -1181,7 +1116,6 @@ export const dataCommands = {
               placeholder: "[3,4,5,6]",
             },
             {
-              key: "key",
               label: "比较字段",
               component: "VariableInput",
               icon: "key",
@@ -1196,7 +1130,6 @@ export const dataCommands = {
           icon: "grid_view",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -1204,7 +1137,6 @@ export const dataCommands = {
               placeholder: "[1,2,3,4,5,6]",
             },
             {
-              key: "size",
               label: "块大小",
               component: "NumberInput",
               icon: "straighten",
@@ -1221,7 +1153,6 @@ export const dataCommands = {
           icon: "shuffle",
           config: [
             {
-              key: "array",
               label: "原始数组",
               component: "VariableInput",
               icon: "view_list",
@@ -1235,7 +1166,6 @@ export const dataCommands = {
     {
       value: "quickcomposer.data.time.format",
       label: "时间处理",
-      desc: "时间日期的常用操作",
       icon: "schedule",
       subCommands: [
         {
@@ -1244,7 +1174,6 @@ export const dataCommands = {
           icon: "event",
           config: [
             {
-              key: "time",
               label: "时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1252,7 +1181,6 @@ export const dataCommands = {
               placeholder: "2024-01-01 或 now 或 timestamp",
             },
             {
-              key: "format",
               label: "格式",
               component: "q-select",
               icon: "format_shapes",
@@ -1279,7 +1207,6 @@ export const dataCommands = {
           icon: "input",
           config: [
             {
-              key: "time",
               label: "时间字符串",
               component: "VariableInput",
               icon: "schedule",
@@ -1287,7 +1214,6 @@ export const dataCommands = {
               placeholder: "2024-01-01 12:00:00",
             },
             {
-              key: "format",
               label: "原格式",
               component: "q-select",
               icon: "format_shapes",
@@ -1311,7 +1237,6 @@ export const dataCommands = {
           icon: "add",
           config: [
             {
-              key: "time",
               label: "基准时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1319,7 +1244,6 @@ export const dataCommands = {
               placeholder: "2024-01-01 或 now",
             },
             {
-              key: "value",
               label: "数值",
               component: "NumberInput",
               icon: "exposure",
@@ -1327,7 +1251,6 @@ export const dataCommands = {
               defaultValue: 1,
             },
             {
-              key: "unit",
               label: "单位",
               component: "q-select",
               icon: "straighten",
@@ -1351,7 +1274,6 @@ export const dataCommands = {
           icon: "difference",
           config: [
             {
-              key: "time1",
               label: "时间1",
               component: "VariableInput",
               icon: "schedule",
@@ -1359,7 +1281,6 @@ export const dataCommands = {
               placeholder: "2024-01-01",
             },
             {
-              key: "time2",
               label: "时间2",
               component: "VariableInput",
               icon: "schedule",
@@ -1367,7 +1288,6 @@ export const dataCommands = {
               placeholder: "2024-02-01",
             },
             {
-              key: "unit",
               label: "返回单位",
               component: "q-select",
               icon: "straighten",
@@ -1385,7 +1305,6 @@ export const dataCommands = {
               defaultValue: "days",
             },
             {
-              key: "absolute",
               label: "绝对值",
               component: "CheckButton",
               width: 6,
@@ -1399,7 +1318,6 @@ export const dataCommands = {
           icon: "first_page",
           config: [
             {
-              key: "time",
               label: "时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1407,7 +1325,6 @@ export const dataCommands = {
               placeholder: "2024-01-01 或 now",
             },
             {
-              key: "unit",
               label: "单位",
               component: "q-select",
               icon: "straighten",
@@ -1424,7 +1341,6 @@ export const dataCommands = {
               defaultValue: "day",
             },
             {
-              key: "type",
               label: "类型",
               component: "q-select",
               icon: "settings",
@@ -1443,7 +1359,6 @@ export const dataCommands = {
           icon: "check_circle",
           config: [
             {
-              key: "time",
               label: "时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1451,7 +1366,6 @@ export const dataCommands = {
               placeholder: "2024-01-01",
             },
             {
-              key: "format",
               label: "格式",
               component: "q-select",
               icon: "format_shapes",
@@ -1473,7 +1387,6 @@ export const dataCommands = {
           icon: "calendar_month",
           config: [
             {
-              key: "time",
               label: "时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1488,7 +1401,6 @@ export const dataCommands = {
           icon: "work",
           config: [
             {
-              key: "startTime",
               label: "开始时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1496,7 +1408,6 @@ export const dataCommands = {
               placeholder: "2024-01-01",
             },
             {
-              key: "days",
               label: "工作日天数",
               component: "NumberInput",
               icon: "exposure",
@@ -1504,14 +1415,12 @@ export const dataCommands = {
               defaultValue: 1,
             },
             {
-              key: "weekends",
               label: "包含周末",
               component: "CheckButton",
               width: 4,
               defaultValue: false,
             },
             {
-              key: "holidays",
               label: "节假日",
               component: "ArrayEditor",
               icon: "event_busy",
@@ -1526,7 +1435,6 @@ export const dataCommands = {
           icon: "date_range",
           config: [
             {
-              key: "time",
               label: "判断时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1534,7 +1442,6 @@ export const dataCommands = {
               placeholder: "2024-01-01 或 now",
             },
             {
-              key: "startTime",
               label: "开始时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1542,7 +1449,6 @@ export const dataCommands = {
               placeholder: "2024-01-01",
             },
             {
-              key: "endTime",
               label: "结束时间",
               component: "VariableInput",
               icon: "schedule",
@@ -1550,7 +1456,6 @@ export const dataCommands = {
               placeholder: "2024-02-01",
             },
             {
-              key: "inclusive",
               label: "包含边界",
               component: "CheckButton",
               width: 4,

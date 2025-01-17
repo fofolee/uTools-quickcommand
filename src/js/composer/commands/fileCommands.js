@@ -7,7 +7,6 @@ export const fileCommands = {
       value: "quickcomposer.file.operation",
       label: "文件/文件夹操作",
       component: "FileOperationEditor",
-      desc: "文件和文件夹的读写、删除、重命名等操作",
       isAsync: true,
     },
     {
@@ -15,7 +14,6 @@ export const fileCommands = {
       label: "默认程序打开",
       config: [
         {
-          key: "path",
           label: "文件、文件夹或软件的绝对路径",
           component: "VariableInput",
           icon: "folder_open",
@@ -33,7 +31,6 @@ export const fileCommands = {
       label: "文件管理器中显示",
       config: [
         {
-          key: "path",
           label: "文件、文件夹或软件的绝对路径",
           component: "VariableInput",
           icon: "location_on",
@@ -51,7 +48,6 @@ export const fileCommands = {
       label: "获取文件图标",
       config: [
         {
-          key: "path",
           label: "文件或软件的绝对路径",
           component: "VariableInput",
           icon: "folder_open",
@@ -70,12 +66,10 @@ export const fileCommands = {
     {
       value: "quickcomposer.file.archive",
       label: "文件归档",
-      desc: "压缩和解压文件",
       icon: "archive",
       isAsync: true,
       config: [
         {
-          key: "operation",
           label: "操作类型",
           component: "q-select",
           icon: "settings",
@@ -87,7 +81,6 @@ export const fileCommands = {
           ],
         },
         {
-          key: "format",
           label: "归档格式",
           component: "q-select",
           icon: "format_shapes",
@@ -100,7 +93,6 @@ export const fileCommands = {
           ],
         },
         {
-          key: "source",
           label: "源文件/文件夹",
           component: "VariableInput",
           icon: "folder_open",
@@ -115,7 +107,6 @@ export const fileCommands = {
           },
         },
         {
-          key: "destination",
           label: "目标路径",
           component: "VariableInput",
           icon: "save",
@@ -135,7 +126,6 @@ export const fileCommands = {
       icon: "delete",
       config: [
         {
-          key: "path",
           label: "文件或文件夹的绝对路径",
           component: "VariableInput",
           icon: "folder_open",

@@ -14,7 +14,6 @@ export const simulateCommands = {
     {
       value: "quickcomposer.simulate.keySequence",
       label: "按键序列",
-      description: "按顺序执行多个按键操作",
       component: "KeySequenceEditor",
     },
     {
@@ -39,7 +38,6 @@ export const simulateCommands = {
       label: "发送文本",
       config: [
         {
-          key: "text",
           label: "要发送的文本内容",
           component: "VariableInput",
           icon: "send",
@@ -70,7 +68,6 @@ export const simulateCommands = {
           icon: "file_copy",
           config: [
             {
-              key: "file",
               label: "文件路径",
               component: "VariableInput",
               icon: "description",
@@ -97,7 +94,6 @@ export const simulateCommands = {
           icon: "image",
           config: [
             {
-              key: "image",
               label: "图片路径/base64",
               component: "VariableInput",
               icon: "image",
@@ -198,7 +194,6 @@ export const simulateCommands = {
     {
       value: "quickcomposer.simulate.screenColorPick",
       label: "屏幕取色",
-      desc: "获取用户选择的颜色，会弹出一个系统取色器",
       icon: "colorize",
       isAsync: true,
       outputVariable: "{hex,rgb}",
@@ -207,14 +202,12 @@ export const simulateCommands = {
     {
       value: "quickcomposer.simulate.captureScreen",
       label: "屏幕截图",
-      desc: "屏幕截图，进行区域截图或全屏截图",
       icon: "screenshot_monitor",
       isAsync: true,
       outputVariable: "base64Data",
       saveOutput: true,
       config: [
         {
-          key: "range",
           label: "截图范围",
           component: "ButtonGroup",
           options: [
@@ -243,7 +236,6 @@ export const simulateCommands = {
           icon: "file_copy",
           config: [
             {
-              key: "path",
               label: "截图保存路径",
               component: "VariableInput",
               defaultValue: newVarInputVal(

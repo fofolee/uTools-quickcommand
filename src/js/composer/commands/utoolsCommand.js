@@ -5,23 +5,19 @@ export const utoolsCommands = {
     {
       value: "utools.hideMainWindow",
       label: "隐藏主窗口",
-      desc: "隐藏主窗口",
       icon: "visibility_off",
     },
     {
       value: "quickcommand.wakeUtools",
       label: "唤醒uTools",
-      desc: "唤醒uTools",
       icon: "visibility",
     },
     {
       value: "utools.setExpendHeight",
       label: "设置uTools高度",
-      desc: "设置uTools高度",
       icon: "height",
       config: [
         {
-          key: "height",
           label: "高度",
           component: "NumberInput",
           min: 0,
@@ -34,11 +30,9 @@ export const utoolsCommands = {
     {
       value: "utools.outPlugin",
       label: "退出插件",
-      desc: "退出插件",
       icon: "exit_to_app",
       config: [
         {
-          key: "isKill",
           component: "q-select",
           options: [
             { label: "杀死插件进程", value: true },
@@ -52,7 +46,6 @@ export const utoolsCommands = {
     {
       value: "utools.isDarkColors",
       label: "是否深色模式",
-      desc: "是否深色模式",
       icon: "dark_mode",
       outputVariable: "isDark",
       saveOutput: true,
@@ -60,7 +53,6 @@ export const utoolsCommands = {
     {
       value: "utools.getUser",
       label: "获取用户信息",
-      desc: "获取用户信息",
       icon: "person",
       outputVariable: "{avatar,nickname,type}",
       saveOutput: true,
@@ -70,14 +62,12 @@ export const utoolsCommands = {
       label: "转至指定插件",
       config: [
         {
-          key: "pluginName",
           label: "要跳转至的插件名称",
           component: "VariableInput",
           icon: "alt_route",
           width: 6,
         },
         {
-          key: "payload",
           label: "传递给插件的文本",
           component: "VariableInput",
           icon: "alt_route",
@@ -88,24 +78,20 @@ export const utoolsCommands = {
     {
       value: "utools.findInPage",
       label: "插件内查找",
-      desc: "插件内查找",
       icon: "search",
       subCommands: [
         {
           value: "utools.findInPage",
           label: "查找文本",
-          desc: "查找文本",
           icon: "search",
           config: [
             {
-              key: "text",
               label: "文本",
               component: "VariableInput",
               icon: "search",
               width: 12,
             },
             {
-              key: "options",
               label: "选项",
               component: "OptionEditor",
               icon: "settings",
@@ -155,11 +141,9 @@ export const utoolsCommands = {
         {
           value: "utools.stopFindInPage",
           label: "停止查找",
-          desc: "停止查找",
           icon: "stop",
           config: [
             {
-              key: "action",
               label: "动作",
               component: "ButtonGroup",
               icon: "settings",
@@ -178,7 +162,6 @@ export const utoolsCommands = {
     {
       value: "utools.getWindowType",
       label: "获取当前窗口类型",
-      desc: "获取当前窗口类型",
       icon: "window",
       outputVariable: "windowType",
       saveOutput: true,
@@ -186,14 +169,12 @@ export const utoolsCommands = {
     {
       value: "utools.getNativeId",
       label: "获取本地ID",
-      desc: "获取本地ID",
       outputVariable: "nativeId",
       saveOutput: true,
     },
     {
       value: "utools.getAppVersion",
       label: "获取uTools版本",
-      desc: "获取uTools版本",
       outputVariable: "appVersion",
       saveOutput: true,
     },

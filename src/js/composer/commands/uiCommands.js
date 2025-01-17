@@ -111,7 +111,6 @@ export const uiCommands = {
     {
       value: "quickcommand.showMessageBox",
       label: "消息提示",
-      desc: "显示一个自动消失的提示框",
       isAsync: true,
       config: [
         {
@@ -169,7 +168,6 @@ export const uiCommands = {
     {
       value: "quickcommand.showConfirmBox",
       label: "确认框",
-      desc: "显示一个确认框，返回是否点击了确认",
       isAsync: true,
       outputVariable: "confirmed",
       saveOutput: true,
@@ -310,14 +308,12 @@ export const uiCommands = {
     {
       value: "quickcommand.showSelectList",
       label: "选择列表",
-      desc: "显示一个支持搜索的选项列表，可以动态更新选项",
       component: "SelectListEditor",
       isAsync: true,
     },
     {
       value: "quickcommand.showTextArea",
       label: "文本框",
-      desc: "显示一个文本框，可以输入多行文本",
       isAsync: true,
       outputVariable: "textareaValue",
       saveOutput: true,
@@ -365,14 +361,12 @@ export const uiCommands = {
     {
       value: "utools.showOpenDialog",
       label: "文件选择框",
-      desc: "显示一个文件选择框，返回选择的文件路径",
       outputVariable: "filePaths",
       saveOutput: true,
       subCommands: [
         {
           value: "utools.showOpenDialog",
           label: "打开文件对话框",
-          desc: "打开文件对话框",
           icon: "folder_open",
           config: [
             {
@@ -389,7 +383,6 @@ export const uiCommands = {
         {
           value: "utools.showSaveDialog",
           label: "保存文件对话框",
-          desc: "保存文件对话框",
           icon: "save",
           config: [
             {
