@@ -212,6 +212,20 @@ const isPathMatched = (path, patterns) => {
 };
 
 /**
+ * 递归获取完整的成员访问路径
+ * @param {Object} node 节点
+ * @returns {string} 完整的成员访问路径
+ */
+const getMemberPath = (node) => {
+  if (node.type === "Identifier") {
+    return node.name;
+  } else if (node.type === "MemberExpression") {
+    return `${getMemberPath(node.object)}.${node.property.name}`;
+  }
+  return "";
+};
+
+/**
  * 解析函数调用字符串，返回函数名和参数
  * @param {string} functionStr 要解析的函数字符串
  * @param {Object} options 解析选项
@@ -267,15 +281,6 @@ export const parseFunction = (functionStr, options = {}) => {
     // 处理函数名，支持成员方法调用
     let name;
     if (callExpression.callee.type === "MemberExpression") {
-      // 递归获取完整的成员访问路径
-      const getMemberPath = (node) => {
-        if (node.type === "Identifier") {
-          return node.name;
-        } else if (node.type === "MemberExpression") {
-          return `${getMemberPath(node.object)}.${node.property.name}`;
-        }
-        return "";
-      };
       name = getMemberPath(callExpression.callee);
     } else {
       name = callExpression.callee.name;
@@ -289,7 +294,6 @@ export const parseFunction = (functionStr, options = {}) => {
         currentPath &&
         options.variableFormatPaths?.length > 0 &&
         isPathMatched(currentPath, options.variableFormatPaths);
-
       switch (node.type) {
         case "StringLiteral":
           // 字符串字面量总是带引号的
@@ -349,7 +353,10 @@ export const parseFunction = (functionStr, options = {}) => {
           return processNode(node.value, currentPath);
         case "MemberExpression":
           // 处理成员表达式
-          return getMemberPath(node);
+          const memberPath = functionStr.slice(node.start, node.end);
+          return shouldUseVariableFormat
+            ? newVarInputVal("var", memberPath)
+            : getMemberPath(node);
         default:
           console.warn("Unhandled node type:", node.type);
           return null;

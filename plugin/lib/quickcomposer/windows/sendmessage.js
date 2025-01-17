@@ -1,140 +1,114 @@
 const { runCsharpFeature } = require("../../csharp");
 
 /**
- * 键盘操作
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {string} keys 键盘按键
- * @param {object} options 选项
- * @param {string} options.control 控件类名
- * @param {boolean} options.background 是否后台操作
- * @returns {Object} 操作结果
- * @property {boolean} success 是否成功
- * @property {Object} control 控件信息
- * @property {string} control.window 控件所在窗口的信息
+ * 执行消息发送操作
+ * @param {string} type - 操作类型, 可选值: "keyboard"|"mouse"|"inspect"
+ * @param {Object} params - 参数对象
+ * @param {string} params.method - 查找方式："title"|"handle"|"process"|"class"|"active"
+ * @param {string} params.window - 窗口标题、句柄、进程名、类名
+ * @param {string} params.action - 动作类型，如 "keys"、"text"、"click" 等
+ * @param {string} params.value - 操作的值，如按键、文本等
+ * @param {Object} params.options - 附加选项
+ * @returns {Promise<Object>} - 操作结果
  */
-const sendKeys = async function (method, window, keys, options = {}) {
-  const { control, background = false } = options;
-  const args = ["-type", "keyboard", "-action", "keys", "-value", keys];
+async function runSendMessage(type, params = {}) {
+  const args = ["-type", type];
+  const { method = "active", window, action, value, options = {} } = params;
+  const { control, text, pos, filter, background = false } = options;
+
+  // 通用参数
   args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (control) args.push("-control", control);
-  args.push("-background", background.toString());
-  let error;
-  try {
-    const result = await runCsharpFeature("sendmessage", args);
-    if (result) {
-      return {
-        success: true,
-        control: JSON.parse(result),
-      };
-    }
-  } catch (err) {
-    error = err.toString();
+  if (method !== "active" && window) {
+    args.push("-window", window);
   }
-  return { success: false, error };
-};
 
-/**
- * 发送文本
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {string} text 文本
- * @param {object} options 选项
- * @param {string} options.control 控件类名
- * @param {boolean} options.background 是否后台操作
- * @returns {Object} 操作结果
- * @property {boolean} success 是否成功
- * @property {Object} control 控件信息
- * @property {string} control.window 控件所在窗口的信息
- */
-const sendText = async function (method, window, text, options = {}) {
-  const { control, background = false } = options;
-  const args = ["-type", "keyboard", "-action", "text", "-value", text];
+  // 特定命令的参数处理
+  switch (type) {
+    case "keyboard":
+      args.push("-action", action);
+      if (value) {
+        args.push("-value", value);
+      }
+      if (control) {
+        args.push("-control", control);
+      }
+      break;
 
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (control) args.push("-control", control);
-  args.push("-background", background.toString());
-  let error;
-  try {
-    const result = await runCsharpFeature("sendmessage", args);
-    if (result) {
-      return { success: true, control: JSON.parse(result) };
-    }
-  } catch (err) {
-    error = err.toString();
+    case "mouse":
+      args.push("-action", action);
+      if (control) {
+        args.push("-control", control);
+      }
+      if (text) {
+        args.push("-text", text);
+      }
+      if (pos) {
+        args.push("-pos", pos);
+      }
+      break;
+
+    case "inspect":
+      if (filter) {
+        args.push("-filter", filter);
+      }
+      break;
   }
-  return { success: false, error };
-};
 
-/**
- * 鼠标点击
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {string} action 动作："click"|"doubleClick"|"rightClick"
- * @param {object} options 选项
- * @param {string} options.control 控件类名
- * @param {string} options.text 控件文本
- * @param {string} options.pos 点击位置：x,y
- * @param {boolean} options.background 是否后台操作
- * @returns {Object} 操作结果
- * @property {boolean} success 是否成功
- * @property {Object} control 控件信息
- * @property {string} control.window 控件所在窗口的信息
- */
-const click = async function (method, window, action = "click", options = {}) {
-  const { control, text, pos, background = false } = options;
-  const args = ["-type", "mouse", "-action", action];
-
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (control) args.push("-control", control);
-  if (text) args.push("-text", text);
-  if (pos) args.push("-pos", pos);
+  // 后台操作参数
   args.push("-background", background.toString());
 
   let error;
   try {
     const result = await runCsharpFeature("sendmessage", args);
     if (result) {
-      return { success: true, control: JSON.parse(result) };
+      const jsonResult = JSON.parse(result);
+      if (type === "inspect") {
+        return jsonResult;
+      }
+      return { success: true, control: jsonResult };
     }
   } catch (err) {
-    error = err.toString();
+    error = err
+      .toString()
+      .replace(/^Error: /, "")
+      .trim();
   }
+
+  if (type === "inspect") return [];
   return { success: false, error };
-};
-
-/**
- * 获取窗口控件树
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {object} options 选项
- * @param {string} options.filter 过滤条件
- * @param {boolean} options.background 是否后台操作
- * @returns {object} 控件树
- */
-const inspectWindow = async function (method, window, options = {}) {
-  const { filter, background = false } = options;
-  const args = ["-type", "inspect"];
-
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (filter) args.push("-filter", filter);
-  args.push("-background", background.toString());
-  try {
-    const result = await runCsharpFeature("sendmessage", args);
-    if (result) return JSON.parse(result);
-  } catch (error) {
-    console.log(error);
-  }
-  return [];
-};
+}
 
 module.exports = {
-  sendKeys,
-  sendText,
-  click,
-  inspectWindow,
+  sendKeys: (method, window, keys, options = {}) =>
+    runSendMessage("keyboard", {
+      method,
+      window,
+      action: "keys",
+      value: keys,
+      options,
+    }),
+
+  sendText: (method, window, text, options = {}) =>
+    runSendMessage("keyboard", {
+      method,
+      window,
+      action: "text",
+      value: text,
+      options,
+    }),
+
+  click: (method, window, action = "click", options = {}) =>
+    runSendMessage("mouse", {
+      method,
+      window,
+      action,
+      options,
+    }),
+
+  inspectWindow: (method, window, options = {}) =>
+    runSendMessage("inspect", {
+      method,
+      window,
+      options,
+    }),
 };

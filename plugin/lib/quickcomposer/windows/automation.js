@@ -1,168 +1,144 @@
 const { runCsharpFeature } = require("../../csharp");
 
 /**
- * 列出所有元素
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {object} options 选项
- * @param {string} options.filter 过滤条件
- * @returns {object[]} 元素列表
+ * 执行自动化操作
+ * @param {string} type - 操作类型, 可选值: "inspect"|"click"|"setvalue"|"getvalue"|"select"|"expand"|"scroll"|"wait"|"focus"|"highlight"
+ * @param {Object} params - 参数对象
+ * @param {string} params.by - 查找方式："xpath"|"id"|"name"|"condition"
+ * @param {string} params.searchValue - 搜索值
+ * @param {string} params.window - 窗口标题、句柄、进程名、类名
+ * @param {Object} params.options - 附加选项
+ * @returns {Promise<Object>} - 操作结果
  */
-const listElements = async function (method, window, options = {}) {
-  const { filter, scope } = options;
-  const args = ["-type", "list"];
+async function runAutomation(
+  type,
+  window = "",
+  by = "xpath",
+  searchValue = "",
+  params = {}
+) {
+  const args = [];
 
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (filter) args.push("-filter", filter);
-  if (scope) args.push("-scope", scope);
-  try {
-    const result = await runCsharpFeature("automation", args);
-    console.log(result);
-    if (result) return JSON.parse(result);
-  } catch (err) {
-    console.log(err);
+  if (window) {
+    args.push("-window", window);
   }
-  return [];
-};
 
-/**
- * 点击元素
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {string} by 查找方式："name"|"class"|"type"|"automationid"
- * @param {string} value 查找值
- * @param {object} options 选项
- * @param {string} options.pattern 点击模式："invoke"|"toggle"
- * @param {boolean} options.background 是否后台操作
- * @returns {Object} 操作结果
- * @property {boolean} success 是否成功
- * @property {Object} element 操作的元素信息
- * @property {Object} element.window 操作的元素所在的窗口信息
- */
-const clickElement = async function (method, window, by, value, options = {}) {
-  const { pattern = "invoke", background = false } = options;
-  const args = ["-type", "click", "-by", by, "-value", value];
+  args.push("-type", type);
 
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (pattern) args.push("-pattern", pattern);
-  if (background) args.push("-background");
+  // 通用参数处理
+  if (type !== "inspect") {
+    switch (by) {
+      case "xpath":
+        args.push("-xpath", searchValue);
+        break;
+      case "id":
+        args.push("-id", searchValue);
+        break;
+      case "name":
+        args.push("-name", searchValue);
+        break;
+      case "condition":
+        args.push("-condition", searchValue);
+        break;
+    }
+  }
+
+  // 特定命令的参数处理
+  switch (type) {
+    case "inspect":
+      if (params) {
+        args.push("-position");
+        if (params.x && params.y) {
+          args.push(`${params.x},${params.y}`);
+        }
+      }
+      break;
+
+    case "setvalue":
+      if (params.newValue !== undefined) {
+        args.push("-value", params.newValue);
+      }
+      if (params.sendenter) {
+        args.push("-sendenter");
+      }
+      break;
+
+    case "select":
+      if (params.item) {
+        args.push("-item", params.item);
+      }
+      break;
+
+    case "expand":
+      if (params.expand !== undefined) {
+        args.push("-expand", params.expand);
+      }
+      break;
+
+    case "scroll":
+      if (params.direction) {
+        args.push("-direction", params.direction);
+      }
+      if (params.amount !== undefined) {
+        args.push("-amount", params.amount);
+      }
+      break;
+
+    case "wait":
+      if (params.condition) {
+        args.push("-condition", params.condition);
+      }
+      if (params.timeout !== undefined) {
+        args.push("-timeout", params.timeout);
+      }
+      break;
+
+    case "highlight":
+      if (params.duration !== undefined) {
+        args.push("-duration", params.duration);
+      }
+      break;
+
+    case "sendkeys":
+      if (params.keys) {
+        args.push("-keys", params.keys);
+      }
+      break;
+  }
+
   let error;
   try {
     const result = await runCsharpFeature("automation", args);
     if (result) {
-      return { success: true, element: JSON.parse(result) };
+      const resultStr = result.toString().trim();
+      if (type === "inspect") return JSON.parse(resultStr);
+      if (resultStr === "true") return { success: true };
+      try {
+        return { success: true, data: JSON.parse(resultStr) };
+      } catch (err) {
+        return { success: true, data: resultStr };
+      }
     }
   } catch (err) {
-    error = err.toString();
+    error = err.toString().trim();
   }
-  return { success: true, error };
-};
 
-/**
- * 设置元素值
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {string} by 查找方式："name"|"class"|"type"|"automationid"
- * @param {string} value 查找值
- * @param {string} newValue 要设置的值
- * @param {object} options 选项
- * @param {boolean} options.background 是否后台操作
- * @returns {Object} 操作结果
- * @property {boolean} success 是否成功
- * @property {Object} element 操作的元素信息
- * @property {Object} element.window 操作的元素所在的窗口信息
- */
-const setElementValue = async function (
-  method,
-  window,
-  by,
-  value,
-  newValue,
-  options = {}
-) {
-  const { background = false } = options;
-  const args = [
-    "-type",
-    "setvalue",
-    "-by",
-    by,
-    "-value",
-    value,
-    "-newvalue",
-    newValue,
-  ];
-
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (background) args.push("-background");
-  let error;
-  try {
-    const result = await runCsharpFeature("automation", args);
-    if (result) return { success: true, element: JSON.parse(result) };
-  } catch (err) {
-    error = err.toString();
-  }
+  if (type === "inspect") return { error };
   return { success: false, error };
-};
-
-/**
- * 获取元素值
- * @param {string} method 窗口类型："title"|"handle"|"process"|"class"|"active"
- * @param {string} window 窗口标题、句柄、进程名、类名
- * @param {string} by 查找方式："name"|"class"|"type"|"automationid"
- * @param {string} value 查找值
- * @param {object} options 选项
- * @param {boolean} options.background 是否后台操作
- * @returns {object} 元素值
- */
-const getElementValue = async function (
-  method,
-  window,
-  by,
-  value,
-  options = {}
-) {
-  const { background = false } = options;
-  const args = ["-type", "getvalue", "-by", by, "-value", value];
-
-  args.push("-method", method);
-  if (method !== "active" && window) args.push("-window", window);
-  if (background) args.push("-background");
-
-  let error;
-  try {
-    const result = await runCsharpFeature("automation", args);
-    if (result) return JSON.parse(result);
-  } catch (err) {
-    error = err.toString();
-  }
-  return { success: false, error };
-};
-
-/**
- * 检查元素
- * @param {object} options 选项
- * @param {number} options.timeout 超时时间(秒)
- * @returns {object} 元素信息
- */
-const inspectElement = async function () {
-  const args = ["-type", "inspect"];
-
-  try {
-    const result = await runCsharpFeature("automation", args);
-    if (result) return JSON.parse(result);
-  } catch (err) {
-    console.log(err);
-  }
-  return [];
-};
+}
 
 module.exports = {
-  listElements,
-  clickElement,
-  setElementValue,
-  getElementValue,
-  inspectElement,
+  inspect: () => runAutomation("inspect"),
+  inspectPosition: (position) =>
+    runAutomation("inspect", null, null, null, position || {}),
+  click: (...args) => runAutomation("click", ...args),
+  setvalue: (...args) => runAutomation("setvalue", ...args),
+  getvalue: (...args) => runAutomation("getvalue", ...args),
+  select: (...args) => runAutomation("select", ...args),
+  expand: (...args) => runAutomation("expand", ...args),
+  scroll: (...args) => runAutomation("scroll", ...args),
+  wait: (...args) => runAutomation("wait", ...args),
+  focus: (...args) => runAutomation("focus", ...args),
+  highlight: (...args) => runAutomation("highlight", ...args),
+  sendkeys: (...args) => runAutomation("sendkeys", ...args),
 };

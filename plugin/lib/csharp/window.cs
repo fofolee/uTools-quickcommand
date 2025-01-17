@@ -316,13 +316,20 @@ public class WindowManager
         GetWindowText(hwnd, title, title.Capacity);
         GetClassName(hwnd, className, className.Capacity);
 
+        // 获取窗口位置和大小
+        RECT rect = new RECT();
+        GetWindowRect(hwnd, out rect);
+
+        // 获取进程信息
         uint processId = 0;
         GetWindowThreadProcessId(hwnd, out processId);
         string processName = "";
+        string processPath = "";
         try
         {
             var process = Process.GetProcessById((int)processId);
             processName = process.ProcessName;
+            processPath = process.MainModule.FileName;
         }
         catch { }
 
@@ -331,7 +338,12 @@ public class WindowManager
             { "handle", hwnd.ToInt64() },
             { "title", title.ToString() },
             { "class", className.ToString() },
-            { "process", processName }
+            { "x", rect.Left },
+            { "y", rect.Top },
+            { "width", rect.Right - rect.Left },
+            { "height", rect.Bottom - rect.Top },
+            { "processName", processName },
+            { "processPath", processPath }
         };
     }
 

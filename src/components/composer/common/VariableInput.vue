@@ -329,7 +329,9 @@ export default defineComponent({
       if (this.options.multiSelect) {
         this.toggleSelectItem(option);
       } else {
-        const value = this.getItemValue(option);
+        const value = this.options.appendItem
+          ? `${this.inputValue}${this.getItemValue(option)}`
+          : this.getItemValue(option);
         this.$emit("update:modelValue", newVarInputVal("str", value));
       }
     },

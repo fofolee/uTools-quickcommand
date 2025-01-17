@@ -113,15 +113,13 @@ const buildCsharpFeature = async (feature) => {
 
     fs.copyFile(srcCsPath, destCsPath, (err) => {
       if (err) return reject(err.toString());
-      child_process.exec(
-        `${cscPath} /nologo ${references}/out:"${exePath}" "${destCsPath}"`,
-        { encoding: null },
-        (err, stdout) => {
-          if (err) return reject(iconv.decode(stdout, "gbk"));
-          else resolve(iconv.decode(stdout, "gbk"));
-          fs.unlink(destCsPath, () => {});
-        }
-      );
+      const command = `${cscPath} /nologo ${references}/out:"${exePath}" "${destCsPath}"`;
+      console.log(command);
+      child_process.exec(command, { encoding: null }, (err, stdout) => {
+        if (err) return reject(iconv.decode(stdout, "gbk"));
+        else resolve(iconv.decode(stdout, "gbk"));
+        fs.unlink(destCsPath, () => {});
+      });
     });
   });
 };
@@ -181,6 +179,11 @@ const runCsharpFeature = async (feature, args = [], options = {}) => {
           encoding: null,
         },
         (err, stdout, stderr) => {
+          console.log({
+            err,
+            stdout: iconv.decode(stdout, "gbk"),
+            stderr: iconv.decode(stderr, "gbk"),
+          });
           if (err || Buffer.byteLength(stderr) > 0)
             reject(iconv.decode(stderr || stdout, "gbk"));
           else reslove(iconv.decode(stdout, "gbk"));

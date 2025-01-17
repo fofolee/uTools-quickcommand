@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager.js";
+
 const controlClass = [
   // 基础控件
   { value: "Button", label: "按钮 (Button)" },
@@ -43,6 +45,53 @@ const controlClass = [
   { value: "MDIClient", label: "MDI客户区 (MDIClient)" },
   { value: "ScrollBar", label: "滚动条 (ScrollBar)" },
   { value: "GroupBox", label: "分组框 (GroupBox)" },
+];
+
+const sendKeys = [
+  // 特殊按键
+  { value: "{ENTER}", label: "回车键 (Enter)" },
+  { value: "{BACKSPACE}", label: "退格键 (Backspace)" },
+  { value: "{BREAK}", label: "Break键" },
+  { value: "{CAPSLOCK}", label: "大写锁定 (Caps Lock)" },
+  { value: "{DELETE}", label: "删除键 (Delete)" },
+  { value: "{END}", label: "End键" },
+  { value: "{ESC}", label: "ESC键" },
+  { value: "{HELP}", label: "帮助键" },
+  { value: "{HOME}", label: "Home键" },
+  { value: "{INSERT}", label: "插入键 (Insert)" },
+  { value: "{INS}", label: "插入键 (Ins)" },
+  { value: "{NUMLOCK}", label: "数字锁定键" },
+  { value: "{PGDN}", label: "下一页 (Page Down)" },
+  { value: "{PGUP}", label: "上一页 (Page Up)" },
+  { value: "{PRTSC}", label: "打印屏幕键" },
+  { value: "{SCROLLLOCK}", label: "滚动锁定键" },
+  { value: "{TAB}", label: "Tab键" },
+  { value: "{DOWN}", label: "向下键" },
+  { value: "{LEFT}", label: "向左键" },
+  { value: "{RIGHT}", label: "向右键" },
+  { value: "{UP}", label: "向上键" },
+  // 功能键
+  ...new Array(12).fill(0).map((_, index) => ({
+    value: `{F${index + 1}}`,
+    label: `F${index + 1}`,
+  })),
+  // 数字键盘
+  ...new Array(10).fill(0).map((_, index) => ({
+    value: `{NUMPAD${index}}`,
+    label: `小键盘 ${index}`,
+  })),
+  { value: "{ADD}", label: "小键盘加号" },
+  { value: "{SUBTRACT}", label: "小键盘减号" },
+  { value: "{MULTIPLY}", label: "小键盘乘号" },
+  { value: "{DIVIDE}", label: "小键盘除号" },
+];
+
+const modifierKeys = [
+  // 修饰键组合示例
+  { value: "^", label: "Ctrl" },
+  { value: "%", label: "Alt" },
+  { value: "+", label: "Shift" },
+  { value: "^c", label: "Ctrl+C" },
 ];
 
 const registryPaths = [
@@ -130,25 +179,100 @@ const searchWindowConfig = [
   },
 ];
 
+const searchElementConfig = [
+  {
+    label: "窗口句柄",
+    component: "VariableInput",
+    icon: "window",
+    width: 12,
+    placeholder: "留空则使用当前活动窗口",
+    defaultValue: newVarInputVal("str", ""),
+  },
+  {
+    label: "元素查找方式",
+    component: "q-select",
+    icon: "search",
+    width: 4,
+    options: [
+      { label: "XPath", value: "xpath" },
+      { label: "AutomationId", value: "id" },
+      { label: "Name", value: "name" },
+      { label: "组合条件", value: "condition" },
+    ],
+    defaultValue: "xpath",
+  },
+  {
+    label: "查找值",
+    component: "VariableInput",
+    icon: "account_tree",
+    width: 8,
+    placeholder: "XPath: /Pane[3]/Edit[2], 组合条件: name=按钮&type=Button",
+  },
+];
+
 export const windowsCommands = {
   label: "Win自动化",
   icon: "window",
   defaultOpened: false,
   commands: [
+    // 获取窗口
     {
       value: "quickcomposer.windows.window.getWindowInfo",
+      label: "搜索/选择窗口",
+      desc: "搜索/选择窗口",
+      icon: "window",
+      isAsync: true,
+      config: [],
+      subCommands: [
+        {
+          config: searchWindowConfig,
+          value: "quickcomposer.windows.window.getWindowInfo",
+          label: "搜索窗口",
+          icon: "search",
+          outputVariable: "windowInfo",
+          saveOutput: true,
+        },
+        {
+          value: "quickcomposer.windows.automation.inspect",
+          label: "手动选择窗口",
+          icon: "my_location",
+        },
+        {
+          value: "quickcomposer.windows.automation.inspectPosition",
+          label: "从坐标选择窗口",
+          icon: "location_on",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                x: {
+                  label: "X坐标",
+                  component: "NumberInput",
+                  icon: "arrow_right",
+                  placeholder: "留空使用当前鼠标位置",
+                  width: 6,
+                },
+                y: {
+                  label: "Y坐标",
+                  component: "NumberInput",
+                  icon: "arrow_drop_down",
+                  placeholder: "留空使用当前鼠标位置",
+                  width: 6,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    // 窗口
+    {
+      value: "quickcomposer.windows.window.setTopMost",
       label: "窗口控制",
       desc: "Windows窗口操作",
       icon: "window",
       config: searchWindowConfig,
       subCommands: [
-        {
-          value: "quickcomposer.windows.window.getWindowInfo",
-          label: "窗口信息",
-          icon: "info",
-          outputVariable: "windowInfo",
-          saveOutput: true,
-        },
         {
           value: "quickcomposer.windows.window.setTopMost",
           label: "窗口置顶",
@@ -293,9 +417,220 @@ export const windowsCommands = {
       ],
       isAsync: true,
     },
+    // automation
+    {
+      value: "quickcomposer.windows.automation.click",
+      label: "界面自动化",
+      desc: "Windows界面自动化操作",
+      icon: "smart_button",
+      isAsync: true,
+      config: searchElementConfig,
+      subCommands: [
+        {
+          value: "quickcomposer.windows.automation.click",
+          label: "点击元素",
+          icon: "mouse",
+        },
+        {
+          value: "quickcomposer.windows.automation.sendkeys",
+          label: "模拟键盘输入",
+          icon: "keyboard",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                keys: {
+                  label: "输入内容",
+                  component: "VariableInput",
+                  icon: "keyboard",
+                  width: 12,
+                  placeholder:
+                    "模拟键盘输入，支持按键、组合键、中文，如：ab中文^a{BACKSPACE}",
+                  options: {
+                    items: [...modifierKeys, ...sendKeys],
+                    appendItem: true,
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.setvalue",
+          label: "设置值",
+          icon: "edit",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                newValue: {
+                  label: "新值",
+                  component: "VariableInput",
+                  icon: "edit",
+                  width: 9,
+                  placeholder: "要设置的新值",
+                },
+                sendenter: {
+                  label: "发送回车",
+                  component: "CheckButton",
+                  icon: "keyboard",
+                  width: 3,
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.getvalue",
+          label: "获取值",
+          icon: "content_paste",
+          outputVariable: "elementValue",
+        },
+        {
+          value: "quickcomposer.windows.automation.select",
+          label: "选择项目",
+          icon: "list",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                item: {
+                  label: "选择项",
+                  component: "VariableInput",
+                  icon: "check_box",
+                  width: 12,
+                  placeholder: "要选择的项目名称",
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.expand",
+          label: "展开/折叠",
+          icon: "unfold_more",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                expand: {
+                  label: "操作",
+                  component: "ButtonGroup",
+                  icon: "unfold_more",
+                  width: 12,
+                  options: [
+                    { label: "展开", value: "true" },
+                    { label: "折叠", value: "false" },
+                  ],
+                },
+              },
+              defaultValue: {
+                expand: "true",
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.scroll",
+          label: "滚动",
+          icon: "swap_vert",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                direction: {
+                  label: "方向",
+                  component: "ButtonGroup",
+                  icon: "swap_vert",
+                  width: 6,
+                  options: [
+                    { label: "垂直", value: "vertical" },
+                    { label: "水平", value: "horizontal" },
+                  ],
+                },
+                amount: {
+                  label: "位置",
+                  component: "NumberInput",
+                  icon: "straighten",
+                  width: 6,
+                  min: 0,
+                  max: 100,
+                  step: 10,
+                },
+              },
+              defaultValue: {
+                direction: "vertical",
+                amount: 0,
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.wait",
+          label: "等待元素",
+          icon: "hourglass_empty",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                condition: {
+                  label: "条件",
+                  component: "VariableInput",
+                  icon: "filter_alt",
+                  width: 8,
+                  placeholder: "name=xx;type=Button",
+                },
+                timeout: {
+                  label: "超时(秒)",
+                  component: "NumberInput",
+                  icon: "timer",
+                  width: 4,
+                  min: 1,
+                  max: 3600,
+                  step: 10,
+                },
+              },
+              defaultValue: {
+                timeout: 30,
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.windows.automation.focus",
+          label: "设置焦点",
+          icon: "center_focus_strong",
+        },
+        {
+          value: "quickcomposer.windows.automation.highlight",
+          label: "高亮显示",
+          icon: "highlight",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                duration: {
+                  label: "持续时间(秒)",
+                  component: "NumberInput",
+                  icon: "timer",
+                  width: 12,
+                  min: 1,
+                  max: 60,
+                  step: 5,
+                },
+              },
+              defaultValue: {
+                duration: 2,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    // sendmessage
     {
       value: "quickcomposer.windows.sendmessage.inspectWindow",
-      label: "界面自动化(sendmessage)",
+      label: "界面自动化(后台)",
       desc: "Windows界面自动化操作",
       icon: "smart_button",
       isAsync: true,
@@ -446,7 +781,11 @@ export const windowsCommands = {
               component: "VariableInput",
               icon: "keyboard",
               width: 12,
-              placeholder: "按键组合，多个逗号隔开，如：ctrl+a,a,b",
+              placeholder: "多个逗号隔开，如：a,b,{ENTER}，不支持组合键",
+              options: {
+                items: sendKeys,
+                appendItem: true,
+              },
             },
             {
               key: "options",
@@ -478,6 +817,7 @@ export const windowsCommands = {
         },
       ],
     },
+    // 监控
     {
       value: "quickcomposer.windows.monitor.watchClipboard",
       label: "剪贴板/文件监控",
@@ -543,6 +883,7 @@ export const windowsCommands = {
         },
       ],
     },
+    // 进程
     {
       value: "quickcomposer.windows.process.listProcesses",
       label: "进程管理",
@@ -610,6 +951,7 @@ export const windowsCommands = {
         },
       ],
     },
+    // 注册表
     {
       value: "quickcomposer.windows.registry.listKeys",
       label: "注册表管理",
@@ -748,6 +1090,7 @@ export const windowsCommands = {
         },
       ],
     },
+    // 服务
     {
       value: "quickcomposer.windows.service.listServices",
       label: "服务管理",
@@ -794,6 +1137,7 @@ export const windowsCommands = {
         },
       ],
     },
+    // 软件
     {
       value: "quickcomposer.windows.software.listSoftware",
       label: "软件管理",
@@ -826,6 +1170,7 @@ export const windowsCommands = {
         },
       ],
     },
+    // 系统工具
     {
       value: "quickcomposer.windows.utils.setWallpaper",
       label: "系统工具",
@@ -1056,176 +1401,6 @@ export const windowsCommands = {
               max: 100,
               defaultValue: 50,
               required: true,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.windows.automation.inspectElement",
-      label: "UI自动化",
-      desc: "Windows界面自动化操作",
-      icon: "smart_button",
-      isAsync: true,
-      config: [],
-      subCommands: [
-        {
-          value: "quickcomposer.windows.automation.inspectElement",
-          label: "检查元素",
-          icon: "search",
-        },
-        {
-          value: "quickcomposer.windows.automation.listElements",
-          label: "列出元素",
-          icon: "list",
-          config: [
-            ...searchWindowConfig,
-            {
-              component: "OptionEditor",
-              icon: "settings",
-              width: 12,
-              options: {
-                scope: {
-                  label: "范围",
-                  component: "q-select",
-                  icon: "account_tree",
-                  width: 3,
-                  options: [
-                    { label: "子元素", value: "children" },
-                    { label: "所有后代", value: "descendants" },
-                    { label: "整个子树", value: "subtree" },
-                  ],
-                },
-                filter: {
-                  label: "过滤条件",
-                  component: "VariableInput",
-                  icon: "filter_alt",
-                  width: 9,
-                  placeholder: "可选，按名称/类名/ControlType/AutomationId过滤",
-                },
-              },
-              defaultValue: {
-                scope: "children",
-              },
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.windows.automation.clickElement",
-          label: "点击元素",
-          icon: "mouse",
-          config: [
-            ...searchWindowConfig,
-            {
-              key: "by",
-              label: "元素查找方式",
-              component: "q-select",
-              icon: "search",
-              width: 3,
-              options: [
-                { label: "名称", value: "name" },
-                { label: "类名", value: "class" },
-                { label: "类型", value: "type" },
-                { label: "AutomationId", value: "automationid" },
-              ],
-              defaultValue: "name",
-            },
-            {
-              key: "value",
-              label: "查找值",
-              component: "VariableInput",
-              icon: "text_fields",
-              width: 9,
-              placeholder: "要点击的元素值",
-            },
-            {
-              key: "pattern",
-              label: "点击模式",
-              component: "ButtonGroup",
-              icon: "touch_app",
-              width: 12,
-              options: [
-                { label: "普通点击", value: "invoke" },
-                { label: "切换状态", value: "toggle" },
-              ],
-              defaultValue: "invoke",
-            },
-            {
-              key: "background",
-              label: "后台操作",
-              component: "CheckButton",
-              icon: "back_hand",
-              width: 12,
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.windows.automation.setElementValue",
-          label: "设置值",
-          icon: "edit",
-          config: [
-            ...searchWindowConfig,
-            {
-              key: "by",
-              label: "查找方式",
-              component: "q-select",
-              icon: "search",
-              width: 4,
-              options: [
-                { label: "名称", value: "name" },
-                { label: "类名", value: "class" },
-                { label: "类型", value: "type" },
-                { label: "AutomationId", value: "automationid" },
-              ],
-              defaultValue: "name",
-            },
-            {
-              key: "value",
-              label: "查找值",
-              component: "VariableInput",
-              icon: "text_fields",
-              width: 8,
-              placeholder: "要设置值的元素",
-            },
-            {
-              key: "newValue",
-              label: "新值",
-              component: "VariableInput",
-              icon: "edit",
-              width: 12,
-              placeholder: "要设置的新值",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.windows.automation.getElementValue",
-          label: "获取值",
-          icon: "content_paste",
-          outputVariable: "elementValue",
-          saveOutput: true,
-          config: [
-            ...searchWindowConfig,
-            {
-              key: "by",
-              label: "查找方式",
-              component: "q-select",
-              icon: "search",
-              width: 4,
-              options: [
-                { label: "名称", value: "name" },
-                { label: "类名", value: "class" },
-                { label: "类型", value: "type" },
-                { label: "AutomationId", value: "automationid" },
-              ],
-              defaultValue: "name",
-            },
-            {
-              key: "value",
-              label: "查找值",
-              component: "VariableInput",
-              icon: "text_fields",
-              width: 8,
-              placeholder: "要获取值的元素",
             },
           ],
         },

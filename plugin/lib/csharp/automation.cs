@@ -13,1338 +13,1443 @@ using System.Drawing;
 
 public class AutomationManager
 {
-    // UIA Control Type IDs
-    private static class UIA_ControlTypeIds
+  // UIA Control Type IDs
+  private static class UIA_ControlTypeIds
+  {
+    public const int Window = 50032;
+  }
+
+  // 用于缓存找到的元素
+  private static Dictionary<string, AutomationElement> elementCache = new Dictionary<string, AutomationElement>();
+
+  [DllImport("user32.dll")]
+  private static extern IntPtr GetForegroundWindow();
+
+  [StructLayout(LayoutKind.Sequential)]
+  private struct Point
+  {
+    public int X;
+    public int Y;
+
+    public override bool Equals(object obj)
     {
-        public const int Window = 50032;
+      if (!(obj is Point)) return false;
+      Point other = (Point)obj;
+      return X == other.X && Y == other.Y;
     }
 
-    // 用于缓存找到的元素
-    private static Dictionary<string, AutomationElement> elementCache = new Dictionary<string, AutomationElement>();
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Point
+    public static bool operator ==(Point a, Point b)
     {
-        public int X;
-        public int Y;
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Point)) return false;
-            Point other = (Point)obj;
-            return X == other.X && Y == other.Y;
-        }
-
-        public static bool operator ==(Point a, Point b)
-        {
-            return a.Equals(b);
-        }
-
-        public static bool operator !=(Point a, Point b)
-        {
-            return !a.Equals(b);
-        }
-
-        public override int GetHashCode()
-        {
-            return X.GetHashCode() ^ Y.GetHashCode();
-        }
-
-        public System.Windows.Point ToWindowsPoint()
-        {
-            return new System.Windows.Point(X, Y);
-        }
+      return a.Equals(b);
     }
 
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetCursorPos(out Point lpPoint);
-
-    [DllImport("user32.dll")]
-    private static extern short GetAsyncKeyState(int vKey);
-
-    [DllImport("user32.dll")]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-    [DllImport("user32.dll")]
-    private static extern bool BlockInput(bool fBlockIt);
-
-    [DllImport("user32.dll")]
-    private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-    public static void Main(string[] args)
+    public static bool operator !=(Point a, Point b)
     {
-        if (args.Length == 0 || args[0] == "-h" || args[0] == "--help")
+      return !a.Equals(b);
+    }
+
+    public override int GetHashCode()
+    {
+      return X.GetHashCode() ^ Y.GetHashCode();
+    }
+
+    public System.Windows.Point ToWindowsPoint()
+    {
+      return new System.Windows.Point(X, Y);
+    }
+  }
+
+  [DllImport("user32.dll")]
+  [return: MarshalAs(UnmanagedType.Bool)]
+  private static extern bool GetCursorPos(out Point lpPoint);
+
+  [DllImport("user32.dll")]
+  static extern int GetWindowLong(IntPtr hwnd, int index);
+
+  [DllImport("user32.dll")]
+  static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
+
+  private const int GWL_EXSTYLE = -20;
+  private const int WS_EX_TRANSPARENT = 0x20;
+  private const int WS_EX_LAYERED = 0x80000;
+  private const int WS_EX_TOOLWINDOW = 0x80;
+  private const int WS_EX_NOACTIVATE = 0x08000000;
+  private const int HWND_TOPMOST = -1;
+
+  [DllImport("user32.dll")]
+  static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+  [DllImport("user32.dll")]
+  private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+  [DllImport("user32.dll", CharSet = CharSet.Auto)]
+  private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+  [DllImport("user32.dll", CharSet = CharSet.Auto)]
+  private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+  [DllImport("user32.dll")]
+  private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+  [StructLayout(LayoutKind.Sequential)]
+  private struct RECT
+  {
+    public int Left;
+    public int Top;
+    public int Right;
+    public int Bottom;
+  }
+
+  [DllImport("user32.dll")]
+  [return: MarshalAs(UnmanagedType.Bool)]
+  private static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
+
+  [DllImport("user32.dll")]
+  private static extern bool SetCursorPos(int x, int y);
+
+  [DllImport("user32.dll")]
+  private static extern void mouse_event(uint dwFlags, int dx, int dy, uint dwData, int dwExtraInfo);
+
+  private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+  private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+
+  // 添加静态字段
+  private static System.Windows.Forms.Timer mouseTimer;
+  private static Form overlayForm;
+  private static Form previewForm;
+  private static AutomationElement lastElement;
+  private static bool completed;
+
+  private static CacheRequest CreateCacheRequest()
+  {
+    var cacheRequest = new CacheRequest();
+    cacheRequest.Add(AutomationElement.NameProperty);
+    cacheRequest.Add(AutomationElement.ClassNameProperty);
+    cacheRequest.Add(AutomationElement.ControlTypeProperty);
+    cacheRequest.Add(AutomationElement.BoundingRectangleProperty);
+    cacheRequest.Add(AutomationElement.IsOffscreenProperty);
+    cacheRequest.Add(AutomationElement.IsEnabledProperty);
+    cacheRequest.TreeScope = TreeScope.Element | TreeScope.Children | TreeScope.Descendants;
+    return cacheRequest;
+  }
+
+  private static AutomationElement GetTaskbarElement()
+  {
+    IntPtr taskbarHandle = FindWindow("Shell_TrayWnd", null);
+    if (taskbarHandle != IntPtr.Zero)
+    {
+      return AutomationElement.FromHandle(taskbarHandle);
+    }
+    return null;
+  }
+
+  private static List<AutomationElement> GetTaskbarChildren(AutomationElement taskbarElement)
+  {
+    var children = new List<AutomationElement>();
+    if (taskbarElement == null) return children;
+
+    try
+    {
+      var cacheRequest = CreateCacheRequest();
+      cacheRequest.Push();
+      try
+      {
+        var conditions = new AndCondition(
+            new PropertyCondition(AutomationElement.IsOffscreenProperty, false),
+            new PropertyCondition(AutomationElement.IsEnabledProperty, true),
+            new PropertyCondition(AutomationElement.IsContentElementProperty, true)
+        );
+
+        var taskbarChildren = taskbarElement.FindAll(TreeScope.Children | TreeScope.Descendants, conditions);
+        foreach (AutomationElement child in taskbarChildren)
         {
-            ShowHelp();
-            return;
+          children.Add(child);
+        }
+      }
+      finally
+      {
+        cacheRequest.Pop();
+      }
+    }
+    catch (Exception ex)
+    {
+      Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
+    }
+
+    return children;
+  }
+
+  private static void InspectElementByPosition(string position)
+  {
+    Point cursorPos;
+    if (string.IsNullOrEmpty(position))
+    {
+      // 获取当前鼠标位置
+      GetCursorPos(out cursorPos);
+    }
+    else
+    {
+      // 解析传入的坐标
+      string[] coords = position.Split(',');
+      cursorPos = new Point
+      {
+        X = int.Parse(coords[0]),
+        Y = int.Parse(coords[1])
+      };
+    }
+
+    var element = AutomationElement.FromPoint(cursorPos.ToWindowsPoint());
+    if (element != null)
+    {
+      InspectElementInfo(element, cursorPos);
+      return;
+    }
+    throw new Exception("在指定坐标未找到元素");
+  }
+
+  public static void Main(string[] args)
+  {
+    if (args.Length == 0 || args[0] == "-h" || args[0] == "--help")
+    {
+      ShowHelp();
+      return;
+    }
+
+    string type = GetArgumentValue(args, "-type");
+    if (string.IsNullOrEmpty(type))
+    {
+      Console.Error.WriteLine("Error: 必须指定操作类型 (-type)");
+      return;
+    }
+
+    try
+    {
+      switch (type.ToLower())
+      {
+        case "inspect":
+          string position = GetArgumentValue(args, "-position");
+          if (position != null)  // 参数存在（一定会有值，可能是空字符串）
+          {
+            InspectElementByPosition(position);
+          }
+          else  // 参数不存在
+          {
+            InspectElement(args);
+          }
+          break;
+
+        case "click":
+          ClickElement(GetTargetElement(args));
+          break;
+
+        case "setvalue":
+          string value = GetArgumentValue(args, "-value");
+          SetElementValue(GetTargetElement(args), value);
+          string sendenter = GetArgumentValue(args, "-sendenter");
+          if (sendenter != null)
+          {
+            System.Windows.Forms.SendKeys.SendWait("{ENTER}");
+          }
+          break;
+
+        case "getvalue":
+          GetElementValue(GetTargetElement(args));
+          break;
+
+        case "select":
+          string item = GetArgumentValue(args, "-item");
+          SelectItem(GetTargetElement(args), item);
+          break;
+
+        case "expand":
+          string expandStr = GetArgumentValue(args, "-expand");
+          bool expand = false;
+          if (!string.IsNullOrEmpty(expandStr))
+          {
+            expand = expandStr.ToLower() == "true";
+          }
+          ExpandElement(GetTargetElement(args), expand);
+          break;
+
+        case "scroll":
+          string direction = GetArgumentValue(args, "-direction");
+          if (string.IsNullOrEmpty(direction))
+          {
+            direction = "vertical";
+          }
+          string amountStr = GetArgumentValue(args, "-amount");
+          double amount = 0;
+          if (!string.IsNullOrEmpty(amountStr))
+          {
+            amount = double.Parse(amountStr);
+          }
+          ScrollElement(GetTargetElement(args), direction, amount);
+          break;
+
+        case "wait":
+          string timeoutStr = GetArgumentValue(args, "-timeout");
+          int timeout = 30;
+          if (!string.IsNullOrEmpty(timeoutStr))
+          {
+            timeout = int.Parse(timeoutStr);
+          }
+          WaitForElement(args, timeout);
+          break;
+
+        case "focus":
+          SetFocus(GetTargetElement(args));
+          break;
+
+        case "highlight":
+          string durationStr = GetArgumentValue(args, "-duration");
+          int duration = 2;
+          if (!string.IsNullOrEmpty(durationStr))
+          {
+            duration = int.Parse(durationStr);
+          }
+          HighlightElement(GetTargetElement(args), duration);
+          break;
+
+        case "sendkeys":
+          string keys = GetArgumentValue(args, "-keys");
+          SendKeys(GetTargetElement(args), keys);
+          break;
+
+        default:
+          throw new Exception(string.Format("不支持的操作类型: {0}", type));
+      }
+    }
+    catch (Exception ex)
+    {
+      Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
+      Environment.Exit(1);
+    }
+  }
+
+  private static AutomationElement GetTargetElement(string[] args)
+  {
+    // 获取起始窗口
+    AutomationElement root;
+    string windowArg = GetArgumentValue(args, "-window");
+    if (!string.IsNullOrEmpty(windowArg))
+    {
+      // 通过窗口句柄查找
+      int handle = int.Parse(windowArg);
+      root = AutomationElement.FromHandle(new IntPtr(handle));
+    }
+    else
+    {
+      // 使用当前活动窗口
+      IntPtr activeHandle = GetForegroundWindow();
+      root = AutomationElement.FromHandle(activeHandle);
+    }
+
+    if (root == null)
+    {
+      throw new Exception("无法获取指定的窗口");
+    }
+
+    // 通过 XPath 查找（优先）
+    string xpath = GetArgumentValue(args, "-xpath");
+    if (!string.IsNullOrEmpty(xpath))
+    {
+      var element = FindElementByXPath(xpath, root);
+      if (element != null) return element;
+      throw new Exception(string.Format("找不到指定的XPath: {0}", xpath));
+    }
+
+    // 通过 AutomationId 查找
+    string id = GetArgumentValue(args, "-id");
+    if (!string.IsNullOrEmpty(id))
+    {
+      var element = root.FindFirst(TreeScope.Subtree,
+          new PropertyCondition(AutomationElement.AutomationIdProperty, id));
+      if (element != null) return element;
+      throw new Exception(string.Format("找不到指定的AutomationId: {0}", id));
+    }
+
+    // 通过 Name 查找
+    string name = GetArgumentValue(args, "-name");
+    if (!string.IsNullOrEmpty(name))
+    {
+      var element = root.FindFirst(TreeScope.Subtree,
+          new PropertyCondition(AutomationElement.NameProperty, name));
+      if (element != null) return element;
+      throw new Exception(string.Format("找不到指定的Name: {0}", name));
+    }
+
+    // 通过组合条件查找
+    string condition = GetArgumentValue(args, "-condition");
+    if (!string.IsNullOrEmpty(condition))
+    {
+      var conditions = new List<Condition>();
+      string[] parts = condition.Split(';');
+      foreach (string part in parts)
+      {
+        string[] keyValue = part.Split('=');
+        if (keyValue.Length == 2)
+        {
+          switch (keyValue[0].ToLower())
+          {
+            case "name":
+              conditions.Add(new PropertyCondition(AutomationElement.NameProperty, keyValue[1]));
+              break;
+            case "class":
+              conditions.Add(new PropertyCondition(AutomationElement.ClassNameProperty, keyValue[1]));
+              break;
+            case "automation":
+              conditions.Add(new PropertyCondition(AutomationElement.AutomationIdProperty, keyValue[1]));
+              break;
+            case "type":
+              string controlTypeName = keyValue[1];
+              if (controlTypeName.StartsWith("ControlType."))
+              {
+                controlTypeName = controlTypeName.Substring("ControlType.".Length);
+              }
+              var field = typeof(ControlType).GetField(controlTypeName);
+              if (field != null)
+              {
+                ControlType controlType = (ControlType)field.GetValue(null);
+                conditions.Add(new PropertyCondition(AutomationElement.ControlTypeProperty, controlType));
+              }
+              break;
+          }
+        }
+      }
+
+      if (conditions.Count > 0)
+      {
+        Condition searchCondition;
+        if (conditions.Count > 1)
+        {
+          searchCondition = new AndCondition(conditions.ToArray());
+        }
+        else
+        {
+          searchCondition = conditions[0];
+        }
+        var element = root.FindFirst(TreeScope.Subtree, searchCondition);
+        if (element != null) return element;
+        throw new Exception(string.Format("找不到符合条件的元素: {0}", condition));
+      }
+    }
+
+    throw new Exception("必须指定元素的识别方式: -xpath, -id, -name 或 -condition");
+  }
+
+  private static void ShowHelp()
+  {
+    string help = @"UI自动化工具
+
+用法: automation.exe -type <操作类型> [参数]
+
+通用参数:
+-window <窗口句柄>  指定要操作的窗口，如果不指定则使用当前活动窗口
+
+操作类型:
+1. inspect - 检查元素
+   无需其他参数，点击要检查的元素即可
+
+2. click - 点击元素
+   -xpath <XPath路径> 或
+   -id <AutomationId> 或
+   -name <名称> 或
+   -condition ""name=xx;type=Button""
+
+3. setvalue - 设置值
+   -xpath <XPath路径> -value <新值>
+
+4. getvalue - 获取值
+   -xpath <XPath路径>
+
+5. select - 选择项目
+   -xpath <XPath路径> -item <项目名称>
+
+6. expand - 展开/折叠
+   -xpath <XPath路径> -expand <true/false>
+
+7. scroll - 滚动
+   -xpath <XPath路径> -direction <vertical/horizontal> -amount <0-100>
+
+8. wait - 等待元素
+   -xpath <XPath路径> -timeout <秒数>
+
+9. focus - 设置焦点
+   -xpath <XPath路径>
+
+10. highlight - 高亮显示
+    -xpath <XPath路径> -duration <秒数>
+
+11. sendkeys - 发送按键
+   -xpath <XPath路径> -keys <按键>
+    按键格式说明:
+    - 普通字符直接输入，如 ""abc""
+    - 特殊按键用 {} 包围，如 {ENTER}、{TAB}
+    - 组合键，如 ^c 表示 Ctrl+C
+    - 支持的特殊按键:
+      {BACKSPACE}, {BS}, {BKSP}  - 退格键
+      {BREAK}                    - Break键
+      {CAPSLOCK}                 - Caps Lock键
+      {DELETE}, {DEL}           - Delete键
+      {DOWN}                    - 向下键
+      {END}                     - End键
+      {ENTER}, {RETURN}        - Enter键
+      {ESC}                     - Esc键
+      {HELP}                    - Help键
+      {HOME}                    - Home键
+      {INSERT}, {INS}          - Insert键
+      {LEFT}                    - 向左键
+      {NUMLOCK}                - Num Lock键
+      {PGDN}                   - Page Down键
+      {PGUP}                   - Page Up键
+      {PRTSC}                  - Print Screen键
+      {RIGHT}                  - 向右键
+      {SCROLLLOCK}             - Scroll Lock键
+      {TAB}                    - Tab键
+      {UP}                     - 向上键
+      {F1} - {F12}            - 功能键
+      {ADD}                    - 数字键盘加号键
+      {SUBTRACT}               - 数字键盘减号键
+      {MULTIPLY}               - 数字键盘乘号键
+      {DIVIDE}                 - 数字键盘除号键
+      {NUMPAD0} - {NUMPAD9}   - 数字键盘数字键
+
+    修饰键:
+      + (加号)     - SHIFT
+      ^ (脱字号)   - CTRL
+      % (百分号)   - ALT
+
+    示例:
+      ""Hello""       - 输入 Hello
+      ""{ENTER}""     - 按 Enter 键
+      ""^c""          - 按 Ctrl+C
+      ""^{HOME}""     - 按 Ctrl+Home
+      ""%{F4}""       - 按 Alt+F4
+      ""+{TAB}""      - 按 Shift+Tab";
+
+    Console.WriteLine(help);
+  }
+
+  private static string GetArgumentValue(string[] args, string key, bool checkNextArg = true)
+  {
+    int index = Array.IndexOf(args, key);
+    if (index >= 0)
+    {
+      if (index < args.Length - 1)
+      {
+        // 如果需要检查下一个参数是否是参数名
+        if (checkNextArg && args[index + 1].StartsWith("-"))
+        {
+          return "";  // 参数存在但没有值，返回空字符串
+        }
+        return args[index + 1];
+      }
+      return "";  // 参数存在但没有值，返回空字符串
+    }
+    return null;  // 参数不存在
+  }
+
+  private static void SetElementValue(AutomationElement element, string value)
+  {
+    if (string.IsNullOrEmpty(value))
+    {
+      throw new Exception("必须指定要设置的值");
+    }
+
+    try
+    {
+      var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+      if (valuePattern != null)
+      {
+        valuePattern.SetValue(value);
+        Console.WriteLine("true");
+        return;
+      }
+
+      throw new Exception("元素不支持设置值操作");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("设置值失败: " + ex.Message);
+    }
+  }
+
+  private static void GetElementValue(AutomationElement element)
+  {
+    try
+    {
+      var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+      if (valuePattern != null)
+      {
+        Console.WriteLine(valuePattern.Current.Value);
+        return;
+      }
+
+      throw new Exception("元素不支持获取值操作");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("获取值失败: " + ex.Message);
+    }
+  }
+
+  private static void SelectItem(AutomationElement element, string item)
+  {
+    if (string.IsNullOrEmpty(item))
+    {
+      throw new Exception("必须指定要选择的项目");
+    }
+
+    try
+    {
+      var selectionPattern = element.GetCurrentPattern(SelectionPattern.Pattern) as SelectionPattern;
+      if (selectionPattern != null)
+      {
+        var children = element.FindAll(TreeScope.Children, Condition.TrueCondition);
+        foreach (AutomationElement child in children)
+        {
+          if (child.Current.Name == item)
+          {
+            var selectionItemPattern = child.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
+            if (selectionItemPattern != null)
+            {
+              selectionItemPattern.Select();
+              Console.WriteLine("true");
+              return;
+            }
+          }
+        }
+        throw new Exception("找不到指定的项目: " + item);
+      }
+
+      throw new Exception("元素不支持选择操作");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("选择操作失败: " + ex.Message);
+    }
+  }
+
+  private static void ExpandElement(AutomationElement element, bool expand)
+  {
+    try
+    {
+      var expandCollapsePattern = element.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+      if (expandCollapsePattern != null)
+      {
+        if (expand)
+          expandCollapsePattern.Expand();
+        else
+          expandCollapsePattern.Collapse();
+        Console.WriteLine("true");
+        return;
+      }
+
+      throw new Exception("元素不支持展开/折叠操作");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("展开/折叠操作失败: " + ex.Message);
+    }
+  }
+
+  private static void ScrollElement(AutomationElement element, string direction, double amount)
+  {
+    try
+    {
+      var scrollPattern = element.GetCurrentPattern(ScrollPattern.Pattern) as ScrollPattern;
+      if (scrollPattern != null)
+      {
+        if (direction.ToLower() == "horizontal")
+          scrollPattern.SetScrollPercent(amount, ScrollPattern.NoScroll);
+        else
+          scrollPattern.SetScrollPercent(ScrollPattern.NoScroll, amount);
+        Console.WriteLine("true");
+        return;
+      }
+
+      throw new Exception("元素不支持滚动操作");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("滚动操作失败: " + ex.Message);
+    }
+  }
+
+  private static void WaitForElement(string[] args, int timeout)
+  {
+    DateTime endTime = DateTime.Now.AddSeconds(timeout);
+    while (DateTime.Now < endTime)
+    {
+      try
+      {
+        GetTargetElement(args);
+        Console.WriteLine("true");
+        return;
+      }
+      catch
+      {
+        Thread.Sleep(500);
+      }
+    }
+    throw new Exception("等待超时");
+  }
+
+  private static AutomationElement FindElementByXPath(string xpath, AutomationElement root)
+  {
+    string[] segments = xpath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+    AutomationElement current = root;
+
+    foreach (string segment in segments)
+    {
+      if (string.IsNullOrEmpty(segment)) continue;
+
+      // 解析控件类型和索引
+      string controlType = segment;
+      int index = 1;
+      string condition = "";
+
+      // 提取索引 [n]
+      int indexStart = segment.IndexOf('[');
+      if (indexStart > 0)
+      {
+        int indexEnd = segment.IndexOf(']', indexStart);
+        if (indexEnd > indexStart)
+        {
+          controlType = segment.Substring(0, indexStart);
+          string indexStr = segment.Substring(indexStart + 1, indexEnd - indexStart - 1);
+
+          // 检查是否是属性条件
+          if (indexStr.StartsWith("@"))
+          {
+            condition = indexStr;
+          }
+          else
+          {
+            int parsedIndex;
+            if (int.TryParse(indexStr, out parsedIndex))
+            {
+              index = parsedIndex;
+            }
+          }
+        }
+      }
+
+      // 创建控件类型条件
+      List<Condition> conditions = new List<Condition>();
+      if (controlType.StartsWith("ControlType."))
+      {
+        controlType = controlType.Substring("ControlType.".Length);
+      }
+      var field = typeof(ControlType).GetField(controlType);
+      if (field != null)
+      {
+        ControlType type = (ControlType)field.GetValue(null);
+        conditions.Add(new PropertyCondition(AutomationElement.ControlTypeProperty, type));
+      }
+
+      // 添加属性条件
+      if (!string.IsNullOrEmpty(condition))
+      {
+        if (condition.StartsWith("@Name='"))
+        {
+          string name = condition.Substring("@Name='".Length).TrimEnd('\'');
+          conditions.Add(new PropertyCondition(AutomationElement.NameProperty, name));
+        }
+        else if (condition.StartsWith("@AutomationId='"))
+        {
+          string automationId = condition.Substring("@AutomationId='".Length).TrimEnd('\'');
+          conditions.Add(new PropertyCondition(AutomationElement.AutomationIdProperty, automationId));
+        }
+        else if (condition.StartsWith("@ClassName='"))
+        {
+          string className = condition.Substring("@ClassName='".Length).TrimEnd('\'');
+          conditions.Add(new PropertyCondition(AutomationElement.ClassNameProperty, className));
+        }
+      }
+
+      // 查找元素
+      Condition finalCondition = conditions.Count > 1
+          ? new AndCondition(conditions.ToArray())
+          : conditions[0];
+
+      var elements = current.FindAll(TreeScope.Children, finalCondition);
+      if (elements.Count == 0) return null;
+
+      // 使用索引选择元素
+      if (index > elements.Count) return null;
+      current = elements[index - 1];  // 转换为0基索引
+    }
+
+    return current;
+  }
+
+  private static void SetFocus(AutomationElement element)
+  {
+    try
+    {
+      element.SetFocus();
+      Console.WriteLine("true");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("设置焦点失败: " + ex.Message);
+    }
+  }
+
+  private static void HighlightElement(AutomationElement element, int duration)
+  {
+    var rect = element.Current.BoundingRectangle;
+    var highlightForm = new Form
+    {
+      StartPosition = FormStartPosition.Manual,
+      Location = new System.Drawing.Point((int)rect.Left, (int)rect.Top),
+      Size = new System.Drawing.Size((int)rect.Width, (int)rect.Height),
+      BackColor = Color.Yellow,
+      Opacity = 0.3,
+      ShowInTaskbar = false,
+      FormBorderStyle = FormBorderStyle.None,
+      TopMost = true
+    };
+
+    try
+    {
+      highlightForm.Show();
+      Console.WriteLine("正在高亮显示元素");
+      Thread.Sleep(duration * 1000);
+    }
+    finally
+    {
+      highlightForm.Close();
+      highlightForm.Dispose();
+    }
+  }
+
+  private struct ElementHierarchyInfo
+  {
+    public string XPath;
+    public IntPtr WindowHandle;
+  }
+
+  // 获取元素的层次结构信息
+  private static ElementHierarchyInfo GetElementHierarchyInfo(AutomationElement element)
+  {
+    var path = new List<string>();
+    var current = element;
+    var walker = TreeWalker.ControlViewWalker;
+    IntPtr windowHandle = IntPtr.Zero;
+
+    // 循环直到找到根元素
+    while (current != null && current != AutomationElement.RootElement)
+    {
+      var parent = walker.GetParent(current);
+      // 是否是最后一个元素
+      bool isLastElement = (parent == AutomationElement.RootElement || parent == null);
+      // 是否是句柄不为0的窗口
+      bool isValidWindow = (current.Current.ControlType.Id == UIA_ControlTypeIds.Window && current.Current.NativeWindowHandle != 0);
+      // 是否是任务栏
+      bool isTaskbar = (current.Current.ClassName == "Shell_TrayWnd" ||
+                         current.Current.ClassName == "Shell_SecondaryTrayWnd");
+
+      // 如果是窗口/任务栏，或者是最后一个元素，获取其句柄
+      if (isValidWindow || isTaskbar || isLastElement)
+      {
+        windowHandle = new IntPtr(current.Current.NativeWindowHandle);
+        break;  // 获取到句柄后就停止遍历
+      }
+      else
+      {
+        // 获取同级元素中的索引
+        int index = 1;
+        var siblings = parent.FindAll(TreeScope.Children, new PropertyCondition(
+            AutomationElement.ControlTypeProperty, current.Current.ControlType));
+
+        foreach (AutomationElement sibling in siblings)
+        {
+          if (sibling == current) break;
+          index++;
         }
 
-        string type = GetArgumentValue(args, "-type");
-        if (string.IsNullOrEmpty(type))
+        // 构建路径段
+        string type = current.Current.ControlType.ProgrammaticName.Replace("ControlType.", "");
+        string pathSegment = type;
+
+        // 如果有多个同类型元素，添加索引
+        if (siblings.Count > 1)
         {
-            Console.Error.WriteLine("Error: 必须指定操作类型 (-type)");
-            return;
+          pathSegment = string.Format("{0}[{1}]", type, index);
         }
 
+        path.Insert(0, pathSegment);
+      }
+
+      current = parent;
+    }
+
+    return new ElementHierarchyInfo
+    {
+      XPath = "/" + string.Join("/", path),
+      WindowHandle = windowHandle
+    };
+  }
+
+  private static void ClickElement(AutomationElement element)
+  {
+    if (element == null)
+    {
+      throw new Exception("未找到目标元素");
+    }
+
+    try
+    {
+      // 首先尝试使用 Invoke 模式（适用于按钮等）
+      object invokePattern;
+      if (element.TryGetCurrentPattern(InvokePattern.Pattern, out invokePattern))
+      {
+        ((InvokePattern)invokePattern).Invoke();
+        Console.WriteLine("true");
+        return;
+      }
+
+      // 尝试使用 SelectionItem 模式（适用于列表项、单选框等）
+      object selectionItemPattern;
+      if (element.TryGetCurrentPattern(SelectionItemPattern.Pattern, out selectionItemPattern))
+      {
+        ((SelectionItemPattern)selectionItemPattern).Select();
+        Console.WriteLine("true");
+        return;
+      }
+
+      // 尝试使用 Toggle 模式（适用于复选框等）
+      object togglePattern;
+      if (element.TryGetCurrentPattern(TogglePattern.Pattern, out togglePattern))
+      {
+        ((TogglePattern)togglePattern).Toggle();
+        Console.WriteLine("true");
+        return;
+      }
+
+      // 如果都不支持，尝试使用鼠标点击
+      try
+      {
+        // 激活元素
+        element.SetFocus();
+
+        // 获取元素的中心点坐标
+        System.Windows.Point clickablePoint = element.GetClickablePoint();
+
+        // 转换为屏幕坐标
+        var rect = element.Current.BoundingRectangle;
+        if (rect.IsEmpty)
+        {
+          throw new Exception("无法获取元素位置");
+        }
+
+        // 保存当前鼠标位置
+        Point currentMousePosition;
+        GetCursorPos(out currentMousePosition);
+
+        // 使用 mouse_event 执行点击
+        int x = (int)clickablePoint.X;
+        int y = (int)clickablePoint.Y;
+
+        // 移动鼠标到目标位置
+        SetCursorPos(x, y);
+        Thread.Sleep(50);  // 短暂延迟确保鼠标移动到位
+
+        // 模拟鼠标点击
+        mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
+        Thread.Sleep(50);  // 短暂延迟模拟真实点击
+        mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+
+        // 恢复鼠标位置
+        SetCursorPos(currentMousePosition.X, currentMousePosition.Y);
+        Console.WriteLine("true");
+      }
+      catch (Exception ex)
+      {
+        throw new Exception(string.Format("鼠标点击失败: {0}", ex.Message));
+      }
+    }
+    catch (Exception ex)
+    {
+      throw new Exception(string.Format("点击操作失败: {0}", ex.Message));
+    }
+  }
+
+  private static void SendKeys(AutomationElement element, string keys)
+  {
+    if (string.IsNullOrEmpty(keys))
+    {
+      throw new Exception("必须指定要发送的按键");
+    }
+
+    try
+    {
+      // 确保元素可以接收输入
+      if (!element.Current.IsKeyboardFocusable)
+      {
+        throw new Exception("元素不支持键盘输入");
+      }
+
+      element.SetFocus();
+      System.Windows.Forms.SendKeys.SendWait(keys);
+      Console.WriteLine("true");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("发送按键失败: " + ex.Message);
+    }
+  }
+
+  // 将 HandleKeyPress 方法移到类级别
+  private static void HandleKeyPress(object sender, KeyPressEventArgs e)
+  {
+    if (e.KeyChar == (char)27)  // ESC键
+    {
+      mouseTimer.Stop();
+      overlayForm.Close();
+      previewForm.Close();
+      Environment.Exit(0);
+    }
+    else if (e.KeyChar == 'c' || e.KeyChar == 'C')  // 添加复制功能
+    {
+      if (lastElement != null)
+      {
         try
         {
-            switch (type.ToLower())
-            {
-                case "list":
-                case "find":
-                    // 列出所有元素或查找元素
-                    string filter = GetArgumentValue(args, "-value") ?? GetArgumentValue(args, "-filter"); // 兼容两种参数名
-                    ListElements(args, filter);
-                    break;
-
-                case "getinfo":
-                    // 获取元素信息
-                    GetElementInfo(args);
-                    break;
-
-                case "click":
-                    // 点击元素
-                    ClickElement(args);
-                    break;
-
-                case "setvalue":
-                    // 设置值
-                    string newValue = GetArgumentValue(args, "-value");
-                    SetElementValue(args, newValue);
-                    break;
-
-                case "getvalue":
-                    // 获取值
-                    GetElementValue(args);
-                    break;
-
-                case "select":
-                    // 选择项目
-                    string item = GetArgumentValue(args, "-item");
-                    SelectItem(args, item);
-                    break;
-
-                case "expand":
-                    // 展开/折叠
-                    string expandStr = GetArgumentValue(args, "-expand");
-                    bool expand = expandStr != null && expandStr.ToLower() == "true";
-                    ExpandElement(args, expand);
-                    break;
-
-                case "scroll":
-                    // 滚动
-                    string direction = GetArgumentValue(args, "-direction") ?? "vertical";
-                    double amount = double.Parse(GetArgumentValue(args, "-amount") ?? "0");
-                    ScrollElement(args, direction, amount);
-                    break;
-
-                case "wait":
-                    // 等待元素
-                    string by = GetArgumentValue(args, "-by") ?? "name";
-                    string value = GetArgumentValue(args, "-value");
-                    int timeout = int.Parse(GetArgumentValue(args, "-timeout") ?? "30");
-                    WaitForElement(args, by, value, timeout);
-                    break;
-
-                case "focus":
-                    // 设置焦点
-                    SetFocus(args);
-                    break;
-
-                case "sendkeys":
-                    // 发送按键
-                    string keys = GetArgumentValue(args, "-keys");
-                    SendKeys(args, keys);
-                    break;
-
-                case "getchild":
-                    // 获取子元素
-                    string childType = GetArgumentValue(args, "-type") ?? "all";
-                    GetChildElements(args, childType);
-                    break;
-
-                case "getparent":
-                    // 获取父元素
-                    GetParentElement(args);
-                    break;
-
-                case "highlight":
-                    // 高亮显示元素
-                    int duration = int.Parse(GetArgumentValue(args, "-duration") ?? "2");
-                    HighlightElement(args, duration);
-                    break;
-
-                case "inspect":
-                    // 生成元素识别器
-                    InspectElement(args);
-                    break;
-
-                default:
-                    Console.Error.WriteLine("Error: 不支持的操作类型");
-                    break;
-            }
+          Clipboard.SetText(lastElement.Current.Name);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
+          Console.Error.WriteLine(string.Format("Error copying name: {0}", ex.Message));
         }
+      }
     }
+  }
 
-    private static void ShowHelp()
+  // 元素检查器
+  private static void InspectElement(string[] args)
+  {
+    // 创建一个半透明遮罩窗口
+    overlayForm = new Form();
+    overlayForm.FormBorderStyle = FormBorderStyle.None;
+    overlayForm.StartPosition = FormStartPosition.Manual;
+    overlayForm.TopMost = true;
+    overlayForm.BackColor = Color.Blue;
+    overlayForm.Opacity = 0.15;
+    overlayForm.ShowInTaskbar = false;
+    overlayForm.KeyPreview = true;
+
+    // 设置窗口样式，确保能显示在任务栏上方
+    overlayForm.Load += (sender, e) =>
     {
-        string help = @"UI自动化工具 - 使用说明
+      var hwnd = overlayForm.Handle;
+      var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+      SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED);
+    };
 
-用法:
-  automation.exe -type <操作类型> [参数]
-
-通用参数:
-  -window <窗口标识>  指定操作的窗口(可选)
-  -method <查找方式>  指定窗口查找方式(可选,默认active)
-    支持以下方式:
-    - title     窗口标题(支持模糊匹配)
-    - class     窗口类名
-    - handle    窗口句柄
-    - process   进程名
-    - active    当前活动窗口(默认)
-    不指定时默认在整个桌面范围内查找
-  -background       后台操作模式，不激活窗口(可选)
-
-元素识别参数:
-  -value <标识值>    要查找的元素的值
-  -by <识别方式>     识别方式(可选,默认name)
-  支持以下方式:
-  - name         按名称查找
-  - class        按类名查找
-  - type         按控件类型查找
-  - automationid 按AutomationId查找
-
-操作类型及示例:
-1. inspect - 生成元素识别器
-  示例:
-    automation.exe -type inspect
-  说明:
-    运行后点击要识别的元素，将返回元素的详细信息和示例命令
-
-2. list - 列出所有元素
-   参数:
-    -filter <过滤文本>  按名称/类名/AutomationId过滤(可选)
-   示例:
-     automation.exe -window ""记事本"" -method title -type list
-     automation.exe -window ""记事本"" -method title -type list -filter ""按钮""
-
-3. find - 查找元素
-   参数:
-     -by <查找方式>     name/class/type/automationid
-     -value <查找值>    要查找的值
-     -scope <查找范围>  children/descendants/subtree等(可选,默认children)
-   示例:
-     automation.exe -window ""计算器"" -method title -type find -by name -value ""等于""
-     automation.exe -window ""记事本"" -method class -type find -by type -value ""button""
-
-4. getinfo - 获取元素信息
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-   示例:
-     automation.exe -type getinfo -value ""确定"" -by name
-     automation.exe -type getinfo -value ""button"" -by type
-
-5. click - 点击元素
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-     -pattern <模式>   invoke/toggle/expand等(可选,默认invoke)
-   示例:
-     automation.exe -type click -value ""确定"" -by name
-     automation.exe -type click -value ""button"" -by type -pattern toggle
-
-6. setvalue - 设置值
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-     -newvalue <新值>   要设置的值
-   示例:
-     automation.exe -type setvalue -value ""文本框"" -by name -newvalue ""新内容""
-
-7. getvalue - 获取值
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-   示例:
-     automation.exe -type getvalue -value ""文本框"" -by name
-
-8. select - 选择项目
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-     -item <项目>      要选择的项目
-   示例:
-     automation.exe -type select -value ""下拉框"" -by name -item ""选项1""
-
-9. expand - 展开/折叠
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-     -expand <true/false> 是否展开
-   示例:
-     automation.exe -type expand -value ""树节点"" -by name -expand true
-
-10. scroll - 滚动
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-     -direction <方向>  vertical/horizontal(可选,默认vertical)
-     -amount <数值>     滚动量(0-100)
-   示例:
-     automation.exe -type scroll -value ""列表"" -by name -direction vertical -amount 50
-
-11. wait - 等待元素
-   参数:
-     -value <标识值>    要查找的值
-     -by <识别方式>     识别方式(可选,默认name)
-     -timeout <超时>    超时时间(秒,默认30)
-   示例:
-     automation.exe -type wait -value ""登录"" -by name -timeout 60
-
-12. focus - 设置焦点
-    参数:
-      -value <标识值>    要查找的值
-      -by <识别方式>     识别方式(可选,默认name)
-    示例:
-      automation.exe -type focus -value ""输入框"" -by name
-
-13. sendkeys - 发送按键
-    参数:
-      -value <标识值>    要查找的值
-      -by <识别方式>     识别方式(可选,默认name)
-      -keys <按键序列>   要发送的按键
-    示例:
-      automation.exe -type sendkeys -value ""输入框"" -by name -keys ""Hello World""
-
-14. getchild - 获取子元素
-    参数:
-      -value <标识值>    要查找的值
-      -by <识别方式>     识别方式(可选,默认name)
-      -type <控件类型>   筛选类型(可选,默认all)
-    示例:
-      automation.exe -type getchild -value ""窗口"" -by name -type button
-
-15. getparent - 获取父元素
-    参数:
-      -value <标识值>    要查找的值
-      -by <识别方式>     识别方式(可选,默认name)
-    示例:
-      automation.exe -type getparent -value ""按钮"" -by name
-
-16. highlight - 高亮显示元素
-    参数:
-      -value <标识值>    要查找的值
-      -by <识别方式>     识别方式(可选,默认name)
-      -duration <时长>   显示时长(秒,默认2)
-    示例:
-      automation.exe -type highlight -value ""按钮"" -by name -duration 5
-
-支持的控件类型:
-- button      (按钮)
-- edit        (编辑框)
-- combobox    (下拉框)
-- checkbox    (复选框)
-- radiobutton (单选按钮)
-- listitem    (列表项)
-- treeitem    (树项)
-- menu        (菜单)
-- menuitem    (菜单项)
-- tab         (选项卡)
-- window      (窗口)
-
-注意事项:
-1. 元素ID在find或list操作后返回，需要保存以供后续操作使用
-2. list操作会返回元素的完整路径，便于定位
-3. 所有操作都支持-timeout参数指定超时时间
-4. sendkeys支持特殊按键，如{ENTER}, {TAB}, {F1}, ^c(Ctrl+C)等
-5. 高亮显示功能会创建一个半透明黄色窗口覆盖在目标元素上
-6. 部分操作可能因目标元素不支持相应模式而失败
-";
-        Console.WriteLine(help);
-    }
-
-    private static string GetArgumentValue(string[] args, string key)
+    // 创建预览窗口
+    previewForm = new Form
     {
-        for (int i = 0; i < args.Length - 1; i++)
+      FormBorderStyle = FormBorderStyle.None,
+      StartPosition = FormStartPosition.Manual,
+      BackColor = Color.FromArgb(40, 40, 40),
+      ShowInTaskbar = false,
+      TopMost = true,
+      Opacity = 0.9,
+      AutoSize = true,  // 添加自动尺寸
+      AutoSizeMode = AutoSizeMode.GrowAndShrink,  // 根据内容调整大小
+      KeyPreview = true
+    };
+
+    Label previewLabel = new Label
+    {
+      AutoSize = true,
+      Dock = DockStyle.None,
+      TextAlign = ContentAlignment.MiddleLeft,
+      Font = new Font("楷体", 9),
+      ForeColor = Color.White,
+      Padding = new Padding(5),
+      AutoEllipsis = true,
+      UseMnemonic = false,
+      MaximumSize = new System.Drawing.Size(600, 0)
+    };
+    previewForm.Controls.Add(previewLabel);
+
+    // 设置预览窗口样式
+    previewForm.Load += (sender, e) =>
+    {
+      var hwnd = previewForm.Handle;
+      var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+      SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED);
+
+      // 确保窗口显示在最顶层
+      SetWindowPos(
+          hwnd,
+          new IntPtr(HWND_TOPMOST),
+          previewForm.Left,
+          previewForm.Top,
+          previewForm.Width,
+          previewForm.Height,
+          0x0040 // SWP_SHOWWINDOW
+      );
+    };
+
+    // 获取根元素
+    var rootElement = AutomationElement.RootElement;
+
+    completed = false;  // 使用静态字段
+    Rectangle lastRect = Rectangle.Empty;
+    lastElement = null;
+    Point lastCursorPos = new Point();
+    AutomationElement taskbarElement = null;
+    List<AutomationElement> taskbarChildren = null;
+
+    // 设置/取消窗口鼠标穿透的辅助方法
+    Action<bool> setMousePenetrate = (penetrate) =>
+    {
+      var hwnd = overlayForm.Handle;
+      var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+      if (penetrate)
+      {
+        SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT);
+      }
+      else
+      {
+        SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle & ~WS_EX_TRANSPARENT);
+      }
+    };
+
+    // 更新遮罩层位置的辅助方法
+    Action<Rectangle> updateOverlayPosition = (rect) =>
+    {
+      overlayForm.Location = new System.Drawing.Point(rect.Left, rect.Top);
+      overlayForm.Size = new System.Drawing.Size(rect.Width, rect.Height);
+      // 确保遮罩层始终在最顶层
+      SetWindowPos(
+          overlayForm.Handle,
+          new IntPtr(HWND_TOPMOST),
+          rect.Left,
+          rect.Top,
+          rect.Width,
+          rect.Height,
+          0x0040 // SWP_SHOWWINDOW
+      );
+      overlayForm.Refresh();
+    };
+
+    // 添加一个新的辅助方法来更新预览窗口位置
+    Action<int, int> updatePreviewPosition = (x, y) =>
+    {
+      // 确保预览窗口始终在最顶层
+      SetWindowPos(
+          previewForm.Handle,
+          new IntPtr(HWND_TOPMOST),
+          x,
+          y,
+          previewForm.Width,
+          previewForm.Height,
+          0x0040 // SWP_SHOWWINDOW
+      );
+      previewForm.Refresh();
+    };
+
+    // 创建一个定时器来处理鼠标位置检测
+    mouseTimer = new System.Windows.Forms.Timer();
+    mouseTimer.Interval = 100;
+    mouseTimer.Tick += (sender, e) =>
+    {
+      try
+      {
+        Point cursorPos;
+        GetCursorPos(out cursorPos);
+
+        if (cursorPos == lastCursorPos)
         {
-            if (args[i].Equals(key, StringComparison.OrdinalIgnoreCase))
+          return;
+        }
+        lastCursorPos = cursorPos;
+
+        setMousePenetrate(true);
+
+        // 获取鼠标位置的元素
+        var element = AutomationElement.FromPoint(cursorPos.ToWindowsPoint());
+
+        setMousePenetrate(false);
+
+        if (element != null && element != rootElement)
+        {
+          // AutomationElement.FromPoint只能获得到任务栏
+          // 无法获得到任务栏的子元素，所以需要遍历
+          element = HandleTaskbarElement(
+              element,
+              cursorPos,
+              ref taskbarElement,
+              ref taskbarChildren
+          );
+
+          var elementBounds = element.Current.BoundingRectangle;
+          Rectangle elementRect = new Rectangle(
+              (int)elementBounds.Left,
+              (int)elementBounds.Top,
+              (int)elementBounds.Width,
+              (int)elementBounds.Height
+          );
+
+          bool elementChanged = lastElement == null ||
+          !element.Equals(lastElement) ||
+                              elementRect != lastRect;
+
+          if (elementChanged)
+          {
+            lastElement = element;
+            lastRect = elementRect;
+
+            // 获取元素后，显示遮罩层
+            if (!overlayForm.Visible)
             {
-                return args[i + 1];
+              overlayForm.Show();
             }
-        }
-        return null;
-    }
+            updateOverlayPosition(elementRect);
 
-    private static AutomationElement GetElementByIdentifier(string[] args, string identifier, string by = null)
-    {
-        // 如果提供了id，优先使用缓存
-        if (by == null && elementCache.ContainsKey(identifier))
-        {
-            return elementCache[identifier];
-        }
+            // 计算预览窗口位置
+            int previewX = elementRect.Right + 10;
+            int previewY = elementRect.Top;
 
-        // 否则根据识别方式查找元素
-        AutomationElement root = GetRootElement(args);
-        by = by ?? "name";  // 默认使用name
-
-        Condition condition;
-        switch (by.ToLower())
-        {
-            case "name":
-                condition = new PropertyCondition(AutomationElement.NameProperty, identifier);
-                break;
-            case "class":
-                condition = new PropertyCondition(AutomationElement.ClassNameProperty, identifier);
-                break;
-            case "type":
-                // 根据控件类型名称获取对应的ControlType
-                ControlType controlType = null;
-                switch (identifier.ToLower())
-                {
-                    case "button":
-                        controlType = ControlType.Button;
-                        break;
-                    case "edit":
-                        controlType = ControlType.Edit;
-                        break;
-                    case "combobox":
-                        controlType = ControlType.ComboBox;
-                        break;
-                    case "checkbox":
-                        controlType = ControlType.CheckBox;
-                        break;
-                    case "radiobutton":
-                        controlType = ControlType.RadioButton;
-                        break;
-                    case "listitem":
-                        controlType = ControlType.ListItem;
-                        break;
-                    case "treeitem":
-                        controlType = ControlType.TreeItem;
-                        break;
-                    case "menu":
-                        controlType = ControlType.Menu;
-                        break;
-                    case "menuitem":
-                        controlType = ControlType.MenuItem;
-                        break;
-                    case "tab":
-                        controlType = ControlType.Tab;
-                        break;
-                    case "window":
-                        controlType = ControlType.Window;
-                        break;
-                    default:
-                        throw new Exception("不支持的控件类型: " + identifier);
-                }
-                condition = new PropertyCondition(AutomationElement.ControlTypeProperty, controlType);
-                break;
-            case "automationid":
-                condition = new PropertyCondition(AutomationElement.AutomationIdProperty, identifier);
-                break;
-            default:
-                throw new Exception("不支持的识别方式: " + by);
-        }
-
-        var element = root.FindFirst(TreeScope.Subtree, condition);
-        if (element == null)
-        {
-            throw new Exception(string.Format("找不到{0}为'{1}'的元素", by, identifier));
-        }
-
-        return element;
-    }
-
-    private static void GetElementInfo(string[] args)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        var info = new Dictionary<string, object>();
-        info.Add("name", element.Current.Name);
-        info.Add("class", element.Current.ClassName);
-        info.Add("controlType", element.Current.ControlType.ProgrammaticName);
-        info.Add("controlClass", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
-        info.Add("localizedType", element.Current.LocalizedControlType);
-        info.Add("automationId", element.Current.AutomationId);
-        info.Add("processId", element.Current.ProcessId);
-        info.Add("boundingRectangle", new
-        {
-            x = element.Current.BoundingRectangle.X,
-            y = element.Current.BoundingRectangle.Y,
-            width = element.Current.BoundingRectangle.Width,
-            height = element.Current.BoundingRectangle.Height
-        });
-        info.Add("patterns", GetSupportedPatterns(element));
-
-        var serializer = new JavaScriptSerializer();
-        Console.Write(serializer.Serialize(info));
-    }
-
-    private static void ClickElement(string[] args)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        string pattern = GetArgumentValue(args, "-pattern") ?? "invoke";
-        bool background = HasArgument(args, "-background");
-
-        var element = GetElementByIdentifier(args, identifier, by);
-
-        // 只在非后台操作时激活窗口
-        if (!background)
-        {
-            var hwnd = new IntPtr(element.Current.NativeWindowHandle);
-            SetForegroundWindow(hwnd);
-            Thread.Sleep(50); // 等待窗口激活
-        }
-
-        switch (pattern.ToLower())
-        {
-            case "invoke":
-                var invokePattern = element.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
-                if (invokePattern != null)
-                {
-                    invokePattern.Invoke();
-                    Console.WriteLine("成功执行点击操作");
-                    return;
-                }
-                break;
-
-            case "toggle":
-                var togglePattern = element.GetCurrentPattern(TogglePattern.Pattern) as TogglePattern;
-                if (togglePattern != null)
-                {
-                    togglePattern.Toggle();
-                    Console.WriteLine("成功执行切换操作");
-                    return;
-                }
-                break;
-        }
-        throw new Exception("元素不支持指定的操作模式");
-    }
-
-    private static bool HasArgument(string[] args, string key)
-    {
-        return args.Contains(key, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static string[] GetSupportedPatterns(AutomationElement element)
-    {
-        var patterns = new List<string>();
-        var supportedPatterns = element.GetSupportedPatterns();
-        foreach (var pattern in supportedPatterns)
-        {
-            patterns.Add(pattern.ProgrammaticName);
-        }
-        return patterns.ToArray();
-    }
-
-    private static void SetElementValue(string[] args, string newValue)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        bool background = HasArgument(args, "-background");
-
-        var element = GetElementByIdentifier(args, identifier, by);
-
-        // 只在非后台操作时激活窗口
-        if (!background)
-        {
-            var hwnd = new IntPtr(element.Current.NativeWindowHandle);
-            SetForegroundWindow(hwnd);
-            Thread.Sleep(50); // 等待窗口激活
-        }
-
-        // 尝试ValuePattern
-        var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
-        if (valuePattern != null)
-        {
-            valuePattern.SetValue(newValue);
-            Console.WriteLine("成功设置值");
-            return;
-        }
-
-        // 尝试TextPattern
-        var textPattern = element.GetCurrentPattern(TextPattern.Pattern) as TextPattern;
-        if (textPattern != null)
-        {
-            // 获取支持的文本选择单位
-            SupportedTextSelection supportedTextSelection = textPattern.SupportedTextSelection;
-            if (supportedTextSelection != SupportedTextSelection.None)
+            // 确保预览窗口不会超出屏幕
+            Screen screen = Screen.FromPoint(new System.Drawing.Point(previewX, previewY));
+            if (previewX + previewForm.Width > screen.Bounds.Right)
             {
-                var documentRange = textPattern.DocumentRange;
-                // 选择所有文本
-                documentRange.Select();
-                // 替换文本
-                System.Windows.Forms.SendKeys.SendWait("^a"); // Ctrl+A 全选
-                System.Windows.Forms.SendKeys.SendWait(newValue);
-            }
-            else
-            {
-                throw new Exception("元素不支持文本选择");
-            }
-            Console.WriteLine("成功设置文本");
-            return;
-        }
-
-        throw new Exception("元素不支持设置值操作");
-    }
-
-    private static void GetElementValue(string[] args)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        string value = null;
-
-        // 尝试ValuePattern
-        var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
-        if (valuePattern != null)
-        {
-            value = valuePattern.Current.Value;
-        }
-        // 尝试TextPattern
-        else
-        {
-            var textPattern = element.GetCurrentPattern(TextPattern.Pattern) as TextPattern;
-            if (textPattern != null)
-            {
-                value = textPattern.DocumentRange.GetText(int.MaxValue);
-            }
-        }
-
-        if (value != null)
-        {
-            var result = new Dictionary<string, string>();
-            result.Add("value", value);
-            var serializer = new JavaScriptSerializer();
-            Console.Write(serializer.Serialize(result));
-            return;
-        }
-
-        throw new Exception("元素不支持获取值操作");
-    }
-
-    private static void SelectItem(string[] args, string item)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-
-        // 尝试SelectionItemPattern
-        var selectionItemPattern = element.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
-        if (selectionItemPattern != null)
-        {
-            selectionItemPattern.Select();
-            Console.WriteLine("成功选择项目");
-            return;
-        }
-
-        // 尝试ExpandCollapsePattern
-        var expandCollapsePattern = element.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
-        if (expandCollapsePattern != null)
-        {
-            // 如果是折叠状态，先展开
-            if (expandCollapsePattern.Current.ExpandCollapseState == ExpandCollapseState.Collapsed)
-            {
-                expandCollapsePattern.Expand();
+              previewX = elementRect.Left - previewForm.Width - 10;
             }
 
-            // 查找并选择子项
-            Condition nameCondition = new PropertyCondition(AutomationElement.NameProperty, item);
-            AutomationElement child = element.FindFirst(TreeScope.Descendants, nameCondition);
-            if (child != null)
+            if (previewY + previewForm.Height > screen.Bounds.Bottom)
             {
-                var childSelectionPattern = child.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
-                if (childSelectionPattern != null)
-                {
-                    childSelectionPattern.Select();
-                    Console.WriteLine("成功选择子项");
-                    return;
-                }
+              previewY = screen.Bounds.Bottom - previewForm.Height;
             }
+
+            updatePreviewPosition(previewX, previewY);
+          }
+          // 处理名称长度
+          string elementName = element.Current.Name;
+          if (elementName.Length > 50)
+          {
+            elementName = elementName.Substring(0, 47) + "...";
+          }
+          // 更新预览窗口内容
+          previewLabel.Text = string.Format(
+              "坐标: {0}, {1}\r\n" +
+              "名称: {2}\r\n" +
+              "大小: {3}x{4}\r\n" +
+              "类型: {5}\r\n" +
+              "C：复制名称，ESC：退出",
+              cursorPos.X,
+              cursorPos.Y,
+              elementName,
+              elementRect.Width,
+              elementRect.Height,
+              element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+          previewForm.Show();
         }
+      }
+      catch (Exception ex)
+      {
+        Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
+      }
+    };
 
-        throw new Exception("元素不支持选择操作或未找到指定项目");
-    }
-
-    private static void ExpandElement(string[] args, bool expand)
+    overlayForm.MouseClick += (sender, e) =>
     {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        var expandCollapsePattern = element.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
-
-        if (expandCollapsePattern != null)
-        {
-            if (expand)
-            {
-                expandCollapsePattern.Expand();
-                Console.WriteLine("成功展开元素");
-            }
-            else
-            {
-                expandCollapsePattern.Collapse();
-                Console.WriteLine("成功折叠元素");
-            }
-            return;
-        }
-
-        throw new Exception("元素不支持展开/折叠操作");
-    }
-
-    private static void ScrollElement(string[] args, string direction, double amount)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        var scrollPattern = element.GetCurrentPattern(ScrollPattern.Pattern) as ScrollPattern;
-
-        if (scrollPattern != null)
-        {
-            if (direction.ToLower() == "horizontal")
-            {
-                scrollPattern.SetScrollPercent(amount, ScrollPattern.NoScroll);
-            }
-            else
-            {
-                scrollPattern.SetScrollPercent(ScrollPattern.NoScroll, amount);
-            }
-            Console.WriteLine("成功执行滚动操作");
-            return;
-        }
-
-        throw new Exception("元素不支持滚动操作");
-    }
-
-    private static void WaitForElement(string[] args, string by, string value, int timeout)
-    {
-        DateTime endTime = DateTime.Now.AddSeconds(timeout);
-        while (DateTime.Now < endTime)
-        {
-            try
-            {
-                ListElements(args, value);
-                Console.WriteLine("成功找到元素");
-                return;
-            }
-            catch
-            {
-                Thread.Sleep(500);
-            }
-        }
-        throw new Exception("等待超时");
-    }
-
-    private static void FindElementByXPath(string xpath)
-    {
-        // XPath查找的实现
-        throw new Exception("XPath查找暂未实现");
-    }
-
-    private static void SetFocus(string[] args)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
+      if (e.Button == MouseButtons.Left && lastElement != null)
+      {
         try
         {
-            element.SetFocus();
-            Console.WriteLine("成功设置焦点");
+          mouseTimer.Stop();
+          overlayForm.Hide();
+          previewForm.Hide();
+
+          InspectElementInfo(lastElement, lastCursorPos);
+          completed = true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new Exception("无法设置焦点");
+          Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
         }
+        finally
+        {
+          overlayForm.Close();
+          previewForm.Close();
+        }
+      }
+    };
+
+    // 添加按键事件处理
+    overlayForm.KeyPress += (sender, e) =>
+    {
+      HandleKeyPress(sender, e);
+    };
+    previewForm.KeyPress += (sender, e) =>
+    {
+      HandleKeyPress(sender, e);
+    };
+
+    // 在新线程中显示窗口
+    Thread thread = new Thread(() =>
+    {
+      mouseTimer.Start();
+      while (!completed)
+      {
+        Application.DoEvents();
+        Thread.Sleep(100);
+      }
+      mouseTimer.Stop();
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+  }
+
+  private static Dictionary<string, object> GetWindowInfoFromHandle(IntPtr hwnd)
+  {
+    var windowInfo = new Dictionary<string, object>();
+    if (hwnd != IntPtr.Zero)
+    {
+      StringBuilder title = new StringBuilder(256);
+      StringBuilder className = new StringBuilder(256);
+      GetWindowText(hwnd, title, title.Capacity);
+      GetClassName(hwnd, className, className.Capacity);
+
+      // 获取窗口位置和大小
+      RECT rect = new RECT();
+      GetWindowRect(hwnd, ref rect);
+
+      windowInfo.Add("title", title.ToString());
+      windowInfo.Add("class", className.ToString());
+      windowInfo.Add("handle", hwnd.ToInt32());
+      windowInfo.Add("x", rect.Left);
+      windowInfo.Add("y", rect.Top);
+      windowInfo.Add("width", rect.Right - rect.Left);
+      windowInfo.Add("height", rect.Bottom - rect.Top);
+
+      // 获取进程信息
+      uint processId;
+      GetWindowThreadProcessId(hwnd, out processId);
+      try
+      {
+        var process = System.Diagnostics.Process.GetProcessById((int)processId);
+        windowInfo.Add("processName", process.ProcessName);
+        windowInfo.Add("processPath", process.MainModule.FileName);
+      }
+      catch { }
+    }
+    return windowInfo;
+  }
+
+  // 打印元素的完整信息
+  private static void InspectElementInfo(AutomationElement element, Point position)
+  {
+    var hierarchyInfo = GetElementHierarchyInfo(element);
+
+    Dictionary<string, object> result = new Dictionary<string, object>();
+    // 元素信息
+    Dictionary<string, object> elementInfo = new Dictionary<string, object>();
+    elementInfo.Add("name", element.Current.Name);
+    elementInfo.Add("class", element.Current.ClassName);
+    elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
+    elementInfo.Add("automationId", element.Current.AutomationId);
+    elementInfo.Add("xpath", hierarchyInfo.XPath);
+    elementInfo.Add("handle", element.Current.NativeWindowHandle);
+
+    // 添加元素位置和大小信息
+    var bounds = element.Current.BoundingRectangle;
+    elementInfo.Add("x", (int)bounds.Left);
+    elementInfo.Add("y", (int)bounds.Top);
+    elementInfo.Add("width", (int)bounds.Width);
+    elementInfo.Add("height", (int)bounds.Height);
+
+    // 添加控件文本值
+    try
+    {
+      var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+      if (valuePattern != null)
+      {
+        elementInfo.Add("value", valuePattern.Current.Value);
+      }
+    }
+    catch { }
+
+    // 根据传入的坐标获取窗口信息
+    if (hierarchyInfo.WindowHandle != IntPtr.Zero)
+    {
+      var windowInfo = GetWindowInfoFromHandle(hierarchyInfo.WindowHandle);
+      foreach (var kvp in windowInfo)
+      {
+        result.Add(kvp.Key, kvp.Value);
+      }
     }
 
-    private static void SendKeys(string[] args, string keys)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        bool background = HasArgument(args, "-background");
+    // 将元素信息添加到结果中
+    result.Add("element", elementInfo);
 
-        var element = GetElementByIdentifier(args, identifier, by);
-
-        // 只在非后台操作时激活窗口
-        if (!background)
-        {
-            var hwnd = new IntPtr(element.Current.NativeWindowHandle);
-            SetForegroundWindow(hwnd);
-            Thread.Sleep(50); // 等待窗口激活
-        }
-
-        if (string.IsNullOrEmpty(keys))
-        {
-            throw new Exception("必须指定要发送的按键");
-        }
-
-        // 确保元素可以接收输入
-        if (!element.Current.IsKeyboardFocusable)
-        {
-            throw new Exception("元素不支持键盘输入");
-        }
-
-        element.SetFocus();
-        System.Windows.Forms.SendKeys.SendWait(keys);
-        Console.WriteLine("成功发送按键");
-    }
-
-    private static void GetChildElements(string[] args, string childType)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        var result = new List<Dictionary<string, string>>();
-
-        TreeScope scope = TreeScope.Children;
-        Condition condition = Condition.TrueCondition;
-
-        // 根据类型筛选子元素
-        if (childType != "all")
-        {
-            // 根据控件类型名称获取对应的ControlType
-            ControlType controlType = null;
-            switch (childType.ToLower())
-            {
-                case "button":
-                    controlType = ControlType.Button;
-                    break;
-                case "edit":
-                    controlType = ControlType.Edit;
-                    break;
-                case "combobox":
-                    controlType = ControlType.ComboBox;
-                    break;
-                case "checkbox":
-                    controlType = ControlType.CheckBox;
-                    break;
-                case "radiobutton":
-                    controlType = ControlType.RadioButton;
-                    break;
-                case "listitem":
-                    controlType = ControlType.ListItem;
-                    break;
-                case "treeitem":
-                    controlType = ControlType.TreeItem;
-                    break;
-                case "menu":
-                    controlType = ControlType.Menu;
-                    break;
-                case "menuitem":
-                    controlType = ControlType.MenuItem;
-                    break;
-                case "tab":
-                    controlType = ControlType.Tab;
-                    break;
-                case "window":
-                    controlType = ControlType.Window;
-                    break;
-                default:
-                    throw new Exception("不支持的控件类型: " + childType);
-            }
-
-            if (controlType != null)
-            {
-                condition = new PropertyCondition(
-                    AutomationElement.ControlTypeProperty,
-                    controlType
-                );
-            }
-        }
-
-        var children = element.FindAll(scope, condition);
-        foreach (AutomationElement child in children)
-        {
-            var childInfo = new Dictionary<string, string>();
-            childInfo.Add("id", CacheElement(child));
-            childInfo.Add("name", child.Current.Name);
-            childInfo.Add("class", child.Current.ClassName);
-            childInfo.Add("controlType", child.Current.ControlType.ProgrammaticName);
-            childInfo.Add("type", child.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
-            childInfo.Add("localizedType", child.Current.LocalizedControlType);
-            childInfo.Add("automationId", child.Current.AutomationId);
-            result.Add(childInfo);
-        }
-
-        var serializer = new JavaScriptSerializer();
-        Console.Write(serializer.Serialize(result));
-    }
-
-    private static void GetParentElement(string[] args)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        var parent = TreeWalker.ControlViewWalker.GetParent(element);
-
-        if (parent != null)
-        {
-            var parentInfo = new Dictionary<string, string>();
-            parentInfo.Add("id", CacheElement(parent));
-            parentInfo.Add("name", parent.Current.Name);
-            parentInfo.Add("class", parent.Current.ClassName);
-            parentInfo.Add("controlType", parent.Current.ControlType.ProgrammaticName);
-            parentInfo.Add("type", parent.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
-            parentInfo.Add("localizedType", parent.Current.LocalizedControlType);
-            parentInfo.Add("automationId", parent.Current.AutomationId);
-
-            var serializer = new JavaScriptSerializer();
-            Console.Write(serializer.Serialize(parentInfo));
-        }
-        else
-        {
-            throw new Exception("元素没有父元素");
-        }
-    }
-
-    private static void HighlightElement(string[] args, int duration)
-    {
-        string identifier = GetArgumentValue(args, "-value");
-        string by = GetArgumentValue(args, "-by");
-        var element = GetElementByIdentifier(args, identifier, by);
-        var rect = element.Current.BoundingRectangle;
-
-        // 创建一个半透明的高亮窗口
-        var highlightForm = new System.Windows.Forms.Form
-        {
-            StartPosition = System.Windows.Forms.FormStartPosition.Manual,
-            Location = new System.Drawing.Point((int)rect.Left, (int)rect.Top),
-            Size = new System.Drawing.Size((int)rect.Width, (int)rect.Height),
-            BackColor = System.Drawing.Color.Yellow,
-            Opacity = 0.3,
-            ShowInTaskbar = false,
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.None,
-            TopMost = true
-        };
-
-        highlightForm.Show();
-        Console.WriteLine("正在高亮显示元素");
-
-        // 等待指定时间后关闭高亮
-        Thread.Sleep(duration * 1000);
-        highlightForm.Close();
-        highlightForm.Dispose();
-    }
-
-    private static void ListElements(string[] args, string filter)
-    {
-        var root = GetRootElement(args);
-        var result = new List<Dictionary<string, string>>();
-        string window = GetArgumentValue(args, "-window");
-        string method = GetArgumentValue(args, "-method") ?? "active";
-        string by = GetArgumentValue(args, "-by") ?? "name";
-        string scope = GetArgumentValue(args, "-scope") ?? "children";
-
-        // 确定搜索范围
-        TreeScope searchScope = TreeScope.Children;
-        switch (scope.ToLower())
-        {
-            case "descendants":
-                searchScope = TreeScope.Descendants;
-                break;
-            case "subtree":
-                searchScope = TreeScope.Subtree;
-                break;
-        }
-
-        Condition searchCondition = Condition.TrueCondition;
-
-        // 如果指定了过滤条件，创建一个组合条件
-        if (!string.IsNullOrEmpty(filter))
-        {
-            // 尝试直接使用ControlType
-            if (filter.StartsWith("ControlType."))
-            {
-                string controlTypeName = filter.Substring("ControlType.".Length);
-                ControlType controlType = (ControlType)typeof(ControlType).GetField(controlTypeName).GetValue(null);
-                searchCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, controlType);
-            }
-            else
-            {
-                switch (by.ToLower())
-                {
-                    case "name":
-                        searchCondition = new PropertyCondition(AutomationElement.NameProperty, filter, PropertyConditionFlags.IgnoreCase);
-                        break;
-                    case "class":
-                        searchCondition = new PropertyCondition(AutomationElement.ClassNameProperty, filter, PropertyConditionFlags.IgnoreCase);
-                        break;
-                    case "automation":
-                        searchCondition = new PropertyCondition(AutomationElement.AutomationIdProperty, filter, PropertyConditionFlags.IgnoreCase);
-                        break;
-                    case "xpath":
-                        // XPath暂不支持
-                        throw new Exception("XPath查找暂未实现");
-                    default:
-                        // 如果没有指定查找方式，则使用组合条件
-                        searchCondition = new OrCondition(
-                            new PropertyCondition(AutomationElement.NameProperty, filter, PropertyConditionFlags.IgnoreCase),
-                            new PropertyCondition(AutomationElement.ClassNameProperty, filter, PropertyConditionFlags.IgnoreCase),
-                            new PropertyCondition(AutomationElement.AutomationIdProperty, filter, PropertyConditionFlags.IgnoreCase)
-                        );
-                        break;
-                }
-            }
-        }
-
-        // 如果是按标题搜索，先找到所有匹配的窗口
-        if (method.ToLower() == "title" && !string.IsNullOrEmpty(window))
-        {
-            searchScope = TreeScope.Children;
-            var windows = root.FindAll(searchScope, Condition.TrueCondition);
-            foreach (AutomationElement win in windows)
-            {
-                if (win.Current.Name.Contains(window))
-                {
-                    // 对每个匹配的窗口进行处理
-                    var windowElements = win.FindAll(TreeScope.Subtree, searchCondition);
-                    foreach (AutomationElement element in windowElements)
-                    {
-                        var elementInfo = new Dictionary<string, string>();
-                        elementInfo.Add("id", CacheElement(element));
-                        elementInfo.Add("name", element.Current.Name);
-                        elementInfo.Add("class", element.Current.ClassName);
-                        elementInfo.Add("controlType", element.Current.ControlType.ProgrammaticName);
-                        elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
-                        elementInfo.Add("localizedType", element.Current.LocalizedControlType);
-                        elementInfo.Add("automationId", element.Current.AutomationId);
-                        elementInfo.Add("path", GetElementPath(element));
-
-                        // 添加控件文本值
-                        try
-                        {
-                            var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
-                            if (valuePattern != null)
-                            {
-                                elementInfo.Add("value", valuePattern.Current.Value);
-                            }
-                        }
-                        catch { }
-
-                        result.Add(elementInfo);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // 其他查找方式保持原有逻辑
-            var elements = root.FindAll(searchScope, searchCondition);
-            foreach (AutomationElement element in elements)
-            {
-                var elementInfo = new Dictionary<string, string>();
-                elementInfo.Add("id", CacheElement(element));
-                elementInfo.Add("name", element.Current.Name);
-                elementInfo.Add("class", element.Current.ClassName);
-                elementInfo.Add("controlType", element.Current.ControlType.ProgrammaticName);
-                elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
-                elementInfo.Add("localizedType", element.Current.LocalizedControlType);
-                elementInfo.Add("automationId", element.Current.AutomationId);
-                elementInfo.Add("path", GetElementPath(element));
-
-                // 添加控件文本值
-                try
-                {
-                    var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
-                    if (valuePattern != null)
-                    {
-                        elementInfo.Add("value", valuePattern.Current.Value);
-                    }
-                }
-                catch { }
-
-                result.Add(elementInfo);
-            }
-        }
-
-        var serializer = new JavaScriptSerializer();
-        Console.Write(serializer.Serialize(result));
-    }
-
-    private static string GetElementPath(AutomationElement element)
-    {
-        var path = new List<string>();
-        var current = element;
-
-        while (current != null && current != AutomationElement.RootElement)
-        {
-            string name = current.Current.Name;
-            string type = current.Current.ControlType.ProgrammaticName;
-            string automationId = current.Current.AutomationId;
-            // 构建简单的路径段
-            string pathSegment = type;
-            if (!string.IsNullOrEmpty(automationId))
-            {
-                pathSegment += string.Format("[@AutomationId='{0}']", automationId);
-            }
-            else if (!string.IsNullOrEmpty(name))
-            {
-                pathSegment += string.Format("[@Name='{0}']", name.Replace("'", "&apos;"));
-            }
-
-            path.Insert(0, pathSegment);
-            current = TreeWalker.ControlViewWalker.GetParent(current);
-        }
-
-        return "//" + string.Join("/", path);
-    }
-
-    private static string CacheElement(AutomationElement element)
-    {
-        string elementId = Guid.NewGuid().ToString();
-        elementCache[elementId] = element;
-        return elementId;
-    }
-
-    private static AutomationElement GetRootElement(string[] args)
-    {
-        string window = GetArgumentValue(args, "-window");
-        string method = GetArgumentValue(args, "-method") ?? "active";
-
-        // 如果是active方法，直接返回当前活动窗口
-        if (method.ToLower() == "active")
-        {
-            IntPtr activeHandle = GetForegroundWindow();
-            return AutomationElement.FromHandle(activeHandle);
-        }
-
-        // 其他方法需要检查window参数
-        if (string.IsNullOrEmpty(window))
-        {
-            return AutomationElement.RootElement;
-        }
-
-        switch (method.ToLower())
-        {
-            case "handle":
-                // 通过窗口句柄查找
-                int handle = int.Parse(window);
-                return AutomationElement.FromHandle(new IntPtr(handle));
-
-            case "class":
-                // 通过窗口类名查找
-                var classElements = AutomationElement.RootElement.FindAll(
-                    TreeScope.Children,
-                    new PropertyCondition(AutomationElement.ClassNameProperty, window)
-                );
-                if (classElements.Count > 0)
-                {
-                    return classElements[0];
-                }
-                break;
-
-            case "process":
-                // 通过进程名查找
-                var processes = System.Diagnostics.Process.GetProcessesByName(window);
-                if (processes.Length > 0)
-                {
-                    return AutomationElement.FromHandle(processes[0].MainWindowHandle);
-                }
-                break;
-
-            case "title":
-            default:
-                // 返回根元素，让调用方自己处理查找逻辑
-                return AutomationElement.RootElement;
-        }
-
-        throw new Exception("找不到指定的窗口");
-    }
-
-    private static void InspectElement(string[] args)
-    {
-        // 创建一个半透明的全屏窗口来捕获鼠标事件
-        Form overlayForm = new Form();
-        overlayForm.FormBorderStyle = FormBorderStyle.None;
-        overlayForm.WindowState = FormWindowState.Maximized;
-        overlayForm.TopMost = true;
-        overlayForm.BackColor = Color.Black;
-        overlayForm.Opacity = 0.1;  // 设置为淡淡的蒙版效果
-        overlayForm.Cursor = Cursors.Cross;
-        overlayForm.ShowInTaskbar = false;
-
-        bool completed = false;
-
-        overlayForm.MouseClick += (sender, e) => {
-            if (e.Button == MouseButtons.Left) {
-                try {
-                    Point clickPosition;
-                    GetCursorPos(out clickPosition);
-
-                    // 先关闭覆盖窗口
-                    overlayForm.Hide();
-
-                    // 等待一小段时间确保窗口完全消失
-                    Thread.Sleep(100);
-
-                    // 获取点击位置的元素
-                    var element = AutomationElement.FromPoint(clickPosition.ToWindowsPoint());
-
-                    if (element != null && element != AutomationElement.RootElement) {
-                        InspectElementInfo(element);
-                        completed = true;
-                    }
-                }
-                catch (Exception ex) {
-                    Console.Error.WriteLine(string.Format("Error: {0}", ex.Message));
-                }
-                finally {
-                    overlayForm.Close();
-                }
-            }
-        };
-
-        overlayForm.KeyPress += (sender, e) => {
-            if (e.KeyChar == (char)27) { // ESC键
-                overlayForm.Close();
-                Environment.Exit(0); // 直接退出程序
-            }
-        };
-
-        // 在新线程中显示窗口
-        Thread thread = new Thread(() => {
-            overlayForm.Show();
-            while (!completed) {
-                Application.DoEvents();
-                Thread.Sleep(100);
-            }
+    // 添加坐标信息
+    result.Add("position", new Dictionary<string, int> {
+            { "x", position.X },
+            { "y", position.Y }
         });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
+
+    var serializer = new JavaScriptSerializer();
+    Console.Write(serializer.Serialize(result));
+  }
+
+  private static AutomationElement HandleTaskbarElement(AutomationElement element, Point cursorPos, ref AutomationElement taskbarElement, ref List<AutomationElement> taskbarChildren)
+  {
+    // 检查是否是任务栏元素
+    bool isTaskbarElement = element.Current.ClassName == "Shell_TrayWnd" ||
+                           element.Current.ClassName == "Shell_SecondaryTrayWnd";
+
+    // 如果是新的任务栏元素，获取其所有子元素
+    if (isTaskbarElement && element != taskbarElement)
+    {
+      taskbarElement = GetTaskbarElement();
+      if (taskbarElement != null)
+      {
+        taskbarChildren = GetTaskbarChildren(taskbarElement);
+      }
     }
 
-    private static void InspectElementInfo(AutomationElement element)
+    // 如果是任务栏区域，在缓存的子元素中查找
+    if (isTaskbarElement && taskbarChildren != null && taskbarChildren.Count > 0)
     {
-        Dictionary<string, object> elementInfo = new Dictionary<string, object>();
+      var point = cursorPos.ToWindowsPoint();
+      AutomationElement bestMatch = null;
+      double minArea = double.MaxValue;
 
-        // 基本信息
-        elementInfo.Add("id", element.Current.AutomationId);
-        elementInfo.Add("name", element.Current.Name);
-        elementInfo.Add("class", element.Current.ClassName);
-        elementInfo.Add("controlType", element.Current.ControlType.ProgrammaticName);
-        elementInfo.Add("type", element.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""));
-        elementInfo.Add("localizedType", element.Current.LocalizedControlType);
-        elementInfo.Add("automationId", element.Current.AutomationId);
-        elementInfo.Add("path", GetElementPath(element));
-        elementInfo.Add("handle", element.Current.NativeWindowHandle);
-
-        // 添加控件文本值
+      foreach (var child in taskbarChildren)
+      {
         try
         {
-            var valuePattern = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
-            if (valuePattern != null)
+          var childRect = child.Cached.BoundingRectangle;
+          if (childRect.Contains(point))
+          {
+            double area = childRect.Width * childRect.Height;
+            if (area < minArea && area > 0)
             {
-                elementInfo.Add("value", valuePattern.Current.Value);
+              minArea = area;
+              bestMatch = child;
             }
+          }
         }
         catch { }
+      }
 
-        // 获取窗口信息
-        var walker = TreeWalker.ControlViewWalker;
-        var parent = element;
-        while (parent != null && parent != AutomationElement.RootElement && parent.Current.ControlType.Id != UIA_ControlTypeIds.Window)
-        {
-            parent = walker.GetParent(parent);
-        }
-
-        // 添加窗口详细信息
-        if (parent != null && parent != AutomationElement.RootElement)
-        {
-            var processId = parent.Current.ProcessId;
-            var process = System.Diagnostics.Process.GetProcessById(processId);
-            elementInfo.Add("window", new
-            {
-                title = parent.Current.Name,
-                @class = parent.Current.ClassName,
-                handle = parent.Current.NativeWindowHandle,
-                processName = process.ProcessName,
-                processId = processId,
-                processPath = process.MainModule.FileName
-            });
-        }
-
-        // 添加父元素信息
-        var immediateParent = walker.GetParent(element);
-        if (immediateParent != null && immediateParent != AutomationElement.RootElement)
-        {
-            elementInfo.Add("parent", new
-            {
-                handle = immediateParent.Current.NativeWindowHandle,
-                path = GetElementPath(immediateParent),
-                @class = immediateParent.Current.ClassName,
-                name = immediateParent.Current.Name,
-                controlType = immediateParent.Current.ControlType.ProgrammaticName,
-                type = immediateParent.Current.ControlType.ProgrammaticName.Replace("ControlType.", ""),
-                localizedType = immediateParent.Current.LocalizedControlType,
-                automationId = immediateParent.Current.AutomationId
-            });
-        }
-
-        // 位置信息
-        elementInfo.Add("location", new {
-            x = element.Current.BoundingRectangle.X,
-            y = element.Current.BoundingRectangle.Y,
-            width = element.Current.BoundingRectangle.Width,
-            height = element.Current.BoundingRectangle.Height
-        });
-
-        // 支持的模式
-        List<string> patterns = new List<string>();
-        foreach (AutomationPattern pattern in element.GetSupportedPatterns())
-        {
-            patterns.Add(pattern.ProgrammaticName);
-        }
-        elementInfo.Add("patterns", patterns);
-
-        // 输出 JSON
-        var serializer = new JavaScriptSerializer();
-        Console.Write(serializer.Serialize(elementInfo));
+      if (bestMatch != null)
+      {
+        return bestMatch;
+      }
     }
 
-    // 序列化为 JSON 字符串
-    private static string JsonSerialize(object obj)
-    {
-        if (obj == null) return "null";
+    return element;
+  }
 
-        if (obj is string)
-        {
-            return string.Format("\"{0}\"", ((string)obj).Replace("\"", "\\\""));
-        }
-
-        if (obj is bool)
-        {
-            return obj.ToString().ToLower();
-        }
-
-        if (obj is int || obj is long || obj is float || obj is double)
-        {
-            return obj.ToString();
-        }
-
-        if (obj is Dictionary<string, object>)
-        {
-            var dict = obj as Dictionary<string, object>;
-            var pairs = dict.Select(kvp => string.Format("\"{0}\": {1}", kvp.Key, JsonSerialize(kvp.Value)));
-            return string.Format("{{{0}}}", string.Join(", ", pairs));
-        }
-
-        if (obj is System.Collections.IEnumerable)
-        {
-            var items = ((System.Collections.IEnumerable)obj).Cast<object>().Select(item => JsonSerialize(item));
-            return string.Format("[{0}]", string.Join(", ", items));
-        }
-
-        return "null";
-    }
 }

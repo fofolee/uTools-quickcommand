@@ -62,16 +62,20 @@ public class AutomationTool
     [DllImport("user32.dll")]
     private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
-    private const uint WM_KEYDOWN = 0x0100;
-    private const uint WM_KEYUP = 0x0101;
-    private const uint WM_KEYPRESS = 0x0102;
-    private const uint WM_CHAR = 0x0102;
-    private const uint WM_SETTEXT = 0x000C;
-    private const uint WM_LBUTTONDOWN = 0x0201;
-    private const uint WM_LBUTTONUP = 0x0202;
-    private const uint WM_RBUTTONDOWN = 0x0204;
-    private const uint WM_RBUTTONUP = 0x0205;
-    private const uint WM_LBUTTONDBLCLK = 0x0203;
+    private const int WM_KEYDOWN = 0x0100;
+    private const int WM_KEYUP = 0x0101;
+    private const int WM_CHAR = 0x0102;
+    private const int WM_SETTEXT = 0x000C;
+    private const int WM_LBUTTONDOWN = 0x0201;
+    private const int WM_LBUTTONUP = 0x0202;
+    private const int WM_RBUTTONDOWN = 0x0204;
+    private const int WM_RBUTTONUP = 0x0205;
+    private const int WM_LBUTTONDBLCLK = 0x0203;
+
+    // 添加按键状态标志
+    private const int KEYEVENTF_KEYDOWN = 0x0;
+    private const int KEYEVENTF_EXTENDEDKEY = 0x1;
+    private const int KEYEVENTF_KEYUP = 0x2;
 
     private delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
@@ -131,6 +135,11 @@ public class AutomationTool
 
     [DllImport("user32.dll")]
     private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+    private const uint MAPVK_VK_TO_VSC = 0x00;
+    private const uint MAPVK_VSC_TO_VK = 0x01;
+    private const uint MAPVK_VK_TO_CHAR = 0x02;
+    private const uint MAPVK_VSC_TO_VK_EX = 0x03;
     #endregion
 
     public static void Main(string[] args)
@@ -460,20 +469,54 @@ public class AutomationTool
             // 按下修饰键
             foreach (byte modifier in modifierKeys)
             {
-                PostMessage(hWnd, WM_KEYDOWN, modifier, 0);
+                // 获取扫描码
+                uint scanCode = MapVirtualKey((uint)modifier, MAPVK_VK_TO_VSC);
+
+                // 构造 lParam
+                int lParamDown = 0x00000001 | // repeat count = 1
+                               ((int)scanCode << 16) | // scan code
+                               (0x1 << 24);  // extended key for modifiers
+
+                PostMessage(hWnd, WM_KEYDOWN, modifier, lParamDown);
+                Thread.Sleep(10); // 短暂延迟确保修饰键被正确识别
             }
 
-            // 发送主键字符
+            // 发送主键
             if (mainKey > 0)
             {
-                PostMessage(hWnd, WM_CHAR, mainKey, 0);
+                // 获取主键的扫描码
+                uint scanCode = MapVirtualKey((uint)mainKey, MAPVK_VK_TO_VSC);
+
+                // 构造主键的 lParam
+                int lParamDown = 0x00000001 | // repeat count = 1
+                               ((int)scanCode << 16); // scan code
+
+                int lParamUp = 0x00000001 | // repeat count = 1
+                              ((int)scanCode << 16) | // scan code
+                              (0xC0 << 24);  // key up + previous key state
+
+                // 发送按键按下
+                PostMessage(hWnd, WM_KEYDOWN, mainKey, lParamDown);
+                Thread.Sleep(10); // 短暂延迟
+
+                // 发送按键释放
+                PostMessage(hWnd, WM_KEYUP, mainKey, lParamUp);
+                Thread.Sleep(10); // 短暂延迟
             }
 
-            // 释放修饰键
+            // 释放修饰键（反序释放）
             for (int i = modifierKeys.Count - 1; i >= 0; i--)
             {
                 byte modifier = modifierKeys[i];
-                PostMessage(hWnd, WM_KEYUP, modifier, 0);
+                uint scanCode = MapVirtualKey((uint)modifier, MAPVK_VK_TO_VSC);
+
+                // 构造释放修饰键的 lParam
+                int lParamUp = 0x00000001 | // repeat count = 1
+                              ((int)scanCode << 16) | // scan code
+                              (0xC1 << 24);  // extended key + key up + previous key state
+
+                PostMessage(hWnd, WM_KEYUP, modifier, lParamUp);
+                Thread.Sleep(10); // 短暂延迟
             }
 
             // 如果有多个按键组合，等待一下
@@ -481,58 +524,6 @@ public class AutomationTool
             {
                 Thread.Sleep(50);
             }
-        }
-    }
-
-    private static bool IsSpecialKey(byte vKey)
-    {
-        switch (vKey)
-        {
-            // 修饰键
-            case 0xA0: // VK_LSHIFT
-            case 0xA2: // VK_LCONTROL
-            case 0xA4: // VK_LMENU
-            case 0x5B: // VK_LWIN
-            // 控制键
-            case 0x08: // VK_BACK
-            case 0x09: // VK_TAB
-            case 0x0D: // VK_RETURN
-            case 0x1B: // VK_ESCAPE
-            case 0x20: // VK_SPACE
-            case 0x2E: // VK_DELETE
-            // 方向键
-            case 0x25: // VK_LEFT
-            case 0x26: // VK_UP
-            case 0x27: // VK_RIGHT
-            case 0x28: // VK_DOWN
-            // 导航键
-            case 0x24: // VK_HOME
-            case 0x23: // VK_END
-            case 0x21: // VK_PRIOR (PageUp)
-            case 0x22: // VK_NEXT (PageDown)
-            case 0x2D: // VK_INSERT
-            // 功能键
-            case 0x70: // VK_F1
-            case 0x71: // VK_F2
-            case 0x72: // VK_F3
-            case 0x73: // VK_F4
-            case 0x74: // VK_F5
-            case 0x75: // VK_F6
-            case 0x76: // VK_F7
-            case 0x77: // VK_F8
-            case 0x78: // VK_F9
-            case 0x79: // VK_F10
-            case 0x7A: // VK_F11
-            case 0x7B: // VK_F12
-            // 其他常用键
-            case 0x14: // VK_CAPITAL
-            case 0x90: // VK_NUMLOCK
-            case 0x91: // VK_SCROLL
-            case 0x2C: // VK_SNAPSHOT
-            case 0x13: // VK_PAUSE
-                return true;
-            default:
-                return false;
         }
     }
 
@@ -554,56 +545,74 @@ public class AutomationTool
         return null;
     }
 
-    private static bool HasArgument(string[] args, string key)
-    {
-        return Array.Exists(args, arg => arg.Equals(key, StringComparison.OrdinalIgnoreCase));
-    }
-
     private static byte GetVirtualKeyCode(string key)
     {
-        switch (key.ToLower())
+        switch (key.ToUpper())
         {
-            case "ctrl":
-            case "^": return 0xA2;  // VK_LCONTROL
-            case "alt": return 0xA4;  // VK_LMENU
-            case "shift": return 0xA0;  // VK_LSHIFT
-            case "win": return 0x5B;    // VK_LWIN
-            case "enter": return 0x0D;
-            case "tab": return 0x09;
-            case "esc": return 0x1B;
-            case "space": return 0x20;
-            case "backspace": return 0x08;
-            case "delete": return 0x2E;
-            // 方向键
-            case "left": return 0x25;    // VK_LEFT
-            case "up": return 0x26;      // VK_UP
-            case "right": return 0x27;   // VK_RIGHT
-            case "down": return 0x28;    // VK_DOWN
-            // 导航键
-            case "home": return 0x24;    // VK_HOME
-            case "end": return 0x23;     // VK_END
-            case "pageup": return 0x21;  // VK_PRIOR
-            case "pagedown": return 0x22; // VK_NEXT
-            case "insert": return 0x2D;  // VK_INSERT
-            // 功能键
-            case "f1": return 0x70;      // VK_F1
-            case "f2": return 0x71;
-            case "f3": return 0x72;
-            case "f4": return 0x73;
-            case "f5": return 0x74;
-            case "f6": return 0x75;
-            case "f7": return 0x76;
-            case "f8": return 0x77;
-            case "f9": return 0x78;
-            case "f10": return 0x79;
-            case "f11": return 0x7A;
-            case "f12": return 0x7B;
-            // 其他常用键
-            case "capslock": return 0x14; // VK_CAPITAL
-            case "numlock": return 0x90;  // VK_NUMLOCK
-            case "scrolllock": return 0x91; // VK_SCROLL
-            case "printscreen": return 0x2C; // VK_SNAPSHOT
-            case "pause": return 0x13;    // VK_PAUSE
+            // 修饰键
+            case "CTRL":
+            case "^": return 0x11;    // VK_CONTROL
+            case "ALT":
+            case "%": return 0x12;    // VK_MENU
+            case "SHIFT": return 0x10;    // VK_SHIFT
+
+            // 特殊按键
+            case "{BACKSPACE}":
+            case "{BS}":
+            case "{BKSP}": return 0x08;  // VK_BACK
+            case "{BREAK}": return 0x03;  // VK_CANCEL
+            case "{CAPSLOCK}": return 0x14;  // VK_CAPITAL
+            case "{DELETE}":
+            case "{DEL}": return 0x2E;  // VK_DELETE
+            case "{DOWN}": return 0x28;  // VK_DOWN
+            case "{END}": return 0x23;  // VK_END
+            case "{ENTER}":
+            case "{RETURN}": return 0x0D;  // VK_RETURN
+            case "{ESC}": return 0x1B;  // VK_ESCAPE
+            case "{HELP}": return 0x2F;  // VK_HELP
+            case "{HOME}": return 0x24;  // VK_HOME
+            case "{INSERT}":
+            case "{INS}": return 0x2D;  // VK_INSERT
+            case "{LEFT}": return 0x25;  // VK_LEFT
+            case "{NUMLOCK}": return 0x90;  // VK_NUMLOCK
+            case "{PGDN}": return 0x22;  // VK_NEXT
+            case "{PGUP}": return 0x21;  // VK_PRIOR
+            case "{PRTSC}": return 0x2C;  // VK_SNAPSHOT
+            case "{RIGHT}": return 0x27;  // VK_RIGHT
+            case "{SCROLLLOCK}": return 0x91;  // VK_SCROLL
+            case "{TAB}": return 0x09;  // VK_TAB
+            case "{UP}": return 0x26;  // VK_UP
+
+            // 功能键 F1-F16
+            case "{F1}": return 0x70;
+            case "{F2}": return 0x71;
+            case "{F3}": return 0x72;
+            case "{F4}": return 0x73;
+            case "{F5}": return 0x74;
+            case "{F6}": return 0x75;
+            case "{F7}": return 0x76;
+            case "{F8}": return 0x77;
+            case "{F9}": return 0x78;
+            case "{F10}": return 0x79;
+            case "{F11}": return 0x7A;
+            case "{F12}": return 0x7B;
+
+            // 数字键盘
+            case "{ADD}": return 0x6B;  // VK_ADD
+            case "{SUBTRACT}": return 0x6D;  // VK_SUBTRACT
+            case "{MULTIPLY}": return 0x6A;  // VK_MULTIPLY
+            case "{DIVIDE}": return 0x6F;  // VK_DIVIDE
+            case "{NUMPAD0}": return 0x60;  // VK_NUMPAD0
+            case "{NUMPAD1}": return 0x61;
+            case "{NUMPAD2}": return 0x62;
+            case "{NUMPAD3}": return 0x63;
+            case "{NUMPAD4}": return 0x64;
+            case "{NUMPAD5}": return 0x65;
+            case "{NUMPAD6}": return 0x66;
+            case "{NUMPAD7}": return 0x67;
+            case "{NUMPAD8}": return 0x68;
+            case "{NUMPAD9}": return 0x69;
+
             default:
                 if (key.Length == 1)
                 {
