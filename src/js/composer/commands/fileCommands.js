@@ -1,7 +1,7 @@
 export const fileCommands = {
   label: "文件操作",
   icon: "folder_open",
-  defaultOpened: true,
+  defaultOpened: false,
   commands: [
     {
       value: "quickcomposer.file.operation",

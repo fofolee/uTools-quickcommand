@@ -18,34 +18,31 @@ import { windowsCommands } from "./windowsCommands";
 import { statusCommands } from "./statusCommands";
 import { macosCommands } from "./macosCommands";
 import { scriptCommands } from "./scriptCommands";
-let commands = [
+
+const platformCommands = {
+  win32: [windowsCommands],
+  darwin: [macosCommands],
+  linux: [],
+};
+
+export const commandCategories = [
   fileCommands,
   networkCommands,
   systemCommands,
-  statusCommands,
   audioCommands,
   imageCommands,
-  notifyCommands,
   utoolsCommands,
+  ...platformCommands[window.processPlatform],
   dataCommands,
   codingCommands,
   controlCommands,
   scriptCommands,
   uiCommands,
   simulateCommands,
+  statusCommands,
   mathCommands,
   userdataCommands,
   screenCommands,
+  notifyCommands,
+  otherCommands,
 ];
-
-if (window.utools.isWindows()) {
-  commands.push(windowsCommands);
-}
-
-if (window.utools.isMacOS()) {
-  commands.push(macosCommands);
-}
-
-commands.push(otherCommands);
-
-export const commandCategories = commands;

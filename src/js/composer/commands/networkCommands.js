@@ -3,7 +3,7 @@ import { newVarInputVal } from "../varInputValManager";
 export const networkCommands = {
   label: "网络操作",
   icon: "language",
-  defaultOpened: true,
+  defaultOpened: false,
   commands: [
     {
       value: "utools.shellOpenExternal",
