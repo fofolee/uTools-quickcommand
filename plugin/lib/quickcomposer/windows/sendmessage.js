@@ -2,7 +2,7 @@ const { runCsharpFeature } = require("../../csharp");
 
 /**
  * 执行消息发送操作
- * @param {string} type - 操作类型, 可选值: "keyboard"|"mouse"|"inspect"
+ * @param {string} type - 操作类型, 可选值: "keyboard"|"mouse"|"list"
  * @param {Object} params - 参数对象
  * @param {string} params.method - 查找方式："title"|"handle"|"process"|"class"|"active"
  * @param {string} params.window - 窗口标题、句柄、进程名、类名
@@ -47,7 +47,7 @@ async function runSendMessage(type, params = {}) {
       }
       break;
 
-    case "inspect":
+    case "list":
       if (filter) {
         args.push("-filter", filter);
       }
@@ -61,54 +61,53 @@ async function runSendMessage(type, params = {}) {
   try {
     const result = await runCsharpFeature("sendmessage", args);
     if (result) {
-      const jsonResult = JSON.parse(result);
-      if (type === "inspect") {
-        return jsonResult;
-      }
-      return { success: true, control: jsonResult };
+      const resultStr = result.toString().trim();
+      if (type === "list") return JSON.parse(resultStr);
+      if (resultStr === "true") return { success: true };
     }
   } catch (err) {
     error = err
       .toString()
       .replace(/^Error: /, "")
       .trim();
+    console.log(error);
   }
 
-  if (type === "inspect") return [];
+  if (type === "list") return [];
   return { success: false, error };
 }
 
 module.exports = {
-  sendKeys: (method, window, keys, options = {}) =>
+  sendKeys: (windowHandle, keys, options = {}) =>
     runSendMessage("keyboard", {
-      method,
-      window,
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
       action: "keys",
       value: keys,
       options,
     }),
 
-  sendText: (method, window, text, options = {}) =>
+  sendText: (windowHandle, text, options = {}) =>
     runSendMessage("keyboard", {
-      method,
-      window,
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
       action: "text",
       value: text,
       options,
     }),
 
-  click: (method, window, action = "click", options = {}) =>
+  click: (windowHandle, action = "click", options = {}) =>
     runSendMessage("mouse", {
-      method,
-      window,
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
       action,
       options,
     }),
 
-  inspectWindow: (method, window, options = {}) =>
-    runSendMessage("inspect", {
-      method,
-      window,
+  listControls: (windowHandle, options = {}) =>
+    runSendMessage("list", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
       options,
     }),
 };

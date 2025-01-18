@@ -177,15 +177,19 @@ const searchWindowConfig = [
   },
 ];
 
-const searchElementConfig = [
+const windowHandleConfig = [
   {
     label: "窗口句柄",
     component: "VariableInput",
     icon: "window",
     width: 12,
-    placeholder: "留空则使用当前活动窗口",
+    placeholder: "可从搜索/选择窗口获取，留空则使用当前活动窗口",
     defaultValue: newVarInputVal("str", ""),
   },
+];
+
+const searchElementConfig = [
+  windowHandleConfig,
   {
     label: "元素查找方式",
     component: "q-select",
@@ -267,7 +271,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.window.setTopMost",
       label: "窗口控制",
       icon: "window",
-      config: searchWindowConfig,
+      config: windowHandleConfig,
       subCommands: [
         {
           value: "quickcomposer.windows.window.setTopMost",
@@ -630,14 +634,14 @@ export const windowsCommands = {
     },
     // sendmessage
     {
-      value: "quickcomposer.windows.sendmessage.inspectWindow",
+      value: "quickcomposer.windows.sendmessage.listControls",
       label: "发送控制消息",
       icon: "smart_button",
       isAsync: true,
-      config: searchWindowConfig,
+      config: windowHandleConfig,
       subCommands: [
         {
-          value: "quickcomposer.windows.sendmessage.inspectWindow",
+          value: "quickcomposer.windows.sendmessage.listControls",
           label: "获取控件树",
           icon: "account_tree",
           outputVariable: "controlsTree",

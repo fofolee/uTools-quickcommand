@@ -123,7 +123,10 @@ async function runAutomation(
       }
     }
   } catch (err) {
-    error = err.toString().trim();
+    error = err
+      .toString()
+      .replace(/^Error: /, "")
+      .trim();
   }
 
   if (type === "inspect") return { error };

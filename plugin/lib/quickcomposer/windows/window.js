@@ -57,7 +57,7 @@ async function runWindow(type, params = {}) {
       if (type === "info") {
         return jsonResult;
       }
-      return { success: true, window: jsonResult };
+      return { success: true };
     }
   } catch (err) {
     error = err
@@ -72,27 +72,63 @@ async function runWindow(type, params = {}) {
 }
 
 module.exports = {
-  setTopMost: (method, window, isTopMost) =>
-    runWindow("topmost", { method, window, value: isTopMost }),
+  setTopMost: (windowHandle, isTopMost) =>
+    runWindow("topmost", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+      value: isTopMost,
+    }),
 
-  setOpacity: (method, window, opacity) =>
-    runWindow("opacity", { method, window, value: opacity }),
+  setOpacity: (windowHandle, opacity) =>
+    runWindow("opacity", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+      value: opacity,
+    }),
 
-  setWindowRect: (method, window, x, y, width, height) =>
-    runWindow("rect", { method, window, value: { x, y, width, height } }),
+  setWindowRect: (windowHandle, x, y, width, height) =>
+    runWindow("rect", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+      value: { x, y, width, height },
+    }),
 
-  setWindowState: (method, window, state) =>
-    runWindow("state", { method, window, value: state }),
+  setWindowState: (windowHandle, state) =>
+    runWindow("state", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+      value: state,
+    }),
 
-  closeWindow: (method, window) => runWindow("close", { method, window }),
+  closeWindow: (windowHandle) =>
+    runWindow("close", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+    }),
 
-  setFocus: (method, window) => runWindow("focus", { method, window }),
+  setFocus: (windowHandle) =>
+    runWindow("focus", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+    }),
 
-  setBorder: (method, window, hasBorder) =>
-    runWindow("border", { method, window, value: hasBorder }),
+  setBorder: (windowHandle, hasBorder) =>
+    runWindow("border", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+      value: hasBorder,
+    }),
 
-  setClickThrough: (method, window, isTransparent) =>
-    runWindow("clickthrough", { method, window, value: isTransparent }),
+  setClickThrough: (windowHandle, isTransparent) =>
+    runWindow("clickthrough", {
+      method: windowHandle ? "handle" : "active",
+      window: windowHandle,
+      value: isTransparent,
+    }),
 
-  getWindowInfo: (method, window) => runWindow("info", { method, window }),
+  getWindowInfo: (method, window) =>
+    runWindow("info", {
+      method,
+      window,
+    }),
 };
