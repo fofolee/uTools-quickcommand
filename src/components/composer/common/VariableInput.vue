@@ -9,154 +9,39 @@
   >
     <template v-slot:append>
       <q-btn
-        v-if="hasSelectedVariable"
         flat
         dense
-        icon="close"
-        size="sm"
-        class="clear-btn prepend-btn"
-        @click="clearVariable"
-      >
-        <q-tooltip>清除选中的变量</q-tooltip>
-      </q-btn>
-      <q-btn
-        flat
-        dense
-        :icon="isString ? 'format_quote' : 'data_object'"
         size="sm"
         class="string-toggle prepend-btn"
+        :icon="isString ? 'format_quote' : 'data_object'"
         @click="toggleType"
-        v-if="!hasSelectedVariable"
       >
-        <q-tooltip>{{
-          (isString
-            ? "当前类型是：字符串"
-            : "当前类型是：变量、数字、表达式等") +
-          (disableToggleType ? "" : "，点击切换")
-        }}</q-tooltip>
+        <q-tooltip>{{ typeToggleTooltip }}</q-tooltip>
       </q-btn>
       <!-- 选项下拉按钮 -->
-      <q-btn-dropdown
-        v-if="options.items && !hasSelectedVariable"
-        flat
-        dense
-        size="sm"
-        dropdown-icon="menu"
-        no-icon-animation
-        class="options-dropdown prepend-btn"
-      >
-        <q-list class="options-item-list">
-          <template v-if="options.multiSelect">
-            <q-item
-              v-for="item in normalizedItems"
-              :key="getItemValue(item)"
-              clickable
-              class="option-item"
-              @click="toggleSelectItem(item)"
-            >
-              <q-checkbox
-                size="xs"
-                :model-value="isItemSelected(item)"
-                @update:model-value="toggleSelectItem(item)"
-              />
-              <div class="option-item-label">{{ getItemLabel(item) }}</div>
-            </q-item>
-            <q-separator />
-            <q-item
-              clickable
-              class="option-item"
-              @click="confirmMultiSelect"
-              v-close-popup
-            >
-              <q-item-section class="text-primary">
-                确定 (已选择 {{ selectedItems.length }} 项)
-              </q-item-section>
-            </q-item>
-          </template>
-          <template v-else>
-            <q-item
-              v-for="item in normalizedItems"
-              :key="getItemValue(item)"
-              clickable
-              v-close-popup
-              @click="selectItem(item)"
-              class="option-item"
-            >
-              <q-item-section>
-                {{ getItemLabel(item) }}
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-list>
-      </q-btn-dropdown>
-      <q-btn
-        v-if="!hasSelectedVariable && options.dialog"
-        flat
-        dense
-        icon="file_open"
-        size="sm"
+      <ItemList
+        v-if="options.items"
+        :items="options.items"
+        :multiSelect="options.multiSelect"
+        @emit-value="updateValBySelect"
         class="prepend-btn"
-        @click="handleFileOpen(options.dialog)"
-      >
-        <q-tooltip>选择文件</q-tooltip>
-      </q-btn>
+      />
+      <!-- 文件选择按钮 -->
+      <FileSelector
+        v-if="options.dialog"
+        :dialog="options.dialog"
+        @emit-value="updateValBySelect"
+        class="prepend-btn"
+      />
+      <!-- 窗口选择按钮 -->
+      <WindowSelector
+        v-if="options.window"
+        :window="options.window"
+        @emit-value="updateValBySelect"
+        class="prepend-btn"
+      />
       <!-- 变量选择下拉 -->
-      <q-btn-dropdown
-        flat
-        dense
-        stretch
-        class="variable-dropdown prepend-btn"
-        size="sm"
-        @click="variables = getAvailableVariables()"
-      >
-        <q-list class="variable-list">
-          <q-item-label header class="variable-label">
-            <q-icon name="functions" size="15px" />
-            选择变量
-          </q-item-label>
-
-          <q-separator class="q-my-xs" />
-
-          <template v-if="variables.length">
-            <q-item
-              v-for="variable in variables"
-              :key="variable.name"
-              clickable
-              v-close-popup
-              @click="insertVariable(variable)"
-              class="variable-item"
-            >
-              <q-item-section>
-                <q-item-label class="variable-name">
-                  {{ variable.name }}
-                </q-item-label>
-                <q-item-label caption class="variable-source">
-                  来自: {{ variable.sourceCommand.label }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
-          <template v-else>
-            <q-item>
-              <q-item-section>
-                <q-item-label class="empty-variables-tip">
-                  <div class="q-gutter-md">
-                    <div class="row items-center justify-center text-grey-6">
-                      <q-icon name="info" size="20px" class="q-mr-sm" />
-                      <span>当前命令没有可用变量</span>
-                    </div>
-                    <div class="row items-center justify-center text-grey-7">
-                      <div class="text-grey-7">点击其他命令卡片右上角的</div>
-                      <q-icon name="output" size="16px" class="q-mx-xs" />
-                      <div>按钮添加输出变量</div>
-                    </div>
-                  </div>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-list>
-      </q-btn-dropdown>
+      <VariableList @emit-value="updateValBySelect" class="prepend-btn" />
     </template>
     <template v-slot:prepend>
       <q-icon v-if="!noIcon" :name="icon || 'code'" />
@@ -165,10 +50,17 @@
 </template>
 
 <script>
-import { defineComponent, inject } from "vue";
+import { defineComponent } from "vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
+import ItemList from "./varinput/ItemList.vue";
+import FileSelector from "./varinput/FileSelector.vue";
+import VariableList from "./varinput/VariableList.vue";
+import WindowSelector from "./varinput/WindowSelector.vue";
+
 /**
+
  * 变量输入框组件
+
  * @description 支持变量选择和字符串输入的输入框组件
  *
  * @property {Object} modelValue - 输入框的值对象
@@ -206,6 +98,13 @@ import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "VariableInput",
 
+  components: {
+    ItemList,
+    FileSelector,
+    VariableList,
+    WindowSelector,
+  },
+
   props: {
     modelValue: {
       type: Object,
@@ -227,36 +126,14 @@ export default defineComponent({
   },
 
   emits: ["update:modelValue"],
-  setup() {
-    const getCurrentVariables = inject("getCurrentVariables");
-    const commandIndex = inject("commandIndex", null);
-
-    const getAvailableVariables = () => {
-      // commandIndex 是响应式的，所以需要使用 value 来获取其值
-      return getCurrentVariables().filter(
-        (variable) => variable.sourceCommand.index < commandIndex.value
-      );
-    };
-
-    return {
-      getAvailableVariables,
-    };
-  },
 
   data() {
     return {
       selectedVariable: null,
-      variables: [],
-      selectedItems: [],
     };
   },
 
   computed: {
-    // 判断是否有选中的变量，用于控制UI显示和行为
-    hasSelectedVariable() {
-      return this.selectedVariable !== null;
-    },
-
     isString: {
       get() {
         return this.modelValue.isString;
@@ -266,6 +143,11 @@ export default defineComponent({
           ...this.modelValue,
           isString: value,
         });
+      },
+      typeToggleTooltip() {
+        const currentType = this.isString ? "字符串" : "变量、数字、表达式等";
+        const toggleText = this.disableToggleType ? "" : "，点击切换";
+        return `当前类型是：${currentType}${toggleText}`;
       },
     },
 
@@ -280,27 +162,9 @@ export default defineComponent({
         });
       },
     },
-
-    // 标准化选项格式
-    normalizedItems() {
-      if (!this.options.items) return [];
-      return this.options.items.map((item) => {
-        if (typeof item === "string") {
-          return { label: item, value: item };
-        }
-        return item;
-      });
-    },
   },
 
   methods: {
-    // 插入变量时的处理
-    insertVariable(variable) {
-      this.selectedVariable = variable;
-      this.isString = false; // 变量模式下不需要字符串处理
-      this.$emit("update:modelValue", newVarInputVal("var", variable.name));
-    },
-
     // 清除变量时的处理
     clearVariable() {
       this.selectedVariable = null;
@@ -317,75 +181,12 @@ export default defineComponent({
       });
     },
 
-    getItemLabel(option) {
-      return typeof option === "string" ? option : option.label;
+    updateValBySelect(type, value) {
+      const newValue = this.options.appendItem
+        ? this.inputValue + value
+        : value;
+      this.$emit("update:modelValue", newVarInputVal(type, newValue));
     },
-
-    getItemValue(option) {
-      return typeof option === "string" ? option : option.value;
-    },
-
-    selectItem(option) {
-      if (this.options.multiSelect) {
-        this.toggleSelectItem(option);
-      } else {
-        const value = this.options.appendItem
-          ? `${this.inputValue}${this.getItemValue(option)}`
-          : this.getItemValue(option);
-        this.$emit("update:modelValue", newVarInputVal("str", value));
-      }
-    },
-    handleFileOpen(dialog) {
-      let { type, options } = window.lodashM.cloneDeep(dialog);
-      if (!type) type = "open";
-      if (type === "open") {
-        const files = utools.showOpenDialog(options);
-        if (!files) return;
-        if (files.length > 1) {
-          this.$emit("update:modelValue", newVarInputVal("var", files));
-        } else if (files.length === 1) {
-          this.$emit("update:modelValue", newVarInputVal("str", files[0]));
-        }
-      } else {
-        const file = utools.showSaveDialog(options);
-        if (!file) return;
-        this.$emit("update:modelValue", newVarInputVal("str", file));
-      }
-    },
-
-    // 新增：判断选项是否被选中
-    isItemSelected(item) {
-      return this.selectedItems.includes(this.getItemValue(item));
-    },
-
-    // 新增：切换选项选中状态
-    toggleSelectItem(item) {
-      const value = this.getItemValue(item);
-      const index = this.selectedItems.indexOf(value);
-      if (index === -1) {
-        this.selectedItems.push(value);
-      } else {
-        this.selectedItems.splice(index, 1);
-      }
-    },
-
-    // 新增：确认多选
-    confirmMultiSelect() {
-      if (this.selectedItems.length === 0) return;
-      this.$emit(
-        "update:modelValue",
-        newVarInputVal(
-          "var",
-          JSON.stringify(this.selectedItems).replace(/,/g, ", ")
-        )
-      );
-      this.selectedItems = []; // 清空选择
-    },
-  },
-
-  // 在组件销毁时清空选择
-  beforeUnmount() {
-    this.selectedItems = [];
   },
 });
 </script>
@@ -426,107 +227,5 @@ export default defineComponent({
   transform: translateX(0);
   margin-left: 5px;
   transition: all 0.6s ease;
-}
-
-.variable-dropdown.prepend-btn {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.body--dark .variable-dropdown.prepend-btn {
-  background-color: rgba(255, 255, 255, 0.02);
-}
-
-.clear-btn:hover {
-  color: var(--q-negative);
-}
-
-/* 变量列表样式 */
-.variable-list {
-  min-width: 200px;
-  padding: 4px;
-}
-
-.variable-item {
-  border-radius: 4px;
-  padding: 0px 16px;
-  transition: all 0.3s ease;
-  min-height: 40px;
-}
-
-.variable-item:hover {
-  background-color: var(--q-primary-opacity-10);
-}
-
-.variable-label {
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.variable-name {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.variable-source {
-  font-size: 11px;
-  opacity: 0.7;
-}
-
-/* 暗色模式适配 */
-.body--dark .variable-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.options-item-list {
-  min-width: 120px;
-  padding: 4px;
-}
-
-.option-item {
-  border-radius: 4px;
-  padding: 0px 16px;
-  transition: all 0.3s ease;
-  min-height: 40px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.option-item:hover {
-  background-color: var(--q-primary-opacity-10);
-}
-
-.option-item-label {
-  text-align: center;
-  flex: 1;
-}
-
-/* 暗色模式适配 */
-.body--dark .option-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.empty-variables-tip {
-  text-align: center;
-  font-size: 13px;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
-}
-
-.empty-variables-tip:hover {
-  opacity: 1;
-}
-
-/* 多选确认按钮样式 */
-.option-item.text-primary {
-  justify-content: center;
-  font-weight: 500;
-}
-
-/* 多选项样式 */
-.option-item .q-checkbox {
-  margin-right: 4px;
 }
 </style>

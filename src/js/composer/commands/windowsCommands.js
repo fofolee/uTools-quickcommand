@@ -1,52 +1,5 @@
 import { newVarInputVal } from "js/composer/varInputValManager.js";
 
-const controlClass = [
-  // 基础控件
-  { value: "Button", label: "按钮 (Button)" },
-  { value: "Edit", label: "编辑框 (Edit)" },
-  { value: "Static", label: "静态文本 (Static)" },
-  { value: "ComboBox", label: "下拉框 (ComboBox)" },
-  { value: "ListBox", label: "列表框 (ListBox)" },
-  { value: "CheckBox", label: "复选框 (CheckBox)" },
-  { value: "RadioButton", label: "单选框 (RadioButton)" },
-
-  // 常见对话框控件
-  { value: "SysListView32", label: "列表视图 (SysListView32)" },
-  { value: "SysTreeView32", label: "树形视图 (SysTreeView32)" },
-  { value: "SysTabControl32", label: "选项卡 (SysTabControl32)" },
-  { value: "msctls_progress32", label: "进度条 (msctls_progress32)" },
-  { value: "msctls_trackbar32", label: "滑块 (msctls_trackbar32)" },
-  { value: "msctls_updown32", label: "数字调节器 (msctls_updown32)" },
-
-  // 文件对话框相关
-  { value: "DirectUIHWND", label: "文件浏览器 (DirectUIHWND)" },
-  { value: "ToolbarWindow32", label: "工具栏 (ToolbarWindow32)" },
-  { value: "ComboBoxEx32", label: "扩展下拉框 (ComboBoxEx32)" },
-
-  // 常见应用程序控件
-  { value: "RICHEDIT50W", label: "富文本编辑框 (RICHEDIT50W)" },
-  { value: "Scintilla", label: "代码编辑器 (Scintilla)" },
-  { value: "WebView2", label: "Edge浏览器 (WebView2)" },
-  {
-    value: "Chrome_RenderWidgetHostHWND",
-    label: "Chrome渲染 (Chrome_RenderWidgetHostHWND)",
-  },
-
-  // 系统控件
-  { value: "Shell_TrayWnd", label: "任务栏 (Shell_TrayWnd)" },
-  { value: "TrayNotifyWnd", label: "通知区域 (TrayNotifyWnd)" },
-  { value: "ReBarWindow32", label: "工具条容器 (ReBarWindow32)" },
-  { value: "TaskListThumbnailWnd", label: "任务预览 (TaskListThumbnailWnd)" },
-
-  // 通用容器
-  { value: "Window", label: "窗口 (Window)" },
-  { value: "Dialog", label: "对话框 (Dialog)" },
-  { value: "#32770", label: "标准对话框 (#32770)" },
-  { value: "MDIClient", label: "MDI客户区 (MDIClient)" },
-  { value: "ScrollBar", label: "滚动条 (ScrollBar)" },
-  { value: "GroupBox", label: "分组框 (GroupBox)" },
-];
-
 const sendKeys = [
   // 特殊按键
   { value: "{ENTER}", label: "回车键 (Enter)" },
@@ -174,6 +127,16 @@ const searchWindowConfig = [
     icon: "title",
     width: 9,
     placeholder: "标题、类名支持模糊匹配，选择活动窗口无需输入",
+    options: {
+      window: {
+        props: [
+          { label: "标题", value: "title" },
+          { label: "类名", value: "class" },
+          { label: "句柄", value: "handle" },
+          { label: "进程名", value: "processName" },
+        ],
+      },
+    },
   },
 ];
 
@@ -185,6 +148,11 @@ const windowHandleConfig = [
     width: 12,
     placeholder: "可从搜索/选择窗口获取，留空则使用当前活动窗口",
     defaultValue: newVarInputVal("str", ""),
+    options: {
+      window: {
+        props: "handle",
+      },
+    },
   },
 ];
 
@@ -207,6 +175,15 @@ const searchElementConfig = [
     label: "查找值",
     component: "VariableInput",
     icon: "account_tree",
+    options: {
+      window: {
+        props: [
+          { label: "XPath", value: "element.xpath" },
+          { label: "AutomationId", value: "element.automationId" },
+          { label: "Name", value: "element.name" },
+        ],
+      },
+    },
     width: 8,
     placeholder: "XPath: /Pane[3]/Edit[2], 组合条件: name=按钮&type=Button",
   },
@@ -656,7 +633,9 @@ export const windowsCommands = {
                   component: "VariableInput",
                   icon: "filter_alt",
                   options: {
-                    items: controlClass,
+                    window: {
+                      props: "element.type",
+                    },
                   },
                   width: 8,
                   placeholder: "可选，输入要过滤的控件类型或文本",
@@ -698,7 +677,9 @@ export const windowsCommands = {
                   component: "VariableInput",
                   icon: "class",
                   options: {
-                    items: controlClass,
+                    window: {
+                      props: "element.type",
+                    },
                   },
                   width: 6,
                   placeholder: "可选，和文本至少输入一个",
@@ -707,6 +688,11 @@ export const windowsCommands = {
                   label: "控件文本",
                   component: "VariableInput",
                   icon: "text_fields",
+                  options: {
+                    window: {
+                      props: "element.name",
+                    },
+                  },
                   width: 6,
                   placeholder: "可选，和控件类型至少输入一个",
                 },
@@ -750,7 +736,9 @@ export const windowsCommands = {
                   label: "目标控件",
                   component: "VariableInput",
                   options: {
-                    items: controlClass,
+                    window: {
+                      props: "element.type",
+                    },
                   },
                   icon: "class",
                   width: 8,
@@ -793,7 +781,9 @@ export const windowsCommands = {
                   label: "目标控件",
                   component: "VariableInput",
                   options: {
-                    items: controlClass,
+                    window: {
+                      props: "element.type",
+                    },
                   },
                   icon: "class",
                   width: 8,
