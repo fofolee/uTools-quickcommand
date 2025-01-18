@@ -157,7 +157,7 @@ const windowHandleConfig = [
 ];
 
 const searchElementConfig = [
-  windowHandleConfig,
+  ...windowHandleConfig,
   {
     label: "元素查找方式",
     component: "q-select",

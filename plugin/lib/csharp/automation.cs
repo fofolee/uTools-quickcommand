@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Diagnostics;
 
 public class AutomationManager
 {
@@ -71,6 +72,17 @@ public class AutomationManager
 
   [DllImport("user32.dll")]
   static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
+
+  [DllImport("user32.dll")]
+  static extern bool IsWindow(IntPtr hWnd);
+
+  [DllImport("user32.dll")]
+  private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+  [DllImport("user32.dll")]
+  private static extern bool IsWindowVisible(IntPtr hWnd);
+
+  private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
   private const int GWL_EXSTYLE = -20;
   private const int WS_EX_TRANSPARENT = 0x20;
@@ -342,25 +354,22 @@ public class AutomationManager
   {
     // 获取起始窗口
     AutomationElement root;
-    string windowArg = GetArgumentValue(args, "-window");
-    if (!string.IsNullOrEmpty(windowArg))
+    try
     {
-      // 通过窗口句柄查找
-      int handle = int.Parse(windowArg);
-      try
+      List<IntPtr> targetWindows = GetTargetWindows(args);
+      if (targetWindows.Count == 0)
       {
-        root = AutomationElement.FromHandle(new IntPtr(handle));
+        throw new Exception("未找到目标窗口");
       }
-      catch
-      {
-        throw new Exception("无法获取指定的窗口");
-      }
+
+      // 总是使用第一个窗口
+      IntPtr handle = targetWindows[0];
+
+      root = AutomationElement.FromHandle(handle);
     }
-    else
+    catch
     {
-      // 使用当前活动窗口
-      IntPtr activeHandle = GetForegroundWindow();
-      root = AutomationElement.FromHandle(activeHandle);
+      throw new Exception("无法获取指定的窗口");
     }
 
     if (root == null)
@@ -455,6 +464,89 @@ public class AutomationManager
 
     throw new Exception("必须指定元素的识别方式: -xpath, -id, -name 或 -condition");
   }
+
+  private static List<IntPtr> GetTargetWindows(string[] args)
+  {
+    List<IntPtr> targetWindows = new List<IntPtr>();
+    string method = GetArgumentValue(args, "-method") ?? "handle";
+    string value = GetArgumentValue(args, "-window") ?? "";
+
+    switch (method.ToLower())
+    {
+      case "handle":
+        IntPtr handle = new IntPtr(long.Parse(value));
+        if (!IsWindow(handle))
+        {
+          throw new Exception("指定的句柄不是一个有效的窗口句柄");
+        }
+        targetWindows.Add(handle);
+        break;
+
+      case "active":
+        targetWindows.Add(GetForegroundWindow());
+        break;
+
+      case "process":
+        var processes = Process.GetProcessesByName(value);
+        foreach (var process in processes)
+        {
+          if (process.MainWindowHandle != IntPtr.Zero)
+          {
+            targetWindows.Add(process.MainWindowHandle);
+          }
+        }
+        break;
+
+      case "class":
+        EnumWindows((hwnd, param) =>
+        {
+          if (!IsWindowVisible(hwnd))
+          {
+            return true;
+          }
+
+          StringBuilder className = new StringBuilder(256);
+          GetClassName(hwnd, className, className.Capacity);
+          string windowClassName = className.ToString();
+
+          if (windowClassName.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+          {
+            targetWindows.Add(hwnd);
+          }
+          return true;
+        }, IntPtr.Zero);
+        break;
+
+      case "title":
+      default:
+        if (!string.IsNullOrEmpty(value))
+        {
+          EnumWindows((hwnd, param) =>
+          {
+            StringBuilder title = new StringBuilder(256);
+            GetWindowText(hwnd, title, title.Capacity);
+            string windowTitle = title.ToString();
+
+            if (!string.IsNullOrEmpty(windowTitle) &&
+                          windowTitle.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+              targetWindows.Add(hwnd);
+            }
+            return true;
+          }, IntPtr.Zero);
+        }
+        break;
+    }
+
+    if (targetWindows.Count == 0)
+    {
+      throw new Exception("未找到匹配的窗口");
+    }
+
+    return targetWindows;
+  }
+
+
 
   private static void ShowHelp()
   {

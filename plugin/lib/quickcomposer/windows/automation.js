@@ -20,7 +20,9 @@ async function runAutomation(
   const args = [];
 
   if (window) {
-    args.push("-window", window);
+    args.push("-method", "handle", "-window", window);
+  } else {
+    args.push("-method", "active");
   }
 
   args.push("-type", type);
