@@ -64,7 +64,7 @@ async function runAutomation(
       break;
 
     case "select":
-      if (params.item) {
+      if (params.item !== undefined) {
         args.push("-item", params.item);
       }
       break;
@@ -76,7 +76,7 @@ async function runAutomation(
       break;
 
     case "scroll":
-      if (params.direction) {
+      if (params.direction !== undefined) {
         args.push("-direction", params.direction);
       }
       if (params.amount !== undefined) {
@@ -85,9 +85,6 @@ async function runAutomation(
       break;
 
     case "wait":
-      if (params.condition) {
-        args.push("-condition", params.condition);
-      }
       if (params.timeout !== undefined) {
         args.push("-timeout", params.timeout);
       }
@@ -100,8 +97,14 @@ async function runAutomation(
       break;
 
     case "sendkeys":
-      if (params.keys) {
+      if (params.keys !== undefined) {
         args.push("-keys", params.keys);
+      }
+      break;
+
+    case "enable":
+      if (params.enable !== undefined) {
+        args.push("-enable", params.enable);
       }
       break;
   }
@@ -144,4 +147,5 @@ module.exports = {
   focus: (...args) => runAutomation("focus", ...args),
   highlight: (...args) => runAutomation("highlight", ...args),
   sendkeys: (...args) => runAutomation("sendkeys", ...args),
+  enable: (...args) => runAutomation("enable", ...args),
 };

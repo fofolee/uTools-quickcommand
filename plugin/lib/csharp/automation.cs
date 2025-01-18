@@ -94,6 +94,9 @@ public class AutomationManager
   [DllImport("user32.dll")]
   private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
+  [DllImport("user32.dll")]
+  private static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+
   [StructLayout(LayoutKind.Sequential)]
   private struct RECT
   {
@@ -121,6 +124,7 @@ public class AutomationManager
   private static Form overlayForm;
   private static Form previewForm;
   private static AutomationElement lastElement;
+  private static Point lastCursorPos;
   private static bool completed;
 
   private static CacheRequest CreateCacheRequest()
@@ -316,6 +320,11 @@ public class AutomationManager
         case "sendkeys":
           string keys = GetArgumentValue(args, "-keys");
           SendKeys(GetTargetElement(args), keys);
+          break;
+
+        case "enable":
+          bool enable = GetArgumentValue(args, "-enable") == "true";
+          EnableElement(GetTargetElement(args), enable);
           break;
 
         default:
@@ -586,18 +595,10 @@ public class AutomationManager
     - {DIVIDE} - 数字键盘除号键
     - {NUMPAD0} - {NUMPAD9} - 数字键盘数字键
 
-    修饰键:
-    + (加号) - SHIFT
-    ^ (脱字号) - CTRL
-    % (百分号) - ALT
-
+12. enable - 启用/禁用元素
+    参数: -xpath <XPath路径> -enable <true/false> [-window <窗口句柄>]
     示例:
-    - 输入文本: -keys ""Hello""
-    - 按Enter键: -keys ""{ENTER}""
-    - 按Ctrl+C: -keys ""^c""
-    - 按Ctrl+Home: -keys ""^{HOME}""
-    - 按Alt+F4: -keys ""%{F4}""
-    - 按Shift+Tab: -keys ""+{TAB}""
+    - 启用按钮: -xpath ""//Button[@Name='确定']"" -enable true
 
 通用参数:
 -window <窗口句柄> 指定要操作的窗口，如果不指定则使用当前活动窗口
@@ -1127,6 +1128,23 @@ public class AutomationManager
     };
   }
 
+  private static void EnableElement(AutomationElement element, bool enable)
+  {
+    if (element == null)
+    {
+      throw new Exception("元素不能为空");
+    }
+    try
+    {
+      EnableWindow((IntPtr)element.Current.NativeWindowHandle, enable);
+      Console.WriteLine("true");
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("无法更改元素的启用/禁用状态: " + ex.Message);
+    }
+  }
+
   private static void ClickElement(AutomationElement element)
   {
     if (element == null)
@@ -1310,7 +1328,7 @@ public class AutomationManager
     completed = false;  // 使用静态字段
     Rectangle lastRect = Rectangle.Empty;
     lastElement = null;
-    Point lastCursorPos = new Point();
+    lastCursorPos = new Point();
     AutomationElement taskbarElement = null;
     List<AutomationElement> taskbarChildren = null;
 
@@ -1474,12 +1492,7 @@ public class AutomationManager
       {
         try
         {
-          mouseTimer.Stop();
-          overlayForm.Hide();
-          previewForm.Hide();
-
           InspectElementInfo(lastElement, lastCursorPos);
-          completed = true;
         }
         catch (Exception ex)
         {
@@ -1487,8 +1500,7 @@ public class AutomationManager
         }
         finally
         {
-          overlayForm.Close();
-          previewForm.Close();
+          stopInspect();
         }
       }
     };
@@ -1684,6 +1696,7 @@ public class AutomationManager
           Clipboard.SetText(lastElement.Current.Name);
           if (e.KeyChar == 'x' || e.KeyChar == 'X')
           {
+            InspectElementInfo(lastElement, lastCursorPos);
             stopInspect();
           }
         }
@@ -1694,6 +1707,4 @@ public class AutomationManager
       }
     }
   }
-
-
 }

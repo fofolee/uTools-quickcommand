@@ -492,6 +492,28 @@ export const windowsCommands = {
           ],
         },
         {
+          value: "quickcomposer.windows.automation.enable",
+          label: "启用/禁用元素",
+          icon: "toggle_on",
+          config: [
+            {
+              component: "OptionEditor",
+              options: {
+                enable: {
+                  component: "ButtonGroup",
+                  options: [
+                    { label: "启用", value: true },
+                    { label: "禁用", value: false },
+                  ],
+                },
+              },
+              defaultValue: {
+                enable: true,
+              },
+            },
+          ],
+        },
+        {
           value: "quickcomposer.windows.automation.expand",
           label: "展开/折叠",
           icon: "unfold_more",
@@ -559,13 +581,6 @@ export const windowsCommands = {
             {
               component: "OptionEditor",
               options: {
-                condition: {
-                  label: "条件",
-                  component: "VariableInput",
-                  icon: "filter_alt",
-                  width: 8,
-                  placeholder: "name=xx;type=Button",
-                },
                 timeout: {
                   label: "超时(秒)",
                   component: "NumberInput",
