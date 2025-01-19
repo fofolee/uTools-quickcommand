@@ -7,6 +7,7 @@ const service = require("./service");
 const software = require("./software");
 const utils = require("./utils");
 const automation = require("./automation");
+const browser = require("./browser");
 
 module.exports = {
   window,
@@ -18,4 +19,5 @@ module.exports = {
   software,
   utils,
   automation,
+  browser,
 };

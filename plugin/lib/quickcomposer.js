@@ -11,6 +11,7 @@ const quickcomposer = {
   windows: require("./quickcomposer/windows"),
   macos: require("./quickcomposer/macos"),
   status: require("./quickcomposer/status"),
+  browser: require("./quickcomposer/browser"),
 };
 
 module.exports = quickcomposer;

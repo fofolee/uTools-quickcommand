@@ -1,5 +1,5 @@
 import { newVarInputVal } from "js/composer/varInputValManager.js";
-
+import { browserCommands } from "js/composer/commands/browserCommands.js";
 const sendKeys = [
   // 特殊按键
   { value: "{ENTER}", label: "回车键 (Enter)" },
@@ -109,7 +109,7 @@ const registryPaths = [
 const searchWindowConfig = [
   {
     label: "窗口查找方式",
-    component: "q-select",
+    component: "QSelect",
     icon: "search",
     width: 3,
     options: [
@@ -160,7 +160,7 @@ const searchElementConfig = [
   ...windowHandleConfig,
   {
     label: "元素查找方式",
-    component: "q-select",
+    component: "QSelect",
     icon: "search",
     width: 4,
     options: [
@@ -804,6 +804,49 @@ export const windowsCommands = {
         },
       ],
     },
+    // 浏览器
+    {
+      value: "quickcomposer.windows.browser.getUrl",
+      label: "浏览器控制",
+      icon: "language",
+      isAsync: true,
+      config: [
+        {
+          component: "ButtonGroup",
+          width: 12,
+          options: [
+            { label: "Microsoft Edge", value: "msedge" },
+            { label: "Google Chrome", value: "chrome" },
+          ],
+          defaultValue: "msedge",
+        },
+      ],
+      subCommands: browserCommands.commands
+        .find((command) => command.label === "浏览器操作")
+        .subCommands.map((command) => ({
+          ...command,
+          value: command.value.replace(
+            "quickcomposer.browser.",
+            "quickcomposer.windows.browser."
+          ),
+        }))
+        // 无法获得输出，过滤相关命令
+        .filter(
+          (command) =>
+            ![
+              "getTabs",
+              "activateTab",
+              "getText",
+              "getHtml",
+              "getCookie",
+              "getScrollPosition",
+              "getPageSize",
+              "waitForElement",
+            ]
+              .map((func) => `quickcomposer.windows.browser.${func}`)
+              .includes(command.value)
+        ),
+    },
     // 监控
     {
       value: "quickcomposer.windows.monitor.watchClipboard",
@@ -1019,7 +1062,7 @@ export const windowsCommands = {
             },
             {
               label: "值类型",
-              component: "q-select",
+              component: "QSelect",
               icon: "category",
               width: 4,
               options: [
