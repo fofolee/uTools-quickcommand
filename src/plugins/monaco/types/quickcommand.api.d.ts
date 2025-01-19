@@ -131,9 +131,9 @@ interface quickcommandApi {
    * ```
    *
    * @param placeholder 文本框占位符
-   * @param value 默认的文本值
+   * @param defaultText 默认的文本值
    */
-  showTextArea(placeholder?: string, value?: string): Promise<string>;
+  showTextArea(placeholder?: string, defaultText?: string): Promise<string>;
 
   /**
    * 显示一个自动消失的提示框
@@ -483,7 +483,7 @@ interface quickcommandApi {
   };
 
   /**
-   * 显示一个系统级消息框（不支持Linux）
+   * 显示一个系统级消息框
    *
    * ```js
    * quickcommand.showSystemMessageBox("这是一条消息", "标题")
@@ -495,30 +495,33 @@ interface quickcommandApi {
   showSystemMessageBox(content: string, title?: string): Promise<void>;
 
   /**
-   * 显示一个系统级输入框组，返回所有输入框的值（不支持Linux）
+   * 显示一个系统级输入框组对话框，返回所有输入框的值
    *
    * ```js
-   * // 单个输入框
-   * quickcommand.showSystemInputBox("请输入：", "标题").then(results => {
-   *   console.log(results[0]) // 第一个输入框的值
+   * // 简单数组形式
+   * quickcommand.showSystemInputBox(["姓名", "年龄", "地址"], "个人信息").then(values => {
+   *   console.log(values) // ["张三", "25", "北京"]
    * })
    *
-   * // 多个输入框
-   * quickcommand.showSystemInputBox(["姓名：", "年龄：", "地址："], "个人信息").then(results => {
-   *   console.log(results) // ["张三", "25", "北京"]
+   * // 对象数组形式
+   * quickcommand.showSystemInputBox([
+   *   { label: "姓名", value: "张三", hint: "请输入姓名" },
+   *   { label: "年龄", value: "25", hint: "请输入年龄" }
+   * ], "个人信息").then(values => {
+   *   console.log(values) // ["张三", "25"]
    * })
    * ```
    *
-   * @param placeholders 输入框的提示文本，可以是单个字符串或字符串数组
+   * @param options 输入框配置，可以是标签数组或者带属性的对象数组
    * @param title 标题，默认为空
    */
   showSystemInputBox(
-    placeholders: string | string[],
+    options: string[] | { label: string; value?: string; hint?: string }[],
     title?: string
   ): Promise<string[] | null>;
 
   /**
-   * 显示一个系统级确认框，返回是否点击了确认（不支持Linux）
+   * 显示一个系统级确认框，返回是否点击了确认
    *
    * ```js
    * quickcommand.showSystemConfirmBox("确定要删除吗？", "确认删除").then(confirmed => {
@@ -533,9 +536,8 @@ interface quickcommandApi {
    */
   showSystemConfirmBox(content: string, title?: string): Promise<boolean>;
 
-
   /**
-   * 显示一个系统级按钮组对话框，返回点击的按钮的索引和文本（不支持Linux）
+   * 显示一个系统级按钮组对话框，返回点击的按钮的索引和文本
    *
    * ```js
    * quickcommand.showSystemButtonBox(["保存", "不保存", "取消"], "保存确认").then(result => {
@@ -554,22 +556,22 @@ interface quickcommandApi {
   ): Promise<{ id: number; text: string } | null>;
 
   /**
-   * 显示一个系统级多行文本输入框（仅Windows支持）
+   * 显示一个系统级多行文本输入框
    *
    * ```js
-   * quickcommand.showSystemTextArea("默认内容", "文本编辑").then(text => {
+   * quickcommand.showSystemTextArea("请输入内容", "").then(text => {
    *   if (text) {
    *     console.log("输入的文本：", text)
    *   }
    * })
    * ```
    *
-     * @param defaultText 默认文本，默认为空
-   * @param title 标题，默认为空
+   * @param placeholder 输入框的提示文本，默认为空
+   * @param defaultText 输入框的默认文本，默认为空
    */
   showSystemTextArea(
-    defaultText?: string,
-    title?: string
+    placeholder?: string,
+    defaultText?: string
   ): Promise<string | null>;
 
   /**

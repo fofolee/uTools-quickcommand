@@ -6,7 +6,7 @@ const iconv = require("iconv-lite");
 const path = require("path");
 const axios = require("axios");
 
-const systemDialog = require("./systemDialog");
+const systemDialog = require("./dialog/service");
 
 const { getQuickcommandTempFile } = require("./getQuickcommandFile");
 
@@ -178,60 +178,7 @@ const quickcommand = {
     }
     return null;
   },
-
-  // 运行C#脚本
-  runCsharp: function (script, args = []) {
-    return new Promise((reslove, reject) => {
-      let cscPath = path.join(
-        process.env.WINDIR,
-        "Microsoft.NET",
-        "Framework",
-        "v4.0.30319",
-        "csc.exe"
-      );
-      if (!fs.existsSync(cscPath)) {
-        cscPath = path.join(
-          process.env.WINDIR,
-          "Microsoft.NET",
-          "Framework",
-          "v3.5",
-          "csc.exe"
-        );
-      }
-      if (!fs.existsSync(cscPath)) {
-        return reject("未安装.NET Framework");
-      }
-      let tempCsharpFile = getQuickcommandTempFile("cs");
-      let tempBuildFile = getQuickcommandTempFile("exe");
-
-      fs.writeFile(tempCsharpFile, iconv.encode(script, "gbk"), (err) => {
-        if (err) return reject(err.toString());
-        // 添加命令行参数
-        const argsStr =
-          args.length > 0
-            ? " " +
-              args
-                .map((arg) =>
-                  arg.startsWith("-") ? arg : `"${arg}"`
-                )
-                .join(" ")
-            : "";
-        child_process.exec(
-          `${cscPath} /nologo /out:${tempBuildFile} ${tempCsharpFile} && ${tempBuildFile}${argsStr}`,
-          {
-            encoding: "buffer",
-            windowsHide: true,
-          },
-          (err, stdout) => {
-            if (err) reject(iconv.decode(stdout, "gbk"));
-            else reslove(iconv.decode(stdout, "gbk"));
-            fs.unlink(tempCsharpFile, () => {});
-            fs.unlink(tempBuildFile, () => {});
-          }
-        );
-      });
-    });
-  },
+  ...systemDialog,
 };
 
 if (process.platform === "win32") {
@@ -272,8 +219,6 @@ if (process.platform === "win32") {
       );
     });
   };
-
-  quickcommand.showSystemTextArea = systemDialog.showSystemTextArea;
 }
 
 if (process.platform === "darwin") {
@@ -316,11 +261,6 @@ if (process.platform !== "linux") {
     let command = createTerminalCommand(cmdline, options);
     child_process.exec(command);
   };
-  // 系统级弹窗
-  quickcommand.showSystemMessageBox = systemDialog.showSystemMessageBox;
-  quickcommand.showSystemInputBox = systemDialog.showSystemInputBox;
-  quickcommand.showSystemConfirmBox = systemDialog.showSystemConfirmBox;
-  quickcommand.showSystemButtonBox = systemDialog.showSystemButtonBox;
 }
 
 module.exports = quickcommand;

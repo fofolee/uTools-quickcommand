@@ -258,50 +258,37 @@ export const uiCommands = {
       isAsync: true,
       outputVariable: "[inputValue1]",
       saveOutput: true,
+      config: [
+        {
+          label: "输入框",
+          component: "ArrayEditor",
+          width: 12,
+          columns: {
+            label: {
+              label: "标签",
+            },
+            value: {
+              label: "默认值",
+            },
+          },
+          defaultValue: [
+            {
+              label: newVarInputVal("str", "请输入"),
+              value: newVarInputVal("str"),
+            },
+          ],
+        },
+      ],
       subCommands: [
         {
           value: "quickcommand.showInputBox",
           icon: "call_to_action",
           label: "插件内弹窗",
-          config: [
-            {
-              label: "输入框",
-              component: "ArrayEditor",
-              width: 12,
-              columns: {
-                label: {
-                  label: "标签",
-                },
-                value: {
-                  label: "默认值",
-                },
-              },
-              defaultValue: [
-                {
-                  label: newVarInputVal("str", "请输入"),
-                  value: newVarInputVal("str"),
-                },
-              ],
-            },
-          ],
         },
         {
           value: "quickcommand.showSystemInputBox",
           icon: "report",
           label: "系统弹窗",
-          config: [
-            {
-              label: "提示信息",
-              component: "ArrayEditor",
-              width: 12,
-            },
-            {
-              label: "标题",
-              component: "VariableInput",
-              defaultValue: newVarInputVal("str", "请输入"),
-              width: 12,
-            },
-          ],
         },
       ],
     },
@@ -317,44 +304,30 @@ export const uiCommands = {
       isAsync: true,
       outputVariable: "textareaValue",
       saveOutput: true,
+      config: [
+        {
+          label: "文本框占位符",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("str", "请输入"),
+          width: 6,
+        },
+        {
+          label: "文本框默认值",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("str"),
+          width: 6,
+        },
+      ],
       subCommands: [
         {
           value: "quickcommand.showTextArea",
           icon: "call_to_action",
           label: "插件内弹窗",
-          config: [
-            {
-              label: "文本框占位符",
-              component: "VariableInput",
-              defaultValue: newVarInputVal("str", "请输入"),
-              width: 6,
-            },
-            {
-              label: "文本框默认值",
-              component: "VariableInput",
-              defaultValue: newVarInputVal("str"),
-              width: 6,
-            },
-          ],
         },
         {
           value: "quickcommand.showSystemTextArea",
           icon: "report",
-          label: "系统弹窗(Mac不支持)",
-          config: [
-            {
-              label: "文本框默认值",
-              component: "VariableInput",
-              defaultValue: newVarInputVal("str"),
-              width: 6,
-            },
-            {
-              label: "标题",
-              component: "VariableInput",
-              defaultValue: newVarInputVal("str", "请输入"),
-              width: 6,
-            },
-          ],
+          label: "系统弹窗",
         },
       ],
     },
