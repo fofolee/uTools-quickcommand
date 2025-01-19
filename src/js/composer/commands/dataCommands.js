@@ -90,7 +90,7 @@ export const dataCommands = {
             },
             {
               label: "模式",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               options: [
                 { label: "两端", value: "both" },
@@ -115,7 +115,7 @@ export const dataCommands = {
             },
             {
               label: "转换为",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               options: [
                 { label: "大写", value: "upper" },
@@ -159,7 +159,7 @@ export const dataCommands = {
             },
             {
               label: "填充位置",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               options: [
                 { label: "左侧", value: "start" },
@@ -246,7 +246,7 @@ export const dataCommands = {
             },
             {
               label: "提取类型",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               options: [
                 { label: "数字", value: "number" },
@@ -273,7 +273,7 @@ export const dataCommands = {
             },
             {
               label: "统计类型",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               options: [
                 { label: "字符数", value: "char" },
@@ -324,7 +324,7 @@ export const dataCommands = {
             },
             {
               label: "对齐方式",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               options: [
                 { label: "左对齐", value: "left" },
@@ -377,7 +377,7 @@ export const dataCommands = {
             },
             {
               label: "编码",
-              component: "q-select",
+              component: "QSelect",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -407,7 +407,7 @@ export const dataCommands = {
             },
             {
               label: "编码",
-              component: "q-select",
+              component: "QSelect",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -469,7 +469,7 @@ export const dataCommands = {
             },
             {
               label: "编码",
-              component: "q-select",
+              component: "QSelect",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -517,7 +517,7 @@ export const dataCommands = {
             },
             {
               label: "编码",
-              component: "q-select",
+              component: "QSelect",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -662,7 +662,7 @@ export const dataCommands = {
             },
             {
               label: "编码",
-              component: "q-select",
+              component: "QSelect",
               icon: "code",
               options: [
                 { label: "UTF-8", value: "utf8" },
@@ -692,7 +692,7 @@ export const dataCommands = {
             },
             {
               label: "字节大小",
-              component: "q-select",
+              component: "QSelect",
               icon: "memory",
               options: [
                 { label: "16位", value: 16 },
@@ -875,7 +875,7 @@ export const dataCommands = {
             },
             {
               label: "排序方式",
-              component: "q-select",
+              component: "QSelect",
               icon: "sort",
               options: [
                 { label: "升序", value: "asc" },
@@ -964,7 +964,7 @@ export const dataCommands = {
             },
             {
               label: "聚合操作",
-              component: "q-select",
+              component: "QSelect",
               icon: "functions",
               options: [
                 { label: "求和", value: "sum" },
@@ -1182,7 +1182,7 @@ export const dataCommands = {
             },
             {
               label: "格式",
-              component: "q-select",
+              component: "QSelect",
               icon: "format_shapes",
               width: 4,
               options: [
@@ -1215,7 +1215,7 @@ export const dataCommands = {
             },
             {
               label: "原格式",
-              component: "q-select",
+              component: "QSelect",
               icon: "format_shapes",
               width: 4,
               options: [
@@ -1252,7 +1252,7 @@ export const dataCommands = {
             },
             {
               label: "单位",
-              component: "q-select",
+              component: "QSelect",
               icon: "straighten",
               width: 6,
               options: [
@@ -1289,7 +1289,7 @@ export const dataCommands = {
             },
             {
               label: "返回单位",
-              component: "q-select",
+              component: "QSelect",
               icon: "straighten",
               width: 6,
               options: [
@@ -1326,7 +1326,7 @@ export const dataCommands = {
             },
             {
               label: "单位",
-              component: "q-select",
+              component: "QSelect",
               icon: "straighten",
               width: 3,
               options: [
@@ -1342,7 +1342,7 @@ export const dataCommands = {
             },
             {
               label: "类型",
-              component: "q-select",
+              component: "QSelect",
               icon: "settings",
               width: 3,
               options: [
@@ -1367,7 +1367,7 @@ export const dataCommands = {
             },
             {
               label: "格式",
-              component: "q-select",
+              component: "QSelect",
               icon: "format_shapes",
               width: 4,
               options: [

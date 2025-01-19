@@ -10,7 +10,8 @@ export const userdataCommands = {
       config: [
         {
           label: "数据标识",
-          component: "q-input",
+          component: "QInput",
+          icon: "title",
         },
       ],
       outputVariable: "userData",
@@ -31,11 +32,13 @@ export const userdataCommands = {
         {
           label: "数据",
           component: "VariableInput",
+          icon: "text_fields",
           width: 7,
         },
         {
           label: "数据标识",
-          component: "q-input",
+          component: "QInput",
+          icon: "title",
           width: 3,
         },
         {
@@ -53,7 +56,8 @@ export const userdataCommands = {
       config: [
         {
           label: "数据标识",
-          component: "q-input",
+          component: "QInput",
+          icon: "title",
         },
       ],
     },

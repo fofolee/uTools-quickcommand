@@ -265,7 +265,7 @@ export const networkCommands = {
             {
               label: "IP版本",
               icon: "settings_ethernet",
-              component: "q-select",
+              component: "QSelect",
               options: [
                 { label: "自动", value: 0 },
                 { label: "IPv4", value: 4 },

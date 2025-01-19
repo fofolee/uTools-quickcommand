@@ -129,7 +129,7 @@ export const uiCommands = {
           config: [
             {
               label: "图标类型",
-              component: "q-select",
+              component: "QSelect",
               defaultValue: "success",
               icon: "lightbulb",
               width: 6,

@@ -33,7 +33,7 @@ export const utoolsCommands = {
       icon: "exit_to_app",
       config: [
         {
-          component: "q-select",
+          component: "QSelect",
           options: [
             { label: "杀死插件进程", value: true },
             { label: "插件隐藏到后台", value: false },

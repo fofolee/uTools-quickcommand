@@ -117,7 +117,7 @@ export const imageCommands = {
         },
         {
           label: "保持宽高比",
-          component: "q-select",
+          component: "QSelect",
           icon: "aspect_ratio",
           width: 6,
           defaultValue: "true",
@@ -370,7 +370,7 @@ export const imageCommands = {
         },
         {
           label: "位置",
-          component: "q-select",
+          component: "QSelect",
           icon: "place",
           width: 6,
           defaultValue: "bottomRight",
@@ -456,7 +456,7 @@ export const imageCommands = {
         },
         {
           label: "输出格式",
-          component: "q-select",
+          component: "QSelect",
           icon: "transform",
           width: 6,
           defaultValue: "jpeg",
@@ -519,7 +519,7 @@ export const imageCommands = {
         },
         {
           label: "输出格式",
-          component: "q-select",
+          component: "QSelect",
           icon: "transform",
           width: 3,
           defaultValue: "ico",

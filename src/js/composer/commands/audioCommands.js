@@ -59,7 +59,7 @@ const SPEECH_CONFIG = {
     },
     lang: {
       label: "语言",
-      component: "q-select",
+      component: "QSelect",
       options: LANGUAGES,
       width: 3,
     },
@@ -87,12 +87,12 @@ const MEDIA_PLAY_CONFIG = {
     },
     loop: {
       label: "循环播放",
-      component: "q-toggle",
+      component: "CheckButton",
       width: 4,
     },
     autoPlay: {
       label: "自动播放",
-      component: "q-toggle",
+      component: "CheckButton",
       width: 4,
     },
   },
@@ -216,7 +216,7 @@ export const audioCommands = {
       config: [
         {
           label: "音效类型",
-          component: "q-select",
+          component: "QSelect",
           icon: "music_note",
           width: 6,
           options: SYSTEM_SOUNDS,

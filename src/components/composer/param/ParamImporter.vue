@@ -5,7 +5,7 @@
     v-bind="componentProps"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <template v-if="isQuasarInput" #prepend>
+    <template #prepend>
       <q-icon v-if="config.icon" :name="config.icon" />
     </template>
   </component>
@@ -23,6 +23,7 @@ import ControlInput from "components/composer/common/ControlInput.vue";
 import CheckGroup from "components/composer/common/CheckGroup.vue";
 import CheckButton from "components/composer/common/CheckButton.vue";
 import CodeEditor from "components/composer/common/CodeEditor.vue";
+import { QInput, QSelect, QToggle, QCheckbox } from "quasar";
 
 export default defineComponent({
   name: "ParamInput",
@@ -36,6 +37,10 @@ export default defineComponent({
     CheckGroup,
     CheckButton,
     CodeEditor,
+    QToggle,
+    QInput,
+    QSelect,
+    QCheckbox,
   },
   props: {
     config: {
@@ -58,19 +63,27 @@ export default defineComponent({
       },
     },
     isQuasarInput() {
-      return ["q-select", "q-input"].includes(this.config?.component);
+      return (
+        this.config.component === "QInput" ||
+        this.config.component === "QSelect"
+      );
     },
     isQuasarSelect() {
-      return ["q-select"].includes(this.config?.component);
+      return this.config.component === "QSelect";
     },
     componentProps() {
-      return {
-        ...this.config,
-        filled: true,
-        dense: true,
-        emitValue: this.isQuasarSelect,
-        mapOptions: this.isQuasarSelect,
-      };
+      const props = { ...this.config, dense: true };
+
+      if (this.isQuasarInput) {
+        props.filled = true;
+      }
+
+      if (this.isQuasarSelect) {
+        props.emitValue = true;
+        props.mapOptions = true;
+      }
+
+      return props;
     },
   },
 });

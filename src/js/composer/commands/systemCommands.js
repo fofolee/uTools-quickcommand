@@ -497,7 +497,7 @@ export const systemCommands = {
         },
         {
           label: "信号",
-          component: "q-select",
+          component: "QSelect",
           icon: "signal_cellular_alt",
           options: [
             { label: "正常终止 (15)", value: "SIGTERM" },

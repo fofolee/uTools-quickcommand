@@ -71,7 +71,7 @@ export const fileCommands = {
       config: [
         {
           label: "操作类型",
-          component: "q-select",
+          component: "QSelect",
           icon: "settings",
           width: 6,
           defaultValue: "compress",
@@ -82,7 +82,7 @@ export const fileCommands = {
         },
         {
           label: "归档格式",
-          component: "q-select",
+          component: "QSelect",
           icon: "format_shapes",
           width: 6,
           defaultValue: "zip",
