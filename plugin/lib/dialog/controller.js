@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const pinyinMatch = require("pinyin-match");
 
 // 等待 DOM 加载完成
 document.addEventListener("DOMContentLoaded", () => {
@@ -96,6 +97,218 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         textarea.focus();
         break;
+
+      case "select":
+        document.getElementById("select").style.display = "block";
+        document.body.classList.add("dialog-select");
+        const selectContainer = document.getElementById("select-container");
+        const filterInput = document.getElementById("filter-input");
+        const selectList = document.querySelector(".select-list");
+        selectContainer.innerHTML = "";
+        let currentSelected = null;
+        let allItems = [];
+        let filteredItems = [];
+        let hoverTimeout = null;
+        let isKeyboardNavigation = false;
+
+        // 创建选项
+        const createSelectItem = (item, index) => {
+          const div = document.createElement("div");
+          div.className = "select-item";
+
+          // 点击事件
+          div.onclick = () => {
+            const originalIndex = allItems.indexOf(item);
+            const result =
+              typeof item === "string"
+                ? {
+                    id: originalIndex,
+                    text: item,
+                  }
+                : item;
+            ipcRenderer.sendTo(parentId, "dialog-result", result);
+          };
+
+          // 鼠标移入事件（带防抖）
+          div.onmouseenter = () => {
+            if (isKeyboardNavigation) return;
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            hoverTimeout = setTimeout(() => {
+              if (currentSelected) {
+                currentSelected.classList.remove("selected");
+              }
+              div.classList.add("selected");
+              currentSelected = div;
+            }, 50);
+          };
+
+          // 鼠标移动事件
+          div.onmousemove = () => {
+            if (isKeyboardNavigation) {
+              isKeyboardNavigation = false;
+              selectList.classList.remove("keyboard-nav");
+            }
+          };
+
+          // 高亮文本
+          const highlightText = (text, filterText) => {
+            if (!filterText) return text;
+            const matchResult = pinyinMatch.match(text, filterText);
+            if (!matchResult) return text;
+
+            const [start, end] = matchResult;
+            return (
+              text.slice(0, start) +
+              `<span class="highlight">${text.slice(start, end + 1)}</span>` +
+              text.slice(end + 1)
+            );
+          };
+
+          if (typeof item === "string" || typeof item === "number") {
+            const highlightedText = highlightText(
+              String(item),
+              filterInput.value
+            );
+            div.innerHTML = `
+              <div class="select-item-content">
+                <p class="select-item-title">${highlightedText}</p>
+              </div>
+            `;
+          } else {
+            const highlightedTitle = highlightText(
+              item.title,
+              filterInput.value
+            );
+            const highlightedDesc = item.description
+              ? highlightText(item.description, filterInput.value)
+              : "";
+            div.innerHTML = `
+              ${
+                item.icon
+                  ? `
+                <div class="select-item-icon">
+                  <img src="${item.icon}" alt="">
+                </div>
+              `
+                  : ""
+              }
+              <div class="select-item-content">
+                <p class="select-item-title">${highlightedTitle}</p>
+                ${
+                  item.description
+                    ? `
+                  <p class="select-item-description">${highlightedDesc}</p>
+                `
+                    : ""
+                }
+              </div>
+            `;
+          }
+          return div;
+        };
+
+        // 过滤并更新列表
+        const updateList = (filterText = "") => {
+          selectContainer.innerHTML = "";
+          filteredItems = allItems.filter((item) => {
+            if (typeof item === "string" || typeof item === "number") {
+              return (
+                filterText === "" || pinyinMatch.match(String(item), filterText)
+              );
+            } else {
+              const titleMatch = pinyinMatch.match(item.title, filterText);
+              const descMatch = item.description
+                ? pinyinMatch.match(item.description, filterText)
+                : false;
+              return filterText === "" || titleMatch || descMatch;
+            }
+          });
+
+          filteredItems.forEach((item, index) => {
+            const div = createSelectItem(item, index);
+            selectContainer.appendChild(div);
+          });
+
+          // 默认选中第一项
+          if (selectContainer.firstChild) {
+            selectContainer.firstChild.classList.add("selected");
+            currentSelected = selectContainer.firstChild;
+          }
+        };
+
+        // 初始化列表
+        allItems = config.items;
+        updateList();
+
+        // 添加筛选功能
+        let filterTimeout = null;
+        filterInput.addEventListener("input", (e) => {
+          if (filterTimeout) {
+            clearTimeout(filterTimeout);
+          }
+          filterTimeout = setTimeout(() => {
+            updateList(e.target.value);
+          }, 100);
+        });
+
+        // 添加键盘导航
+        const keydownHandler = (e) => {
+          const items = selectContainer.children;
+          if (!items.length) return;
+
+          if (
+            !isKeyboardNavigation &&
+            (e.key === "ArrowUp" || e.key === "ArrowDown")
+          ) {
+            isKeyboardNavigation = true;
+            selectList.classList.add("keyboard-nav");
+          }
+
+          const currentIndex = Array.from(items).indexOf(currentSelected);
+          let newIndex = currentIndex;
+
+          switch (e.key) {
+            case "ArrowUp":
+              e.preventDefault();
+              if (currentIndex > 0) {
+                newIndex = currentIndex - 1;
+              }
+              break;
+            case "ArrowDown":
+              e.preventDefault();
+              if (currentIndex < items.length - 1) {
+                newIndex = currentIndex + 1;
+              }
+              break;
+            case "Enter":
+              e.preventDefault();
+              if (currentSelected) {
+                currentSelected.click();
+              }
+              break;
+            case "Escape":
+              e.preventDefault();
+              cancelDialog();
+              break;
+          }
+
+          if (newIndex !== currentIndex) {
+            if (currentSelected) {
+              currentSelected.classList.remove("selected");
+            }
+            items[newIndex].classList.add("selected");
+            currentSelected = items[newIndex];
+            currentSelected.scrollIntoView({ block: "nearest" });
+          }
+        };
+
+        document.addEventListener("keydown", keydownHandler);
+
+        // 聚焦筛选框
+        filterInput.focus();
+        break;
     }
     ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());
   });
@@ -111,8 +324,10 @@ document.addEventListener("DOMContentLoaded", () => {
       contentWrapper.scrollHeight +
       (buttonBar.style.display !== "none" ? buttonBar.offsetHeight : 0);
 
+    const maxHeight = dialogType === "select" ? 620 : 520;
+
     // 确保高度在最小值和最大值之间
-    return Math.min(Math.max(totalHeight, 100), 520);
+    return Math.min(Math.max(totalHeight, 100), maxHeight);
   };
 
   // 确定按钮点击事件
@@ -154,6 +369,9 @@ document.addEventListener("DOMContentLoaded", () => {
         result = false;
         break;
       case "buttons":
+        result = {};
+        break;
+      case "select":
         result = {};
         break;
       default:

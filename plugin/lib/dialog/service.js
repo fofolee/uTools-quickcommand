@@ -83,7 +83,7 @@ const showSystemMessageBox = async (content, title = "") => {
  * 显示一个系统级输入框组对话框
  * @param {string[]|{label:string,value:string,hint:string}[]} options - 输入框配置，可以是标签数组或者带属性的对象数组
  * @param {string} [title] - 标题，默认为空
- * @returns {Promise<string[]|null>} 输入的内容数组
+ * @returns {Promise<string[]>} 输入的内容数组
  */
 const showSystemInputBox = async (options, title = "") => {
   // 确保 options 是数组
@@ -130,7 +130,7 @@ const showSystemConfirmBox = async (content, title = "") => {
  * 显示一个系统级按钮组对话框，返回点击的按钮的索引和文本
  * @param {string[]} buttons - 按钮文本数组
  * @param {string} [title] - 标题，默认为空
- * @returns {Promise<{id: number, text: string}|null>} 选择的按钮信息
+ * @returns {Promise<{id: number, text: string}>} 选择的按钮信息
  */
 const showSystemButtonBox = async (buttons, title = "") => {
   return await createDialog({
@@ -144,7 +144,7 @@ const showSystemButtonBox = async (buttons, title = "") => {
  * 显示一个系统级多行文本输入框
  * @param {string} [placeholder] - 输入框的提示文本
  * @param {string} [defaultText] - 输入框的默认文本，默认为空
- * @returns {Promise<string|null>} 编辑后的文本
+ * @returns {Promise<string>} 编辑后的文本
  */
 const showSystemTextArea = async (placeholder = "请输入", defaultText = "") => {
   return await createDialog({
@@ -154,10 +154,31 @@ const showSystemTextArea = async (placeholder = "请输入", defaultText = "") =
   });
 };
 
+/**
+ * 显示一个系统级选择列表对话框
+ * @param {Array<string|{title: string, description?: string, icon?: string}>} items - 选项列表
+ * @param {object} [options] - 配置选项
+ * @param {string} [options.title] - 对话框标题
+ * @returns {Promise<{id: number, text: string, data: any}>} 选择的结果
+ */
+const showSystemSelectList = async (items, options = {}) => {
+  const defaultOptions = {
+    title: "",
+  };
+  const finalOptions = { ...defaultOptions, ...options };
+
+  return await createDialog({
+    type: "select",
+    title: finalOptions.title,
+    items: items,
+  });
+};
+
 module.exports = {
   showSystemMessageBox,
   showSystemInputBox,
   showSystemConfirmBox,
   showSystemButtonBox,
   showSystemTextArea,
+  showSystemSelectList,
 };

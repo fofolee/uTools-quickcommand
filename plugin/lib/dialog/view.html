@@ -143,6 +143,12 @@
         flex: 1;
       }
 
+      /* 选择列表对话框的内容区域padding和高度 */
+      .dialog-select .content-wrapper {
+        padding: 16px 5px;
+        max-height: 600px;
+      }
+
       #content {
         line-height: 1.4;
         font-size: 13px;
@@ -298,7 +304,150 @@
       #input,
       #confirm,
       #buttons,
-      #textarea {
+      #textarea,
+      #select {
+        display: none;
+      }
+
+      /* 选择列表样式 */
+      .select-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-height: 505px;
+        overflow-y: auto;
+      }
+
+      .filter-input {
+        margin-bottom: 8px;
+        padding: 0 2px;
+      }
+
+      .filter-input input {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        font-size: 13px;
+        box-sizing: border-box;
+        background: var(--input-bg);
+        color: var(--text-color);
+      }
+
+      .filter-input input:focus {
+        border-color: var(--input-focus);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+      }
+
+      .select-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-height: 360px;
+        overflow-y: auto;
+      }
+
+      .select-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        position: relative;
+        transform: translateY(0) scale(1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+      }
+
+      .select-item.selected {
+        background-color: rgba(13, 110, 253, 0.1);
+        position: relative;
+        transform: translateY(-1px) scale(0.995);
+        will-change: transform;
+      }
+
+      .select-item-icon {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+      }
+
+      .select-item.selected .select-item-icon {
+        transform: scale(1.05);
+        filter: brightness(1.05);
+      }
+
+      :root[data-theme="dark"]
+        .select-list:not(.keyboard-nav)
+        .select-item:hover {
+        background-color: rgba(13, 110, 253, 0.2);
+      }
+
+      :root[data-theme="dark"] .select-item.selected {
+        background-color: rgba(13, 110, 253, 0.2);
+      }
+
+      /* 添加选择时的轻微阴影效果 */
+      .select-item.selected,
+      .select-list:not(.keyboard-nav) .select-item:hover {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+      }
+
+      :root[data-theme="dark"] .select-item.selected,
+      :root[data-theme="dark"]
+        .select-list:not(.keyboard-nav)
+        .select-item:hover {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .select-item-icon {
+        width: 34px;
+        height: 34px;
+        margin-right: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .select-item-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .select-item-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .select-item-title {
+        font-size: 13px;
+        line-height: 1.4;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .select-item-description {
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.6);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      :root[data-theme="dark"] .select-item-description {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* 搜索结果高亮样式 */
+      .highlight {
+        color: #ec3535;
+      }
+
+      /* 隐藏确定和取消按钮 */
+      .dialog-select .button-bar {
         display: none;
       }
     </style>
@@ -328,6 +477,18 @@
         <!-- 按钮选择对话框 -->
         <div id="buttons">
           <div id="button-container"></div>
+        </div>
+
+        <!-- 选择列表对话框 -->
+        <div id="select">
+          <div class="filter-input">
+            <input
+              type="text"
+              id="filter-input"
+              placeholder="输入关键字进行筛选"
+            />
+          </div>
+          <div id="select-container" class="select-list"></div>
         </div>
 
         <!-- 文本区域对话框 -->

@@ -575,6 +575,50 @@ interface quickcommandApi {
   ): Promise<string | null>;
 
   /**
+   * 显示一个支持搜索的系统级选项列表，选项类型为文本时，返回选择的索引和文本，为对象时，返回选择的对象
+   *
+   * ```js
+   * // plaintext
+   * var opt = []
+   * for (var i = 0; i < 15; i++) {
+   *     // 每一个选项为文本格式
+   *     opt.push(`选项` + i)
+   * }
+   * quickcommand.showSystemSelectList(opt).then(choise => {
+   *     console.log(`选择的选项为${choise.text}`)
+   * })
+   * ​
+   * // json
+   * var opt = []
+   * for (var i = 0; i < 15; i++) {
+   *     // 每一个选项为 json 格式, 使用clickFn注册选项单击事件时id属性是必需的
+   *     opt.push({
+   *        id: i,
+   *        title: `选项${i}`,
+   *        description: `选项${i}的描述`,
+   *        icon: `http://www.u.tools/favicon.ico`,
+   *        abcd: `选项${i}的自定义属性`,
+   *        clickFn:function(e){console.log(e)}
+   *     })
+   * }
+   * quickcommand.showSystemSelectList(opt, {optionType: 'json'}).then(choise => {
+   *     console.log(`选择的选项为${choise.title}`)
+   * })
+   * ​
+   * ```
+   *
+   * @param selects 每一个列表选项
+   * @param options 列表的选项。placeholder: 搜索框占位符；optionType: 选项的格式，默认为plaintext；
+   */
+  showSystemSelectList(
+    selects: string[] | object[],
+    options?: {
+      placeholder: string;
+      optionType: "plaintext" | "json";
+    }
+  ): Promise<{ id: number; text: string | object }>;
+
+  /**
    * 运行代码
    * @param code 代码
    * @param program 编程语言
