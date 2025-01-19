@@ -18,6 +18,7 @@ import { windowsCommands } from "./windowsCommands";
 import { statusCommands } from "./statusCommands";
 import { macosCommands } from "./macosCommands";
 import { scriptCommands } from "./scriptCommands";
+import { browserCommands } from "./browserCommands";
 
 const platformCommands = {
   win32: [windowsCommands],
@@ -33,6 +34,7 @@ export const commandCategories = [
   imageCommands,
   utoolsCommands,
   ...platformCommands[window.processPlatform],
+  browserCommands,
   dataCommands,
   codingCommands,
   controlCommands,
