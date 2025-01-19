@@ -57,11 +57,11 @@ interface quickcommandApi {
    * for (var i = 0; i < 15; i++) {
    *     // 每一个选项为 json 格式, 使用clickFn注册选项单击事件时id属性是必需的
    *     opt.push({
-   *        id: i, 
-   *        title: `选项${i}`, 
-   *        description: `选项${i}的描述`, 
+   *        id: i,
+   *        title: `选项${i}`,
+   *        description: `选项${i}的描述`,
    *        icon: `http://www.u.tools/favicon.ico`,
-   *        abcd: `选项${i}的自定义属性`, 
+   *        abcd: `选项${i}的自定义属性`,
    *        clickFn:function(e){console.log(e)}
    *     })
    * }
@@ -346,29 +346,6 @@ interface quickcommandApi {
    * @param script Powershell 脚本代码
    */
   runPowerShell(script: string): Promise<string>;
-
-  /**
-   * 运行C#脚本，并返回运行结果 (Promise)
-   *
-   * 需要安装.NET Framework
-   *
-   * ```js
-   * const script = `using System;
-   * class Program {
-   *   static void Main(string[] args) {
-   *     Console.WriteLine("Hello, World!");
-   *   }
-   * }`
-   * quickcommand.runCsharp(script).then(res => {
-   *   console.log(res)
-   * }).catch(err => {
-   *   console.log(err)
-   * })
-   * ```
-   *
-   * @param script C# 脚本代码
-   */
-  runCsharp(script: string): Promise<string>;
 
   /**
    * MacOS 下运行 AppleScript 脚本并返回运行结果 (Promise)

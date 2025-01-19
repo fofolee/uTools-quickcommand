@@ -174,7 +174,6 @@ const runCsharpFeature = async (feature, args = [], options = {}) => {
       console.log(featureExePath, args.join(" "));
       currentChild = child_process.spawn(featureExePath, args, {
         encoding: null,
-        windowsHide: true,
       });
 
       let stdoutData = Buffer.from([]);

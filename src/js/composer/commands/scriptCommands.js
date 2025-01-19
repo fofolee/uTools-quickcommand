@@ -42,12 +42,5 @@ export const scriptCommands = {
         },
       ],
     },
-    {
-      value: "quickcommand.runCsharp",
-      label: "执行C#脚本",
-      icon: "script",
-      outputVariable: "result",
-      saveOutput: true,
-    },
   ],
 };

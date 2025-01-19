@@ -3,122 +3,29 @@ const { promisify } = require("util");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { runCsharpFeature } = require("../../csharp");
 
 const execFileAsync = promisify(execFile);
 const readFileAsync = promisify(fs.readFile);
 const unlinkAsync = promisify(fs.unlink);
 
-// Windows C# 截图代码
-const csharpScript = `
-using System;
-using System.Runtime.InteropServices;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Collections.Generic;
-using Microsoft.VisualBasic;
-
-public class ScreenCapture
-{
-    [DllImport("user32.dll")]
-    static extern IntPtr GetDC(IntPtr hwnd);
-
-    [DllImport("user32.dll")]
-    static extern IntPtr GetDesktopWindow();
-
-    [DllImport("user32.dll")]
-    static extern IntPtr GetWindowDC(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    static extern IntPtr ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-    [DllImport("gdi32.dll")]
-    static extern bool BitBlt(IntPtr hdcDest, int nXDest, int nYDest,
-        int nWidth, int nHeight, IntPtr hdcSrc,
-        int nXSrc, int nYSrc, int dwRop);
-
-    [DllImport("gdi32.dll")]
-    static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int nWidth, int nHeight);
-
-    [DllImport("gdi32.dll")]
-    static extern IntPtr CreateCompatibleDC(IntPtr hDC);
-
-    [DllImport("gdi32.dll")]
-    static extern bool DeleteDC(IntPtr hDC);
-
-    [DllImport("gdi32.dll")]
-    static extern bool DeleteObject(IntPtr hObject);
-
-    [DllImport("gdi32.dll")]
-    static extern IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
-
-    public Image CaptureScreen()
-    {
-        return CaptureWindow(GetDesktopWindow());
-    }
-
-    private Image CaptureWindow(IntPtr handle)
-    {
-        IntPtr hdcSrc = GetWindowDC(handle);
-        User32.RECT windowRect = new User32.RECT();
-        User32.GetWindowRect(handle, ref windowRect);
-        int width = windowRect.right - windowRect.left;
-        int height = windowRect.bottom - windowRect.top;
-
-        IntPtr hdcDest = CreateCompatibleDC(hdcSrc);
-        IntPtr hBitmap = CreateCompatibleBitmap(hdcSrc, width, height);
-        IntPtr hOld = SelectObject(hdcDest, hBitmap);
-
-        BitBlt(hdcDest, 0, 0, width, height, hdcSrc, 0, 0, 0x00CC0020);
-        SelectObject(hdcDest, hOld);
-        DeleteDC(hdcDest);
-
-        Image img = Image.FromHbitmap(hBitmap);
-        DeleteObject(hBitmap);
-        ReleaseDC(handle, hdcSrc);
-
-        return img;
-    }
-
-    public void CaptureScreenToFile(string filename, ImageFormat format)
-    {
-        Image img = CaptureScreen();
-        img.Save(filename, format);
-    }
-
-    public class User32
-    {
-        public struct RECT
-        {
-            public int left;
-            public int top;
-            public int right;
-            public int bottom;
-        }
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetWindowRect(IntPtr hWnd, ref RECT rect);
-    }
-
-    public static void Main()
-    {
-        ScreenCapture sc = new ScreenCapture();
-        sc.CaptureScreenToFile(">>tempscreenshot<<", ImageFormat.Png);
-    }
-}
-`;
-
 // Windows 截图实现
 async function captureWindowsScreen() {
   const tmpFile = path.join(os.tmpdir(), `screen-${Date.now()}.png`);
   try {
-    await window.quickcommand.runCsharp(
-      csharpScript.replace(">>tempscreenshot<<", tmpFile.replace(/\\/g, "\\\\"))
-    );
+    await runCsharpFeature("utils", [
+      "-type",
+      "screenshot",
+      "-path",
+      tmpFile,
+    ]);
     const imageBuffer = await readFileAsync(tmpFile);
     return `data:image/png;base64,${imageBuffer.toString("base64")}`;
   } catch (error) {
     console.error("Windows截图失败:", error);
     return null;
+  } finally {
+    await unlinkAsync(tmpFile).catch(() => {});
   }
 }
 
