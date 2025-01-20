@@ -73,7 +73,7 @@ export default defineComponent({
     values() {
       if (!this.currentFunction?.config) return [];
       return this.currentFunction.config.map(
-        (input) => this.argvs[input.key] || ""
+        (input) => this.argvs[input.name] || ""
       );
     },
     showBranchButton() {
@@ -94,7 +94,7 @@ export default defineComponent({
   methods: {
     handleInputUpdate(index, value) {
       const input = this.currentFunction.config[index];
-      this.updateArgvs(input.key, value);
+      this.updateArgvs(input.name, value);
     },
     updateArgvs(key, value) {
       const argvs = {
@@ -175,7 +175,7 @@ export default defineComponent({
     // 初始化默认值
     if (this.currentFunction?.config) {
       this.currentFunction.config.forEach((config) => {
-        this.defaultArgvs[config.key] = config.defaultValue || "";
+        this.defaultArgvs[config.name] = config.defaultValue || "";
       });
     }
   },
