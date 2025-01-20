@@ -3,9 +3,10 @@ const { createBrowserWindow } = utools;
 /**
  * 创建对话框窗口
  * @param {object} config - 对话框配置
+ * @param {object} [customOptions] - 自定义窗口选项
  * @returns {Promise} 返回对话框结果
  */
-const createDialog = (config) => {
+const createDialog = (config, customOptions = {}) => {
   return new Promise((resolve) => {
     const dialogPath = "lib/dialog/view.html";
     const preloadPath = "lib/dialog/controller.js";
@@ -24,7 +25,9 @@ const createDialog = (config) => {
       opacity: 0,
       webPreferences: {
         preload: preloadPath,
+        devTools: utools.isDev(),
       },
+      ...customOptions, // 合并自定义选项
     };
 
     // 创建窗口
@@ -53,9 +56,12 @@ const createDialog = (config) => {
         UBrowser.setOpacity(1);
         ipcRenderer.removeListener("dialog-ready", dialogReadyHandler);
       };
-      ipcRenderer.on("dialog-ready", dialogReadyHandler);
 
-      // 添加监听器
+      // 监听子窗口返回的计算高度, 等待按钮有自己的计算逻辑
+      config.type !== "wait-button" &&
+        ipcRenderer.on("dialog-ready", dialogReadyHandler);
+
+      // 监听子窗口返回的返回值
       ipcRenderer.on("dialog-result", dialogResultHandler);
 
       // 发送配置到子窗口
@@ -183,6 +189,81 @@ const showSystemSelectList = async (items, options = {}) => {
   });
 };
 
+/**
+ * 显示一个系统级等待按钮
+ * @param {object} options - 配置选项
+ * @param {string} [options.text="等待操作"] - 按钮文本
+ * @param {string} [options.position="bottom-right"] - 按钮位置，可选值：top-left, top-right, bottom-left, bottom-right
+ * @param {boolean} [options.showCancel=false] - 是否显示取消按钮
+ * @returns {Promise<boolean>} 点击确定返回true，点击取消返回false
+ */
+const showSystemWaitButton = async (options = {}) => {
+  const {
+    text = "等待操作",
+    position = "bottom-right",
+    showCancel = true,
+  } = options;
+
+  // 创建临时span计算文本宽度
+  const span = document.createElement("span");
+  span.style.font =
+    '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  span.style.visibility = "hidden";
+  span.style.position = "absolute";
+  span.textContent = text;
+  document.body.appendChild(span);
+
+  // 计算窗口尺寸
+  const textWidth = span.offsetWidth;
+  document.body.removeChild(span);
+
+  const dialogOptions = {
+    width: Math.max(textWidth + 32 + (showCancel ? 25 : 0), 80), // 文本宽度 + padding + 取消按钮宽度(如果有)
+    height: 36,
+    opacity: 1,
+  };
+
+  // 获取主屏幕尺寸
+  const primaryDisplay = utools.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
+  // 根据position计算窗口位置
+  const padding = 20;
+  let x, y;
+
+  switch (position) {
+    case "top-left":
+      x = padding;
+      y = padding;
+      break;
+    case "top-right":
+      x = width - dialogOptions.width - padding;
+      y = padding;
+      break;
+    case "bottom-left":
+      x = padding;
+      y = height - dialogOptions.height - padding;
+      break;
+    case "bottom-right":
+    default:
+      x = width - dialogOptions.width - padding;
+      y = height - dialogOptions.height - padding;
+      break;
+  }
+
+  dialogOptions.x = x;
+  dialogOptions.y = y;
+
+  return await createDialog(
+    {
+      type: "wait-button",
+      text,
+      showCancel,
+    },
+    dialogOptions
+  );
+};
+
 module.exports = {
   showSystemMessageBox,
   showSystemInputBox,
@@ -190,4 +271,5 @@ module.exports = {
   showSystemButtonBox,
   showSystemTextArea,
   showSystemSelectList,
+  showSystemWaitButton,
 };

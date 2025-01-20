@@ -629,6 +629,27 @@ interface quickcommandApi {
   ): Promise<{ id: number; text: string | object }>;
 
   /**
+   * 显示一个系统级等待按钮
+   * @param options 配置选项
+   * @param options.text 按钮文本
+   * @param options.position 按钮位置，可选值：top-left, top-right, bottom-left, bottom-right
+   * @param options.showCancel 是否显示取消按钮，默认 true
+   *
+   * ```js
+   * const result = await quickcommand.showSystemWaitButton({
+   *   text: "等待操作",
+   *   position: "bottom-right",
+   * })
+   * console.log(result) // true 或 false
+   * ```
+   */
+  showSystemWaitButton(options?: {
+    text?: string;
+    position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+    showCancel?: boolean;
+  }): Promise<boolean>;
+
+  /**
    * 运行代码
    * @param code 代码
    * @param program 编程语言

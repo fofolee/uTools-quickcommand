@@ -321,6 +321,39 @@ document.addEventListener("DOMContentLoaded", () => {
           filterInput.focus();
         }
         break;
+
+      case "wait-button":
+        document.getElementById("wait-button").style.display = "block";
+        document.body.classList.add("dialog-wait-button");
+
+        // 创建按钮组
+        const waitButtonContainer = document.getElementById("wait-button");
+        const buttonGroup = document.createElement("div");
+        buttonGroup.className = "wait-button-group";
+
+        // 创建主按钮
+        const waitBtn = document.createElement("button");
+        waitBtn.id = "wait-btn";
+        waitBtn.textContent = config.text;
+        waitBtn.onclick = () => {
+          ipcRenderer.sendTo(parentId, "dialog-result", true);
+        };
+
+        buttonGroup.appendChild(waitBtn);
+
+        // 如果需要显示取消按钮
+        if (config.showCancel) {
+          const cancelBtn = document.createElement("button");
+          cancelBtn.id = "wait-cancel-btn";
+          cancelBtn.innerHTML = "&#x2715;"; // 使用 × 符号
+          cancelBtn.onclick = () => {
+            ipcRenderer.sendTo(parentId, "dialog-result", false);
+          };
+          buttonGroup.appendChild(cancelBtn);
+        }
+
+        waitButtonContainer.appendChild(buttonGroup);
+        break;
     }
     ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());
   });

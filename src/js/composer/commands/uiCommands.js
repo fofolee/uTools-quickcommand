@@ -332,6 +332,44 @@ export const uiCommands = {
       ],
     },
     {
+      value: "quickcommand.showSystemWaitButton",
+      label: "等待操作按钮",
+      isAsync: true,
+      config: [
+        {
+          component: "OptionEditor",
+          options: {
+            text: {
+              label: "按钮文本",
+              component: "VariableInput",
+              width: 6,
+            },
+            position: {
+              label: "按钮位置",
+              component: "QSelect",
+              width: 3,
+              options: [
+                { label: "屏幕左上角", value: "top-left" },
+                { label: "屏幕右上角", value: "top-right" },
+                { label: "屏幕左下角", value: "bottom-left" },
+                { label: "屏幕右下角", value: "bottom-right" },
+              ],
+            },
+            showCancel: {
+              label: "显示取消按钮",
+              component: "CheckButton",
+              width: 3,
+            },
+          },
+          defaultValue: {
+            text: newVarInputVal("str", "点击继续"),
+            position: "bottom-right",
+            showCancel: true,
+          },
+        },
+      ],
+    },
+    {
       value: "utools.showOpenDialog",
       label: "文件选择框",
       outputVariable: "filePaths",

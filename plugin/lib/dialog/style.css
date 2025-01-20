@@ -20,10 +20,6 @@
    --title-bg: #2d2d2d;
    --input-bg: #2d2d2d;
    --input-border: #404040;
-   --input-focus: #0d6efd;
-   --button-bg: #0d6efd;
-   --button-hover: #0b5ed7;
-   --button-text: #fff;
    --cancel-bg: #4a4a4a;
    --cancel-border: #4a4a4a;
  }
@@ -458,4 +454,58 @@
  /* 隐藏确定和取消按钮 */
  .dialog-select .button-bar {
    display: none;
+ }
+
+ .dialog-wait-button .title-bar,
+ .dialog-wait-button .button-bar {
+   display: none;
+ }
+
+ .dialog-wait-button .content-wrapper {
+   padding: 0;
+ }
+
+ /* 按钮容器和按钮样式 */
+ #wait-button {
+   display: none;
+   position: absolute;
+   inset: 0;
+ }
+
+ .wait-button-group {
+   display: flex;
+   height: 100%;
+   border: none;
+   background: none;
+ }
+
+ #wait-btn,
+ #wait-cancel-btn {
+   height: 100%;
+   border-radius: 0;
+   cursor: pointer;
+   color: white;
+ }
+
+ #wait-btn:hover,
+ #wait-cancel-btn:hover {
+   filter: brightness(1.1);
+ }
+
+ #wait-btn {
+   width: 100%;
+   background: var(--button-bg);
+   font-size: 14px;
+   white-space: nowrap;
+ }
+
+ #wait-cancel-btn {
+   width: 25px;
+   min-width: 25px;
+   font-size: 18px;
+   padding: 0;
+ }
+
+ #wait-cancel-btn:hover {
+   background-color: #ec3535;
  }
