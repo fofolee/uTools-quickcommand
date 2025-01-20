@@ -1,9 +1,9 @@
 <template>
-  <q-card class="q-dialog-plugin">
-    <q-card-section>
-      <div class="text-h5" align="center" v-text="options.title"></div>
+  <q-card class="q-dialog-plugin quickcommand-ui">
+    <q-card-section v-if="options.title">
+      <div class="text-h8" align="center" v-text="options.title"></div>
     </q-card-section>
-    <q-card-section class="q-gutter-lg">
+    <q-card-section class="q-gutter-md">
       <div v-for="(label, index) in options.labels" :key="index">
         <q-btn
           class="full-width"

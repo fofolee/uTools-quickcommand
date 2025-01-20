@@ -1,5 +1,5 @@
 <template>
-  <q-card @mousewheel="mouseHandler">
+  <q-card class="quickcommand-ui q-dialog-plugin" @mousewheel="mouseHandler">
     <q-virtual-scroll
       ref="scrollBar"
       @scroll="scrollHandler"
@@ -258,14 +258,6 @@ export default {
 </script>
 
 <style scoped>
-.q-card {
-  background: #f4f4f4;
-}
-
-.q-card--dark {
-  background: #303133;
-}
-
 .shortcut {
   user-select: none;
   transition: 0;

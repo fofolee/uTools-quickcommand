@@ -188,7 +188,7 @@ export default {
        *
        * 如需对每个选项单独注册点击事件，可以在initItems的元素中添加id和clickFn，如：
        * initItems = [{id:1, title: "1", description: "1", clickFn:function(e){console.log(e)}}, {id:2, title: "2", description: "2", clickFn:function(e){console.log(e)}}]
-       * 
+       *
        * @example
        * initItems = ["<div>1</div>", "<div>2</div>", "<div>3</div>"]
        * options = {placeholder: "输入进行筛选，支持拼音", optionType: "html", enableSearch: true, showCancelButton: false, closeOnSelect: true}
@@ -315,3 +315,13 @@ export default {
   },
 };
 </script>
+
+<style>
+.quickcommand-ui.q-card {
+  background-color: #f4f4f4;
+}
+
+.body--dark .quickcommand-ui.q-card {
+  background-color: var(--q-dark-page);
+}
+</style>
