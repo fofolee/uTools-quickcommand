@@ -16,6 +16,7 @@
           @click="clickOK"
           :class="{
             'item-selected': index === currentIndex,
+            item: true,
           }"
           :style="{
             height: itemHeight + 'px',
@@ -26,7 +27,10 @@
           <!-- 纯文本 -->
           <q-item v-if="is.text">
             <q-item-section>
-              <q-item-label lines="1">{{ item }}</q-item-label>
+              <q-item-label
+                lines="1"
+                v-html="highlightText(item)"
+              ></q-item-label>
             </q-item-section>
           </q-item>
           <!-- json -->
@@ -37,10 +41,15 @@
               </q-avatar>
             </q-item-section>
             <q-item-section>
-              <q-item-label lines="1">{{ item.title }}</q-item-label>
-              <q-item-label lines="1" caption>{{
-                item.description
-              }}</q-item-label>
+              <q-item-label
+                lines="1"
+                v-html="highlightText(item.title)"
+              ></q-item-label>
+              <q-item-label
+                lines="1"
+                caption
+                v-html="highlightText(item.description)"
+              ></q-item-label>
             </q-item-section>
           </q-item>
           <!-- html -->
@@ -67,9 +76,9 @@
     </div>
     <q-btn
       v-if="options.options.showCancelButton"
-      class="absolute-bottom-right q-ma-xs"
+      class="close-btn"
       round
-      color="primary"
+      flat
       icon="close"
       @click="hide"
     />
@@ -103,13 +112,18 @@ export default {
   },
   computed: {
     matchedItems() {
-      let matchedItems = this.searchWords
-        ? this.items.filter((x) =>
-            pinyinMatch.match(x.title ? x.title : x, this.searchWords)
-          )
-        : this.items;
-      this.setUtoolsHeight(this.itemHeight * matchedItems.length);
-      return matchedItems;
+      if (!this.searchWords) return this.items;
+
+      return this.items.filter((x) => {
+        if (this.is.json) {
+          const titleMatch = pinyinMatch.match(x.title, this.searchWords);
+          const descMatch =
+            x.description && pinyinMatch.match(x.description, this.searchWords);
+          return titleMatch || descMatch;
+        } else {
+          return pinyinMatch.match(x, this.searchWords);
+        }
+      });
     },
     matchedItemsSize() {
       return this.matchedItems.length;
@@ -144,7 +158,9 @@ export default {
             id: this.currentIndex,
             text: this.matchedItems[this.currentIndex],
           };
-      this.is.json && selected.clickFn ? selected.clickFn(this.matchedItems[this.currentIndex].id) : this.$emit("clickOK", selected);
+      this.is.json && selected.clickFn
+        ? selected.clickFn(this.matchedItems[this.currentIndex].id)
+        : this.$emit("clickOK", selected);
       this.options.options.closeOnSelect && this.hide();
     },
 
@@ -196,7 +212,8 @@ export default {
     setSubInput() {
       utools.setSubInput(({ text }) => {
         this.searchWords = text;
-        if (this.matchedItems.length < this.currentIndex + 1) this.currentIndex = 0
+        if (this.matchedItems.length < this.currentIndex + 1)
+          this.currentIndex = 0;
       }, this.options.options.placeholder);
     },
 
@@ -216,23 +233,95 @@ export default {
         document.removeEventListener(...this.$root.subInputEvent);
       document.addEventListener("keydown", this.keyHandler, true);
     },
+
+    highlightText(text) {
+      if (!text || !this.searchWords) return text;
+
+      const matchInfo = pinyinMatch.match(text, this.searchWords);
+      if (!matchInfo) return text;
+
+      let result = text;
+      // 从后往前替换，避免位置变化
+      for (let i = matchInfo.length - 2; i >= 0; i -= 2) {
+        const start = matchInfo[i];
+        const end = matchInfo[i + 1] + 1; // 增加1来包含最后一个字符
+        const highlightedText = `<span class="select-list-highlight">${text.slice(
+          start,
+          end
+        )}</span>`;
+        result = result.slice(0, start) + highlightedText + result.slice(end);
+      }
+      return result;
+    },
   },
 };
 </script>
 
 <style scoped>
-.q-card--dark {
-  background: var(--q-dark-page);
+.q-card {
+  background: #f4f4f4;
 }
-.q-item,
+
+.q-card--dark {
+  background: #303133;
+}
+
 .shortcut {
   user-select: none;
-  transition: 0s;
+  transition: 0;
 }
+
+.item {
+  transform: scale(1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  height: 50px;
+}
+
 .item-selected {
-  background: #dfe2e6;
+  transform: scale(0.996);
+  background-color: rgba(13, 110, 253, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.body--dark .item-selected {
-  background: #515151;
+
+.q-item .q-avatar {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.item-selected .q-avatar {
+  transform: scale(1.01);
+  filter: brightness(1.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-card--dark .item-selected {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+:deep(.select-list-highlight) {
+  color: var(--q-primary);
+  font-weight: bold;
+}
+
+.close-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.q-card--dark .close-btn {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.q-card--dark .close-btn:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 </style>
