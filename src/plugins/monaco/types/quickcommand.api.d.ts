@@ -60,7 +60,7 @@ interface quickcommandApi {
    *        id: i,
    *        title: `选项${i}`,
    *        description: `选项${i}的描述`,
-   *        icon: `http://www.u.tools/favicon.ico`,
+   *        icon: `https://yuanliao.info/favicon.ico`,
    *        abcd: `选项${i}的自定义属性`,
    *        clickFn:function(e){console.log(e)}
    *     })
@@ -81,9 +81,12 @@ interface quickcommandApi {
    * ```
    *
    * @param selects 每一个列表选项
-   * @param options 列表的选项。placeholder: 搜索框占位符；optionType: 选项的格式，默认为plaintext；
-   * enableSearch：启用搜索，默认 true；showCancelButton：显示关闭按钮，默认 false；closeOnSelect：
-   * 点击后关闭，默认 true
+   * @param options 配置选项
+   * @param options.placeholder 搜索框占位符，默认为空
+   * @param options.optionType 选项的格式，plaintext|html|json，默认为plaintext
+   * @param options.enableSearch 启用搜索，默认 true
+   * @param options.showCancelButton 显示关闭按钮，默认 false
+   * @param options.closeOnSelect 点击后关闭，默认 true
    */
   showSelectList(
     selects: string[] | object[],
@@ -591,14 +594,12 @@ interface quickcommandApi {
    * // json
    * var opt = []
    * for (var i = 0; i < 15; i++) {
-   *     // 每一个选项为 json 格式, 使用clickFn注册选项单击事件时id属性是必需的
    *     opt.push({
    *        id: i,
    *        title: `选项${i}`,
    *        description: `选项${i}的描述`,
-   *        icon: `http://www.u.tools/favicon.ico`,
+   *        icon: `https://yuanliao.info/favicon.ico`,
    *        abcd: `选项${i}的自定义属性`,
-   *        clickFn:function(e){console.log(e)}
    *     })
    * }
    * quickcommand.showSystemSelectList(opt, {optionType: 'json'}).then(choise => {
@@ -607,13 +608,22 @@ interface quickcommandApi {
    * ​
    * ```
    *
-   * @param selects 每一个列表选项
-   * @param options 列表的选项。placeholder: 搜索框占位符；optionType: 选项的格式，默认为plaintext；
+   * @param selects 每一个列表选项，可以为文本或对象
+   * @param selects.title 选项的标题
+   * @param selects.description 选项的描述
+   * @param selects.icon 选项的图标
+   * @param options 配置选项
+   * @param options.placeholder 搜索框占位符，默认为空
+   * @param options.enableSearch 是否启用搜索，默认为 true
+   * @param options.title 对话框标题，默认为请选择
+   * @param options.optionType 选项的格式，plaintext|json，默认为plainText
    */
   showSystemSelectList(
     selects: string[] | object[],
     options?: {
       placeholder: string;
+      enableSearch: boolean;
+      title: string;
       optionType: "plaintext" | "json";
     }
   ): Promise<{ id: number; text: string | object }>;

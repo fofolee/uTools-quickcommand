@@ -1,17 +1,20 @@
 <template>
   <div class="row q-col-gutter-sm">
     <!-- 控制区 -->
+    <div class="sub-command-card col-12">
+      <OperationCard
+        :model-value="argvs.subCommand"
+        :options="subCommands"
+        @update:model-value="handleSubCommandChange"
+      />
+    </div>
     <div class="col-12">
       <div class="row items-center q-gutter-sm">
         <!-- 选项类型选择 -->
         <div class="col model-type-select">
           <OperationCard
             :model-value="argvs.optionType"
-            :options="[
-              { label: '纯文本', value: 'plaintext', icon: 'text_fields' },
-              { label: 'HTML', value: 'html', icon: 'code' },
-              { label: 'JSON', value: 'json', icon: 'data_object' },
-            ]"
+            :options="optionTypes"
             square
             height="36px"
             @update:model-value="handleOptionTypeChange"
@@ -54,66 +57,8 @@
             </template>
           </q-select>
         </div>
-
-        <!-- 设置按钮 -->
-        <div class="col-auto">
-          <q-btn
-            flat
-            round
-            dense
-            icon="settings"
-            color="primary"
-            @click="showSettings = !showSettings"
-          >
-            <q-tooltip>高级设置</q-tooltip>
-          </q-btn>
-        </div>
       </div>
     </div>
-
-    <!-- 设置面板 -->
-    <q-slide-transition>
-      <div v-show="showSettings" class="row q-col-gutter-sm">
-        <!-- 搜索框占位符 -->
-        <div class="col">
-          <VariableInput
-            :disabled="!argvs.enableSearch"
-            :model-value="argvs.placeholder"
-            label="搜索框占位符"
-            icon="search"
-            dense
-            @update:model-value="updateArgvs('placeholder', $event)"
-          />
-        </div>
-
-        <!-- 开关选项 -->
-        <div class="col-auto items-center row">
-          <div class="row q-col-gutter-x-md">
-            <q-checkbox
-              :model-value="argvs.enableSearch"
-              label="启用搜索"
-              dense
-              class="toggle-option"
-              @update:model-value="updateArgvs('enableSearch', $event)"
-            />
-            <q-checkbox
-              :model-value="argvs.showCancelButton"
-              label="关闭按钮"
-              dense
-              class="toggle-option"
-              @update:model-value="updateArgvs('showCancelButton', $event)"
-            />
-            <q-checkbox
-              :model-value="argvs.closeOnSelect"
-              label="选择后关闭"
-              dense
-              class="toggle-option"
-              @update:model-value="updateArgvs('closeOnSelect', $event)"
-            />
-          </div>
-        </div>
-      </div>
-    </q-slide-transition>
 
     <!-- 变量输入模式 -->
     <div v-if="argvs.inputMode === 'variable'" class="col-12">
@@ -154,14 +99,58 @@
         </ArrayEditor>
       </template>
     </div>
+    <div class="col-12">
+      <BorderLabel label="设置" icon="settings">
+        <div class="row q-col-gutter-sm items-center">
+          <!-- 搜索框占位符 -->
+          <div class="col">
+            <VariableInput
+              :disabled="!argvs.enableSearch"
+              :model-value="argvs.placeholder"
+              :disable="!argvs.enableSearch"
+              label="搜索框占位符"
+              icon="search"
+              dense
+              @update:model-value="updateArgvs('placeholder', $event)"
+            />
+          </div>
+
+          <!-- 开关选项 -->
+          <q-toggle
+            :model-value="argvs.enableSearch"
+            label="启用搜索"
+            dense
+            class="toggle-option"
+            @update:model-value="updateArgvs('enableSearch', $event)"
+          />
+          <q-toggle
+            v-if="hasHtmlOption(argvs.subCommand)"
+            :model-value="argvs.showCancelButton"
+            label="关闭按钮"
+            dense
+            class="toggle-option"
+            @update:model-value="updateArgvs('showCancelButton', $event)"
+          />
+          <q-toggle
+            v-if="hasHtmlOption(argvs.subCommand)"
+            :model-value="argvs.closeOnSelect"
+            label="选择后关闭"
+            dense
+            class="toggle-option"
+            @update:model-value="updateArgvs('closeOnSelect', $event)"
+          />
+        </div>
+      </BorderLabel>
+    </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import VariableInput from "../common/VariableInput.vue";
-import ArrayEditor from "../common/ArrayEditor.vue";
-import OperationCard from "../common/OperationCard.vue";
+import VariableInput from "components/composer/common/VariableInput.vue";
+import ArrayEditor from "components/composer/common/ArrayEditor.vue";
+import OperationCard from "components/composer/common/OperationCard.vue";
+import BorderLabel from "components/composer/common/BorderLabel.vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
 import { newVarInputVal, isVarInputVal } from "js/composer/varInputValManager";
 
@@ -185,6 +174,7 @@ export default defineComponent({
     VariableInput,
     ArrayEditor,
     OperationCard,
+    BorderLabel,
   },
   props: {
     modelValue: {
@@ -195,21 +185,6 @@ export default defineComponent({
   emits: ["update:modelValue"],
   data() {
     return {
-      showSettings: false,
-      optionTypes: [
-        { label: "纯文本", value: "plaintext" },
-        { label: "HTML", value: "html" },
-        { label: "JSON", value: "json" },
-      ],
-      defaultArgvs: {
-        inputMode: "manual",
-        selects: defaultSelects.json,
-        optionType: "json",
-        placeholder: newVarInputVal("str", "搜索..."),
-        enableSearch: true,
-        showCancelButton: false,
-        closeOnSelect: true,
-      },
       arrayEditorDefaultRowValue: {
         id: newVarInputVal("var"),
         title: newVarInputVal("str"),
@@ -231,6 +206,28 @@ export default defineComponent({
           width: 5,
         },
       },
+      subCommands: [
+        {
+          label: "插件内弹窗",
+          value: "quickcommand.showSelectList",
+          icon: "call_to_action",
+        },
+        {
+          label: "系统弹窗",
+          value: "quickcommand.showSystemSelectList",
+          icon: "report",
+        },
+      ],
+      defaultArgvs: {
+        subCommand: "quickcommand.showSelectList",
+        inputMode: "manual",
+        selects: defaultSelects.json,
+        optionType: "json",
+        placeholder: newVarInputVal("str", "搜索..."),
+        enableSearch: true,
+        showCancelButton: false,
+        closeOnSelect: true,
+      },
     };
   },
   computed: {
@@ -238,6 +235,15 @@ export default defineComponent({
       return (
         this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
       );
+    },
+    optionTypes() {
+      return [
+        { label: "纯文本", value: "plaintext", icon: "text_fields" },
+        this.hasHtmlOption(this.argvs.subCommand)
+          ? { label: "HTML", value: "html", icon: "html" }
+          : "",
+        { label: "JSON", value: "json", icon: "data_object" },
+      ].filter(Boolean);
     },
   },
   methods: {
@@ -262,6 +268,19 @@ export default defineComponent({
       });
       this.updateModelValue(argvs);
     },
+    hasHtmlOption(subCommand) {
+      return subCommand === "quickcommand.showSelectList";
+    },
+    handleSubCommandChange(newSubCommand) {
+      const newArgvs = { ...this.argvs, subCommand: newSubCommand };
+      if (
+        !this.hasHtmlOption(newSubCommand) &&
+        this.argvs.optionType === "html"
+      ) {
+        newArgvs.optionType = "plaintext";
+      }
+      this.updateModelValue(newArgvs);
+    },
     generateCode(argvs = this.argvs) {
       const {
         selects,
@@ -270,6 +289,7 @@ export default defineComponent({
         enableSearch,
         showCancelButton,
         closeOnSelect,
+        subCommand,
       } = argvs;
 
       // 构建选项对象
@@ -277,12 +297,14 @@ export default defineComponent({
         ...(enableSearch && placeholder?.value && { placeholder: placeholder }),
         ...(optionType !== "plaintext" && { optionType }),
         ...(enableSearch !== true && { enableSearch }),
-        ...(showCancelButton && { showCancelButton }),
-        ...(closeOnSelect !== true && { closeOnSelect }),
+        ...(showCancelButton &&
+          hasHtmlOption(subCommand) && { showCancelButton }),
+        ...(closeOnSelect !== true &&
+          hasHtmlOption(subCommand) && { closeOnSelect }),
       };
 
       // 生成代码
-      return `${this.modelValue.value}(${stringifyArgv(selects)}${
+      return `${subCommand}(${stringifyArgv(selects)}${
         Object.keys(options).length ? `, ${stringifyArgv(options)}` : ""
       })`;
     },
@@ -296,16 +318,19 @@ export default defineComponent({
 
         if (!result) return this.defaultArgvs;
 
+        const subCommand = result.name;
+
         const [selects, options = {}] = result.argvs;
         const inputMode = isVarInputVal(selects) ? "variable" : "manual";
         return {
           ...this.defaultArgvs,
           inputMode,
           selects,
+          subCommand,
           ...options,
         };
       } catch (e) {
-        console.warn("选择列表参数解析失败:", code);
+        console.warn("选择列表参数解析失败:" + e, code);
         return this.defaultArgvs;
       }
     },
@@ -373,6 +398,7 @@ export default defineComponent({
 <style scoped>
 .toggle-option {
   font-size: 12px;
+  margin-left: 8px;
 }
 
 .toggle-option :deep(.q-toggle__label) {

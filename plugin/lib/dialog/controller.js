@@ -111,6 +111,14 @@ document.addEventListener("DOMContentLoaded", () => {
         let hoverTimeout = null;
         let isKeyboardNavigation = false;
 
+        if (!config.enableSearch) {
+          filterInput.style.display = "none";
+        }
+
+        if (config.placeholder) {
+          filterInput.placeholder = config.placeholder;
+        }
+
         // 创建选项
         const createSelectItem = (item, index) => {
           const div = document.createElement("div");
@@ -129,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ipcRenderer.sendTo(parentId, "dialog-result", result);
           };
 
-          // 鼠标移入事件（带防抖）
+          // 鼠标移入事件
           div.onmouseenter = () => {
             if (isKeyboardNavigation) return;
             if (hoverTimeout) {
@@ -141,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               div.classList.add("selected");
               currentSelected = div;
-            }, 50);
+            }, 0);
           };
 
           // 鼠标移动事件
@@ -243,15 +251,17 @@ document.addEventListener("DOMContentLoaded", () => {
         updateList();
 
         // 添加筛选功能
-        let filterTimeout = null;
-        filterInput.addEventListener("input", (e) => {
-          if (filterTimeout) {
-            clearTimeout(filterTimeout);
-          }
-          filterTimeout = setTimeout(() => {
-            updateList(e.target.value);
-          }, 100);
-        });
+        if (config.enableSearch) {
+          let filterTimeout = null;
+          filterInput.addEventListener("input", (e) => {
+            if (filterTimeout) {
+              clearTimeout(filterTimeout);
+            }
+            filterTimeout = setTimeout(() => {
+              updateList(e.target.value);
+            }, 100);
+          });
+        }
 
         // 添加键盘导航
         const keydownHandler = (e) => {
@@ -307,7 +317,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener("keydown", keydownHandler);
 
         // 聚焦筛选框
-        filterInput.focus();
+        if (config.enableSearch) {
+          filterInput.focus();
+        }
         break;
     }
     ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());

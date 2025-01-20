@@ -21,6 +21,7 @@ const createDialog = (config) => {
       skipTaskbar: true,
       alwaysOnTop: true,
       frame: false,
+      opacity: 0,
       webPreferences: {
         preload: preloadPath,
       },
@@ -49,6 +50,7 @@ const createDialog = (config) => {
         };
         // 设置新的位置和大小
         UBrowser.setBounds(newBounds);
+        UBrowser.setOpacity(1);
         ipcRenderer.removeListener("dialog-ready", dialogReadyHandler);
       };
       ipcRenderer.on("dialog-ready", dialogReadyHandler);
@@ -159,18 +161,25 @@ const showSystemTextArea = async (placeholder = "请输入", defaultText = "") =
  * @param {Array<string|{title: string, description?: string, icon?: string}>} items - 选项列表
  * @param {object} [options] - 配置选项
  * @param {string} [options.title] - 对话框标题
+ * @param {string} [options.placeholder] - 输入框占位符
+ * @param {boolean} [options.enableSearch] - 是否启用搜索
  * @returns {Promise<{id: number, text: string, data: any}>} 选择的结果
  */
 const showSystemSelectList = async (items, options = {}) => {
-  const defaultOptions = {
-    title: "",
-  };
-  const finalOptions = { ...defaultOptions, ...options };
+  const {
+    title = "请选择",
+    placeholder = "",
+    enableSearch = true,
+    optionType = "plaintext",
+  } = options;
 
   return await createDialog({
     type: "select",
-    title: finalOptions.title,
-    items: items,
+    title,
+    placeholder,
+    enableSearch,
+    items,
+    optionType,
   });
 };
 
