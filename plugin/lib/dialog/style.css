@@ -2,18 +2,18 @@
   --bg-color: #fff;
   --text-color: #333;
   --border-color: #ddd;
-  --title-bg: #f5f5f5;
+  --mac-title-bg: #f5f5f5;
   --input-bg: #fff;
   --input-border: #ddd;
   --input-focus: #0d6efd;
-  --button-bg: #0d6efd;
-  --button-hover: #0b5ed7;
+  --button-bg: #2767cf;
   --button-text: #fff;
-  --cancel-bg: #6c757d;
-  --cancel-border: #6c757d;
+  --cancel-bg: #67696B;
+  --cancel-border: #67696B;
   --mac-close-btn: #ff5f57;
   --win-title-bg: #F9F1EF;
   --win-button-bar-bg: #F0F0F0;
+  --win-button-bar-border: #E0E0E0;
   --win-button-bg: #fdfdfd;
   --win-button-hover-border: #3C96DB;
   --win-button-hover-bg: #E0EEF9;
@@ -21,32 +21,34 @@
   --mac-close-x: rgba(0, 0, 0, 0.5);
   --win-border: rgba(0, 0, 0, 0.1);
   --win-text: #000;
-  --win-text-dark: #fdfdfd;
   --select-item-hover: rgba(13, 110, 253, 0.1);
-  --select-item-hover-dark: rgba(13, 110, 253, 0.2);
   --select-item-shadow: rgba(0, 0, 0, 0.02);
   --select-item-shadow-dark: rgba(0, 0, 0, 0.1);
   --select-description: rgba(0, 0, 0, 0.6);
-  --select-description-dark: rgba(255, 255, 255, 0.6);
   --highlight-color: #ec3535;
   --wait-btn-hover: #ec3535;
   --scrollbar-thumb: rgba(0, 0, 0, 0.3);
-  --scrollbar-thumb-dark: rgba(255, 255, 255, 0.3);
+  --input-box-shadow: rgba(13, 110, 253, 0.25)
 }
 
 :root[data-theme="dark"] {
   --bg-color: #282727;
   --text-color: #e0e0e0;
   --border-color: #404040;
-  --title-bg: #2d2d2d;
+  --mac-title-bg: #404143;
   --input-bg: #2d2d2d;
   --input-border: #404040;
-  --cancel-bg: #4a4a4a;
-  --cancel-border: #4a4a4a;
   --win-title-bg: #17040B;
   --win-button-bar-bg: #1C1C1C;
+  --win-button-bar-border: #1C1C1C;
   --win-button-bg: #353B3A;
-  --content-bg: #191919;
+  --win-button-hover-bg: #495150;
+  --win-text: #fdfdfd;
+  --content-bg: #36383A;
+  --win-content-bg: #191919;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.3);
+  --select-item-hover: rgba(13, 110, 253, 0.2);
+  --select-description: rgba(255, 255, 255, 0.6);
 }
 
 body {
@@ -74,12 +76,8 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0);
+  background: var(--scrollbar-thumb);
   transition: background-color 0.3s;
-}
-
-:root[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0);
 }
 
 /* 悬浮时显示滚动条 */
@@ -88,13 +86,9 @@ body {
   transition: background-color 0.3s;
 }
 
-:root[data-theme="dark"] *:hover::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb-dark);
-}
-
 /* 标题栏样式 */
 .title-bar {
-  background: var(--title-bg);
+  background: var(--mac-title-bg);
   padding: 2px 12px;
   -webkit-app-region: drag;
   display: flex;
@@ -122,7 +116,9 @@ body {
 
 .platform-darwin .title-left,
 .platform-linux .title-left {
-  padding-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center
 }
 
 /* macOS 和 Linux 样式 */
@@ -190,14 +186,10 @@ body {
   background: var(--win-title-bg);
 }
 
-:root[data-theme="dark"] .platform-win32 .title-bar {
-  background: #17040B;
-}
-
 .platform-win32 .close-btn {
   -webkit-app-region: no-drag;
-  width: 46px;
-  height: 32px;
+  width: 35px;
+  height: 27px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -214,11 +206,6 @@ body {
   width: 12px;
   height: 1px;
   background-color: var(--win-text);
-}
-
-:root[data-theme="dark"] .platform-win32 .close-btn::before,
-:root[data-theme="dark"] .platform-win32 .close-btn::after {
-  background-color: var(--win-text-dark);
 }
 
 .platform-win32 .close-btn::before {
@@ -240,14 +227,10 @@ body {
 
 /* 按钮栏样式 */
 .platform-win32 .button-bar {
-  padding: 6px 16px 12px 16px;
+  padding: 6px 16px;
   background: var(--win-button-bar-bg);
-  border-top: 1px solid #e0e0e0;
-}
-
-:root[data-theme="dark"] .platform-win32 .button-bar {
-  background: #1C1C1C;
-  border-top: 1px solid #1C1C1C;
+  border-top: 1px solid var(--win-button-bar-border);
+  height: 24px;
 }
 
 .container {
@@ -257,7 +240,7 @@ body {
 }
 
 .content-wrapper {
-  padding: 16px;
+  padding: 16px 16px 0 16px;
   min-height: 60px;
   max-height: 449px;
   overflow-y: auto;
@@ -265,8 +248,17 @@ body {
   flex: 1;
 }
 
-:root[data-theme="dark"] .content-wrapper {
+.platform-win32 .content-wrapper,
+.dialog-buttons .content-wrapper {
+  padding-bottom: 16px;
+}
+
+.content-wrapper {
   background: var(--content-bg);
+}
+
+.platform-win32 .content-wrapper {
+  background: var(--win-content-bg);
 }
 
 /* 选择列表对话框的内容区域padding和高度 */
@@ -285,7 +277,7 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 0 16px 16px;
+  padding: 16px;
   background: var(--content-bg);
   flex-shrink: 0;
 }
@@ -294,31 +286,16 @@ button {
   padding: 4px 12px;
   border-radius: 4px;
   border: 1px solid var(--button-bg);
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(0, 0, 0, 0.05) 100%),
-    var(--button-bg);
+  background: var(--button-bg);
   color: var(--button-text);
   cursor: pointer;
   font-size: 13px;
   min-width: 70px;
   transition: all 0.2s ease;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 button:hover {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(0, 0, 0, 0.05) 100%),
-    var(--button-hover);
-}
-
-button:active {
-  background: linear-gradient(180deg,
-      rgba(0, 0, 0, 0.05) 0%,
-      rgba(255, 255, 255, 0.08) 100%),
-    var(--button-bg);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.2);
 }
 
 .platform-win32 #ok-btn,
@@ -332,38 +309,22 @@ button:active {
   box-shadow: none;
 }
 
-:root[data-theme="dark"] .platform-win32 #ok-btn,
-:root[data-theme="dark"] .platform-win32 #cancel-btn {
-  background: #353B3A;
-  color: var(--win-text-dark);
-}
-
 .platform-win32 #ok-btn:hover,
 .platform-win32 #cancel-btn:hover {
   border: 1px solid var(--win-button-hover-border);
   background-color: var(--win-button-hover-bg);
 }
 
-#ok-btn {
+#ok-btn,
+#cancel-btn {
   padding: 0 12px;
   height: 20px;
+  width: 78px;
 }
 
 #cancel-btn {
-  padding: 0 12px;
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(0, 0, 0, 0.05) 100%),
-    var(--cancel-bg);
+  background: var(--cancel-bg);
   border: 1px solid var(--cancel-border);
-  height: 20px;
-}
-
-#cancel-btn:hover {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.2) 0%,
-      rgba(0, 0, 0, 0.1) 100%),
-    var(--cancel-bg);
 }
 
 #input-container {
@@ -393,7 +354,7 @@ button:active {
 .input-group input:focus {
   border-color: var(--input-focus);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 2px var(--input-box-shadow);
 }
 
 /* 文本区域样式 */
@@ -413,7 +374,7 @@ textarea {
 textarea:focus {
   border-color: var(--input-focus);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 2px var(--input-box-shadow);
 }
 
 /* 按钮组样式 */
@@ -475,7 +436,7 @@ textarea:focus {
 .filter-input input:focus {
   border-color: var(--input-focus);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 2px var(--input-box-shadow);
 }
 
 .select-list-container {
@@ -516,23 +477,10 @@ textarea:focus {
   filter: brightness(1.05);
 }
 
-:root[data-theme="dark"] .select-list:not(.keyboard-nav) .select-item:hover {
-  background-color: var(--select-item-hover-dark);
-}
-
-:root[data-theme="dark"] .select-item.selected {
-  background-color: var(--select-item-hover-dark);
-}
-
 /* 添加选择时的轻微阴影效果 */
 .select-item.selected,
 .select-list:not(.keyboard-nav) .select-item:hover {
   box-shadow: 0 1px 2px var(--select-item-shadow);
-}
-
-:root[data-theme="dark"] .select-item.selected,
-:root[data-theme="dark"] .select-list:not(.keyboard-nav) .select-item:hover {
-  box-shadow: 0 1px 2px var(--select-item-shadow-dark);
 }
 
 .select-item-icon {
@@ -570,10 +518,6 @@ textarea:focus {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-:root[data-theme="dark"] .select-item-description {
-  color: var(--select-description-dark);
 }
 
 /* 搜索结果高亮样式 */

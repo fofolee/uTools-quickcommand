@@ -15,7 +15,11 @@ const createDialog = (config, customDialogOptions = {}) => {
     const platform = os.platform();
 
     const dialogWidth =
-      platform === "win32" && config.type !== "textarea" ? 370 : 470;
+      config.type === "textarea" || config.type === "select"
+        ? 500
+        : platform === "win32"
+        ? 370
+        : 420;
 
     const dialogOptions = {
       title: config.title || "对话框",
