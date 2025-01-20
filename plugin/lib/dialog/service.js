@@ -1,19 +1,25 @@
 const { ipcRenderer } = require("electron");
+const os = require("os");
 const { createBrowserWindow } = utools;
 /**
  * 创建对话框窗口
  * @param {object} config - 对话框配置
- * @param {object} [customOptions] - 自定义窗口选项
+ * @param {object} [customDialogOptions] - 自定义窗口选项
  * @returns {Promise} 返回对话框结果
  */
-const createDialog = (config, customOptions = {}) => {
+const createDialog = (config, customDialogOptions = {}) => {
   return new Promise((resolve) => {
     const dialogPath = "lib/dialog/view.html";
     const preloadPath = "lib/dialog/controller.js";
 
+    const platform = os.platform();
+
+    const dialogWidth =
+      platform === "win32" && config.type !== "textarea" ? 370 : 470;
+
     const dialogOptions = {
       title: config.title || "对话框",
-      width: 470,
+      width: dialogWidth,
       height: 80,
       resizable: false,
       minimizable: false,
@@ -27,7 +33,7 @@ const createDialog = (config, customOptions = {}) => {
         preload: preloadPath,
         devTools: utools.isDev(),
       },
-      ...customOptions, // 合并自定义选项
+      ...customDialogOptions, // 合并自定义选项
     };
 
     // 创建窗口
@@ -48,7 +54,7 @@ const createDialog = (config, customOptions = {}) => {
         const newBounds = {
           x: Math.round(bounds.x),
           y: Math.max(0, y), // 确保不会超出屏幕顶部
-          width: 470,
+          width: dialogWidth,
           height: Math.round(height),
         };
         // 设置新的位置和大小
@@ -68,6 +74,7 @@ const createDialog = (config, customOptions = {}) => {
       ipcRenderer.sendTo(UBrowser.webContents.id, "dialog-config", {
         ...config,
         isDark: utools.isDarkColors(),
+        platform,
       });
     });
   });

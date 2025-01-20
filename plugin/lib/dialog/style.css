@@ -1,511 +1,641 @@
- :root {
-   --bg-color: #fff;
-   --text-color: #333;
-   --border-color: #ddd;
-   --title-bg: #f5f5f5;
-   --input-bg: #fff;
-   --input-border: #ddd;
-   --input-focus: #0d6efd;
-   --button-bg: #0d6efd;
-   --button-hover: #0b5ed7;
-   --button-text: #fff;
-   --cancel-bg: #6c757d;
-   --cancel-border: #6c757d;
- }
-
- :root[data-theme="dark"] {
-   --bg-color: #282727;
-   --text-color: #e0e0e0;
-   --border-color: #404040;
-   --title-bg: #2d2d2d;
-   --input-bg: #2d2d2d;
-   --input-border: #404040;
-   --cancel-bg: #4a4a4a;
-   --cancel-border: #4a4a4a;
- }
-
- body {
-   margin: 0;
-   padding: 0;
-   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-     "Helvetica Neue", Arial, sans-serif;
-   background: var(--bg-color);
-   color: var(--text-color);
-   user-select: none;
-   height: 100vh;
-   display: flex;
-   flex-direction: column;
-   overflow: hidden;
- }
-
- /* 自定义滚动条样式 */
- ::-webkit-scrollbar {
-   width: 4px;
-   height: 4px;
- }
-
- ::-webkit-scrollbar-track {
-   background: transparent;
- }
-
- ::-webkit-scrollbar-thumb {
-   background: rgba(0, 0, 0, 0);
-   transition: background-color 0.3s;
- }
-
- :root[data-theme="dark"] ::-webkit-scrollbar-thumb {
-   background: rgba(255, 255, 255, 0);
- }
-
- /* 悬浮时显示滚动条 */
- *:hover::-webkit-scrollbar-thumb {
-   background: rgba(0, 0, 0, 0.3);
-   transition: background-color 0.3s;
- }
-
- :root[data-theme="dark"] *:hover::-webkit-scrollbar-thumb {
-   background: rgba(255, 255, 255, 0.3);
- }
-
- /* 标题栏样式 */
- .title-bar {
-   background: var(--title-bg);
-   border-bottom: 1px solid var(--border-color);
-   padding: 4px 12px;
-   -webkit-app-region: drag;
-   display: flex;
-   align-items: center;
-   flex-shrink: 0;
- }
-
- .title-left {
-   flex: 1;
-   display: flex;
-   align-items: center;
- }
-
- .logo {
-   width: 20px;
-   height: 20px;
-   margin-right: 6px;
- }
-
- .title-text {
-   font-size: 13px;
-   font-weight: 500;
-   color: var(--text-color);
-   margin: 0;
- }
-
- .close-btn {
-   -webkit-app-region: no-drag;
-   background-color: rgba(0, 0, 0, 0.05);
-   width: 16px;
-   height: 16px;
-   min-width: 16px;
-   min-height: 16px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   border-radius: 50%;
-   cursor: pointer;
-   opacity: 0.8;
-   transition: all 0.2s;
-   margin-left: 8px;
-   position: relative;
- }
-
- :root[data-theme="dark"] .close-btn {
-   background-color: rgba(255, 255, 255, 0.1);
- }
-
- .close-btn:hover {
-   opacity: 1;
-   background-color: #ff4d4d;
- }
-
- .close-btn::before,
- .close-btn::after {
-   content: "";
-   position: absolute;
-   width: 8px;
-   height: 1px;
-   background-color: var(--text-color);
-   transform-origin: center;
- }
-
- .close-btn::before {
-   transform: rotate(45deg);
- }
-
- .close-btn::after {
-   transform: rotate(-45deg);
- }
-
- .close-btn:hover::before,
- .close-btn:hover::after {
-   background-color: #fff;
- }
-
- .container {
-   display: flex;
-   flex-direction: column;
-   height: 100vh;
- }
-
- .content-wrapper {
-   padding: 16px;
-   min-height: 60px;
-   max-height: 449px;
-   overflow-y: auto;
-   overflow-x: hidden;
-   flex: 1;
- }
-
- /* 选择列表对话框的内容区域padding和高度 */
- .dialog-select .content-wrapper {
-   padding: 16px 8px;
-   max-height: 600px;
- }
-
- #content {
-   line-height: 1.4;
-   font-size: 13px;
-   user-select: text;
- }
-
- .button-bar {
-   display: flex;
-   justify-content: flex-end;
-   gap: 8px;
-   padding: 0 16px 16px;
-   flex-shrink: 0;
-   background: var(--bg-color);
- }
-
- button {
-   padding: 4px 12px;
-   border-radius: 4px;
-   border: 1px solid var(--button-bg);
-   background: linear-gradient(180deg,
-       rgba(255, 255, 255, 0.08) 0%,
-       rgba(0, 0, 0, 0.05) 100%),
-     var(--button-bg);
-   color: var(--button-text);
-   cursor: pointer;
-   font-size: 13px;
-   min-width: 70px;
-   transition: all 0.2s ease;
-   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
- }
-
- button:hover {
-   background: linear-gradient(180deg,
-       rgba(255, 255, 255, 0.1) 0%,
-       rgba(0, 0, 0, 0.05) 100%),
-     var(--button-hover);
- }
-
- button:active {
-   background: linear-gradient(180deg,
-       rgba(0, 0, 0, 0.05) 0%,
-       rgba(255, 255, 255, 0.08) 100%),
-     var(--button-bg);
-   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
- }
-
- #ok-btn {
-   padding: 0 12px;
-   height: 20px;
- }
-
- #cancel-btn {
-   padding: 0 12px;
-   background: linear-gradient(180deg,
-       rgba(255, 255, 255, 0.08) 0%,
-       rgba(0, 0, 0, 0.05) 100%),
-     var(--cancel-bg);
-   border: 1px solid var(--cancel-border);
-   height: 20px;
- }
-
- #cancel-btn:hover {
-   background: linear-gradient(180deg,
-       rgba(255, 255, 255, 0.1) 0%,
-       rgba(0, 0, 0, 0.05) 100%),
-     var(--cancel-bg);
- }
-
- #input-container {
-   display: flex;
-   flex-direction: column;
-   gap: 8px;
- }
-
- .input-group label {
-   display: block;
-   padding: 0 0 4px 2px;
-   color: var(--text-color);
-   font-size: 13px;
- }
-
- .input-group input {
-   width: 100%;
-   padding: 6px 8px;
-   border: 1px solid var(--input-border);
-   border-radius: 4px;
-   font-size: 13px;
-   box-sizing: border-box;
-   background: var(--input-bg);
-   color: var(--text-color);
- }
-
- .input-group input:focus {
-   border-color: var(--input-focus);
-   outline: none;
-   box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
- }
-
- /* 文本区域样式 */
- textarea {
-   width: 100%;
-   height: 400px;
-   padding: 6px 8px;
-   border: 1px solid var(--input-border);
-   border-radius: 4px;
-   font-size: 13px;
-   resize: none;
-   box-sizing: border-box;
-   background: var(--input-bg);
-   color: var(--text-color);
- }
-
- textarea:focus {
-   border-color: var(--input-focus);
-   outline: none;
-   box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
- }
-
- /* 按钮组样式 */
- #button-container {
-   display: flex;
-   flex-direction: column;
-   gap: 10px;
-   padding-top: 4px;
- }
-
- #button-container button {
-   width: 100%;
-   text-align: center;
-   padding: 6px 12px;
- }
-
- /* 根据对话框类型显示/隐藏取消按钮 */
- .dialog-message #cancel-btn {
-   display: none;
- }
-
- .dialog-buttons .button-bar {
-   display: none;
- }
-
- /* 隐藏所有对话框内容 */
- #input,
- #confirm,
- #buttons,
- #textarea,
- #select {
-   display: none;
- }
-
- /* 选择列表样式 */
- .select-list {
-   display: flex;
-   flex-direction: column;
-   gap: 4px;
-   max-height: 505px;
-   overflow-y: auto;
- }
-
- .filter-input {
-   padding: 0 2px 8px 2px;
- }
-
- .filter-input input {
-   width: 100%;
-   padding: 6px 8px;
-   border: 1px solid var(--input-border);
-   border-radius: 4px;
-   font-size: 13px;
-   box-sizing: border-box;
-   background: var(--input-bg);
-   color: var(--text-color);
- }
-
- .filter-input input:focus {
-   border-color: var(--input-focus);
-   outline: none;
-   box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
- }
-
- .select-list-container {
-   display: flex;
-   flex-direction: column;
-   gap: 4px;
-   max-height: 360px;
-   overflow-y: auto;
- }
-
- .select-item {
-   display: flex;
-   align-items: center;
-   padding: 6px 8px;
-   border-radius: 8px;
-   cursor: pointer;
-   position: relative;
-   transform: translateY(0) scale(1);
-   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-   will-change: transform;
- }
-
- .select-item.selected {
-   background-color: rgba(13, 110, 253, 0.1);
-   position: relative;
-   transform: translateY(-1px) scale(0.995);
-   will-change: transform;
- }
-
- .select-item-icon {
-   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-   will-change: transform;
-   padding-right: 8px;
- }
-
- .select-item.selected .select-item-icon {
-   transform: scale(1.05);
-   filter: brightness(1.05);
- }
-
- :root[data-theme="dark"] .select-list:not(.keyboard-nav) .select-item:hover {
-   background-color: rgba(13, 110, 253, 0.2);
- }
-
- :root[data-theme="dark"] .select-item.selected {
-   background-color: rgba(13, 110, 253, 0.2);
- }
-
- /* 添加选择时的轻微阴影效果 */
- .select-item.selected,
- .select-list:not(.keyboard-nav) .select-item:hover {
-   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
- }
-
- :root[data-theme="dark"] .select-item.selected,
- :root[data-theme="dark"] .select-list:not(.keyboard-nav) .select-item:hover {
-   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
- }
-
- .select-item-icon {
-   width: 34px;
-   height: 34px;
-   margin-right: 8px;
-   border-radius: 4px;
-   overflow: hidden;
- }
-
- .select-item-icon img {
-   width: 100%;
-   height: 100%;
-   object-fit: cover;
- }
-
- .select-item-content {
-   flex: 1;
-   min-width: 0;
- }
-
- .select-item-title {
-   font-size: 13px;
-   line-height: 1.4;
-   margin: 0;
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
- }
-
- .select-item-description {
-   font-size: 12px;
-   color: rgba(0, 0, 0, 0.6);
-   margin: 0;
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
- }
-
- :root[data-theme="dark"] .select-item-description {
-   color: rgba(255, 255, 255, 0.6);
- }
-
- /* 搜索结果高亮样式 */
- .highlight {
-   color: #ec3535;
- }
-
- /* 隐藏确定和取消按钮 */
- .dialog-select .button-bar {
-   display: none;
- }
-
- .dialog-wait-button .title-bar,
- .dialog-wait-button .button-bar {
-   display: none;
- }
-
- .dialog-wait-button .content-wrapper {
-   padding: 0;
- }
-
- /* 按钮容器和按钮样式 */
- #wait-button {
-   display: none;
-   position: absolute;
-   inset: 0;
- }
-
- .wait-button-group {
-   display: flex;
-   height: 100%;
-   border: none;
-   background: none;
- }
-
- #wait-btn,
- #wait-cancel-btn {
-   height: 100%;
-   border-radius: 0;
-   cursor: pointer;
-   color: white;
- }
-
- #wait-btn:hover,
- #wait-cancel-btn:hover {
-   filter: brightness(1.1);
- }
-
- #wait-btn {
-   width: 100%;
-   background: var(--button-bg);
-   font-size: 14px;
-   white-space: nowrap;
- }
-
- #wait-cancel-btn {
-   width: 25px;
-   min-width: 25px;
-   font-size: 18px;
-   padding: 0;
- }
-
- #wait-cancel-btn:hover {
-   background-color: #ec3535;
- }
+:root {
+  --bg-color: #fff;
+  --text-color: #333;
+  --border-color: #ddd;
+  --title-bg: #f5f5f5;
+  --input-bg: #fff;
+  --input-border: #ddd;
+  --input-focus: #0d6efd;
+  --button-bg: #0d6efd;
+  --button-hover: #0b5ed7;
+  --button-text: #fff;
+  --cancel-bg: #6c757d;
+  --cancel-border: #6c757d;
+  --mac-close-btn: #ff5f57;
+  --win-title-bg: #F9F1EF;
+  --win-button-bar-bg: #F0F0F0;
+  --win-button-bg: #fdfdfd;
+  --win-button-hover-border: #3C96DB;
+  --win-button-hover-bg: #E0EEF9;
+  --win-close-hover: #e81123;
+  --mac-close-x: rgba(0, 0, 0, 0.5);
+  --win-border: rgba(0, 0, 0, 0.1);
+  --win-text: #000;
+  --win-text-dark: #fdfdfd;
+  --select-item-hover: rgba(13, 110, 253, 0.1);
+  --select-item-hover-dark: rgba(13, 110, 253, 0.2);
+  --select-item-shadow: rgba(0, 0, 0, 0.02);
+  --select-item-shadow-dark: rgba(0, 0, 0, 0.1);
+  --select-description: rgba(0, 0, 0, 0.6);
+  --select-description-dark: rgba(255, 255, 255, 0.6);
+  --highlight-color: #ec3535;
+  --wait-btn-hover: #ec3535;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.3);
+  --scrollbar-thumb-dark: rgba(255, 255, 255, 0.3);
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #282727;
+  --text-color: #e0e0e0;
+  --border-color: #404040;
+  --title-bg: #2d2d2d;
+  --input-bg: #2d2d2d;
+  --input-border: #404040;
+  --cancel-bg: #4a4a4a;
+  --cancel-border: #4a4a4a;
+  --win-title-bg: #17040B;
+  --win-button-bar-bg: #1C1C1C;
+  --win-button-bg: #353B3A;
+  --content-bg: #191919;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  user-select: none;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 自定义滚动条样式 */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0);
+  transition: background-color 0.3s;
+}
+
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0);
+}
+
+/* 悬浮时显示滚动条 */
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  transition: background-color 0.3s;
+}
+
+:root[data-theme="dark"] *:hover::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-dark);
+}
+
+/* 标题栏样式 */
+.title-bar {
+  background: var(--title-bg);
+  padding: 2px 12px;
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 20px;
+}
+
+.title-text {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.title-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+}
+
+.platform-darwin .title-left,
+.platform-linux .title-left {
+  padding-left: 20px;
+}
+
+/* macOS 和 Linux 样式 */
+.platform-darwin .title-bar,
+.platform-linux .title-bar {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.platform-darwin .close-btn,
+.platform-linux .close-btn {
+  position: absolute;
+  left: 8px;
+  top: 7px;
+  background-color: var(--mac-close-btn);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.platform-darwin .close-btn::before,
+.platform-darwin .close-btn::after,
+.platform-linux .close-btn::before,
+.platform-linux .close-btn::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 1px;
+  background-color: var(--mac-close-x);
+  transform-origin: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.platform-darwin .close-btn::before,
+.platform-linux .close-btn::before {
+  transform: rotate(45deg);
+}
+
+.platform-darwin .close-btn::after,
+.platform-linux .close-btn::after {
+  transform: rotate(-45deg);
+}
+
+.platform-darwin .close-btn:hover,
+.platform-linux .close-btn:hover {
+  background-color: var(--mac-close-btn);
+}
+
+.platform-darwin .close-btn:hover::before,
+.platform-darwin .close-btn:hover::after,
+.platform-linux .close-btn:hover::before,
+.platform-linux .close-btn:hover::after {
+  opacity: 1;
+}
+
+/* Windows 样式 */
+.platform-win32 .title-bar {
+  padding: 4px 0 4px 12px;
+  background: var(--win-title-bg);
+}
+
+:root[data-theme="dark"] .platform-win32 .title-bar {
+  background: #17040B;
+}
+
+.platform-win32 .close-btn {
+  -webkit-app-region: no-drag;
+  width: 46px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  position: relative;
+  opacity: 1;
+  background: transparent;
+}
+
+.platform-win32 .close-btn::before,
+.platform-win32 .close-btn::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 1px;
+  background-color: var(--win-text);
+}
+
+:root[data-theme="dark"] .platform-win32 .close-btn::before,
+:root[data-theme="dark"] .platform-win32 .close-btn::after {
+  background-color: var(--win-text-dark);
+}
+
+.platform-win32 .close-btn::before {
+  transform: rotate(45deg);
+}
+
+.platform-win32 .close-btn::after {
+  transform: rotate(-45deg);
+}
+
+.platform-win32 .close-btn:hover {
+  background-color: var(--win-close-hover);
+}
+
+.platform-win32 .close-btn:hover::before,
+.platform-win32 .close-btn:hover::after {
+  background-color: #fff;
+}
+
+/* 按钮栏样式 */
+.platform-win32 .button-bar {
+  padding: 6px 16px 12px 16px;
+  background: var(--win-button-bar-bg);
+  border-top: 1px solid #e0e0e0;
+}
+
+:root[data-theme="dark"] .platform-win32 .button-bar {
+  background: #1C1C1C;
+  border-top: 1px solid #1C1C1C;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content-wrapper {
+  padding: 16px;
+  min-height: 60px;
+  max-height: 449px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+}
+
+:root[data-theme="dark"] .content-wrapper {
+  background: var(--content-bg);
+}
+
+/* 选择列表对话框的内容区域padding和高度 */
+.dialog-select .content-wrapper {
+  padding: 16px 8px;
+  max-height: 600px;
+}
+
+#content {
+  line-height: 1.4;
+  font-size: 13px;
+  user-select: text;
+}
+
+.button-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 16px 16px;
+  background: var(--content-bg);
+  flex-shrink: 0;
+}
+
+button {
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--button-bg);
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(0, 0, 0, 0.05) 100%),
+    var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+  font-size: 13px;
+  min-width: 70px;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+button:hover {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(0, 0, 0, 0.05) 100%),
+    var(--button-hover);
+}
+
+button:active {
+  background: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.05) 0%,
+      rgba(255, 255, 255, 0.08) 100%),
+    var(--button-bg);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.platform-win32 #ok-btn,
+.platform-win32 #cancel-btn {
+  background: var(--win-button-bg);
+  color: var(--win-text);
+  border: 1px solid var(--win-border);
+  padding: 2px 12px;
+  height: 24px;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .platform-win32 #ok-btn,
+:root[data-theme="dark"] .platform-win32 #cancel-btn {
+  background: #353B3A;
+  color: var(--win-text-dark);
+}
+
+.platform-win32 #ok-btn:hover,
+.platform-win32 #cancel-btn:hover {
+  border: 1px solid var(--win-button-hover-border);
+  background-color: var(--win-button-hover-bg);
+}
+
+#ok-btn {
+  padding: 0 12px;
+  height: 20px;
+}
+
+#cancel-btn {
+  padding: 0 12px;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(0, 0, 0, 0.05) 100%),
+    var(--cancel-bg);
+  border: 1px solid var(--cancel-border);
+  height: 20px;
+}
+
+#cancel-btn:hover {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(0, 0, 0, 0.1) 100%),
+    var(--cancel-bg);
+}
+
+#input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  display: block;
+  padding: 0 0 4px 2px;
+  color: var(--text-color);
+  font-size: 13px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.input-group input:focus {
+  border-color: var(--input-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+/* 文本区域样式 */
+textarea {
+  width: 100%;
+  height: 400px;
+  padding: 6px 8px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 13px;
+  resize: none;
+  box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+textarea:focus {
+  border-color: var(--input-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+/* 按钮组样式 */
+#button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+#button-container button {
+  width: 100%;
+  text-align: center;
+  padding: 6px 12px;
+}
+
+/* 根据对话框类型显示/隐藏取消按钮 */
+.dialog-message #cancel-btn {
+  display: none;
+}
+
+.dialog-buttons .button-bar {
+  display: none;
+}
+
+/* 隐藏所有对话框内容 */
+#input,
+#confirm,
+#buttons,
+#textarea,
+#select {
+  display: none;
+}
+
+/* 选择列表样式 */
+.select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 505px;
+  overflow-y: auto;
+}
+
+.filter-input {
+  padding: 0 2px 8px 2px;
+}
+
+.filter-input input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.filter-input input:focus {
+  border-color: var(--input-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+.select-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.select-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.select-item.selected {
+  background-color: var(--select-item-hover);
+  position: relative;
+  transform: translateY(-1px) scale(0.995);
+  will-change: transform;
+}
+
+.select-item-icon {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  padding-right: 8px;
+}
+
+.select-item.selected .select-item-icon {
+  transform: scale(1.05);
+  filter: brightness(1.05);
+}
+
+:root[data-theme="dark"] .select-list:not(.keyboard-nav) .select-item:hover {
+  background-color: var(--select-item-hover-dark);
+}
+
+:root[data-theme="dark"] .select-item.selected {
+  background-color: var(--select-item-hover-dark);
+}
+
+/* 添加选择时的轻微阴影效果 */
+.select-item.selected,
+.select-list:not(.keyboard-nav) .select-item:hover {
+  box-shadow: 0 1px 2px var(--select-item-shadow);
+}
+
+:root[data-theme="dark"] .select-item.selected,
+:root[data-theme="dark"] .select-list:not(.keyboard-nav) .select-item:hover {
+  box-shadow: 0 1px 2px var(--select-item-shadow-dark);
+}
+
+.select-item-icon {
+  width: 34px;
+  height: 34px;
+  margin-right: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.select-item-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.select-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.select-item-title {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.select-item-description {
+  font-size: 12px;
+  color: var(--select-description);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:root[data-theme="dark"] .select-item-description {
+  color: var(--select-description-dark);
+}
+
+/* 搜索结果高亮样式 */
+.highlight {
+  color: var(--highlight-color);
+}
+
+/* 隐藏确定和取消按钮 */
+.dialog-select .button-bar {
+  display: none;
+}
+
+.dialog-wait-button .title-bar,
+.dialog-wait-button .button-bar {
+  display: none;
+}
+
+.dialog-wait-button .content-wrapper {
+  padding: 0;
+}
+
+/* 按钮容器和按钮样式 */
+#wait-button {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+.wait-button-group {
+  display: flex;
+  height: 100%;
+  border: none;
+  background: none;
+}
+
+#wait-btn,
+#wait-cancel-btn {
+  height: 100%;
+  border-radius: 0;
+  cursor: pointer;
+  color: white;
+}
+
+#wait-btn:hover,
+#wait-cancel-btn:hover {
+  filter: brightness(1.1);
+}
+
+#wait-btn {
+  width: 100%;
+  background: var(--button-bg);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+#wait-cancel-btn {
+  width: 25px;
+  min-width: 25px;
+  font-size: 18px;
+  padding: 0;
+}
+
+#wait-cancel-btn:hover {
+  background-color: var(--wait-btn-hover);
+}

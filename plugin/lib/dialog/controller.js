@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("content").textContent = config.content;
     }
 
+    // 添加平台类名
+    document.body.classList.add(`platform-${config.platform}`);
+
     // 根据类型设置不同的对话框内容
     switch (config.type) {
       case "message":
