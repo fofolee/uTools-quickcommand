@@ -6,6 +6,25 @@
     }"
     v-bind="$attrs"
   >
+    <!-- 禁用遮罩层 -->
+    <div
+      v-if="localCommand.disabled"
+      class="disabled-overlay"
+      :class="{
+        showToggleBtn: canToggleDisable,
+      }"
+      @click.stop="handleToggleDisable"
+    >
+      <div
+        class="enable-btn-wrapper row items-center text-primary"
+        :style="{
+          fontSize: localCommand.isCollapsed ? '12px' : '16px',
+        }"
+      >
+        <q-icon name="layers" class="q-mr-sm" />
+        <div>点击启用</div>
+      </div>
+    </div>
     <q-card class="command-item">
       <q-card-section
         class="card-section"
@@ -20,6 +39,9 @@
           @toggle-collapse="handleToggleCollapse"
           @run="runCommand"
           @remove="$emit('remove')"
+          @copy="handleCopy"
+          @toggle-disable="handleToggleDisable"
+          @add-print="handleAddPrint"
         >
           <!-- 控制流程组件，直接把组件放在head中 -->
           <template v-if="localCommand.isControlFlow">
@@ -74,6 +96,7 @@ import MultiParams from "components/composer/MultiParams.vue";
 import CommandHead from "components/composer/card/CommandHead.vue";
 import * as CardComponents from "js/composer/cardComponents";
 import { processVariable } from "js/composer/variableManager";
+import { newVarInputVal } from "js/composer/varInputValManager";
 import ControlCommand from "components/composer/control/ControlCommand.vue";
 
 export default defineComponent({
@@ -95,7 +118,15 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["remove", "run", "addBranch", "toggle-collapse", "update:modelValue"],
+  emits: [
+    "remove",
+    "run",
+    "addBranch",
+    "toggle-collapse",
+    "update:modelValue",
+    "add-command",
+    "toggle-disable",
+  ],
   computed: {
     localCommand: {
       get() {
@@ -105,17 +136,14 @@ export default defineComponent({
         this.$emit("update:modelValue", value);
       },
     },
-    showRunBtn() {
-      return !this.command.isControlFlow;
-    },
-    showOutputBtn() {
-      return !this.command.isControlFlow;
-    },
-    isLastCommandInChain() {
-      if (!this.command.commandChain) return false;
+    isFirstCommandInChain() {
+      if (!this.localCommand.commandChain) return false;
       return (
-        this.command.commandType === this.command.commandChain?.slice(-1)[0]
+        this.localCommand.commandType === this.localCommand.commandChain?.[0]
       );
+    },
+    canToggleDisable() {
+      return !this.localCommand.isControlFlow || this.isFirstCommandInChain;
     },
   },
   setup(props) {
@@ -170,6 +198,68 @@ export default defineComponent({
         // 非控制命令的折叠，更新自身状态
         this.localCommand.isCollapsed = !this.localCommand.isCollapsed;
       }
+    },
+    handleCopy() {
+      if (this.localCommand.isControlFlow && this.localCommand.chainId) {
+        // 如果是控制流程命令，通知父组件复制整个链
+        this.$emit("add-command", {
+          command: this.localCommand,
+          type: "chain",
+        });
+      } else {
+        // 非控制流程命令的复制逻辑保持不变
+        const copiedCommand = window.lodashM.cloneDeep(this.localCommand);
+        delete copiedCommand.id;
+        delete copiedCommand.chainId;
+        delete copiedCommand.commandType;
+        this.$emit("add-command", {
+          command: copiedCommand,
+          type: "single",
+        });
+      }
+    },
+    handleToggleDisable() {
+      if (!this.canToggleDisable) return;
+      if (this.localCommand.isControlFlow && this.localCommand.chainId) {
+        console.log(
+          "handleToggleDisable card",
+          this.localCommand.isControlFlow,
+          this.localCommand.chainId
+        );
+        // 如果是控制流程命令，通知父组件切换整个链的禁用状态
+        this.$emit("toggle-disable", {
+          chainId: this.localCommand.chainId,
+          disabled: !this.localCommand.disabled,
+        });
+      } else {
+        // 非控制流程命令的禁用逻辑保持不变
+        this.localCommand.disabled = !this.localCommand.disabled;
+      }
+    },
+    handleAddPrint() {
+      // 创建一个打印命令
+      if (!this.localCommand.outputVariable) {
+        this.localCommand.outputVariable = `temp_${parseInt(
+          new Date().getTime() / 1000
+        )}`;
+        this.localCommand.saveOutput = true;
+      }
+      const printCommand = {
+        value: "console.log",
+        label: "显示消息",
+        config: [
+          {
+            label: "要打印的消息文本",
+            component: "VariableInput",
+            icon: "info",
+          },
+        ],
+        argvs: [newVarInputVal("var", this.localCommand.outputVariable)],
+      };
+      this.$emit("add-command", {
+        command: printCommand,
+        type: "single",
+      });
     },
   },
 });
@@ -267,5 +357,72 @@ export default defineComponent({
 /* 调整控制流程组件的样式 */
 .command-item :deep(.condition-type-btn) {
   margin-left: -8px;
+}
+
+/* 禁用状态样式 */
+.composer-card.disabled {
+  position: relative;
+}
+
+/* 禁用遮罩层 */
+.disabled-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(1px);
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.body--dark .disabled-overlay {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 斜纹背景 */
+.disabled-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.02),
+    rgba(0, 0, 0, 0.02) 10px,
+    rgba(0, 0, 0, 0.04) 10px,
+    rgba(0, 0, 0, 0.04) 20px
+  );
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.enable-btn-wrapper {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  cursor: pointer !important;
+}
+
+.disabled-overlay.showToggleBtn:hover .enable-btn-wrapper {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.disabled-overlay.showToggleBtn:hover {
+  backdrop-filter: blur(0.5px);
+  border-color: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

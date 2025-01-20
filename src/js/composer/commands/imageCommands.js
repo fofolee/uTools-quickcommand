@@ -104,7 +104,6 @@ export const imageCommands = {
           width: 6,
           min: 1,
           step: 10,
-          defaultValue: "",
         },
         {
           label: "高度(像素)",
@@ -113,7 +112,6 @@ export const imageCommands = {
           width: 6,
           min: 1,
           step: 10,
-          defaultValue: "",
         },
         {
           label: "保持宽高比",

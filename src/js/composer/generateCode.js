@@ -6,6 +6,8 @@ export function generateCode(commandFlow) {
   const indent = hasAsyncFunction ? "  " : "";
 
   commandFlow.forEach((cmd) => {
+    // 跳过禁用的命令
+    if (cmd.disabled) return;
     if (!cmd.code) return;
     let line = indent;
 

@@ -705,11 +705,12 @@ export default defineComponent({
     },
   },
   mounted() {
-    if (!this.modelValue.code && !this.modelValue.argvs) {
+    const argvs = this.modelValue.argvs || this.defaultArgvs;
+    if (!this.modelValue.code) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
-        argvs: this.defaultArgvs,
-        code: this.generateCode(this.defaultArgvs),
+        argvs,
+        code: this.generateCode(argvs),
       });
     }
   },

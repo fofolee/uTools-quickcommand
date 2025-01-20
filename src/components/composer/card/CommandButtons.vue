@@ -54,6 +54,50 @@
           <q-tooltip>单独运行此命令并打印输出</q-tooltip>
         </q-icon>
 
+        <!-- 更多操作按钮 -->
+        <q-icon
+          name="more_vert"
+          class="more-btn"
+          v-if="!isControlFlow || isFirstCommandInChain"
+        >
+          <q-menu>
+            <q-list style="min-width: 150px">
+              <q-item clickable v-close-popup @click="$emit('copy')">
+                <q-item-section avatar>
+                  <q-icon name="content_copy" />
+                </q-item-section>
+                <q-item-section>复制命令</q-item-section>
+              </q-item>
+
+              <q-item
+                clickable
+                v-close-popup
+                @click="$emit('toggle-disable')"
+                x
+              >
+                <q-item-section avatar>
+                  <q-icon :name="command.disabled ? 'check_circle' : 'block'" />
+                </q-item-section>
+                <q-item-section>{{
+                  command.disabled ? "启用命令" : "禁用命令"
+                }}</q-item-section>
+              </q-item>
+
+              <q-item
+                clickable
+                v-close-popup
+                @click="$emit('add-print')"
+                v-if="!isControlFlow"
+              >
+                <q-item-section avatar>
+                  <q-icon name="chat" />
+                </q-item-section>
+                <q-item-section>打印输出</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-icon>
+
         <q-icon
           name="close"
           @click="$emit('remove')"
@@ -109,6 +153,9 @@ export default {
     "run",
     "remove",
     "toggle-collapse",
+    "copy",
+    "toggle-disable",
+    "add-print",
   ],
   methods: {
     handleBlur() {
@@ -167,7 +214,8 @@ export default {
 /* 按钮样式 */
 .output-btn,
 .run-btn,
-.remove-btn {
+.remove-btn,
+.more-btn {
   font-size: 18px;
   min-height: 25px;
   cursor: pointer;
@@ -178,7 +226,8 @@ export default {
 
 .output-btn:hover,
 .run-btn:hover,
-.remove-btn:hover {
+.remove-btn:hover,
+.more-btn:hover {
   opacity: 1;
   transform: scale(1.1) translateY(-1px);
   transition: all 0.3s ease;

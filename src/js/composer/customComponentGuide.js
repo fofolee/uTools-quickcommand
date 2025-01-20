@@ -172,11 +172,12 @@ const customComponentGuide = {
           description: "组件初始化时的处理",
           implementation: `
             // 如果没有 argvs 和 code，使用默认值初始化
-            if (!this.modelValue.argvs && !this.modelValue.code) {
+            const argvs = this.modelValue.argvs || this.defaultArgvs;
+            if (!this.modelValue.code) {
               this.$emit("update:modelValue", {
                 ...this.modelValue,
-                argvs: this.defaultArgvs,
-                code: this.generateCode(this.defaultArgvs)
+                argvs,
+                code: this.generateCode(argvs),
               });
             }
           `,

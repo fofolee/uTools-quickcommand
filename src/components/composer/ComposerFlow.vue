@@ -55,6 +55,8 @@
                   @run="handleRunCommand"
                   @add-branch="addBranch"
                   @toggle-collapse="(event) => handleControlFlowCollapse(event)"
+                  @add-command="(event) => handleAddCommand(event, index)"
+                  @toggle-disable="handleToggleDisable"
                 />
               </div>
             </transition>
@@ -434,6 +436,62 @@ export default defineComponent({
       } else {
         this.$emit("action", action, payload);
       }
+    },
+    getChainCommands(chainId) {
+      const startIndex = this.commands.findIndex(
+        (cmd) => cmd.chainId === chainId
+      );
+      const endIndex = this.commands.findLastIndex(
+        (cmd) => cmd.chainId === chainId
+      );
+      return {
+        chainCommands: this.commands.slice(startIndex, endIndex + 1),
+        startIndex,
+        endIndex,
+      };
+    },
+    copyChainCommands(chainCommands) {
+      // 生成新的chainId
+      const newChainId = this.$root.getUniqueId();
+      // 复制并修改每个命令
+      const newChainCommands = [];
+      chainCommands.forEach((cmd) => {
+        const copiedCommand = window.lodashM.cloneDeep(cmd);
+        copiedCommand.id = this.$root.getUniqueId();
+        if (copiedCommand.chainId) copiedCommand.chainId = newChainId;
+        newChainCommands.push(copiedCommand);
+      });
+      return newChainCommands;
+    },
+    handleAddCommand({ command, type }, index) {
+      if (type === "chain") {
+        // 如果是复制链式命令
+        const { chainCommands, endIndex } = this.getChainCommands(
+          command.chainId
+        );
+        const newChainCommands = this.copyChainCommands(chainCommands);
+        const newCommands = [...this.commands];
+        newCommands.splice(endIndex + 1, 0, ...newChainCommands);
+        this.$emit("update:modelValue", newCommands);
+      } else {
+        // 单个命令的复制逻辑
+        const newCommand = {
+          ...command,
+          id: this.$root.getUniqueId(),
+        };
+        const newCommands = [...this.commands];
+        newCommands.splice(index + 1, 0, newCommand);
+        this.$emit("update:modelValue", newCommands);
+      }
+    },
+    handleToggleDisable({ chainId, disabled }) {
+      console.log("handleToggleDisable", chainId, disabled);
+      const { chainCommands } = this.getChainCommands(chainId);
+      // 更新所有相关命令的禁用状态
+      const newCommands = chainCommands.map((cmd) => {
+        return { ...cmd, disabled };
+      });
+      this.$emit("update:modelValue", newCommands);
     },
     collapseAll() {
       const newCommands = this.commands.map((cmd) => ({

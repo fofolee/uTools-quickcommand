@@ -678,8 +678,9 @@ export default defineComponent({
     },
   },
   mounted() {
-    if (!this.modelValue.code && !this.modelValue.argvs) {
-      this.updateValue();
+    const argvs = this.modelValue.argvs || this.defaultArgvs;
+    if (!this.modelValue.code) {
+      this.updateValue(argvs);
     }
   },
 });

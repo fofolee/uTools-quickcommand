@@ -317,9 +317,9 @@ export default defineComponent({
     },
   },
   mounted() {
-    // 只在没有 argvs 和 code 的情况下生成默认代码
-    if (!this.modelValue.argvs && !this.modelValue.code) {
-      this.updateModelValue(this.defaultArgvs);
+    const argvs = this.modelValue.argvs || this.defaultArgvs;
+    if (!this.modelValue.code) {
+      this.updateModelValue(argvs);
     }
   },
 });

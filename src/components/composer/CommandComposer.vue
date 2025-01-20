@@ -123,7 +123,7 @@ export default defineComponent({
       const flow = window.lodashM.cloneDeep(this.commandFlow);
       const uselessProps = [
         "config",
-        "argvs",
+        "code",
         "label",
         "component",
         "subCommands",
