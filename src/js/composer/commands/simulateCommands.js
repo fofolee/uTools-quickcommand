@@ -110,41 +110,68 @@ export const simulateCommands = {
       ],
     },
     {
-      value: "utools.simulateMouseClick",
+      value: "quickcomposer.simulate.mouseClick",
       label: "鼠标点击",
       config: [
         {
-          label: "X坐标（留空则原地点击）",
-          icon: "drag_handle",
-          component: "NumberInput",
-          min: 0,
-          step: 10,
-          width: 6,
+          component: "ButtonGroup",
+          options: [
+            {
+              label: "单击",
+              value: "Click",
+            },
+            {
+              label: "右击",
+              value: "RightClick",
+            },
+            {
+              label: "双击",
+              value: "DoubleClick",
+            },
+          ],
+          defaultValue: "Click",
+          width: 12,
         },
         {
-          label: "Y坐标（留空则原地点击）",
-          icon: "drag_handle",
-          component: "NumberInput",
-          min: 0,
-          step: 10,
-          width: 6,
-        },
-      ],
-      subCommands: [
-        {
-          label: "单击",
-          value: "utools.simulateMouseClick",
-          icon: "mouse",
-        },
-        {
-          label: "右击",
-          value: "utools.simulateMouseRightClick",
-          icon: "mouse",
-        },
-        {
-          label: "双击",
-          value: "utools.simulateMouseDoubleClick",
-          icon: "mouse",
+          component: "OptionEditor",
+          options: {
+            x: {
+              label: "X坐标",
+              icon: "drag_handle",
+              component: "NumberInput",
+              min: 0,
+              step: 10,
+              width: 6,
+              placeholder: "XY任意留空原地点击",
+            },
+            y: {
+              label: "Y坐标",
+              icon: "drag_handle",
+              component: "NumberInput",
+              min: 0,
+              step: 10,
+              width: 6,
+              placeholder: "XY任意留空原地点击",
+            },
+            count: {
+              label: "点击次数",
+              component: "NumberInput",
+              min: 1,
+              step: 1,
+              width: 6,
+              defaultValue: 1,
+            },
+            interval: {
+              label: "点击间隔（毫秒）",
+              component: "NumberInput",
+              min: 0,
+              step: 100,
+              width: 6,
+            },
+          },
+          defaultValue: {
+            count: 1,
+          },
         },
       ],
     },
