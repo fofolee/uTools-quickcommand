@@ -102,6 +102,9 @@ export default defineComponent({
       this.updateModelValue(this.funcName, newArgvs);
     },
     generateCode(funcName, argvs) {
+      if (this.localCommand.isExpression) {
+        return argvs.join("");
+      }
       /**
        * 字符串模式stringfiy后，null会变成'"null"', ''变成'""'
        * 变量模式stringify后，null变成'null', ''保持''
@@ -139,6 +142,10 @@ export default defineComponent({
     parseCodeToArgvs(code) {
       let argvs = window.lodashM.cloneDeep(this.defaultArgvs);
       if (!code) return argvs;
+
+      if (this.localCommand.isExpression) {
+        return [code];
+      }
 
       const variableFormatPaths = [];
 

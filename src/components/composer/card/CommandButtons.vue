@@ -21,6 +21,7 @@
         <!-- 保存变量按钮 -->
         <q-icon
           :name="command.saveOutput ? 'data_object' : 'output'"
+          v-if="!command.neverHasOutput"
           class="output-btn"
           @click="$emit('toggle-output')"
         >

@@ -17,9 +17,11 @@ export const scriptCommands = {
       ],
     },
     {
-      value: "(function(code){new Function(code)()})",
+      value: "injectJs",
       label: "注入JS脚本",
       icon: "script",
+      neverHasOutput: true,
+      isExpression: true,
       config: [
         {
           label: "JS脚本",
@@ -29,11 +31,10 @@ export const scriptCommands = {
       ],
     },
     {
-      value: "quickcommand.runAppleScript",
-      label: "执行 AppleScript",
+      value: "quickcommand.runCode",
+      label: "执行代码",
       icon: "script",
       outputVariable: "result",
-      saveOutput: true,
       config: [
         {
           label: "脚本",
@@ -41,6 +42,12 @@ export const scriptCommands = {
           width: 12,
         },
       ],
+    },
+    {
+      value: "return",
+      label: "函数返回",
+      neverHasOutput: true,
+      component: "ReturnEditor",
     },
   ],
 };

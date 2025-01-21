@@ -50,3 +50,8 @@ export const SystemCommandEditor = defineAsyncComponent(() =>
 export const SelectListEditor = defineAsyncComponent(() =>
   import("components/composer/ui/SelectListEditor.vue")
 );
+
+// 编程组件
+export const ReturnEditor = defineAsyncComponent(() =>
+  import("components/composer/script/ReturnEditor.vue")
+);
