@@ -15,14 +15,15 @@
       }"
       @click.stop="handleToggleDisable"
     >
-      <div
-        class="enable-btn-wrapper row items-center text-primary"
-        :style="{
-          fontSize: localCommand.isCollapsed ? '12px' : '16px',
-        }"
-      >
-        <q-icon name="layers" class="q-mr-sm" />
-        <div>点击启用</div>
+      <div class="enable-btn-wrapper row items-center text-primary">
+        <q-icon
+          name="layers"
+          class="q-mr-sm"
+          :size="localCommand.isCollapsed ? '14px' : '18px'"
+        />
+        <div :style="{ fontSize: localCommand.isCollapsed ? '12px' : '15px' }">
+          点击启用
+        </div>
       </div>
     </div>
     <q-card class="command-item">
@@ -125,7 +126,7 @@ export default defineComponent({
     "toggle-collapse",
     "update:modelValue",
     "add-command",
-    "toggle-disable",
+    "toggle-chain-disable",
   ],
   computed: {
     localCommand: {
@@ -221,13 +222,8 @@ export default defineComponent({
     handleToggleDisable() {
       if (!this.canToggleDisable) return;
       if (this.localCommand.isControlFlow && this.localCommand.chainId) {
-        console.log(
-          "handleToggleDisable card",
-          this.localCommand.isControlFlow,
-          this.localCommand.chainId
-        );
         // 如果是控制流程命令，通知父组件切换整个链的禁用状态
-        this.$emit("toggle-disable", {
+        this.$emit("toggle-chain-disable", {
           chainId: this.localCommand.chainId,
           disabled: !this.localCommand.disabled,
         });

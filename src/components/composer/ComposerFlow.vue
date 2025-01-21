@@ -56,7 +56,7 @@
                   @add-branch="addBranch"
                   @toggle-collapse="(event) => handleControlFlowCollapse(event)"
                   @add-command="(event) => handleAddCommand(event, index)"
-                  @toggle-disable="handleToggleDisable"
+                  @toggle-chain-disable="handleToggleChainDisable"
                 />
               </div>
             </transition>
@@ -311,17 +311,11 @@ export default defineComponent({
           .showButtonBox(["全部删除", "保留内部命令", "手抖👋🏻"])
           .then(({ id }) => {
             if (id !== 0 && id !== 1) return;
-            const newCommands = [...this.commands];
             const chainId = command.chainId;
-            const lastIndex = newCommands.findLastIndex(
-              (cmd) => cmd.chainId === chainId
-            );
-            const startIndex = newCommands.findIndex(
-              (cmd) => cmd.chainId === chainId
-            );
+            const { startIndex, endIndex } = this.getChainIndex(chainId);
             this.removeRangeCommand(
               startIndex,
-              lastIndex,
+              endIndex,
               id === 0 ? null : chainId
             );
           });
@@ -362,13 +356,11 @@ export default defineComponent({
       };
 
       // 找到对应的 chainId 的最后一个命令位置
-      const lastIndex = newCommands.findLastIndex(
-        (cmd) => cmd.chainId === chainId
-      );
+      const { endIndex } = this.getChainIndex(chainId);
 
       // 在最后一个命令之前插入新的分支命令
-      if (lastIndex !== -1) {
-        newCommands.splice(lastIndex, 0, branchCommand);
+      if (endIndex !== -1) {
+        newCommands.splice(endIndex, 0, branchCommand);
         this.$emit("update:modelValue", newCommands);
       }
     },
@@ -378,12 +370,7 @@ export default defineComponent({
       if (!chainId) return;
 
       // 遍历commands找到相同chainId的第一个和最后一个命令的index
-      const startIndex = this.commands.findIndex(
-        (cmd) => cmd.chainId === chainId
-      );
-      const endIndex = this.commands.findLastIndex(
-        (cmd) => cmd.chainId === chainId
-      );
+      const { startIndex, endIndex } = this.getChainIndex(chainId);
 
       if (startIndex === -1 || endIndex === -1) return;
 
@@ -437,39 +424,34 @@ export default defineComponent({
         this.$emit("action", action, payload);
       }
     },
-    getChainCommands(chainId) {
+    getChainIndex(chainId) {
       const startIndex = this.commands.findIndex(
         (cmd) => cmd.chainId === chainId
       );
       const endIndex = this.commands.findLastIndex(
         (cmd) => cmd.chainId === chainId
       );
-      return {
-        chainCommands: this.commands.slice(startIndex, endIndex + 1),
-        startIndex,
-        endIndex,
-      };
+      return { startIndex, endIndex };
     },
-    copyChainCommands(chainCommands) {
+    copyCommands(commands) {
       // 生成新的chainId
-      const newChainId = this.$root.getUniqueId();
+      const newChainId = this.getUniqueId();
       // 复制并修改每个命令
-      const newChainCommands = [];
-      chainCommands.forEach((cmd) => {
+      const newCommands = [];
+      commands.forEach((cmd) => {
         const copiedCommand = window.lodashM.cloneDeep(cmd);
-        copiedCommand.id = this.$root.getUniqueId();
+        copiedCommand.id = this.getUniqueId();
         if (copiedCommand.chainId) copiedCommand.chainId = newChainId;
-        newChainCommands.push(copiedCommand);
+        newCommands.push(copiedCommand);
       });
-      return newChainCommands;
+      return newCommands;
     },
     handleAddCommand({ command, type }, index) {
       if (type === "chain") {
         // 如果是复制链式命令
-        const { chainCommands, endIndex } = this.getChainCommands(
-          command.chainId
-        );
-        const newChainCommands = this.copyChainCommands(chainCommands);
+        const { startIndex, endIndex } = this.getChainIndex(command.chainId);
+        const chainCommands = this.commands.slice(startIndex, endIndex + 1);
+        const newChainCommands = this.copyCommands(chainCommands);
         const newCommands = [...this.commands];
         newCommands.splice(endIndex + 1, 0, ...newChainCommands);
         this.$emit("update:modelValue", newCommands);
@@ -477,19 +459,23 @@ export default defineComponent({
         // 单个命令的复制逻辑
         const newCommand = {
           ...command,
-          id: this.$root.getUniqueId(),
+          id: this.getUniqueId(),
         };
         const newCommands = [...this.commands];
         newCommands.splice(index + 1, 0, newCommand);
         this.$emit("update:modelValue", newCommands);
       }
     },
-    handleToggleDisable({ chainId, disabled }) {
-      console.log("handleToggleDisable", chainId, disabled);
-      const { chainCommands } = this.getChainCommands(chainId);
+    handleToggleChainDisable({ chainId, disabled }) {
+      // 禁用的话先折叠这个Chain
+      this.handleControlFlowCollapse({ chainId, isCollapsed: !disabled });
+      const { startIndex, endIndex } = this.getChainIndex(chainId);
       // 更新所有相关命令的禁用状态
-      const newCommands = chainCommands.map((cmd) => {
-        return { ...cmd, disabled };
+      const newCommands = [...this.commands];
+      newCommands.forEach((cmd, idx) => {
+        if (idx >= startIndex && idx <= endIndex) {
+          cmd.disabled = disabled;
+        }
       });
       this.$emit("update:modelValue", newCommands);
     },
