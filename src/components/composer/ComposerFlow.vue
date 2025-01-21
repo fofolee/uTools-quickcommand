@@ -1,19 +1,6 @@
 <template>
   <div class="composer-flow">
     <ChainStyles ref="chainStyles" :commands="commands" />
-    <div class="section-header flow-header">
-      <div class="flow-title">
-        <q-icon name="timeline" size="20px" class="q-mx-sm text-primary" />
-        <span class="text-subtitle1">命令流程</span>
-      </div>
-      <ComposerButtons
-        :generate-code="generateCode"
-        :is-all-collapsed="isAllCollapsed"
-        :show-close-button="showCloseButton"
-        @action="handleAction"
-        class="flex-grow"
-      />
-    </div>
 
     <q-scroll-area class="command-scroll">
       <div
@@ -73,7 +60,6 @@
 import { defineComponent, inject } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
-import ComposerButtons from "./flow/ComposerButtons.vue";
 import ChainStyles from "./flow/ChainStyles.vue";
 import EmptyFlow from "./flow/EmptyFlow.vue";
 import DropArea from "./flow/DropArea.vue";
@@ -88,7 +74,6 @@ export default defineComponent({
   components: {
     draggable,
     ComposerCard,
-    ComposerButtons,
     ChainStyles,
     EmptyFlow,
     DropArea,
@@ -118,7 +103,6 @@ export default defineComponent({
       dragIndex: -1,
       isDragging: false,
       draggedCommand: null,
-      isAllCollapsed: false,
     };
   },
   computed: {
@@ -363,13 +347,16 @@ export default defineComponent({
     },
     handleRunCommand(command) {
       // 创建一个临时的命令流程
-      const tempFlow = [
-        command,
-        {
-          //没有输出，则不打印
-          code: `if(${command.outputVariable}!==undefined){console.log(${command.outputVariable})}`,
-        },
-      ];
+      const tempFlow = {
+        name: "main",
+        commands: [
+          command,
+          {
+            //没有输出，则不打印
+            code: `if(${command.outputVariable}!==undefined){console.log(${command.outputVariable})}`,
+          },
+        ],
+      };
       // 触发运行事件
       this.$emit("action", "run", tempFlow);
     },
@@ -497,46 +484,20 @@ export default defineComponent({
       this.$emit("update:modelValue", newCommands);
     },
     collapseAll() {
-      const newCommands = [...this.commands];
-      let i = 0;
-
-      while (i < newCommands.length) {
-        const cmd = newCommands[i];
-
-        if (cmd.chainId && this.isFirstCommandInChain(cmd)) {
-          // 如果是链式命令的起始命令
-          const { endIndex } = this.getChainIndex(cmd.chainId);
-          // 设置为折叠状态
-          newCommands[i] = {
-            ...cmd,
-            isCollapsed: true,
-          };
-          // 跳过这个链中的所有命令
-          i = endIndex + 1;
-        } else if (!cmd.chainId) {
-          // 如果是普通命令，设置为折叠状态
-          newCommands[i] = {
-            ...cmd,
-            isCollapsed: true,
-          };
-          i++;
-        } else {
-          // 如果是链中的其他命令，跳过
-          i++;
-        }
-      }
-
-      this.$emit("update:modelValue", newCommands);
-      this.isAllCollapsed = true;
-    },
-    expandAll() {
+      // 遍历所有命令，设置折叠状态
       const newCommands = this.commands.map((cmd) => ({
         ...cmd,
-        isCollapsed: false, // 所有命令都设置为展开状态
+        isCollapsed: true,
       }));
-
       this.$emit("update:modelValue", newCommands);
-      this.isAllCollapsed = false;
+    },
+    expandAll() {
+      // 遍历所有命令，展开状态
+      const newCommands = this.commands.map((cmd) => ({
+        ...cmd,
+        isCollapsed: false,
+      }));
+      this.$emit("update:modelValue", newCommands);
     },
     // 检查链式命令的顺序
     checkChainOrders(commands, chainId) {
@@ -616,22 +577,6 @@ export default defineComponent({
   flex-direction: column;
   height: 100%;
   border-radius: 10px;
-}
-
-.section-header {
-  flex-shrink: 0;
-  padding: 0 8px;
-  height: 30px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.flow-title {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
 }
 
 .flex-grow {

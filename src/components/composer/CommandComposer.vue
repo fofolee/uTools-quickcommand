@@ -9,12 +9,9 @@
 
       <!-- 右侧命令流程 -->
       <div class="col command-section">
-        <ComposerFlow
-          v-model="commandFlow"
-          :generate-code="generateFlowCode"
-          :show-close-button="showCloseButton"
-          @add-command="addCommand"
+        <FlowTabs
           @action="handleComposer"
+          :show-close-button="showCloseButton"
         />
       </div>
     </div>
@@ -27,19 +24,15 @@
 <script>
 import { defineComponent, provide, ref } from "vue";
 import ComposerList from "./ComposerList.vue";
-import ComposerFlow from "./ComposerFlow.vue";
-import {
-  availableCommands,
-  findCommandByValue,
-} from "js/composer/composerConfig";
-import { generateCode } from "js/composer/generateCode";
+import FlowTabs from "./FlowTabs.vue";
+import { availableCommands } from "js/composer/composerConfig";
 import { parseVariables } from "js/composer/variableManager";
 
 export default defineComponent({
   name: "CommandComposer",
   components: {
     ComposerList,
-    ComposerFlow,
+    FlowTabs,
   },
   setup() {
     const commandFlow = ref([]);
@@ -94,65 +87,9 @@ export default defineComponent({
         outputVariable: null,
       });
     },
-    generateFlowCode() {
-      return generateCode(this.commandFlow);
-    },
-    handleComposer(type, flow) {
-      switch (type) {
-        case "save":
-          return this.saveFlow();
-        case "load":
-          return this.loadFlow();
-        case "run":
-          return this.runFlow(flow);
-        default:
-          return this.$emit("use-composer", {
-            type,
-            code: this.generateFlowCode(),
-          });
-      }
-    },
-    // 传入临时flow说明是运行单独的命令，否则是运行整个命令流
-    runFlow(flow) {
-      this.hasCommandNeedLoading = this.findCommandNeedLoading(flow);
-      const code = generateCode(flow || this.commandFlow);
-      this.$emit("use-composer", { type: "run", code });
-      if (!code.includes("console.log")) quickcommand.showMessageBox("已运行");
-    },
-    saveFlow() {
-      const flow = window.lodashM.cloneDeep(this.commandFlow);
-      const uselessProps = [
-        "config",
-        "code",
-        "label",
-        "component",
-        "subCommands",
-        "options",
-        "defaultValue",
-        "icon",
-        "width",
-        "placeholder",
-      ];
-      // 移除不必要属性
-      flow.forEach((cmd) => {
-        for (const props of uselessProps) {
-          delete cmd[props];
-        }
-      });
-      localStorage.setItem("quickcomposer.flow", JSON.stringify(flow));
-      quickcommand.showMessageBox("保存成功");
-    },
-    loadFlow() {
-      const savedFlow = localStorage.getItem("quickcomposer.flow");
-      if (!savedFlow) return;
-      this.commandFlow = JSON.parse(savedFlow).map((cmd) => {
-        // 获取完整命令
-        const command = findCommandByValue(cmd.value);
-        return {
-          ...command,
-          ...cmd,
-        };
-      });
+    handleComposer(type, code) {
+      // 直接转发事件和代码
+      this.$emit("use-composer", { type, code });
     },
     findCommandNeedLoading(flow) {
       // 暂时只在运行单独命令时显示载入界面，因为运行整个命令流时，如果不打印输出，是无法判断什么时候运行结束的，

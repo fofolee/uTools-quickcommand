@@ -1,6 +1,6 @@
 <template>
   <div class="composer-buttons">
-    <div class="left-buttons">
+    <div class="right-buttons">
       <q-btn
         :icon="isAllCollapsed ? 'unfold_more' : 'unfold_less'"
         dense
@@ -11,9 +11,7 @@
       >
         <q-tooltip>{{ isAllCollapsed ? "展开所有" : "折叠所有" }}</q-tooltip>
       </q-btn>
-    </div>
-
-    <div class="right-buttons">
+      <q-separator vertical />
       <q-btn
         @click="$q.dark.toggle()"
         :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
@@ -135,24 +133,25 @@ export default defineComponent({
 .composer-buttons {
   position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
+  height: 28px;
 }
 
-.left-buttons,
 .right-buttons {
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
-.composer-buttons > div > .q-btn {
+.right-buttons .q-btn {
+  height: 28px;
+  min-height: 28px;
   opacity: 0.6;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 12px;
 }
 
-.composer-buttons > div > .q-btn:hover {
+.right-buttons .q-btn:hover {
   opacity: 1;
   transform: translateY(-1px);
   color: var(--q-primary);
