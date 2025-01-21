@@ -54,7 +54,7 @@
                   @remove="removeCommand(index)"
                   @run="handleRunCommand"
                   @add-branch="addBranch"
-                  @toggle-collapse="(event) => handleControlFlowCollapse(event)"
+                  @toggle-collapse="(event) => handleChainCollapse(event)"
                   @add-command="(event) => handleAddCommand(event, index)"
                   @toggle-chain-disable="handleToggleChainDisable"
                 />
@@ -79,6 +79,9 @@ import EmptyFlow from "./flow/EmptyFlow.vue";
 import DropArea from "./flow/DropArea.vue";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { processVariable } from "js/composer/variableManager";
+
+// 拖拽前的命令列表，非响应式
+let commandsBeforeDrag = [];
 
 export default defineComponent({
   name: "ComposerFlow",
@@ -115,7 +118,6 @@ export default defineComponent({
       dragIndex: -1,
       isDragging: false,
       draggedCommand: null,
-      collapsedRanges: [],
       isAllCollapsed: false,
     };
   },
@@ -136,37 +138,72 @@ export default defineComponent({
     getPlaceholder(element, index) {
       return element.desc;
     },
+    // 拖拽开始
     onDragStart(event) {
+      // 保存拖拽前的命令列表
+      commandsBeforeDrag = [...this.commands];
       this.isDragging = true;
+      // 拖拽的命令
       this.draggedCommand = this.commands[event.oldIndex];
+      // 如果是链式命令的拖拽，先折叠
+      if (this.isFirstCommandInChain(this.draggedCommand)) {
+        this.handleChainCollapse({
+          chainId: this.draggedCommand.chainId,
+          isCollapsed: false,
+        });
+      }
     },
+    // 拖拽结束
     onDragEnd() {
       this.isDragging = false;
       this.dragIndex = -1;
       this.draggedCommand = null;
+      commandsBeforeDrag = [];
     },
+    // 拖拽生效
     onDragChange(event) {
+      const oldCommands = [...commandsBeforeDrag];
       let newCommands = [...this.commands];
 
-      if (event.moved || event.added) {
-        // 检查所有链式命令的顺序
-        const isValidOrder = this.checkAllChainOrders(newCommands);
+      if (event.moved) {
+        const { oldIndex, newIndex } = event.moved;
+        const draggedCommand = oldCommands[oldIndex];
 
-        if (!isValidOrder) {
-          // 如果顺序无效，恢复原始状态
-          if (event.moved) {
-            const { oldIndex, newIndex } = event.moved;
-            const [item] = newCommands.splice(newIndex, 1);
-            newCommands.splice(oldIndex, 0, item);
-          } else if (event.added) {
-            const { newIndex } = event.added;
-            newCommands.splice(newIndex, 1);
+        // 检查新位置是否在折叠的链中
+        let adjustedNewIndex = newIndex;
+        for (let i = 0; i < newCommands.length; i++) {
+          const cmd = newCommands[i];
+          if (cmd?.chainId && cmd.isCollapsed) {
+            const { startIndex, endIndex } = this.getChainIndex(
+              cmd.chainId,
+              newCommands
+            );
+            // 如果新位置在折叠的链中间，调整到链的后面
+            if (newIndex > startIndex && newIndex <= endIndex) {
+              adjustedNewIndex = endIndex + 1;
+              break;
+            }
           }
+        }
+
+        if (draggedCommand.chainId) {
+          newCommands = this.handleChainCommandDrag(
+            draggedCommand,
+            oldCommands,
+            adjustedNewIndex
+          );
+        } else {
+          // 处理普通命令的拖拽
+          newCommands = oldCommands.filter(
+            (cmd) => cmd.id !== draggedCommand.id
+          );
+          newCommands.splice(adjustedNewIndex, 0, draggedCommand);
         }
       }
 
       this.$emit("update:modelValue", newCommands);
     },
+    // 拖拽经过
     onDragOver(event) {
       if (!this.isDragging) {
         const items = this.$el.querySelectorAll(".flow-item");
@@ -175,8 +212,14 @@ export default defineComponent({
         // 找到最近的插入位置
         let closestIndex = -1;
         let minDistance = Infinity;
+        let lastVisibleIndex = -1;
 
         items.forEach((item, index) => {
+          // 跳过隐藏的命令
+          if (item.classList.contains("collapsed-chain-hidden")) {
+            return;
+          }
+
           const itemRect = item.getBoundingClientRect();
           const itemCenter = itemRect.top + itemRect.height / 2;
           const distance = Math.abs(mouseY - itemCenter);
@@ -185,50 +228,44 @@ export default defineComponent({
             minDistance = distance;
             closestIndex = index;
           }
+          lastVisibleIndex = index;
         });
 
-        // 如果鼠标在最后一个元素下方，则设置为末尾
-        const lastItem = items[items.length - 1];
-        if (lastItem && mouseY > lastItem.getBoundingClientRect().bottom) {
+        // 如果最近的是折叠的链式命令
+        if (closestIndex !== -1) {
+          const command = this.commands[closestIndex];
+          if (command?.chainId && command.isCollapsed) {
+            // 找到这个链的结束位置
+            const { endIndex } = this.getChainIndex(command.chainId);
+            // 如果鼠标在链式命令的下半部分，将插入位置设置到链的后面
+            const closestItem = items[closestIndex];
+            const itemRect = closestItem.getBoundingClientRect();
+            const itemCenter = itemRect.top + itemRect.height / 2;
+            if (mouseY > itemCenter) {
+              closestIndex = endIndex + 1;
+            }
+          }
+        }
+
+        // 如果鼠标在最后一个可见元素下方，则设置为末尾
+        const lastVisibleItem = items[lastVisibleIndex];
+        if (
+          lastVisibleItem &&
+          mouseY > lastVisibleItem.getBoundingClientRect().bottom
+        ) {
           closestIndex = this.commands.length;
         }
 
         this.dragIndex = closestIndex;
       }
     },
+    // 拖拽离开
     onDragLeave() {
       if (!this.isDragging) {
         this.dragIndex = -1;
       }
     },
-    checkAllChainOrders(commands) {
-      // 按chainId分组
-      const chainGroups = commands.reduce((groups, cmd) => {
-        if (cmd.chainId) {
-          if (!groups[cmd.chainId]) {
-            groups[cmd.chainId] = [];
-          }
-          groups[cmd.chainId].push(cmd);
-        }
-        return groups;
-      }, {});
-
-      // 如果没有链式命令，直接返回true
-      if (Object.keys(chainGroups).length === 0) return true;
-
-      // 检查每个链的命令顺序
-      return Object.values(chainGroups).every((chainCommands) => {
-        const commandChain = chainCommands[0].commandChain;
-        const firstCommand = chainCommands[0];
-        const lastCommand = chainCommands[chainCommands.length - 1];
-        // 对于每个chain来说，第一个命令必须是chainCommands的第一个命令
-        if (firstCommand.commandType !== commandChain[0]) return false;
-        // 最后一个命令必须是chainCommands的最后一个命令
-        if (lastCommand.commandType !== commandChain[commandChain.length - 1])
-          return false;
-        return true;
-      });
-    },
+    // 从命令列表拖到命令流程的事件，非命令流程内部拖拽
     onDrop(event) {
       try {
         const actionData = event.dataTransfer.getData("action");
@@ -304,11 +341,11 @@ export default defineComponent({
     removeCommand(index) {
       const command = this.commands[index];
 
-      // 如果是控制流程的起始命令
+      // 如果是链式命令的起始命令
       if (this.isFirstCommandInChain(command)) {
         // 显示确认对话框
         quickcommand
-          .showButtonBox(["全部删除", "保留内部命令", "手抖👋🏻"])
+          .showButtonBox(["全部删除", "保留内部命令", "手抖👋"])
           .then(({ id }) => {
             if (id !== 0 && id !== 1) return;
             const chainId = command.chainId;
@@ -320,7 +357,7 @@ export default defineComponent({
             );
           });
       } else {
-        // 如果不是控制流程的起始命令，直接删除
+        // 如果不是链式命令的起始命令，直接删除
         this.removeRangeCommand(index);
       }
     },
@@ -344,6 +381,7 @@ export default defineComponent({
         (cmd) => cmd.chainId === chainId && cmd.commandType === commandType
       );
     },
+    // 链式命令添加分支命令
     addBranch({ chainId, commandType, value }) {
       if (this.findUniqueBranch(chainId, commandType))
         return quickcommand.showMessageBox("该分支仅允许存在一个", "warning");
@@ -364,56 +402,37 @@ export default defineComponent({
         this.$emit("update:modelValue", newCommands);
       }
     },
-    handleControlFlowCollapse(event) {
-      const chainId = event.chainId;
-      const isCollapsed = !event.isCollapsed; // 取反，因为我们要切换状态
-      if (!chainId) return;
+    // 获取链式命令的折叠样式
+    getCollapsedChainClass(index) {
+      const command = this.commands[index];
 
-      // 遍历commands找到相同chainId的第一个和最后一个命令的index
-      const { startIndex, endIndex } = this.getChainIndex(chainId);
+      // 检查当前命令是否在某个折叠的链中
+      for (let i = index - 1; i >= 0; i--) {
+        const prevCommand = this.commands[i];
+        if (!prevCommand?.chainId) continue;
 
-      if (startIndex === -1 || endIndex === -1) return;
-
-      // 更新命令的折叠状态
-      const newCommands = [...this.commands];
-      newCommands[startIndex] = {
-        ...newCommands[startIndex],
-        isCollapsed,
-      };
-
-      this.$emit("update:modelValue", newCommands);
-
-      if (isCollapsed) {
-        // 折叠命令：添加新的折叠区间
-        this.collapsedRanges.push({
-          chainId,
-          start: startIndex,
-          end: endIndex,
-        });
-      } else {
-        // 展开命令：移除对应的折叠区间
-        const existingRangeIndex = this.collapsedRanges.findIndex(
-          (range) => range.chainId === chainId
+        // 找到链式命令
+        const { startIndex, endIndex } = this.getChainIndex(
+          prevCommand.chainId
         );
-        if (existingRangeIndex !== -1) {
-          this.collapsedRanges.splice(existingRangeIndex, 1);
+        if (i === startIndex && prevCommand.isCollapsed) {
+          // 如果这个链式命令是折叠的，且当前命令在这个链的范围内
+          if (index > startIndex && index <= endIndex) {
+            return { "collapsed-chain-hidden": true };
+          }
         }
       }
-    },
-    getCollapsedChainClass(index) {
-      // 找出所有包含当前index的折叠区间
-      const matchingRanges = this.collapsedRanges.filter(
-        (range) => index >= range.start && index <= range.end
-      );
-      if (!matchingRanges.length) return {};
-      // 检查是否是任意区间的中间或结束位置
-      const isAnyMiddleEnd = matchingRanges.some(
-        (range) => index > range.start && index <= range.end
-      );
-      // 只要在任何区间内部，无论是否是开始位置，都返回hidden样式，解决嵌套问题
-      return isAnyMiddleEnd
-        ? { "collapsed-chain-hidden": true }
-        : { "collapsed-chain-start": true };
+
+      // 只有当命令不在任何折叠的链中时，才检查它自己的折叠状态
+      if (
+        command?.chainId &&
+        this.isFirstCommandInChain(command) &&
+        command.isCollapsed
+      ) {
+        return { "collapsed-chain-start": true };
+      }
+
+      return {};
     },
     handleAction(action, payload) {
       if (action === "collapseAll") {
@@ -424,13 +443,9 @@ export default defineComponent({
         this.$emit("action", action, payload);
       }
     },
-    getChainIndex(chainId) {
-      const startIndex = this.commands.findIndex(
-        (cmd) => cmd.chainId === chainId
-      );
-      const endIndex = this.commands.findLastIndex(
-        (cmd) => cmd.chainId === chainId
-      );
+    getChainIndex(chainId, commands = this.commands) {
+      const startIndex = commands.findIndex((cmd) => cmd.chainId === chainId);
+      const endIndex = commands.findLastIndex((cmd) => cmd.chainId === chainId);
       return { startIndex, endIndex };
     },
     copyCommands(commands) {
@@ -467,10 +482,12 @@ export default defineComponent({
       }
     },
     handleToggleChainDisable({ chainId, disabled }) {
-      // 禁用的话先折叠这个Chain
-      this.handleControlFlowCollapse({ chainId, isCollapsed: !disabled });
+      // 禁用时折叠链式命令
+      if (disabled) {
+        this.handleChainCollapse({ chainId, isCollapsed: false });
+      }
+
       const { startIndex, endIndex } = this.getChainIndex(chainId);
-      // 更新所有相关命令的禁用状态
       const newCommands = [...this.commands];
       newCommands.forEach((cmd, idx) => {
         if (idx >= startIndex && idx <= endIndex) {
@@ -480,20 +497,114 @@ export default defineComponent({
       this.$emit("update:modelValue", newCommands);
     },
     collapseAll() {
-      const newCommands = this.commands.map((cmd) => ({
-        ...cmd,
-        isCollapsed: true,
-      }));
+      const newCommands = [...this.commands];
+      let i = 0;
+
+      while (i < newCommands.length) {
+        const cmd = newCommands[i];
+
+        if (cmd.chainId && this.isFirstCommandInChain(cmd)) {
+          // 如果是链式命令的起始命令
+          const { endIndex } = this.getChainIndex(cmd.chainId);
+          // 设置为折叠状态
+          newCommands[i] = {
+            ...cmd,
+            isCollapsed: true,
+          };
+          // 跳过这个链中的所有命令
+          i = endIndex + 1;
+        } else if (!cmd.chainId) {
+          // 如果是普通命令，设置为折叠状态
+          newCommands[i] = {
+            ...cmd,
+            isCollapsed: true,
+          };
+          i++;
+        } else {
+          // 如果是链中的其他命令，跳过
+          i++;
+        }
+      }
+
       this.$emit("update:modelValue", newCommands);
       this.isAllCollapsed = true;
     },
     expandAll() {
       const newCommands = this.commands.map((cmd) => ({
         ...cmd,
-        isCollapsed: false,
+        isCollapsed: false, // 所有命令都设置为展开状态
       }));
+
       this.$emit("update:modelValue", newCommands);
       this.isAllCollapsed = false;
+    },
+    // 检查链式命令的顺序
+    checkChainOrders(commands, chainId) {
+      // 获取该链的起始和结束位置
+      const { startIndex, endIndex } = this.getChainIndex(chainId, commands);
+
+      // 如果没有找到命令，返回true
+      if (startIndex === -1 || endIndex === -1) return true;
+
+      // 获取该链的所有命令
+      const chainCommands = commands.slice(startIndex, endIndex + 1);
+      const commandChain = chainCommands[0].commandChain;
+      const firstCommand = chainCommands[0];
+      const lastCommand = chainCommands[chainCommands.length - 1];
+
+      // 第一个命令必须是chainCommands的第一个命令
+      if (firstCommand.commandType !== commandChain[0]) return false;
+      // 最后一个命令必须是chainCommands的最后一个命令
+      if (lastCommand.commandType !== commandChain[commandChain.length - 1])
+        return false;
+      return true;
+    },
+    // 处理链式命令的拖拽
+    handleChainCommandDrag(draggedCommand, oldCommands, newIndex) {
+      let newCommands = [...this.commands];
+
+      if (this.isFirstCommandInChain(draggedCommand)) {
+        const { startIndex, endIndex } = this.getChainIndex(
+          draggedCommand.chainId,
+          oldCommands
+        );
+
+        const chainCommands = oldCommands.slice(startIndex, endIndex + 1);
+        newCommands = oldCommands.filter(
+          (cmd) => !chainCommands.some((chainCmd) => chainCmd.id === cmd.id)
+        );
+        newCommands.splice(newIndex, 0, ...chainCommands);
+      } else {
+        // 检查当前链的命令顺序
+        const isValidOrder = this.checkChainOrders(
+          newCommands,
+          draggedCommand.chainId
+        );
+        if (!isValidOrder) {
+          newCommands = [...oldCommands];
+        }
+      }
+
+      return newCommands;
+    },
+    // 链式命令折叠
+    handleChainCollapse(event) {
+      const chainId = event.chainId;
+      const isCollapsed = !event.isCollapsed; // 取反，因为我们要切换状态
+      if (!chainId) return;
+
+      // 遍历commands找到相同chainId的第一个命令的index
+      const { startIndex } = this.getChainIndex(chainId);
+      if (startIndex === -1) return;
+
+      // 更新命令的折叠状态
+      const newCommands = [...this.commands];
+      newCommands[startIndex] = {
+        ...newCommands[startIndex],
+        isCollapsed,
+      };
+
+      this.$emit("update:modelValue", newCommands);
     },
   },
 });
