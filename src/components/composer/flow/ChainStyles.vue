@@ -3,11 +3,10 @@
 </template>
 
 <script>
-import { defineComponent, ref, watchEffect, computed } from "vue";
+import { defineComponent, computed } from "vue";
 
 // 样式常量
 const STYLE_CONSTANTS = {
-  goldenRatio: 0.618033988749895,
   hueStep: 360 * 0.618033988749895,
   indent: 5,
   lightSl: "70%, 60%",
@@ -15,6 +14,15 @@ const STYLE_CONSTANTS = {
 };
 
 // 工具函数
+const hashString = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return hash;
+};
+
 const generateStyleString = (selector, rules) => {
   return `${selector} {
 ${Object.entries(rules)
@@ -26,18 +34,11 @@ ${Object.entries(rules)
 }`;
 };
 
-const generateShadows = (
-  parentChainIds,
-  hue,
-  indent,
-  lightSl,
-  darkSl,
-  uniqueChainIds
-) => {
+const generateShadows = (parentChainIds, hue, indent, lightSl, darkSl) => {
   return parentChainIds.reduce(
     (acc, parentChainId, i) => {
-      const parentIndex = uniqueChainIds.indexOf(parentChainId);
-      const parentHue = (parentIndex * STYLE_CONSTANTS.hueStep) % 360;
+      const parentHue =
+        (Math.abs(hashString(parentChainId)) * STYLE_CONSTANTS.hueStep) % 360;
       const start = -((i + 2) * indent);
       acc.light.push(`${start}px 0 0 0 hsl(${parentHue}, ${lightSl})`);
       acc.dark.push(`${start}px 0 0 0 hsl(${parentHue}, ${darkSl})`);
@@ -88,15 +89,18 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const styles = ref("");
     const chainGroups = computed(() => getChainGroups(props.commands));
 
-    // 使用 watchEffect 监听 commands 变化并重新计算样式
-    watchEffect(() => {
-      // 如果 commands 为空，不生成样式
+    // 根据 chainId 获取固定的色相值
+    const getChainHue = (chainId) => {
+      const hash = Math.abs(hashString(chainId));
+      return (hash * STYLE_CONSTANTS.hueStep) % 360;
+    };
+
+    // 将样式生成逻辑移到 computed 中
+    const styles = computed(() => {
       if (!props.commands?.length) {
-        styles.value = "";
-        return;
+        return "";
       }
 
       try {
@@ -117,10 +121,11 @@ export default defineComponent({
 
         // 3. 生成样式
         const styleRules = {};
-        const { hueStep, indent, lightSl, darkSl } = STYLE_CONSTANTS;
+        const { indent, lightSl, darkSl } = STYLE_CONSTANTS;
 
-        uniqueChainIds.forEach((chainId, index) => {
-          const hue = (index * hueStep) % 360;
+        uniqueChainIds.forEach((chainId) => {
+          // 使用固定的色相值
+          const hue = getChainHue(chainId);
           const className = "chain-group-" + chainId;
 
           // 计算深度
@@ -145,8 +150,7 @@ export default defineComponent({
             hue,
             indent,
             lightSl,
-            darkSl,
-            uniqueChainIds
+            darkSl
           );
 
           const commonStyle = {
@@ -173,12 +177,12 @@ export default defineComponent({
         });
 
         // 4. 生成最终的样式字符串
-        styles.value = Object.entries(styleRules)
+        return Object.entries(styleRules)
           .map(([selector, rules]) => generateStyleString(selector, rules))
           .join("\n\n");
       } catch (error) {
         console.error("Error generating chain styles:", error);
-        styles.value = "";
+        return "";
       }
     });
 
@@ -186,8 +190,6 @@ export default defineComponent({
       styles,
       getChainGroupClass(index) {
         const classes = {};
-
-        // 使用计算好的链组
         for (const group of chainGroups.value) {
           if (index >= group.startIndex && index <= group.endIndex) {
             classes[`chain-group-${group.chainId}`] = true;
@@ -204,7 +206,6 @@ export default defineComponent({
             }
           }
         }
-
         return classes;
       },
     };
