@@ -23,38 +23,47 @@
           narrow-indicator
           outside-arrows
         >
-          <template v-for="flow in subFlows" :key="flow.id">
-            <q-tab :name="flow.id" class="flow-tab" no-caps>
-              <div class="flow-tab-content">
-                <template v-if="flow.isEditing">
-                  <q-input
-                    v-model="flow.label"
+          <draggable
+            v-model="subFlows"
+            :animation="150"
+            item-key="id"
+            tag="div"
+            class="row no-wrap"
+            handle=".flow-tab-content"
+          >
+            <template #item="{ element: flow }">
+              <q-tab :name="flow.id" class="flow-tab" no-caps>
+                <div class="flow-tab-content">
+                  <template v-if="flow.isEditing">
+                    <q-input
+                      v-model="flow.label"
+                      dense
+                      borderless
+                      class="flow-name-input"
+                      @keydown.space.prevent
+                      @blur="finishEdit(flow)"
+                      @keyup.enter="finishEdit(flow)"
+                      ref="inputRefs"
+                    />
+                  </template>
+                  <template v-else>
+                    <span class="flow-name-text" @dblclick="startEdit(flow)">{{
+                      flow.label
+                    }}</span>
+                  </template>
+                  <q-btn
+                    flat
                     dense
-                    borderless
-                    class="flow-name-input"
-                    @keydown.space.prevent
-                    @blur="finishEdit(flow)"
-                    @keyup.enter="finishEdit(flow)"
-                    ref="inputRefs"
+                    round
+                    icon="close"
+                    size="xs"
+                    @click.stop="removeFlow(flow)"
                   />
-                </template>
-                <template v-else>
-                  <span class="flow-name-text" @dblclick="startEdit(flow)">{{
-                    flow.label
-                  }}</span>
-                </template>
-                <q-btn
-                  flat
-                  dense
-                  round
-                  icon="close"
-                  size="xs"
-                  @click.stop="removeFlow(flow)"
-                />
-              </div>
-              <q-tooltip> 双击修改名称 </q-tooltip>
-            </q-tab>
-          </template>
+                </div>
+                <q-tooltip> 双击修改名称，拖动排序 </q-tooltip>
+              </q-tab>
+            </template>
+          </draggable>
         </q-tabs>
 
         <q-icon dense name="add" class="add-btn" @click="addFlow" />
@@ -84,18 +93,20 @@
 </template>
 
 <script>
-import { defineComponent, provide, reactive } from "vue";
+import { defineComponent, provide, ref } from "vue";
 import ComposerFlow from "./ComposerFlow.vue";
 import ComposerButtons from "./flow/ComposerButtons.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { generateUniqSuffix } from "js/composer/variableManager";
+import draggable from "vuedraggable";
 
 export default defineComponent({
   name: "FlowTabs",
   components: {
     ComposerFlow,
     ComposerButtons,
+    draggable,
   },
   props: {
     showCloseButton: {
@@ -104,9 +115,9 @@ export default defineComponent({
     },
   },
   setup() {
-    const subFlows = reactive([]);
+    const subFlows = ref([]);
     const getCurrentFunctions = () => {
-      return subFlows.map((flow) => {
+      return subFlows.value.map((flow) => {
         return {
           label: flow.label,
           value: flow.name,
