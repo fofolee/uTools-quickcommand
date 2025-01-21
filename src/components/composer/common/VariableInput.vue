@@ -145,7 +145,9 @@ export default defineComponent({
         });
       },
       typeToggleTooltip() {
-        const currentType = this.isString ? "字符串" : "变量、数字、表达式等";
+        const currentType = this.isString
+          ? "字符串"
+          : "变量、数字、表达式、函数等";
         const toggleText = this.disableToggleType ? "" : "，点击切换";
         return `当前类型是：${currentType}${toggleText}`;
       },

@@ -23,8 +23,8 @@
           narrow-indicator
           outside-arrows
         >
-          <template v-for="flow in nonMainFlows" :key="flow.id">
-            <q-tab :name="flow.id" class="flow-tab">
+          <template v-for="flow in subFlows" :key="flow.id">
+            <q-tab :name="flow.id" class="flow-tab" no-caps>
               <div class="flow-tab-content">
                 <template v-if="flow.isEditing">
                   <q-input
@@ -76,7 +76,7 @@
         v-model="flow.commands"
         :generate-code="() => generateFlowCode(flow)"
         :show-close-button="flows.length > 1"
-        @action="(type, payload) => handleFlowAction(type, payload, flow)"
+        @action="(type, payload) => handleAction(type, payload)"
         ref="flowRefs"
       />
     </div>
@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, provide, reactive } from "vue";
 import ComposerFlow from "./ComposerFlow.vue";
 import ComposerButtons from "./flow/ComposerButtons.vue";
 import { generateCode } from "js/composer/generateCode";
@@ -103,27 +103,44 @@ export default defineComponent({
       default: true,
     },
   },
+  setup() {
+    const subFlows = reactive([]);
+    const getCurrentFunctions = () => {
+      return subFlows.map((flow) => {
+        return {
+          label: flow.label,
+          value: flow.name,
+        };
+      });
+    };
+    provide("getCurrentFunctions", getCurrentFunctions);
+    return { subFlows };
+  },
   data() {
     return {
-      flows: [
-        {
-          id: "main",
-          name: "main",
-          label: "主流程",
-          commands: [],
-        },
-      ],
       activeTab: "main",
       isAllCollapsed: false,
+      mainFlow: {
+        id: "main",
+        name: "main",
+        label: "主流程",
+        commands: [],
+      },
     };
   },
   computed: {
-    nonMainFlows() {
-      return this.flows.filter((f) => f.id !== "main");
+    flows: {
+      get() {
+        return [this.mainFlow, ...this.subFlows];
+      },
+      set(value) {
+        this.mainFlow = value[0];
+        this.subFlows = value.slice(1);
+      },
     },
   },
   methods: {
-    generateFlowName(baseName = "flow_") {
+    generateFlowName(baseName = "func_") {
       return (
         baseName +
         generateUniqSuffix(
@@ -136,18 +153,18 @@ export default defineComponent({
     addFlow() {
       const id = this.$root.getUniqueId();
       const name = this.generateFlowName();
-      this.flows.push({
+      this.subFlows.push({
         id,
         name,
-        label: name.replace("flow_", "子流程"),
+        label: name.replace("func_", "函数"),
         commands: [],
       });
       this.activeTab = id;
     },
     removeFlow(flow) {
       const index = this.flows.findIndex((f) => f.id === flow.id);
-      if (index > -1 && flow.id !== "main") {
-        this.flows.splice(index, 1);
+      if (index > -1) {
+        this.subFlows.splice(index, 1);
         this.activeTab = this.flows[0].id;
       }
     },
@@ -156,21 +173,9 @@ export default defineComponent({
     },
     generateAllFlowCode() {
       // 生成所有flow的代码
-      return this.flows
-        .reverse()
+      return [...this.subFlows, this.mainFlow]
         .map((flow) => this.generateFlowCode(flow))
         .join("\n\n");
-    },
-    handleFlowAction(type, payload, flow) {
-      if (type === "close") {
-        const index = this.flows.findIndex((f) => f.id === flow.id);
-        if (index > -1 && this.flows.length > 1) {
-          this.flows.splice(index, 1);
-          this.activeTab = this.flows[0].id;
-        }
-      } else {
-        this.handleAction(type, payload);
-      }
     },
     handleAction(type, payload) {
       switch (type) {
@@ -269,7 +274,7 @@ export default defineComponent({
     finishEdit(flow) {
       flow.isEditing = false;
       if (!flow.label) {
-        flow.label = this.generateFlowName().replace("flow_", "子流程");
+        flow.label = this.generateFlowName().replace("func_", "函数");
       }
     },
   },

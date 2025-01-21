@@ -5,23 +5,23 @@
     stretch
     size="sm"
     class="variable-dropdown"
-    @click="variables = getAvailableVariables()"
+    @click="({ variables, functions } = getAvailableVariablesAndFunctions())"
   >
     <q-list class="variable-list">
       <q-item-label header class="variable-label">
         <q-icon name="functions" />
-        <span>选择变量</span>
+        <span>选择变量或函数</span>
       </q-item-label>
 
       <q-separator class="q-my-xs" />
 
-      <template v-if="variables.length">
+      <template v-if="variables.length || functions.length">
         <q-item
           v-for="variable in variables"
           :key="variable.name"
           clickable
           v-close-popup
-          @click="insertVariable(variable)"
+          @click="insertValue(variable.name)"
           class="variable-item"
         >
           <q-item-section>
@@ -33,6 +33,21 @@
             </q-item-label>
           </q-item-section>
         </q-item>
+        <q-separator v-if="variables.length" />
+        <q-item
+          v-for="func in functions"
+          :key="func.value"
+          clickable
+          v-close-popup
+          @click="insertValue(func.value + '()')"
+          class="variable-item"
+        >
+          <q-item-section>
+            <q-item-label class="variable-name">
+              {{ func.label }}
+            </q-item-label>
+          </q-item-section>
+        </q-item>
       </template>
       <template v-else>
         <q-item>
@@ -41,12 +56,17 @@
               <div class="q-gutter-md">
                 <div class="row items-center justify-center text-grey-6">
                   <q-icon name="info" size="20px" class="q-mr-sm" />
-                  <span>当前命令没有可用变量</span>
+                  <span>当前命令没有可用变量或函数</span>
                 </div>
                 <div class="row items-center justify-center text-grey-7">
-                  <div class="text-grey-7">点击其他命令卡片右上角的</div>
+                  <div>点击其他命令右上角</div>
                   <q-icon name="output" size="16px" class="q-mx-xs" />
-                  <div>按钮添加输出变量</div>
+                  <div>按钮添加变量</div>
+                </div>
+                <div class="row items-center justify-center text-grey-7">
+                  <div>或点击主流程右边的</div>
+                  <q-icon name="add" size="16px" class="q-mx-xs" />
+                  <div>按钮添加函数</div>
                 </div>
               </div>
             </q-item-label>
@@ -73,18 +93,28 @@ export default defineComponent({
       );
     };
 
+    const getCurrentFunctions = inject("getCurrentFunctions");
+
+    const getAvailableVariablesAndFunctions = () => {
+      return {
+        variables: getAvailableVariables(),
+        functions: getCurrentFunctions(),
+      };
+    };
+
     return {
-      getAvailableVariables,
+      getAvailableVariablesAndFunctions,
     };
   },
   data() {
     return {
       variables: [],
+      functions: [],
     };
   },
   methods: {
-    insertVariable(variable) {
-      this.$emit("emitValue", "var", variable.name);
+    insertValue(value) {
+      this.$emit("emitValue", "var", value);
     },
   },
 });
