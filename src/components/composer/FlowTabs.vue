@@ -1,70 +1,71 @@
 <template>
   <div class="flow-tabs">
     <div class="tabs-header">
-      <div class="header-content">
-        <div class="tabs-container">
-          <!-- main 作为固定按钮 -->
-          <q-btn
-            flat
-            dense
-            :color="activeTab === 'main' ? 'primary' : 'grey'"
-            label="main"
-            class="main-btn"
-            @click="activeTab = 'main'"
-          />
+      <div class="tabs-container">
+        <!-- main 作为固定按钮 -->
+        <q-btn
+          flat
+          dense
+          label="主流程"
+          class="main-btn"
+          :class="{ 'main-btn-active': activeTab === 'main' }"
+          @click="activeTab = 'main'"
+        />
 
-          <!-- 其他流程标签可滚动 -->
-          <q-tabs
-            v-model="activeTab"
-            dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
-            align="left"
-            narrow-indicator
-          >
-            <template v-for="flow in nonMainFlows" :key="flow.id">
-              <q-tab :name="flow.id" class="flow-tab">
-                <div class="flow-tab-content">
+        <!-- 其他流程标签可滚动 -->
+        <q-tabs
+          v-model="activeTab"
+          dense
+          class="text-grey"
+          active-color="primary"
+          indicator-color="primary"
+          align="left"
+          narrow-indicator
+          outside-arrows
+        >
+          <template v-for="flow in nonMainFlows" :key="flow.id">
+            <q-tab :name="flow.id" class="flow-tab">
+              <div class="flow-tab-content">
+                <template v-if="flow.isEditing">
                   <q-input
-                    v-model="flow.name"
+                    v-model="flow.label"
                     dense
                     borderless
                     class="flow-name-input"
                     @keydown.space.prevent
-                    @blur="validateFlowName(flow)"
+                    @blur="finishEdit(flow)"
+                    @keyup.enter="finishEdit(flow)"
+                    ref="inputRefs"
                   />
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="close"
-                    size="xs"
-                    @click.stop="removeFlow(flow)"
-                  />
-                </div>
-              </q-tab>
-            </template>
-          </q-tabs>
+                </template>
+                <template v-else>
+                  <span class="flow-name-text" @dblclick="startEdit(flow)">{{
+                    flow.label
+                  }}</span>
+                </template>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="close"
+                  size="xs"
+                  @click.stop="removeFlow(flow)"
+                />
+              </div>
+              <q-tooltip> 双击修改名称 </q-tooltip>
+            </q-tab>
+          </template>
+        </q-tabs>
 
-          <q-btn
-            flat
-            dense
-            round
-            icon="add"
-            size="sm"
-            class="q-ml-sm add-btn"
-            @click="addFlow"
-          />
-        </div>
-
-        <ComposerButtons
-          :generate-code="generateAllFlowCode"
-          :is-all-collapsed="isAllCollapsed"
-          :show-close-button="showCloseButton"
-          @action="handleAction"
-        />
+        <q-icon dense name="add" class="add-btn" @click="addFlow" />
       </div>
+
+      <ComposerButtons
+        :generate-code="generateAllFlowCode"
+        :is-all-collapsed="isAllCollapsed"
+        :show-close-button="showCloseButton"
+        @action="handleAction"
+      />
     </div>
 
     <div class="flow-container">
@@ -88,6 +89,7 @@ import ComposerFlow from "./ComposerFlow.vue";
 import ComposerButtons from "./flow/ComposerButtons.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
+import { generateUniqSuffix } from "js/composer/variableManager";
 
 export default defineComponent({
   name: "FlowTabs",
@@ -107,6 +109,7 @@ export default defineComponent({
         {
           id: "main",
           name: "main",
+          label: "主流程",
           commands: [],
         },
       ],
@@ -120,44 +123,43 @@ export default defineComponent({
     },
   },
   methods: {
+    generateFlowName(baseName = "flow_") {
+      return (
+        baseName +
+        generateUniqSuffix(
+          baseName,
+          this.flows.map((f) => f.name),
+          false
+        )
+      );
+    },
     addFlow() {
-      const id = `flow_${this.$root.getUniqueId()}`;
-      const name = `flow${this.flows.length}`;
+      const id = this.$root.getUniqueId();
+      const name = this.generateFlowName();
       this.flows.push({
         id,
         name,
+        label: name.replace("flow_", "子流程"),
         commands: [],
       });
       this.activeTab = id;
-      this.$nextTick(this.updateWidths);
     },
     removeFlow(flow) {
       const index = this.flows.findIndex((f) => f.id === flow.id);
       if (index > -1 && flow.id !== "main") {
         this.flows.splice(index, 1);
         this.activeTab = this.flows[0].id;
-        this.$nextTick(this.updateWidths);
       }
-    },
-    validateFlowName(flow) {
-      if (flow.id === "main") return;
-      // 移除空格并确保名字唯一
-      let newName = flow.name.replace(/\s+/g, "_");
-      let counter = 1;
-      const baseName = newName;
-
-      while (this.flows.some((f) => f.id !== flow.id && f.name === newName)) {
-        newName = `${baseName}_${counter++}`;
-      }
-
-      flow.name = newName;
     },
     generateFlowCode(flow) {
-      return generateCode(flow.commands, flow.name);
+      return generateCode(flow);
     },
     generateAllFlowCode() {
       // 生成所有flow的代码
-      return this.flows.map((flow) => this.generateFlowCode(flow)).join("\n\n");
+      return this.flows
+        .reverse()
+        .map((flow) => this.generateFlowCode(flow))
+        .join("\n\n");
     },
     handleFlowAction(type, payload, flow) {
       if (type === "close") {
@@ -255,6 +257,21 @@ export default defineComponent({
       });
       this.isAllCollapsed = false;
     },
+    startEdit(flow) {
+      flow.isEditing = true;
+      this.$nextTick(() => {
+        const input = this.$refs.inputRefs?.[0];
+        if (input) {
+          input.focus();
+        }
+      });
+    },
+    finishEdit(flow) {
+      flow.isEditing = false;
+      if (!flow.label) {
+        flow.label = this.generateFlowName().replace("flow_", "子流程");
+      }
+    },
   },
 });
 </script>
@@ -268,15 +285,11 @@ export default defineComponent({
 
 .tabs-header {
   flex-shrink: 0;
-  height: 28px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.header-content {
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .tabs-container {
@@ -285,63 +298,94 @@ export default defineComponent({
   align-items: center;
   height: 100%;
   min-width: 0;
-  margin-right: 8px;
+  width: 0;
 }
 
 /* 限制在当前组件内的tabs样式 */
 .tabs-container :deep(.q-tabs) {
-  flex: 1;
-  height: 28px;
-  min-height: 28px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  margin-left: 4px; /* 与 main 按钮保持间距 */
+  height: 30px;
+  min-height: 30px;
+  min-width: 0;
+  width: auto;
+  max-width: 100%;
 }
 
-/* 隐藏滚动条 */
-.tabs-container :deep(.q-tabs)::-webkit-scrollbar {
-  display: none;
+.body--dark .tabs-container :deep(.q-tabs) {
+  background-color: #232323 !important;
 }
 
 .tabs-container :deep(.q-tab) {
-  min-height: 28px;
-  height: 28px;
-  padding: 0 8px;
+  min-height: 30px;
+  height: 30px;
+  padding: 0;
+  text-align: center;
+  background-color: transparent;
+}
+
+.tabs-container
+  :deep(.q-tabs--scrollable.q-tabs__arrows--outside.q-tabs--horizontal) {
+  padding: 0 15px;
+}
+
+.tabs-container :deep(.q-tabs__arrow) {
+  min-width: 0;
+  width: 15px;
+  font-size: 15px;
 }
 
 .tabs-container :deep(.q-tab__content) {
   min-width: 0;
+  width: 100%;
 }
 
 .flow-tab {
   min-width: 80px;
+  max-width: 120px;
 }
 
 .flow-tab-content {
   display: flex;
   align-items: center;
-  gap: 4px;
+  user-select: none;
+  width: 100%;
 }
 
 .flow-name-input {
-  max-width: 100px;
+  max-width: 100%;
+  min-width: 0;
 }
 
-.flow-name-input :deep(.q-field__native) {
-  padding: 0;
+.flow-name-input :deep(.q-field__control),
+.flow-name-input :deep(.q-field__control *) {
   font-size: 12px;
+  height: 30px;
+  text-align: center;
+}
+
+.flow-name-text {
+  font-size: 12px;
+  padding: 0 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 /* 添加按钮样式 */
-.tabs-container .q-btn {
-  height: 28px;
-  min-height: 28px;
-}
-
 .add-btn {
   flex-shrink: 0;
-  height: 28px;
-  min-height: 28px;
+  padding: 0 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.add-btn:hover {
+  color: var(--q-primary);
+  transform: scale(1.2);
+  transition: all 0.2s ease-in-out;
 }
 
 .flow-container {
@@ -355,13 +399,19 @@ export default defineComponent({
 }
 
 .main-btn {
-  height: 28px;
-  min-height: 28px;
+  height: 30px;
+  min-height: 30px;
   padding: 0 12px;
-  border-radius: 4px;
+  border-radius: 8px 0 0 0;
   font-size: 12px;
   font-weight: 500;
-  margin-right: 4px;
   flex-shrink: 0;
+  color: var(--q-text-color);
+}
+
+.main-btn-active {
+  color: var(--q-primary);
+  border-bottom: 2px solid var(--q-primary);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 </style>

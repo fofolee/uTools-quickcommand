@@ -1,12 +1,11 @@
 <template>
   <div class="composer-buttons">
     <div class="right-buttons">
+      <q-separator vertical />
       <q-btn
         :icon="isAllCollapsed ? 'unfold_more' : 'unfold_less'"
         dense
         flat
-        rounded
-        size="9px"
         @click="$emit('action', isAllCollapsed ? 'expandAll' : 'collapseAll')"
       >
         <q-tooltip>{{ isAllCollapsed ? "展开所有" : "折叠所有" }}</q-tooltip>

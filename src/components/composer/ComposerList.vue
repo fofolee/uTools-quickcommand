@@ -230,7 +230,7 @@ export default defineComponent({
 }
 
 .body--dark .composer-list {
-  background-color: rgba(32, 32, 32, 0.8);
+  background-color: #232323;
 }
 
 .category-item {

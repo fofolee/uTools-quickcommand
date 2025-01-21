@@ -1,16 +1,18 @@
-export function generateCode(commandFlow, functionName = null) {
+export function generateCode(flow) {
+  const { commands, name, label } = flow;
   // 检查是否包含异步函数
-  const hasAsyncFunction = commandFlow.some((cmd) => cmd.isAsync);
+  const hasAsyncFunction = commands.some((cmd) => cmd.isAsync);
 
   let code = [];
-  const funcName = functionName || "run";
+  const funcName = name || "func_" + new Date().getTime();
 
+  code.push(`// ${label}`);
   // 生成函数声明
   code.push(`${hasAsyncFunction ? "async " : ""}function ${funcName}() {`);
 
   const indent = "  ";
 
-  commandFlow.forEach((cmd) => {
+  commands.forEach((cmd) => {
     // 跳过禁用的命令
     if (cmd.disabled) return;
     if (!cmd.code) return;
@@ -28,7 +30,7 @@ export function generateCode(commandFlow, functionName = null) {
   code.push("}"); // Close the function
 
   // 如果是主函数，则自动执行
-  if (functionName === "main") {
+  if (funcName === "main") {
     code.push("\nmain();"); // Call the main function
   }
 

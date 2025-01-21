@@ -5,7 +5,7 @@ import { validateVariableName } from "js/common/variableValidator";
  * @param {number} varCount - 当前变量数量
  * @returns {string} 随机后缀
  */
-function generateRandomSuffix(varCount) {
+function generateRandomSuffix(varCount, withPrefix = true) {
   // 根据变量数量决定后缀长度
   let length = 1; // 默认1位
   if (varCount >= 100) {
@@ -15,7 +15,7 @@ function generateRandomSuffix(varCount) {
   }
 
   return (
-    "_" +
+    (withPrefix ? "_" : "") +
     Math.random()
       .toString(36)
       .substring(2, 2 + length)
@@ -66,16 +66,17 @@ function generateValidVarName(baseName, existingVars, currentName = null) {
   }
 
   // 如果变量名重复，添加随机后缀直到不重复
-  let finalName = baseName;
-  while (existingVars.includes(finalName)) {
-    let suffix;
-    do {
-      suffix = generateRandomSuffix(existingVars.length);
-    } while (existingVars.includes(baseName + suffix));
-    finalName = baseName + suffix;
-  }
+  let finalName = baseName + generateUniqSuffix(baseName, existingVars);
 
   return finalName;
+}
+
+export function generateUniqSuffix(baseName, existingVars, withPrefix = true) {
+  let suffix;
+  do {
+    suffix = generateRandomSuffix(existingVars.length, withPrefix);
+  } while (existingVars.includes(baseName + suffix));
+  return suffix;
 }
 
 /**

@@ -3,7 +3,7 @@
     <!-- 主体内容 -->
     <div class="composer-body row no-wrap">
       <!-- 左侧命令列表 -->
-      <div class="col-3 command-section">
+      <div class="command-section" style="width: 180px">
         <ComposerList :commands="availableCommands" @add-command="addCommand" />
       </div>
 
@@ -134,7 +134,7 @@ export default defineComponent({
 }
 
 .body--dark .command-section {
-  background: #1d1d1d;
+  background: #232323;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
