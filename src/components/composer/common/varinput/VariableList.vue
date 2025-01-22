@@ -63,26 +63,67 @@
         </div>
       </template>
       <template v-else>
-        <q-item>
+        <q-item dense>
           <q-item-section>
-            <q-item-label class="empty-variables-tip">
-              <div class="q-gutter-md">
-                <div class="row items-center justify-center text-grey-6">
-                  <q-icon name="info" size="20px" class="q-mr-sm" />
-                  <span>当前命令没有可用变量或函数</span>
+            <div class="empty-tip">
+              <!-- 主要提示 -->
+              <div class="tip-header">
+                <q-icon name="info" size="16px" class="text-grey-6" />
+                <span>当前没有可用的变量或函数</span>
+              </div>
+
+              <q-separator spaced />
+
+              <!-- 添加方法提示 -->
+              <div class="tip-content">
+                <!-- 变量添加方法 -->
+                <div class="tip-section">
+                  <div class="section-title">
+                    <q-icon
+                      name="data_object"
+                      size="16px"
+                      class="text-primary"
+                    />
+                    <span>添加变量</span>
+                  </div>
+                  <div class="section-items">
+                    <div class="item">
+                      <span>命令右上角</span>
+                      <q-badge color="primary">
+                        <q-icon name="output" size="10px" />
+                      </q-badge>
+                      <span>按钮</span>
+                    </div>
+                    <div class="item">
+                      <span>标签栏右侧</span>
+                      <q-badge color="primary">
+                        <q-icon name="data_object" size="10px" />
+                      </q-badge>
+                      <span>按钮</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="row items-center justify-center text-grey-7">
-                  <div>点击其他命令右上角</div>
-                  <q-icon name="output" size="16px" class="q-mx-xs" />
-                  <div>按钮添加变量</div>
-                </div>
-                <div class="row items-center justify-center text-grey-7">
-                  <div>或点击主流程右边的</div>
-                  <q-icon name="add" size="16px" class="q-mx-xs" />
-                  <div>按钮添加函数</div>
+
+                <q-separator vertical spaced />
+
+                <!-- 函数添加方法 -->
+                <div class="tip-section">
+                  <div class="section-title">
+                    <q-icon name="functions" size="16px" class="text-primary" />
+                    <span>添加函数</span>
+                  </div>
+                  <div class="section-items">
+                    <div class="item">
+                      <span>主流程右侧</span>
+                      <q-badge color="primary">
+                        <q-icon name="add" size="10px" />
+                      </q-badge>
+                      <span>按钮</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </q-item-label>
+            </div>
           </q-item-section>
         </q-item>
       </template>
@@ -151,56 +192,45 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.variable-dropdown {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-.body--dark .variable-dropdown {
-  background-color: rgba(255, 255, 255, 0.02);
-}
-/* 变量列表样式 */
+/* 基础样式 */
 .variable-list {
   padding: 4px;
 }
 
+/* 变量列表项 */
 .variable-item {
   border-radius: 4px;
-  padding: 0px 16px;
-  transition: all 0.3s ease;
+  padding: 0 16px;
   min-height: 32px;
   text-align: center;
+  transition: all 0.3s ease;
 }
 
 .variable-item:hover {
-  background-color: var(--q-primary-opacity-10);
+  background: var(--q-primary-opacity-10);
 }
 
+/* 变量标签 */
 .variable-label {
   padding: 4px 8px;
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  position: relative;
-}
-
-.separator-left {
-  min-width: 16px;
-  flex: 1;
-}
-
-.separator-right {
-  min-width: 16px;
-  flex: 1;
 }
 
 .label-content {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   padding: 0 8px;
   white-space: nowrap;
 }
 
+.separator-left,
+.separator-right {
+  min-width: 32px;
+  flex: 1;
+}
+
+/* 变量名称和来源 */
 .variable-name {
   font-size: 12px;
   font-weight: 500;
@@ -212,19 +242,75 @@ export default defineComponent({
   margin-top: 0;
 }
 
-/* 暗色模式适配 */
+/* 空状态提示 */
+.empty-tip {
+  padding: 6px;
+  min-width: 260px;
+  font-size: 12px;
+}
+
+.tip-header {
+  padding: 2px 6px;
+  color: var(--q-grey-7);
+}
+
+.tip-content {
+  padding: 0 6px;
+  gap: 12px;
+}
+
+.tip-section {
+  flex: 1;
+}
+
+/* 通用布局 */
+.tip-header,
+.tip-content,
+.section-title,
+.item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.tip-content {
+  align-items: flex-start;
+}
+
+.section-title {
+  padding: 4px;
+  color: var(--q-primary);
+  font-weight: 500;
+}
+
+.section-items {
+  padding-left: 4px;
+}
+
+.item {
+  padding: 2px 0;
+  color: var(--q-grey-7);
+}
+
+/* 暗色模式 */
+.variable-dropdown {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.body--dark .variable-dropdown {
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .body--dark .variable-item:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.empty-variables-tip {
-  text-align: center;
-  font-size: 13px;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
+.body--dark .item {
+  color: var(--q-grey-5);
 }
 
-.empty-variables-tip:hover {
-  opacity: 1;
+.empty-tip .q-separator {
+  opacity: 0.2;
 }
 </style>
