@@ -307,34 +307,5 @@ export const macosCommands = {
         },
       ],
     },
-    {
-      value: "quickcomposer.macos.browser.getUrl",
-      label: "浏览器控制",
-      icon: "web",
-      isAsync: true,
-      config: [
-        {
-          component: "ButtonGroup",
-          defaultValue: "Microsoft Edge",
-          options: [
-            {
-              label: "Edge 浏览器",
-              value: "Microsoft Edge",
-            },
-            {
-              label: "Chrome 浏览器",
-              value: "Google Chrome",
-            },
-          ],
-          width: 12,
-        },
-      ],
-      subCommands: browserCommands.commands.find(
-        (command) => command.label === "浏览器操作"
-      ).subCommands.map((command) => ({
-        ...command,
-        value: command.value.replace("quickcomposer.browser.", "quickcomposer.macos.browser."),
-      })),
-    },
   ],
 };
