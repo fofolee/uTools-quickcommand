@@ -1,5 +1,14 @@
 <template>
-  <q-btn @click="inspectWindow" icon="my_location" flat dense size="sm" />
+  <q-btn
+    @click="inspectWindow"
+    icon="my_location"
+    flat
+    dense
+    size="sm"
+    :label="window.label"
+  >
+    <q-tooltip>选择窗口获取属性</q-tooltip>
+  </q-btn>
 </template>
 
 <script>
@@ -19,7 +28,7 @@ export default defineComponent({
       const { props } = this.window;
       window.utools.hideMainWindow();
       const selectWindow = await quickcomposer.windows.automation.inspect();
-      window.utools.showMainWindow()
+      window.utools.showMainWindow();
       let propKeys = [];
       if (typeof props === "object") {
         const result = await quickcommand.showButtonBox(

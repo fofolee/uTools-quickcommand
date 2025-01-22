@@ -33,6 +33,12 @@
         @emit-value="updateValBySelect"
         class="prepend-btn"
       />
+      <!-- css选择按钮 -->
+      <CssSelector
+        v-if="options.cssSelector"
+        @emit-value="updateValBySelect"
+        class="prepend-btn"
+      />
       <!-- 窗口选择按钮 -->
       <WindowSelector
         v-if="options.window"
@@ -56,44 +62,100 @@ import ItemList from "./varinput/ItemList.vue";
 import FileSelector from "./varinput/FileSelector.vue";
 import VariableList from "./varinput/VariableList.vue";
 import WindowSelector from "./varinput/WindowSelector.vue";
-
+import CssSelector from "./varinput/CssSelector.vue";
 /**
-
  * 变量输入框组件
-
  * @description 支持变量选择和字符串输入的输入框组件
  *
  * @property {Object} modelValue - 输入框的值对象
  * @property {String} label - 输入框标签
  * @property {String} icon - 输入框图标
+ * @property {String} placeholder - 输入框占位文本
+ * @property {Boolean} noIcon - 是否隐藏图标
+ * @property {Boolean} disableToggleType - 是否禁用类型切换
  *
  * @property {Object} [options] - 可选的配置对象
- * @property {Array} [options.items] - 选项列表，默认单选，选中后，插入值且设置为字符模式
- * @property {Boolean} [options.multiSelect] - 选项列表支持多选，选中后，插入选择的数组且设置为变量模式
  *
- * @property {Boolean} [options.dialog] - 是否显示文件选择对话框
+ * @property {Object} [options.items] - 选项列表配置
+ * @property {Array<Object|String>} [options.items] - 选项数组，每项可以是字符串或对象
+ * @property {String} [options.items[].label] - 选项显示文本(当选项为对象时)
+ * @property {String} [options.items[].value] - 选项值(当选项为对象时)
+ * @property {Boolean} [options.multiSelect] - 是否支持多选
+ * @property {Boolean} [options.appendItem] - 是否将选中项追加到现有值后
+ *
  * @property {Object} [options.dialog] - 文件选择对话框配置
- * @property {String} [options.dialog.type] - 对话框类型，open 或 save
- * @property {Object} [options.dialog.options] - 对话框选项，对应 utools.showOpenDialog 和 utools.showSaveDialog 的 options
+ * @property {String} [options.dialog.type] - 对话框类型: 'open' 或 'save'
+ * @property {Object} [options.dialog.options] - utools 对话框选项
+ * @property {String} [options.dialog.options.title] - 对话框标题
+ * @property {String} [options.dialog.options.defaultPath] - 默认路径
+ * @property {Array<String>} [options.dialog.options.properties] - 对话框属性，如 ['openFile', 'multiSelections']
+ *
+ * @property {Object} [options.cssSelector] - CSS选择器配置
+ * @property {Boolean} [options.cssSelector] - 设置为 true 启用CSS选择器功能
+ *
+ * @property {Object} [options.window] - 窗口选择器配置
+ * @property {Object} [options.window.props] - 要获取的窗口属性
+ * @property {Array<Object>} [options.window.props] - 属性列表，每项包含label和value
+ * @property {String} [options.window.props[].label] - 属性显示名称
+ * @property {String} [options.window.props[].value] - 属性访问路径，如 'bounds.x'
+ *
  * @example
- * // modelValue 对象格式
- * {
- *   value: "", // 输入框的值
- *   isString: true, // 是否是字符串
- *   __varInputVal__: true // 用于标识是变量输入框
- * }
+ * // 基础用法
+ * <VariableInput
+ *   v-model="value"
+ *   label="输入框"
+ *   icon="edit"
+ *   placeholder="请输入"
+ * />
+ *
  * @example
- * // options 对象格式
- * {
- *   items: ["item1", "item2", "item3"], // 选项列表
- *   dialog: {
- *     type: "open", // 对话框类型，open 或 save
- *     options: {
- *       title: "选择文件",
- *       defaultPath: "/",
- *     },
- *   },
- * }
+ * // 带选项列表的输入框
+ * <VariableInput
+ *   v-model="value"
+ *   :options="{
+ *     items: ['选项1', '选项2', {label: '选项3', value: 'value3'}],
+ *     multiSelect: true
+ *   }"
+ * />
+ *
+ * @example
+ * // 文件选择输入框
+ * <VariableInput
+ *   v-model="value"
+ *   :options="{
+ *     dialog: {
+ *       type: 'open',
+ *       options: {
+ *         title: '选择文件',
+ *         defaultPath: '/',
+ *         properties: ['openFile', 'multiSelections']
+ *       }
+ *     }
+ *   }"
+ * />
+ *
+ * @example
+ * // CSS选择器输入框
+ * <VariableInput
+ *   v-model="value"
+ *   :options="{
+ *     cssSelector: true
+ *   }"
+ * />
+ *
+ * @example
+ * // 窗口选择器输入框
+ * <VariableInput
+ *   v-model="value"
+ *   :options="{
+ *     window: {
+ *       props: [
+ *         {label: '窗口标题', value: 'title'},
+ *         {label: 'X坐标', value: 'bounds.x'}
+ *       ]
+ *     }
+ *   }"
+ * />
  */
 export default defineComponent({
   name: "VariableInput",
@@ -103,6 +165,7 @@ export default defineComponent({
     FileSelector,
     VariableList,
     WindowSelector,
+    CssSelector,
   },
 
   props: {
