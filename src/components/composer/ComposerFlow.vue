@@ -49,8 +49,8 @@
             </transition>
           </template>
         </draggable>
-        <EmptyFlow v-if="commands.length === 0" />
-        <DropArea v-else />
+        <DropArea v-if="commands.length === 0" type="empty" />
+        <DropArea v-else type="add" />
       </div>
     </q-scroll-area>
   </div>
@@ -61,7 +61,6 @@ import { defineComponent, inject } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
 import ChainStyles from "./flow/ChainStyles.vue";
-import EmptyFlow from "./flow/EmptyFlow.vue";
 import DropArea from "./flow/DropArea.vue";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { processVariable } from "js/composer/variableManager";
@@ -75,7 +74,6 @@ export default defineComponent({
     draggable,
     ComposerCard,
     ChainStyles,
-    EmptyFlow,
     DropArea,
   },
   props: {
