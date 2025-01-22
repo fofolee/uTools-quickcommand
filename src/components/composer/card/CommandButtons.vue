@@ -62,22 +62,25 @@
           v-if="!isControlFlow || isFirstCommandInChain"
         >
           <q-menu>
-            <q-list style="min-width: 150px">
-              <q-item clickable v-close-popup @click="$emit('copy')">
+            <q-list dense class="more-menu">
+              <q-item dense clickable v-close-popup @click="$emit('copy')">
                 <q-item-section avatar>
-                  <q-icon name="content_copy" />
+                  <q-icon size="xs" name="content_copy" />
                 </q-item-section>
                 <q-item-section>复制命令</q-item-section>
               </q-item>
 
               <q-item
+                dense
                 clickable
                 v-close-popup
                 @click="$emit('toggle-disable')"
-                x
               >
                 <q-item-section avatar>
-                  <q-icon :name="command.disabled ? 'check_circle' : 'block'" />
+                  <q-icon
+                    size="xs"
+                    :name="command.disabled ? 'check_circle' : 'block'"
+                  />
                 </q-item-section>
                 <q-item-section>{{
                   command.disabled ? "启用命令" : "禁用命令"
@@ -85,13 +88,14 @@
               </q-item>
 
               <q-item
+                dense
                 clickable
                 v-close-popup
                 @click="$emit('add-print')"
                 v-if="!isControlFlow"
               >
                 <q-item-section avatar>
-                  <q-icon name="chat" />
+                  <q-icon size="xs" name="chat" />
                 </q-item-section>
                 <q-item-section>打印输出</q-item-section>
               </q-item>
@@ -261,5 +265,20 @@ export default {
 
 .body--dark .output-btn:hover {
   background: rgba(255, 255, 255, 0.05);
+}
+
+.more-menu {
+  min-width: 120px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.more-menu :deep(.q-item) {
+  min-height: 32px;
+}
+
+.more-menu :deep(.q-item__section--avatar) {
+  min-width: 24px;
+  padding: 0 4px;
 }
 </style>
