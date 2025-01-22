@@ -248,7 +248,7 @@ export default defineComponent({
       this.activeTab = id;
     },
     removeFlow(flow) {
-      const index = this.flows.findIndex((f) => f.id === flow.id);
+      const index = this.subFlows.findIndex((f) => f.id === flow.id);
       if (index > -1) {
         this.subFlows.splice(index, 1);
         this.activeTab = this.flows[0].id;
@@ -290,8 +290,7 @@ export default defineComponent({
     },
     saveFlows() {
       const flowsData = this.flows.map((flow) => ({
-        id: flow.id,
-        name: flow.name,
+        ...flow,
         commands: flow.commands.map((cmd) => {
           const cmdCopy = { ...cmd };
           // 移除不必要的属性
