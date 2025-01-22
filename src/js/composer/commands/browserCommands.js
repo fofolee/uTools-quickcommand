@@ -76,8 +76,8 @@ export const browserCommands = {
     },
     {
       value: "quickcomposer.browser.getUrl",
-      label: "浏览器操作",
-      icon: "web",
+      label: "获取/设置网址",
+      icon: "link",
       isAsync: true,
       subCommands: [
         {
@@ -99,6 +99,13 @@ export const browserCommands = {
             },
           ],
         },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.getTabs",
+      label: "获取/切换标签",
+      icon: "tab",
+      subCommands: [
         {
           value: "quickcomposer.browser.getTabs",
           label: "获取标签列表",
@@ -119,131 +126,33 @@ export const browserCommands = {
             },
           ],
         },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.executeScript",
+      label: "执行脚本",
+      icon: "code",
+      config: [
         {
-          value: "quickcomposer.browser.executeScript",
-          label: "执行脚本",
+          label: "脚本内容",
+          component: "CodeEditor",
           icon: "code",
-          config: [
-            {
-              label: "脚本内容",
-              component: "CodeEditor",
-              icon: "code",
-              width: 12,
-              placeholder: "输入JavaScript代码",
-            },
-            {
-              topLabel: "要传递的参数",
-              component: "DictEditor",
-              icon: "data_array",
-              width: 12,
-            },
-          ],
+          width: 12,
+          placeholder: "输入JavaScript代码",
         },
         {
-          value: "quickcomposer.browser.clickElement",
-          label: "点击元素",
-          icon: "mouse",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
+          topLabel: "要传递的参数",
+          component: "DictEditor",
+          icon: "data_array",
+          width: 12,
         },
-        {
-          value: "quickcomposer.browser.inputText",
-          label: "输入文本",
-          icon: "edit",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-            {
-              label: "文本内容",
-              component: "VariableInput",
-              icon: "edit",
-              width: 12,
-              placeholder: "输入要填写的文本",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.browser.getText",
-          label: "获取文本",
-          icon: "text_fields",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.browser.getHtml",
-          label: "获取HTML",
-          icon: "code",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.browser.hideElement",
-          label: "隐藏元素",
-          icon: "visibility_off",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.browser.showElement",
-          label: "显示元素",
-          icon: "visibility",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.browser.injectCSS",
-          label: "注入CSS",
-          icon: "style",
-          config: [
-            {
-              label: "CSS内容",
-              component: "CodeEditor",
-              icon: "style",
-              width: 12,
-              placeholder: "输入CSS代码",
-            },
-          ],
-        },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.setCookie",
+      label: "Cookie操作",
+      icon: "cookie",
+      subCommands: [
         {
           value: "quickcomposer.browser.setCookie",
           label: "设置Cookie",
@@ -325,24 +234,125 @@ export const browserCommands = {
             },
           ],
         },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.injectCSS",
+      label: "注入CSS",
+      icon: "style",
+      config: [
         {
-          value: "quickcomposer.browser.scrollTo",
-          label: "滚动到位置",
-          icon: "open_in_full",
+          label: "CSS内容",
+          component: "CodeEditor",
+          icon: "style",
+          width: 12,
+          placeholder: "输入CSS代码",
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.getSelector",
+      label: "手动选择元素",
+      icon: "mouse",
+      isAsync: true,
+    },
+    {
+      value: "quickcomposer.browser.clickElement",
+      label: "元素操作",
+      icon: "web",
+      isAsync: true,
+      config: [
+        {
+          label: "选择器",
+          component: "VariableInput",
+          icon: "code",
+          width: 12,
+          placeholder: "输入CSS选择器",
+          options: {
+            cssSelector: true,
+          },
+        },
+      ],
+      subCommands: [
+        {
+          value: "quickcomposer.browser.clickElement",
+          label: "点击元素",
+          icon: "mouse",
+        },
+        {
+          value: "quickcomposer.browser.inputText",
+          label: "输入文本",
+          icon: "edit",
           config: [
             {
-              label: "X坐标",
-              component: "NumberInput",
-              icon: "arrow_right",
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
               width: 12,
-              defaultValue: 0,
+              placeholder: "输入CSS选择器",
             },
             {
-              label: "Y坐标",
-              component: "NumberInput",
-              icon: "arrow_drop_down",
+              label: "文本内容",
+              component: "VariableInput",
+              icon: "edit",
               width: 12,
-              defaultValue: 0,
+              placeholder: "输入要填写的文本",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.getText",
+          label: "获取文本",
+          icon: "text_fields",
+          config: [
+            {
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.getHtml",
+          label: "获取HTML",
+          icon: "code",
+          config: [
+            {
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.hideElement",
+          label: "隐藏元素",
+          icon: "visibility_off",
+          config: [
+            {
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.showElement",
+          label: "显示元素",
+          icon: "visibility",
+          config: [
+            {
+              label: "选择器",
+              component: "VariableInput",
+              icon: "code",
+              width: 12,
+              placeholder: "输入CSS选择器",
             },
           ],
         },
@@ -359,16 +369,6 @@ export const browserCommands = {
               placeholder: "输入CSS选择器",
             },
           ],
-        },
-        {
-          value: "quickcomposer.browser.getScrollPosition",
-          label: "获取滚动位置",
-          icon: "open_in_full",
-        },
-        {
-          value: "quickcomposer.browser.getPageSize",
-          label: "获取页面尺寸",
-          icon: "open_in_full",
         },
         {
           value: "quickcomposer.browser.waitForElement",
@@ -392,6 +392,44 @@ export const browserCommands = {
               step: 1000,
             },
           ],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.scrollTo",
+      label: "滚动及页面尺寸",
+      icon: "open_in_full",
+      subCommands: [
+        {
+          value: "quickcomposer.browser.scrollTo",
+          label: "滚动到位置",
+          icon: "open_in_full",
+          config: [
+            {
+              label: "X坐标",
+              component: "NumberInput",
+              icon: "arrow_right",
+              width: 12,
+              defaultValue: 0,
+            },
+            {
+              label: "Y坐标",
+              component: "NumberInput",
+              icon: "arrow_drop_down",
+              width: 12,
+              defaultValue: 0,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.getScrollPosition",
+          label: "获取滚动位置",
+          icon: "open_in_full",
+        },
+        {
+          value: "quickcomposer.browser.getPageSize",
+          label: "获取页面尺寸",
+          icon: "open_in_full",
         },
       ],
     },
