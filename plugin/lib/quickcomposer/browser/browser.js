@@ -376,85 +376,6 @@ const waitForElement = async (selector, timeout = 5000) => {
   throw new Error(`等待元素 ${selector} 超时`);
 };
 
-const getSelector = async () => {
-  return await executeScript(`
-    return new Promise((resolve) => {
-      // 创建高亮元素
-      const highlight = document.createElement('div');
-      highlight.style.cssText = 'position: fixed; pointer-events: none; z-index: 10000; background: rgba(130, 180, 230, 0.4); border: 2px solid rgba(130, 180, 230, 0.8); transition: all 0.2s;';
-      document.body.appendChild(highlight);
-
-      // 获取最优选择器
-      function getOptimalSelector(element) {
-        if (!element || element === document.body) return null;
-
-        // 尝试使用id
-        if (element.id) {
-          return '#' + element.id;
-        }
-
-        // 尝试使用类名组合
-        if (element.className && typeof element.className === 'string') {
-          const classes = element.className.trim().split(/\\s+/);
-          if (classes.length) {
-            const selector = '.' + classes.join('.');
-            if (document.querySelectorAll(selector).length === 1) {
-              return selector;
-            }
-          }
-        }
-
-        // 获取元素在同级中的索引
-        const parent = element.parentElement;
-        if (!parent) return null;
-
-        const siblings = Array.from(parent.children);
-        const index = siblings.indexOf(element);
-
-        // 递归获取父元素选择器
-        const parentSelector = getOptimalSelector(parent);
-        if (!parentSelector) return null;
-
-        return \`\${parentSelector} > \${element.tagName.toLowerCase()}:nth-child(\${index + 1})\`;
-      }
-
-      // 处理鼠标移动
-      function handleMouseMove(e) {
-        const target = e.target;
-        if (!target || target === highlight) return;
-
-        const rect = target.getBoundingClientRect();
-        highlight.style.left = rect.left + 'px';
-        highlight.style.top = rect.top + 'px';
-        highlight.style.width = rect.width + 'px';
-        highlight.style.height = rect.height + 'px';
-      }
-
-      // 处理点击
-      function handleClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const target = e.target;
-        if (!target || target === highlight) return;
-
-        const selector = getOptimalSelector(target);
-
-        // 清理
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('click', handleClick, true);
-        highlight.remove();
-
-        resolve(selector);
-        return false;
-      }
-
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('click', handleClick, true);
-    });
-  `);
-};
-
 module.exports = {
   launchBrowser,
   getUrl,
@@ -476,5 +397,4 @@ module.exports = {
   getScrollPosition,
   getPageSize,
   waitForElement,
-  getSelector,
 };
