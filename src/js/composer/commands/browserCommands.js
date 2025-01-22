@@ -105,6 +105,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.getTabs",
       label: "获取/切换标签",
       icon: "tab",
+      isAsync: true,
       subCommands: [
         {
           value: "quickcomposer.browser.getTabs",
@@ -117,12 +118,22 @@ export const browserCommands = {
           icon: "tab_unselected",
           config: [
             {
-              label: "标签索引",
-              component: "NumberInput",
+              component: "QSelect",
               icon: "tab",
-              min: 1,
-              defaultValue: 1,
-              width: 12,
+              width: 3,
+              options: [
+                { label: "通过URL", value: "url" },
+                { label: "通过标题", value: "title" },
+                { label: "通过ID", value: "id" },
+              ],
+              defaultValue: "url",
+            },
+            {
+              label: "URL/标题/ID",
+              component: "VariableInput",
+              icon: "tab",
+              width: 9,
+              placeholder: "支持模糊匹配",
             },
           ],
         },
@@ -132,6 +143,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.executeScript",
       label: "执行脚本",
       icon: "code",
+      isAsync: true,
       config: [
         {
           label: "脚本内容",
@@ -152,6 +164,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.setCookie",
       label: "Cookie操作",
       icon: "cookie",
+      isAsync: true,
       subCommands: [
         {
           value: "quickcomposer.browser.setCookie",
@@ -240,6 +253,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.injectCSS",
       label: "注入CSS",
       icon: "style",
+      isAsync: true,
       config: [
         {
           label: "CSS内容",
@@ -255,6 +269,7 @@ export const browserCommands = {
       label: "手动选择元素",
       icon: "mouse",
       isAsync: true,
+      config: [],
     },
     {
       value: "quickcomposer.browser.clickElement",
@@ -285,13 +300,6 @@ export const browserCommands = {
           icon: "edit",
           config: [
             {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-            {
               label: "文本内容",
               component: "VariableInput",
               icon: "edit",
@@ -304,84 +312,32 @@ export const browserCommands = {
           value: "quickcomposer.browser.getText",
           label: "获取文本",
           icon: "text_fields",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
         },
         {
           value: "quickcomposer.browser.getHtml",
           label: "获取HTML",
           icon: "code",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
         },
         {
           value: "quickcomposer.browser.hideElement",
           label: "隐藏元素",
           icon: "visibility_off",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
         },
         {
           value: "quickcomposer.browser.showElement",
           label: "显示元素",
           icon: "visibility",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
         },
         {
           value: "quickcomposer.browser.scrollToElement",
           label: "滚动到元素",
           icon: "open_in_full",
-          config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
-          ],
         },
         {
           value: "quickcomposer.browser.waitForElement",
           label: "等待元素",
           icon: "hourglass_empty",
           config: [
-            {
-              label: "选择器",
-              component: "VariableInput",
-              icon: "code",
-              width: 12,
-              placeholder: "输入CSS选择器",
-            },
             {
               label: "超时时间",
               component: "NumberInput",
@@ -399,6 +355,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.scrollTo",
       label: "滚动及页面尺寸",
       icon: "open_in_full",
+      isAsync: true,
       subCommands: [
         {
           value: "quickcomposer.browser.scrollTo",

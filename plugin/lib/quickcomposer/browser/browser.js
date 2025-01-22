@@ -200,9 +200,7 @@ const initCDP = async (port) => {
       await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
     } catch (err) {
       console.log(err);
-      throw new Error(
-        `请先通过浏览器控制中的“启动浏览器”打开浏览器`
-      );
+      throw new Error(`请先通过浏览器控制中的"启动浏览器"打开浏览器`);
     }
   }
   return { Page, Runtime, DOM };
@@ -246,16 +244,17 @@ const getTabs = async () => {
     .map((target) => ({
       url: target.url,
       title: target.title,
+      id: target.id,
     }));
 };
 
-const activateTab = async (index) => {
+const activateTab = async (type, value) => {
   const targets = await CDP.List();
-  const pages = targets.filter((target) => target.type === "page");
-  if (index > 0 && index <= pages.length) {
-    const targetId = pages[index - 1].id;
-    await CDP.Activate({ id: targetId });
+  const target = targets.find((target) => target[type].includes(value));
+  if (!target) {
+    throw new Error(`未找到目标: ${type} = ${value}`);
   }
+  await CDP.Activate({ id: target.id });
 };
 
 const clickElement = async (selector) => {
