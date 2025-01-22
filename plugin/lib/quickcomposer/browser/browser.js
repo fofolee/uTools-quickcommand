@@ -237,76 +237,6 @@ const executeScript = async (script, args = {}) => {
   return result.value;
 };
 
-const getTabs = async () => {
-  const targets = await CDP.List();
-  return targets
-    .filter((target) => target.type === "page")
-    .map((target) => ({
-      url: target.url,
-      title: target.title,
-      id: target.id,
-    }));
-};
-
-const activateTab = async (type, value) => {
-  const targets = await CDP.List();
-  const target = targets.find((target) => target[type].includes(value));
-  if (!target) {
-    throw new Error(`未找到目标: ${type} = ${value}`);
-  }
-  await CDP.Activate({ id: target.id });
-};
-
-const clickElement = async (selector) => {
-  return await executeScript(`document.querySelector('${selector}').click()`);
-};
-
-const inputText = async (selector, text) => {
-  return await executeScript(
-    `
-      const el = document.querySelector('${selector}');
-      el.value = '${text}';
-      el.dispatchEvent(new Event('input'));
-      el.dispatchEvent(new Event('change'));
-    `
-  );
-};
-
-const getText = async (selector) => {
-  return await executeScript(
-    `document.querySelector('${selector}')?.textContent || ''`
-  );
-};
-
-const getHtml = async (selector) => {
-  return await executeScript(
-    `const element = document.querySelector('${selector}');
-      return element ? element.innerHTML : '';`
-  );
-};
-
-const hideElement = async (selector) => {
-  return await executeScript(
-    `document.querySelector('${selector}').style.display = 'none'`
-  );
-};
-
-const showElement = async (selector) => {
-  return await executeScript(
-    `document.querySelector('${selector}').style.display = ''`
-  );
-};
-
-const injectCSS = async (css) => {
-  return await executeScript(
-    `
-      const style = document.createElement('style');
-      style.textContent = \`${css}\`;
-      document.head.appendChild(style);
-    `
-  );
-};
-
 const setCookie = async (cookies, options = {}) => {
   const { Network } = await initCDP();
   for (const cookie of cookies) {
@@ -329,71 +259,11 @@ const getCookie = async (name) => {
   return cookies.find((cookie) => cookie.name === name);
 };
 
-const scrollTo = async (x, y) => {
-  return await executeScript(`window.scrollTo(${x}, ${y})`);
-};
-
-const scrollToElement = async (selector) => {
-  return await executeScript(
-    `document.querySelector('${selector}').scrollIntoView()`
-  );
-};
-
-const getScrollPosition = async () => {
-  return await executeScript(`
-      return JSON.stringify({
-        x: window.pageXOffset || document.documentElement.scrollLeft,
-        y: window.pageYOffset || document.documentElement.scrollTop
-      });
-    `);
-};
-
-const getPageSize = async () => {
-  return await executeScript(`
-      return JSON.stringify({
-        width: Math.max(
-          document.documentElement.scrollWidth,
-          document.documentElement.clientWidth
-        ),
-        height: Math.max(
-          document.documentElement.scrollHeight,
-          document.documentElement.clientHeight
-        )
-      });
-    `);
-};
-
-const waitForElement = async (selector, timeout = 5000) => {
-  const startTime = Date.now();
-  while (Date.now() - startTime < timeout) {
-    const result = await executeScript(
-      `!!document.querySelector('${selector}')`
-    );
-    if (result) return;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  throw new Error(`等待元素 ${selector} 超时`);
-};
-
 module.exports = {
   launchBrowser,
   getUrl,
   setUrl,
   executeScript,
-  getTabs,
-  activateTab,
-  clickElement,
-  inputText,
-  getText,
-  getHtml,
-  hideElement,
-  showElement,
-  injectCSS,
   setCookie,
   getCookie,
-  scrollTo,
-  scrollToElement,
-  getScrollPosition,
-  getPageSize,
-  waitForElement,
 };
