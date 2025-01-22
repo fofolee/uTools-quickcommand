@@ -137,6 +137,45 @@ export const browserCommands = {
             },
           ],
         },
+        {
+          value: "quickcomposer.browser.createNewTab",
+          label: "创建新标签页",
+          icon: "tab",
+          config: [
+            {
+              label: "网址",
+              component: "VariableInput",
+              icon: "link",
+              width: 12,
+              placeholder: "留空则打开about:blank",
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.closeTab",
+          label: "关闭标签页",
+          icon: "tab",
+          config: [
+            {
+              component: "QSelect",
+              icon: "tab",
+              width: 3,
+              options: [
+                { label: "通过URL", value: "url" },
+                { label: "通过标题", value: "title" },
+                { label: "通过ID", value: "id" },
+              ],
+              defaultValue: "url",
+            },
+            {
+              label: "搜索条件",
+              component: "VariableInput",
+              icon: "tab",
+              width: 9,
+              placeholder: "支持模糊匹配",
+            },
+          ],
+        },
       ],
     },
     {

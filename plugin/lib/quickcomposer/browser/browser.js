@@ -225,7 +225,7 @@ const executeScript = async (script, args = {}) => {
   const argValues = Object.values(args).map((v) => JSON.stringify(v));
 
   const wrappedScript = `
-        (function(${argNames.join(", ")}) {
+        (async function(${argNames.join(", ")}) {
           ${script}
         })(${argValues.join(", ")})
       `;
