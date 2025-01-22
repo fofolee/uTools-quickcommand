@@ -50,7 +50,7 @@ export function parseVariables(value) {
  * @param {string} [currentName] - 当前的变量名（如果有）
  * @returns {string} 有效的变量名
  */
-function generateValidVarName(currentName, existingVars) {
+function generateValidVarName(currentName, existingVars, baseName = "var") {
   // 如果当前名称有效且不重复，直接返回
   if (
     currentName &&
@@ -62,7 +62,7 @@ function generateValidVarName(currentName, existingVars) {
 
   // 如果变量名无效，改为var开头
   if (!validateVariableName(currentName).isValid) {
-    currentName = "var";
+    currentName = baseName;
   }
 
   // 添加随机后缀直到不重复
@@ -86,7 +86,7 @@ export function generateUniqSuffix(baseName, existingVars, withPrefix = true) {
  * @param {string[]} params.existingVars - 当前已存在的变量列表
  * @returns {Object} - 处理结果
  */
-export function processVariable({ value, existingVars }) {
+export function processVariable({ value, existingVars, baseName = "var" }) {
   if (!value) {
     return { isValid: true, processedValue: value };
   }
@@ -95,12 +95,12 @@ export function processVariable({ value, existingVars }) {
 
   if (!destructured) {
     // 处理单个变量
-    const processedVar = generateValidVarName(value, existingVars);
+    const processedVar = generateValidVarName(value, existingVars, baseName);
     return {
       isValid: true,
       processedValue: processedVar,
       warning:
-        processedVar !== value ? `变量名已被修改为: ${processedVar}` : null,
+        processedVar !== value ? `输入值非法，已被修改为: ${processedVar}` : null,
     };
   }
 

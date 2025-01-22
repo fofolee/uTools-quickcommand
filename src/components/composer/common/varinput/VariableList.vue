@@ -48,12 +48,12 @@
             :key="func.id"
             clickable
             v-close-popup
-            @click="insertValue(func.value + getInsertFunctionParams(func.id))"
+            @click="insertValue(func.name + getInsertFunctionParams(func.id))"
             class="variable-item"
           >
             <q-item-section>
               <q-item-label class="variable-name">
-                {{ func.value }}
+                {{ func.name }}
               </q-item-label>
               <q-item-label caption class="variable-source">
                 {{ func.label }}
@@ -97,7 +97,7 @@
                     <div class="item">
                       <span>标签栏右侧</span>
                       <q-badge color="primary">
-                        <q-icon name="data_object" size="10px" />
+                        <q-icon name="settings" size="10px" />
                       </q-badge>
                       <span>按钮</span>
                     </div>

@@ -148,18 +148,18 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const getCurrentVariables = inject("getCurrentVariables");
+    const getCurrentExistingVar = inject("getCurrentExistingVar");
     // 创建响应式的commandIndex
     const commandIndex = computed(() => props.commandIndex);
     // 主要用于VariableInput组件的变量选择下拉框，获取当前命令的索引
     provide("commandIndex", commandIndex);
-    return { getCurrentVariables };
+    return { getCurrentExistingVar };
   },
   methods: {
     handleOutputVariableUpdate(value) {
       const result = processVariable({
         value,
-        existingVars: this.getCurrentVariables().map((v) => v.name),
+        existingVars: this.getCurrentExistingVar().map((v) => v.name),
       });
 
       if (result.warning) {

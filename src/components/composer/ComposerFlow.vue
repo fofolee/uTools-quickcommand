@@ -92,8 +92,8 @@ export default defineComponent({
     },
   },
   setup() {
-    const getCurrentVariables = inject("getCurrentVariables");
-    return { getCurrentVariables };
+    const getCurrentExistingVar = inject("getCurrentExistingVar");
+    return { getCurrentExistingVar };
   },
   emits: ["update:modelValue", "add-command", "action"],
   data() {
@@ -296,7 +296,7 @@ export default defineComponent({
       if (newCommand.saveOutput && newCommand.outputVariable) {
         newCommand.outputVariable = processVariable({
           value: newCommand.outputVariable,
-          existingVars: this.getCurrentVariables().map((v) => v.name),
+          existingVars: this.getCurrentExistingVar().map((v) => v.name),
         }).processedValue;
       }
       return newCommand;

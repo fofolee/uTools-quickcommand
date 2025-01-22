@@ -2,7 +2,7 @@
   <div class="variable-manager" :class="{ 'is-visible': modelValue }">
     <div class="variable-content">
       <div class="variable-header">
-        <div class="header-title">变量管理</div>
+        <div class="header-title">流程管理</div>
         <q-btn
           flat
           dense
@@ -12,6 +12,40 @@
           @click="$emit('update:modelValue', false)"
         />
       </div>
+
+      <!-- 函数信息编辑 (只在非主流程显示) -->
+      <template v-if="!isMainFlow">
+        <div class="section">
+          <div class="var-list">
+            <div class="var-item">
+              <q-input
+                v-model="localFlow.label"
+                dense
+                borderless
+                class="var-input"
+              >
+                <template #prepend>
+                  <div class="var-label">名称</div>
+                </template>
+              </q-input>
+            </div>
+            <div class="var-item">
+              <q-input
+                v-model="localFlow.name"
+                dense
+                borderless
+                class="var-input"
+              >
+                <template #prepend>
+                  <div class="var-label">标识</div>
+                </template>
+              </q-input>
+            </div>
+          </div>
+        </div>
+        <q-separator spaced />
+      </template>
+
       <!-- 参数管理部分 -->
       <div class="section" v-if="!isMainFlow">
         <div class="section-header">
@@ -112,12 +146,12 @@
         <div class="section-header">
           <div class="section-title">
             <q-icon name="output" size="16px" />
-            <div>来自输出</div>
+            <div>输出变量</div>
           </div>
         </div>
         <div class="var-list">
           <div
-            v-for="(variable, index) in outputVariables"
+            v-for="(variable, index) in localFlow.outputVariables"
             :key="index"
             class="var-item output-var"
           >
@@ -134,7 +168,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "VariableManager",
+  name: "FlowManager",
   props: {
     modelValue: {
       type: Boolean,
@@ -150,35 +184,36 @@ export default defineComponent({
       required: true,
       default: () => [],
     },
-    outputVariables: {
-      type: Array,
+    flow: {
+      type: Object,
       required: true,
-      default: () => [],
     },
   },
-  emits: ["update:modelValue", "update:variables"],
+  emits: ["update:modelValue", "update:flow"],
   computed: {
-    customVariables: {
+    localFlow: {
       get() {
-        return this.variables || [];
+        return this.flow;
       },
       set(value) {
-        this.$emit("update:variables", value);
+        this.$emit("update:flow", value);
       },
     },
     paramVariables() {
-      return this.customVariables.filter((v) => v.type === "param");
+      return this.localFlow.customVariables.filter((v) => v.type === "param");
     },
     customVars() {
-      return this.customVariables.filter((v) => v.type === "var");
+      return this.localFlow.customVariables.filter((v) => v.type === "var");
     },
   },
   methods: {
     addVariable(type) {
       const prefix = type === "param" ? "param_" : "var_";
-      const count = this.customVariables.filter((v) => v.type === type).length;
-      this.customVariables = [
-        ...this.customVariables,
+      const count = this.localFlow.customVariables.filter(
+        (v) => v.type === type
+      ).length;
+      this.localFlow.customVariables = [
+        ...this.localFlow.customVariables,
         {
           name: prefix + (count + 1),
           type,
@@ -187,18 +222,22 @@ export default defineComponent({
       ];
     },
     removeVariable(index, type) {
-      const typeVars = this.customVariables.filter((v) => v.type === type);
-      const globalIndex = this.customVariables.indexOf(typeVars[index]);
+      const typeVars = this.localFlow.customVariables.filter(
+        (v) => v.type === type
+      );
+      const globalIndex = this.localFlow.customVariables.indexOf(
+        typeVars[index]
+      );
       if (globalIndex > -1) {
-        const newVars = [...this.customVariables];
+        const newVars = [...this.localFlow.customVariables];
         newVars.splice(globalIndex, 1);
-        this.customVariables = newVars;
+        this.localFlow.customVariables = newVars;
       }
     },
     validateVariable(variable, type) {
       if (!variable.name) {
         const prefix = type === "param" ? "param_" : "var_";
-        const count = this.customVariables.filter(
+        const count = this.localFlow.customVariables.filter(
           (v) => v.type === type
         ).length;
         variable.name = prefix + count;
@@ -227,7 +266,7 @@ export default defineComponent({
 }
 
 .variable-manager.is-visible {
-  width: 200px;
+  width: 300px;
 }
 
 .body--dark .variable-manager {
@@ -254,7 +293,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px;
+  padding: 4px 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   margin: -8px -8px 8px -8px;
 }
@@ -262,7 +301,7 @@ export default defineComponent({
 .header-title {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--q-primary);
 }
@@ -281,7 +320,7 @@ export default defineComponent({
 }
 
 .section-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -327,7 +366,8 @@ export default defineComponent({
   flex: 1 1 50%;
 }
 
-.var-input :deep(.q-field__control) {
+.var-input :deep(.q-field__control),
+.var-input :deep(.q-field__prepend) {
   height: 20px;
   min-height: 20px;
 }
@@ -359,5 +399,16 @@ export default defineComponent({
   margin-left: auto;
   font-size: 11px;
   opacity: 0.7;
+}
+
+.section-content {
+  padding: 8px;
+}
+
+.var-label {
+  font-size: 12px;
+  font-weight: 500;
+  align-items: center;
+  display: flex;
 }
 </style>

@@ -12,12 +12,12 @@
       </q-btn>
       <q-separator vertical />
       <q-btn
-        icon="data_object"
+        icon="settings"
         dense
         flat
         @click="$emit('action', 'toggleVariableManager')"
       >
-        <q-tooltip>变量管理</q-tooltip>
+        <q-tooltip>流程管理</q-tooltip>
       </q-btn>
       <q-separator vertical />
       <q-btn

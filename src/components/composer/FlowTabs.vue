@@ -8,9 +8,12 @@
           dense
           label="主流程"
           class="main-btn"
+          @dblclick="editFunction(mainFlow)"
           :class="{ 'main-btn-active': activeTab === 'main' }"
           @click="activeTab = 'main'"
-        />
+        >
+          <q-tooltip>双击管理</q-tooltip>
+        </q-btn>
 
         <!-- 其他流程标签可滚动 -->
         <q-tabs
@@ -34,23 +37,9 @@
             <template #item="{ element: flow }">
               <q-tab :name="flow.id" class="flow-tab" no-caps>
                 <div class="flow-tab-content">
-                  <template v-if="flow.isEditing">
-                    <q-input
-                      v-model="flow.label"
-                      dense
-                      borderless
-                      class="flow-name-input"
-                      @keydown.space.prevent
-                      @blur="finishEdit(flow)"
-                      @keyup.enter="finishEdit(flow)"
-                      ref="inputRefs"
-                    />
-                  </template>
-                  <template v-else>
-                    <span class="flow-name-text" @dblclick="startEdit(flow)">{{
-                      flow.label
-                    }}</span>
-                  </template>
+                  <span class="flow-name-text" @dblclick="editFunction(flow)">
+                    {{ flow.label }}
+                  </span>
                   <q-btn
                     flat
                     dense
@@ -60,7 +49,7 @@
                     @click.stop="removeFlow(flow)"
                   />
                 </div>
-                <q-tooltip> 双击修改名称，拖动排序 </q-tooltip>
+                <q-tooltip> 双击管理 </q-tooltip>
               </q-tab>
             </template>
           </draggable>
@@ -91,10 +80,11 @@
         @action="(type, payload) => handleAction(type, payload)"
         ref="flowRefs"
       />
-      <VariableManager
+      <FlowManager
         v-model="showVariableManager"
+        :flow="flow"
         :variables="flow.customVariables"
-        @update:variables="flow.customVariables = $event"
+        @update-flow="updateFlow(flow)"
         :is-main-flow="flow.id === 'main'"
         :output-variables="outputVariables"
         class="variable-panel"
@@ -105,13 +95,13 @@
 
 <script>
 import { defineComponent, provide, ref, computed } from "vue";
-import ComposerFlow from "./ComposerFlow.vue";
-import ComposerButtons from "./flow/ComposerButtons.vue";
-import VariableManager from "./flow/VariableManager.vue";
+import draggable from "vuedraggable";
+import ComposerFlow from "components/composer/ComposerFlow.vue";
+import ComposerButtons from "components/composer/flow/ComposerButtons.vue";
+import FlowManager from "components/composer/flow/FlowManager.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { generateUniqSuffix } from "js/composer/variableManager";
-import draggable from "vuedraggable";
 import { parseVariables } from "js/composer/variableManager";
 export default defineComponent({
   name: "FlowTabs",
@@ -119,7 +109,7 @@ export default defineComponent({
     ComposerFlow,
     ComposerButtons,
     draggable,
-    VariableManager,
+    FlowManager,
   },
   props: {
     showCloseButton: {
@@ -143,7 +133,7 @@ export default defineComponent({
       return subFlows.value.map((flow) => {
         return {
           label: flow.label,
-          value: flow.name,
+          name: flow.name,
           id: flow.id,
         };
       });
@@ -209,6 +199,12 @@ export default defineComponent({
 
     provide("getCurrentVariables", getCurrentVariables);
 
+    const getCurrentExistingVar = () => {
+      return [...getCurrentVariables(), ...getCurrentFunctions()];
+    };
+
+    provide("getCurrentExistingVar", getCurrentExistingVar);
+
     return {
       flows,
       mainFlow,
@@ -246,6 +242,9 @@ export default defineComponent({
         customVariables: [],
       });
       this.activeTab = id;
+      this.$nextTick(() => {
+        this.toggleVariableManager();
+      });
     },
     removeFlow(flow) {
       const index = this.subFlows.findIndex((f) => f.id === flow.id);
@@ -281,12 +280,15 @@ export default defineComponent({
           this.expandAll();
           break;
         case "toggleVariableManager":
-          this.showVariableManager = !this.showVariableManager;
-          this.outputVariables = this.getOutputVariables();
+          this.toggleVariableManager();
           break;
         default:
           this.$emit("action", type, this.generateAllFlowCode());
       }
+    },
+    toggleVariableManager() {
+      this.showVariableManager = !this.showVariableManager;
+      this.outputVariables = this.getOutputVariables();
     },
     saveFlows() {
       const flowsData = this.flows.map((flow) => ({
@@ -328,8 +330,7 @@ export default defineComponent({
           };
         }),
       }));
-      this.mainFlow = newFlows[0];
-      this.subFlows = newFlows.slice(1);
+      this.updateFlow(newFlows);
       this.activeTab = this.mainFlow.id;
     },
     runFlows(flow) {
@@ -353,20 +354,13 @@ export default defineComponent({
       });
       this.isAllCollapsed = false;
     },
-    startEdit(flow) {
-      flow.isEditing = true;
-      this.$nextTick(() => {
-        const input = this.$refs.inputRefs?.[0];
-        if (input) {
-          input.focus();
-        }
-      });
+    editFunction(flow) {
+      this.activeTab = flow.id;
+      this.toggleVariableManager();
     },
-    finishEdit(flow) {
-      flow.isEditing = false;
-      if (!flow.label) {
-        flow.label = this.generateFlowName().replace("func_", "函数");
-      }
+    updateFlow(flow) {
+      this.mainFlow = flow[0];
+      this.subFlows = flow.slice(1);
     },
   },
 });
