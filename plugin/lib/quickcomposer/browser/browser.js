@@ -6,10 +6,7 @@ const http = require("http");
 const axios = require("axios");
 const fs = require("fs");
 
-let client = null;
-let Page = null;
-let Runtime = null;
-let DOM = null;
+let clients = new Map(); // 存储每个标签页的CDP客户端
 
 const getBrowserPath = (browser = "msedge") => {
   const platform = os.platform();
@@ -120,7 +117,6 @@ const launchBrowser = async (options) => {
     throw new Error("未找到浏览器，或未指定浏览器路径");
   }
 
-  // 查找可用端口
   const port = await findAvailablePort(9222);
 
   const args = [
@@ -140,7 +136,6 @@ const launchBrowser = async (options) => {
   ].filter(Boolean);
 
   return new Promise(async (resolve, reject) => {
-    // 如果使用独立用户数据目录，则需要先杀死已有的浏览器进程
     if (!useSingleUserDataDir) {
       try {
         await killRunningBrowser(browserType);
@@ -151,9 +146,7 @@ const launchBrowser = async (options) => {
     }
     const child = exec(
       `"${browserPath}" ${args.join(" ")}`,
-      {
-        windowsHide: true,
-      },
+      { windowsHide: true },
       async (error) => {
         if (error) {
           reject(error);
@@ -162,13 +155,9 @@ const launchBrowser = async (options) => {
       }
     );
 
-    // 等待端口可用
     waitForPort(port).then((success) => {
       if (success) {
-        resolve({
-          pid: child.pid,
-          port,
-        }); // 返回使用的端口号
+        resolve({ pid: child.pid, port });
       } else {
         reject(new Error("浏览器启动超时，请检查是否有权限问题或防火墙限制"));
       }
@@ -192,78 +181,247 @@ const killRunningBrowser = (browserType = "msedge") => {
   });
 };
 
-const initCDP = async (port) => {
-  if (!client) {
+const initCDP = async (targetId) => {
+  if (!clients.has(targetId)) {
     try {
-      client = await CDP({ port });
-      ({ Page, Runtime, DOM } = client);
-      await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
+      const client = await CDP({ target: targetId });
+      const { Page, Runtime, Target, Network, Emulation } = client;
+      await Promise.all([Page.enable(), Runtime.enable()]);
+      clients.set(targetId, {
+        client,
+        Page,
+        Runtime,
+        Target,
+        Network,
+        Emulation,
+      });
     } catch (err) {
       console.log(err);
       throw new Error(`请先通过浏览器控制中的"启动浏览器"打开浏览器`);
     }
   }
-  return { Page, Runtime, DOM };
+  return clients.get(targetId);
 };
 
-const getUrl = async () => {
-  const { Page } = await initCDP();
-  const { frameTree } = await Page.getFrameTree();
-  return frameTree.frame.url;
-};
-
-const setUrl = async (url) => {
-  const { Page } = await initCDP();
-  await Page.navigate({ url });
-  await Page.loadEventFired();
-};
-
-const executeScript = async (script, args = {}) => {
-  const { Runtime } = await initCDP();
-  // 构建参数列表
-  const argNames = Object.keys(args);
-  const argValues = Object.values(args).map((v) => JSON.stringify(v));
-
-  const wrappedScript = `
-        (async function(${argNames.join(", ")}) {
-          ${script}
-        })(${argValues.join(", ")})
-      `;
-  const { result } = await Runtime.evaluate({
-    expression: wrappedScript,
-    returnByValue: true,
-    awaitPromise: true,
-  });
-  return result.value;
-};
-
-const setCookie = async (cookies, options = {}) => {
-  const { Network } = await initCDP();
-  for (const cookie of cookies) {
-    await Network.setCookie({
-      name: cookie.name,
-      value: cookie.value,
-      domain: options.domain || undefined,
-      path: options.path || "/",
-      secure: options.secure || false,
-      expires: options.expires
-        ? Math.floor(Date.now() / 1000) + options.expires * 3600
-        : undefined,
-    });
+const cleanupCDP = async (targetId) => {
+  const client = clients.get(targetId);
+  if (client) {
+    await client.client.close();
+    clients.delete(targetId);
   }
 };
 
-const getCookie = async (name) => {
-  const { Network } = await initCDP();
-  const cookies = await Network.getCookies();
+// 获取所有标签页
+const getTabs = async () => {
+  const targets = await CDP.List();
+  return targets
+    .filter((target) => target.type === "page")
+    .map((target) => ({
+      url: target.url,
+      title: target.title,
+      id: target.id,
+    }));
+};
+
+// 获取当前活动标签页
+const getCurrentTab = async () => {
+  const targets = await CDP.List();
+  // 一般排第一个的就是活动标签页
+  const currentTarget = targets.find((target) => target.type === "page");
+
+  if (!currentTarget) {
+    throw new Error("未找到当前活动标签页");
+  }
+
+  return {
+    url: currentTarget.url,
+    title: currentTarget.title,
+    id: currentTarget.id,
+  };
+};
+
+// 搜索标签页
+const searchTarget = async (tab) => {
+  if (!tab || !tab.by || !tab.searchValue || tab.by === "active") {
+    const currentTab = await getCurrentTab();
+    return currentTab;
+  }
+
+  const targets = await CDP.List();
+  const target = targets.find((target) =>
+    target[tab.by].includes(tab.searchValue)
+  );
+  if (!target) {
+    throw new Error(`未找到目标标签页: ${tab.by} = ${tab.searchValue}`);
+  }
+  return target;
+};
+
+// 激活指定标签页
+const activateTab = async (tab) => {
+  const target = await searchTarget(tab);
+  await CDP.Activate({ id: target.id });
+};
+
+// 创建新标签页
+const createNewTab = async (url = "about:blank") => {
+  const currentTab = await getCurrentTab();
+  const { Target } = await initCDP(currentTab.id);
+  const { targetId } = await Target.createTarget({ url });
+  const { targetInfo } = await Target.getTargetInfo({ targetId });
+  await cleanupCDP(currentTab.id);
+  return {
+    url: targetInfo.url,
+    title: targetInfo.title,
+    id: targetId,
+  };
+};
+
+// 关闭标签页
+const closeTab = async (tab) => {
+  const target = await searchTarget(tab);
+  await cleanupCDP(target.id);
+  await CDP.Close({ id: target.id });
+};
+
+const getUrl = async (tab) => {
+  const target = await searchTarget(tab);
+  const { Page } = await initCDP(target.id);
+  const { frameTree } = await Page.getFrameTree();
+  await cleanupCDP(target.id);
+  return frameTree.frame.url;
+};
+
+const setUrl = async (tab, url) => {
+  const target = await searchTarget(tab);
+  const { Page } = await initCDP(target.id);
+  await Page.navigate({ url });
+  await Page.loadEventFired();
+  await cleanupCDP(target.id);
+};
+
+const executeScript = async (tab, script, args = {}) => {
+  const target = await searchTarget(tab);
+  try {
+    const { Runtime } = await initCDP(target.id);
+    const argNames = Object.keys(args);
+    const argValues = Object.values(args).map((v) => JSON.stringify(v));
+
+    const wrappedScript = `
+      (function(${argNames.join(", ")}) {
+        ${script}
+      })(${argValues.join(", ")})
+    `;
+
+    const { result } = await Runtime.evaluate({
+      expression: wrappedScript,
+      returnByValue: true,
+      awaitPromise: true,
+    });
+
+    await cleanupCDP(target.id);
+    return result.value;
+  } catch (e) {
+    console.log(e);
+    throw new Error("执行脚本失败");
+  }
+};
+
+const setCookie = async (tab, cookies, options = {}) => {
+  const target = await searchTarget(tab);
+  const { Network, Page } = await initCDP(target.id);
+  try {
+    // 直接从Page获取URL，避免创建新连接
+    const { frameTree } = await Page.getFrameTree();
+    const url = frameTree.frame.url;
+
+    for (const cookie of cookies) {
+      await Network.setCookie({
+        name: cookie.name,
+        value: cookie.value,
+        domain: options.domain || url.split("/")[2],
+        path: options.path || "/",
+        secure: options.secure || false,
+        expires: options.expires
+          ? Math.floor(Date.now() / 1000) + options.expires * 3600
+          : undefined,
+      });
+    }
+  } finally {
+    await cleanupCDP(target.id);
+  }
+};
+
+const getCookie = async (tab, name) => {
+  const target = await searchTarget(tab);
+  const { Network } = await initCDP(target.id);
+  const { cookies } = await Network.getCookies();
+  await cleanupCDP(target.id);
+  if (!name) return cookies;
   return cookies.find((cookie) => cookie.name === name);
+};
+
+// 捕获标签页截图
+const captureScreenshot = async (tab, options = {}) => {
+  const target = await searchTarget(tab);
+  const { format = "png", quality = 100, fullPage = false, savePath } = options;
+
+  try {
+    const { Page, Emulation } = await initCDP(target.id);
+
+    if (fullPage) {
+      const metrics = await Page.getLayoutMetrics();
+      const width = Math.max(
+        metrics.contentSize.width,
+        metrics.layoutViewport.clientWidth,
+        metrics.visualViewport.clientWidth
+      );
+      const height = Math.max(
+        metrics.contentSize.height,
+        metrics.layoutViewport.clientHeight,
+        metrics.visualViewport.clientHeight
+      );
+      await Emulation.setDeviceMetricsOverride({
+        width,
+        height,
+        deviceScaleFactor: 1,
+        mobile: false,
+      });
+    }
+
+    const { data } = await Page.captureScreenshot({
+      format,
+      quality: format === "jpeg" ? quality : undefined,
+      fromSurface: true,
+      captureBeyondViewport: fullPage,
+    });
+
+    if (fullPage) {
+      await Emulation.clearDeviceMetricsOverride();
+    }
+
+    if (savePath) {
+      fs.writeFileSync(savePath, data, "base64");
+    }
+
+    return data;
+  } finally {
+    await cleanupCDP(target.id);
+  }
 };
 
 module.exports = {
   launchBrowser,
+  killRunningBrowser,
+  getTabs,
+  getCurrentTab,
+  activateTab,
+  createNewTab,
+  closeTab,
   getUrl,
   setUrl,
   executeScript,
   setCookie,
   getCookie,
+  captureScreenshot,
 };

@@ -1,5 +1,32 @@
 import { newVarInputVal } from "js/composer/varInputValManager";
 
+const tabConfig = {
+  component: "OptionEditor",
+  width: 12,
+  options: {
+    by: {
+      component: "QSelect",
+      label: "标签",
+      width: 3,
+      options: [
+        { label: "当前标签页", value: "active" },
+        { label: "通过URL", value: "url" },
+        { label: "通过标题", value: "title" },
+        { label: "通过ID", value: "id" },
+      ],
+    },
+    searchValue: {
+      component: "VariableInput",
+      icon: "tab",
+      width: 9,
+      placeholder: "当前标签页留空，其他支持模糊匹配",
+    },
+  },
+  defaultValue: {
+    by: "active",
+  },
+};
+
 export const browserCommands = {
   label: "浏览器控制",
   icon: "web",
@@ -79,6 +106,7 @@ export const browserCommands = {
       label: "获取/设置网址",
       icon: "link",
       isAsync: true,
+      config: [tabConfig],
       subCommands: [
         {
           value: "quickcomposer.browser.getUrl",
@@ -103,7 +131,7 @@ export const browserCommands = {
     },
     {
       value: "quickcomposer.browser.getTabs",
-      label: "获取/切换标签",
+      label: "标签操作",
       icon: "tab",
       isAsync: true,
       subCommands: [
@@ -116,26 +144,12 @@ export const browserCommands = {
           value: "quickcomposer.browser.activateTab",
           label: "切换标签",
           icon: "tab_unselected",
-          config: [
-            {
-              component: "QSelect",
-              icon: "tab",
-              width: 3,
-              options: [
-                { label: "通过URL", value: "url" },
-                { label: "通过标题", value: "title" },
-                { label: "通过ID", value: "id" },
-              ],
-              defaultValue: "url",
-            },
-            {
-              label: "URL/标题/ID",
-              component: "VariableInput",
-              icon: "tab",
-              width: 9,
-              placeholder: "支持模糊匹配",
-            },
-          ],
+          config: [tabConfig],
+        },
+        {
+          value: "quickcomposer.browser.getCurrentTab",
+          label: "获取当前标签页",
+          icon: "tab",
         },
         {
           value: "quickcomposer.browser.createNewTab",
@@ -155,26 +169,69 @@ export const browserCommands = {
           value: "quickcomposer.browser.closeTab",
           label: "关闭标签页",
           icon: "tab",
-          config: [
-            {
+          config: [tabConfig],
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.captureScreenshot",
+      label: "捕获截图",
+      icon: "screenshot",
+      config: [
+        tabConfig,
+        {
+          label: "选项",
+          component: "OptionEditor",
+          icon: "settings",
+          width: 12,
+          options: {
+            format: {
+              label: "格式",
               component: "QSelect",
-              icon: "tab",
-              width: 3,
+              icon: "format",
+              width: 4,
               options: [
-                { label: "通过URL", value: "url" },
-                { label: "通过标题", value: "title" },
-                { label: "通过ID", value: "id" },
+                { label: "PNG", value: "png" },
+                { label: "JPEG", value: "jpeg" },
+                { label: "WebP", value: "webp" },
               ],
-              defaultValue: "url",
             },
-            {
-              label: "搜索条件",
+            quality: {
+              label: "质量",
+              component: "NumberInput",
+              icon: "quality",
+              width: 4,
+              min: 0,
+              max: 100,
+            },
+            fullPage: {
+              label: "全屏截图",
+              component: "CheckButton",
+              icon: "fullscreen",
+              width: 4,
+            },
+            savePath: {
+              label: "保存路径",
               component: "VariableInput",
-              icon: "tab",
-              width: 9,
-              placeholder: "支持模糊匹配",
+              icon: "folder",
+              placeholder: "留空则不保存",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "save",
+                  options: {
+                    title: "保存截图",
+                    properties: ["saveFile"],
+                  },
+                },
+              },
             },
-          ],
+          },
+          defaultValue: {
+            format: "png",
+            quality: 100,
+            fullPage: false,
+          },
         },
       ],
     },
@@ -184,6 +241,7 @@ export const browserCommands = {
       icon: "code",
       isAsync: true,
       config: [
+        tabConfig,
         {
           label: "脚本内容",
           component: "CodeEditor",
@@ -204,6 +262,7 @@ export const browserCommands = {
       label: "Cookie操作",
       icon: "cookie",
       isAsync: true,
+      config: [tabConfig],
       subCommands: [
         {
           value: "quickcomposer.browser.setCookie",
@@ -282,7 +341,7 @@ export const browserCommands = {
               component: "VariableInput",
               icon: "label",
               width: 12,
-              placeholder: "输入Cookie名称",
+              placeholder: "输入Cookie名称，留空则获取所有",
             },
           ],
         },
@@ -294,6 +353,7 @@ export const browserCommands = {
       icon: "style",
       isAsync: true,
       config: [
+        tabConfig,
         {
           label: "CSS内容",
           component: "CodeEditor",
@@ -304,18 +364,12 @@ export const browserCommands = {
       ],
     },
     {
-      value: "quickcomposer.browser.getSelector",
-      label: "手动选择元素",
-      icon: "mouse",
-      isAsync: true,
-      config: [],
-    },
-    {
       value: "quickcomposer.browser.clickElement",
       label: "元素操作",
       icon: "web",
       isAsync: true,
       config: [
+        tabConfig,
         {
           label: "选择器",
           component: "VariableInput",
@@ -395,6 +449,7 @@ export const browserCommands = {
       label: "滚动及页面尺寸",
       icon: "open_in_full",
       isAsync: true,
+      config: [tabConfig],
       subCommands: [
         {
           value: "quickcomposer.browser.scrollTo",

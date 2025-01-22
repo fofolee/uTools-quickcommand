@@ -116,8 +116,10 @@ const getOptimalSelector = () => {
   `;
 };
 
-const getSelector = async () => {
-  return await executeScript(`
+const getSelector = async (tab) => {
+  return await executeScript(
+    tab,
+    `
     return new Promise((resolve) => {
       // 创建高亮元素
       const highlight = document.createElement('div');
@@ -172,7 +174,8 @@ const getSelector = async () => {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('click', handleClick, true);
     });
-  `);
+  `
+  );
 };
 
 module.exports = {
