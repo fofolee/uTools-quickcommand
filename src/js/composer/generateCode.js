@@ -1,5 +1,9 @@
 export function generateCode(flow) {
-  const { commands, name, label } = flow;
+  const { commands, name, label, customVariables = [] } = flow;
+
+  const params = customVariables.filter((v) => v.type === "param") || [];
+  const manualVars =
+    customVariables.filter((v) => v.type === "var") || [];
   // 检查是否包含异步函数
   const hasAsyncFunction = commands.some((cmd) => cmd.isAsync);
 
@@ -8,8 +12,13 @@ export function generateCode(flow) {
 
   code.push(`// ${label}`);
   // 生成函数声明
-  code.push(`${hasAsyncFunction ? "async " : ""}function ${funcName}() {`);
+  code.push(
+    `${hasAsyncFunction ? "async " : ""}function ${funcName}(${params
+      .map((p) => p.name)
+      .join(", ")}) {`
+  );
 
+  code.push(manualVars.map((v) => `  let ${v.name} = ${v.value};`).join("\n"));
   const indent = "  ";
 
   commands.forEach((cmd) => {

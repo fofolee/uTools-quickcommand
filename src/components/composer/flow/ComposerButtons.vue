@@ -12,6 +12,15 @@
       </q-btn>
       <q-separator vertical />
       <q-btn
+        icon="data_object"
+        dense
+        flat
+        @click="$emit('action', 'toggleVariableManager')"
+      >
+        <q-tooltip>变量管理</q-tooltip>
+      </q-btn>
+      <q-separator vertical />
+      <q-btn
         @click="$q.dark.toggle()"
         :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
         flat

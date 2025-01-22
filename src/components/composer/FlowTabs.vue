@@ -77,16 +77,27 @@
       />
     </div>
 
-    <div class="flow-container">
+    <div
+      class="flow-container"
+      v-for="flow in flows"
+      :key="flow.id"
+      v-show="activeTab === flow.id"
+    >
       <ComposerFlow
-        v-for="flow in flows"
-        v-show="activeTab === flow.id"
-        :key="flow.id"
+        class="flow-wrapper"
         v-model="flow.commands"
         :generate-code="() => generateFlowCode(flow)"
         :show-close-button="flows.length > 1"
         @action="(type, payload) => handleAction(type, payload)"
         ref="flowRefs"
+      />
+      <VariableManager
+        v-model="showVariableManager"
+        :variables="flow.customVariables"
+        @update:variables="flow.customVariables = $event"
+        :is-main-flow="flow.id === 'main'"
+        :output-variables="outputVariables"
+        class="variable-panel"
       />
     </div>
   </div>
@@ -96,6 +107,7 @@
 import { defineComponent, provide, ref, computed } from "vue";
 import ComposerFlow from "./ComposerFlow.vue";
 import ComposerButtons from "./flow/ComposerButtons.vue";
+import VariableManager from "./flow/VariableManager.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { generateUniqSuffix } from "js/composer/variableManager";
@@ -107,6 +119,7 @@ export default defineComponent({
     ComposerFlow,
     ComposerButtons,
     draggable,
+    VariableManager,
   },
   props: {
     showCloseButton: {
@@ -120,6 +133,7 @@ export default defineComponent({
       name: "main",
       label: "主流程",
       commands: [],
+      customVariables: [],
     });
 
     const subFlows = ref([]);
@@ -130,6 +144,7 @@ export default defineComponent({
         return {
           label: flow.label,
           value: flow.name,
+          id: flow.id,
         };
       });
     };
@@ -139,11 +154,14 @@ export default defineComponent({
 
     const activeTab = ref("main");
 
-    // 获取当前函数所有变量
-    const getCurrentVariables = () => {
+    const getCurrentFlow = () => {
+      return flows.value.find((flow) => flow.id === activeTab.value);
+    };
+
+    // 获取当前函数所有输出变量
+    const getOutputVariables = (flow = getCurrentFlow()) => {
       const variables = [];
-      const currentFlow = flows.value.find((flow) => flow.id === activeTab.value);
-      for (const [index, cmd] of currentFlow.commands.entries()) {
+      for (const [index, cmd] of flow.commands.entries()) {
         if (cmd.saveOutput && cmd.outputVariable) {
           variables.push(
             ...parseVariables(cmd.outputVariable).map((variable) => ({
@@ -154,6 +172,7 @@ export default defineComponent({
                 id: cmd.id,
                 index,
               },
+              type: "output",
             }))
           );
         }
@@ -161,13 +180,48 @@ export default defineComponent({
       return variables;
     };
 
+    const getFunctionParams = (flowId) => {
+      const flow = flows.value.find((f) => f.id === flowId);
+      return flow.customVariables.filter((v) => v.type === "param");
+    };
+
+    provide("getFunctionParams", getFunctionParams);
+
+    /**
+     * 获取当前函数所有变量
+     * 返回格式：
+     * [
+     *   { name: "变量名", type: "变量类型", sourceCommand: { label: "变量来源" , index?: 来源命令索引, id?: 来源命令id} }
+     * ]
+     */
+    const getCurrentVariables = () => {
+      const currentFlow = getCurrentFlow();
+      const variables = getOutputVariables(currentFlow);
+      const customVariables = currentFlow.customVariables.map((v) => ({
+        name: v.name,
+        type: v.type,
+        sourceCommand: {
+          label: v.type === "param" ? "函数参数" : "局部变量",
+        },
+      }));
+      return [...customVariables, ...variables];
+    };
+
     provide("getCurrentVariables", getCurrentVariables);
 
-    return { flows, mainFlow, subFlows, activeTab };
+    return {
+      flows,
+      mainFlow,
+      subFlows,
+      activeTab,
+      getOutputVariables,
+    };
   },
   data() {
     return {
       isAllCollapsed: false,
+      showVariableManager: false,
+      outputVariables: [],
     };
   },
   methods: {
@@ -189,6 +243,7 @@ export default defineComponent({
         name,
         label: name.replace("func_", "函数"),
         commands: [],
+        customVariables: [],
       });
       this.activeTab = id;
     },
@@ -224,6 +279,10 @@ export default defineComponent({
           break;
         case "expandAll":
           this.expandAll();
+          break;
+        case "toggleVariableManager":
+          this.showVariableManager = !this.showVariableManager;
+          this.outputVariables = this.getOutputVariables();
           break;
         default:
           this.$emit("action", type, this.generateAllFlowCode());
@@ -432,8 +491,19 @@ export default defineComponent({
   overflow: hidden;
 }
 
-.body--dark .tabs-header {
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+.flow-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.variable-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
 }
 
 .main-btn {
