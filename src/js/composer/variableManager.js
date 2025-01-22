@@ -50,7 +50,7 @@ export function parseVariables(value) {
  * @param {string} [currentName] - 当前的变量名（如果有）
  * @returns {string} 有效的变量名
  */
-function generateValidVarName(baseName, existingVars, currentName = null) {
+function generateValidVarName(currentName, existingVars) {
   // 如果当前名称有效且不重复，直接返回
   if (
     currentName &&
@@ -60,13 +60,13 @@ function generateValidVarName(baseName, existingVars, currentName = null) {
     return currentName;
   }
 
-  // 如果变量名无效，生成一个随机变量名
-  if (!validateVariableName(baseName).isValid) {
-    baseName = "var" + generateRandomSuffix(existingVars.length);
+  // 如果变量名无效，改为var开头
+  if (!validateVariableName(currentName).isValid) {
+    currentName = "var";
   }
 
-  // 如果变量名重复，添加随机后缀直到不重复
-  let finalName = baseName + generateUniqSuffix(baseName, existingVars);
+  // 添加随机后缀直到不重复
+  let finalName = currentName + generateUniqSuffix(currentName, existingVars);
 
   return finalName;
 }

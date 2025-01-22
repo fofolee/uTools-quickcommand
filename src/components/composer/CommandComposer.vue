@@ -4,7 +4,7 @@
     <div class="composer-body row no-wrap">
       <!-- 左侧命令列表 -->
       <div class="command-section" style="width: 180px">
-        <ComposerList :commands="availableCommands" @add-command="addCommand" />
+        <ComposerList :commands="availableCommands" />
       </div>
 
       <!-- 右侧命令流程 -->
@@ -22,47 +22,16 @@
 </template>
 
 <script>
-import { defineComponent, provide, ref } from "vue";
+import { defineComponent } from "vue";
 import ComposerList from "./ComposerList.vue";
 import FlowTabs from "./FlowTabs.vue";
 import { availableCommands } from "js/composer/composerConfig";
-import { parseVariables } from "js/composer/variableManager";
 
 export default defineComponent({
   name: "CommandComposer",
   components: {
     ComposerList,
     FlowTabs,
-  },
-  setup() {
-    const commandFlow = ref([]);
-
-    // 提供获取当前变量的函数，直接返回解析后的变量列表
-    const getCurrentVariables = () => {
-      const variables = [];
-      for (const [index, cmd] of commandFlow.value.entries()) {
-        if (cmd.saveOutput && cmd.outputVariable) {
-          variables.push(
-            ...parseVariables(cmd.outputVariable).map((variable) => ({
-              name: variable,
-              // 提供来源命令的标志信息
-              sourceCommand: {
-                label: cmd.label,
-                id: cmd.id,
-                index,
-              },
-            }))
-          );
-        }
-      }
-      return variables;
-    };
-
-    provide("getCurrentVariables", getCurrentVariables);
-
-    return {
-      commandFlow,
-    };
   },
   data() {
     return {
@@ -78,15 +47,6 @@ export default defineComponent({
   },
   emits: ["use-composer"],
   methods: {
-    addCommand(action) {
-      let newAction = window.lodashM.cloneDeep(action);
-      this.commandFlow.push({
-        ...newAction,
-        id: this.$root.getUniqueId(),
-        saveOutput: false,
-        outputVariable: null,
-      });
-    },
     handleComposer(type, code) {
       // 直接转发事件和代码
       this.$emit("use-composer", { type, code });

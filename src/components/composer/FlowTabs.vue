@@ -93,14 +93,14 @@
 </template>
 
 <script>
-import { defineComponent, provide, ref } from "vue";
+import { defineComponent, provide, ref, computed } from "vue";
 import ComposerFlow from "./ComposerFlow.vue";
 import ComposerButtons from "./flow/ComposerButtons.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { generateUniqSuffix } from "js/composer/variableManager";
 import draggable from "vuedraggable";
-
+import { parseVariables } from "js/composer/variableManager";
 export default defineComponent({
   name: "FlowTabs",
   components: {
@@ -115,7 +115,16 @@ export default defineComponent({
     },
   },
   setup() {
+    const mainFlow = ref({
+      id: "main",
+      name: "main",
+      label: "主流程",
+      commands: [],
+    });
+
     const subFlows = ref([]);
+
+    // 获取所有函数
     const getCurrentFunctions = () => {
       return subFlows.value.map((flow) => {
         return {
@@ -125,30 +134,41 @@ export default defineComponent({
       });
     };
     provide("getCurrentFunctions", getCurrentFunctions);
-    return { subFlows };
+
+    const flows = computed(() => [mainFlow.value, ...subFlows.value]);
+
+    const activeTab = ref("main");
+
+    // 获取当前函数所有变量
+    const getCurrentVariables = () => {
+      const variables = [];
+      const currentFlow = flows.value.find((flow) => flow.id === activeTab.value);
+      for (const [index, cmd] of currentFlow.commands.entries()) {
+        if (cmd.saveOutput && cmd.outputVariable) {
+          variables.push(
+            ...parseVariables(cmd.outputVariable).map((variable) => ({
+              name: variable,
+              // 提供来源命令的标志信息
+              sourceCommand: {
+                label: cmd.label,
+                id: cmd.id,
+                index,
+              },
+            }))
+          );
+        }
+      }
+      return variables;
+    };
+
+    provide("getCurrentVariables", getCurrentVariables);
+
+    return { flows, mainFlow, subFlows, activeTab };
   },
   data() {
     return {
-      activeTab: "main",
       isAllCollapsed: false,
-      mainFlow: {
-        id: "main",
-        name: "main",
-        label: "主流程",
-        commands: [],
-      },
     };
-  },
-  computed: {
-    flows: {
-      get() {
-        return [this.mainFlow, ...this.subFlows];
-      },
-      set(value) {
-        this.mainFlow = value[0];
-        this.subFlows = value.slice(1);
-      },
-    },
   },
   methods: {
     generateFlowName(baseName = "func_") {
@@ -240,7 +260,7 @@ export default defineComponent({
       if (!savedFlows) return;
 
       const flowsData = JSON.parse(savedFlows);
-      this.flows = flowsData.map((flow) => ({
+      const newFlows = flowsData.map((flow) => ({
         ...flow,
         commands: flow.commands.map((cmd) => {
           const command = findCommandByValue(cmd.value);
@@ -250,7 +270,9 @@ export default defineComponent({
           };
         }),
       }));
-      this.activeTab = this.flows[0].id;
+      this.mainFlow = newFlows[0];
+      this.subFlows = newFlows.slice(1);
+      this.activeTab = this.mainFlow.id;
     },
     runFlows(flow) {
       const code = flow
