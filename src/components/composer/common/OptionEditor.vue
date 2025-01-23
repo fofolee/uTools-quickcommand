@@ -57,12 +57,13 @@ export default defineComponent({
   },
   computed: {
     localObject() {
-      return this.modelValue;
+      return this.modelValue || {};
     },
   },
   methods: {
     updateOption(key, value) {
-      this.$emit("update:modelValue", { ...this.localObject, [key]: value });
+      const newValue = { ...this.localObject, [key]: value };
+      this.$emit("update:modelValue", newValue);
     },
     getColumnStyle(width = 12) {
       if (width === "auto") {
@@ -81,6 +82,12 @@ export default defineComponent({
     shouldShowQIcon(config) {
       return ["q-input", "q-select"].includes(config.component) && config.icon;
     },
+  },
+  created() {
+    // Initialize with empty object if modelValue is null/undefined
+    if (!this.modelValue) {
+      this.$emit("update:modelValue", {});
+    }
   },
 });
 </script>
