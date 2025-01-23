@@ -34,76 +34,133 @@ export const browserCommands = {
   commands: [
     {
       value: "quickcomposer.browser.launchBrowser",
-      label: "启动浏览器",
+      label: "浏览器实例管理",
       icon: "launch",
       isAsync: true,
-      config: [
+      config: [],
+      subCommands: [
         {
-          component: "OptionEditor",
-          icon: "settings",
-          width: 12,
-          options: {
-            browserType: {
-              component: "ButtonGroup",
-              defaultValue: "msedge",
-              options: [
-                { label: "Edge", value: "msedge" },
-                { label: "Chrome", value: "chrome" },
-              ],
-              width: 12,
-            },
-            useSingleUserDataDir: {
-              label: "使用独立用户数据目录",
-              component: "CheckButton",
-              width: 4,
-            },
-            headless: {
-              label: "无头模式",
-              component: "CheckButton",
-              width: 4,
-            },
-            incognito: {
-              label: "隐身模式",
-              component: "CheckButton",
-              width: 4,
-            },
-            windowSize: {
-              label: "窗口尺寸",
-              component: "VariableInput",
-              icon: "window",
-              width: 6,
-              placeholder: "如1920x1080，不设置则最大化",
-            },
-            proxy: {
-              label: "代理",
-              component: "VariableInput",
-              icon: "vpn_lock",
-              width: 6,
-              placeholder: "如 socks5://127.0.0.1:7890",
-            },
-            browserPath: {
-              label: "浏览器路径",
-              component: "VariableInput",
-              icon: "folder",
+          value: "quickcomposer.browser.launchBrowser",
+          label: "启动浏览器实例",
+          icon: "launch",
+          config: [
+            {
+              component: "OptionEditor",
+              icon: "settings",
               width: 12,
               options: {
-                dialog: {
-                  type: "open",
+                browserType: {
+                  component: "ButtonGroup",
+                  defaultValue: "msedge",
+                  options: [
+                    { label: "Edge", value: "msedge" },
+                    { label: "Chrome", value: "chrome" },
+                  ],
+                  width: 12,
+                },
+                useSingleUserDataDir: {
+                  label: "使用独立用户数据目录",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                headless: {
+                  label: "无头模式",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                incognito: {
+                  label: "隐身模式",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                disableExtensions: {
+                  label: "禁用扩展",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                windowSize: {
+                  label: "窗口尺寸",
+                  component: "VariableInput",
+                  icon: "window",
+                  width: 6,
+                  placeholder: "如1920x1080，不设置则最大化",
+                },
+                proxy: {
+                  label: "代理",
+                  component: "VariableInput",
+                  icon: "vpn_lock",
+                  width: 6,
+                  placeholder: "如 socks5://127.0.0.1:7890",
+                },
+                browserPath: {
+                  label: "浏览器路径",
+                  component: "VariableInput",
+                  icon: "folder",
+                  width: 12,
                   options: {
-                    title: "选择浏览器",
-                    properties: ["openFile"],
+                    dialog: {
+                      type: "open",
+                      options: {
+                        title: "选择浏览器",
+                        properties: ["openFile"],
+                      },
+                    },
                   },
+                  placeholder: "二进制绝对路径，留空则自动查找",
                 },
               },
-              placeholder: "二进制绝对路径，留空则自动查找",
+              defaultValue: {
+                browserType: "msedge",
+                useSingleUserDataDir: true,
+                headless: false,
+                incognito: false,
+              },
             },
-          },
-          defaultValue: {
-            browserType: "msedge",
-            useSingleUserDataDir: true,
-            headless: false,
-            incognito: false,
-          },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.getClientPorts",
+          label: "获取所有浏览器实例端口",
+          icon: "list",
+        },
+        {
+          value: "quickcomposer.browser.destroyClientByPort",
+          label: "关闭浏览器实例",
+          icon: "close",
+          config: [
+            {
+              label: "浏览器实例端口",
+              component: "NumberInput",
+              icon: "label",
+              width: 12,
+              defaultValue: 9222,
+              min: 9222,
+              max: 9322,
+              step: 1,
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.getCurrentClientPort",
+          label: "获取当前操控的实例端口",
+          icon: "label",
+        },
+        {
+          value: "quickcomposer.browser.switchClientByPort",
+          label: "切换要操控的实例",
+          icon: "switch_account",
+          config: [
+            {
+              label: "浏览器实例端口",
+              component: "NumberInput",
+              icon: "label",
+              width: 12,
+              defaultValue: 9222,
+              min: 9222,
+              max: 9322,
+              step: 1,
+            },
+          ],
         },
       ],
     },

@@ -2,11 +2,10 @@ const CDP = require("chrome-remote-interface");
 const { exec } = require("child_process");
 const path = require("path");
 const os = require("os");
-const http = require("http");
-const axios = require("axios");
 const fs = require("fs");
+const net = require("net");
 
-let clients = new Map(); // 存储每个标签页的CDP客户端
+let currentClientPort = null;
 
 const getBrowserPath = (browser = "msedge") => {
   const platform = os.platform();
@@ -70,11 +69,21 @@ const getBrowserPath = (browser = "msedge") => {
 
 const isPortAvailable = (port) => {
   return new Promise((resolve) => {
-    const server = http.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
+    const socket = new net.Socket();
+
+    const onError = () => {
+      socket.destroy();
+      resolve(true);
+    };
+
+    socket.setTimeout(100);
+    socket.once("error", onError);
+    socket.once("timeout", onError);
+
+    socket.connect(port, "127.0.0.1", () => {
+      socket.destroy();
+      resolve(false);
     });
-    server.on("error", () => resolve(false));
   });
 };
 
@@ -82,8 +91,8 @@ const waitForPort = async (port, timeout = 30000) => {
   const startTime = Date.now();
   while (Date.now() - startTime < timeout) {
     try {
-      const response = await axios.get(`http://localhost:${port}/json/version`);
-      if (response.status === 200) return true;
+      await CDP.Version({ port });
+      return true;
     } catch (e) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
@@ -112,6 +121,7 @@ const launchBrowser = async (options) => {
     windowSize = null,
     incognito = false,
     headless = false,
+    disableExtensions = false,
   } = options;
 
   if (!browserPath) {
@@ -119,6 +129,7 @@ const launchBrowser = async (options) => {
   }
 
   const port = await findAvailablePort(9222);
+  currentClientPort = port;
 
   const automationArgs = [
     `--remote-debugging-port=${port}`,
@@ -142,6 +153,7 @@ const launchBrowser = async (options) => {
     proxy ? `--proxy-server=${proxy}` : "",
     incognito ? incognitoArg[browserType] : "",
     headless ? "--headless" : "",
+    disableExtensions ? "--disable-extensions" : "",
     useSingleUserDataDir
       ? `--user-data-dir=${path.join(
           os.tmpdir(),
@@ -198,40 +210,93 @@ const killRunningBrowser = (browserType = "msedge") => {
   });
 };
 
-const initCDP = async (targetId) => {
-  if (!clients.has(targetId)) {
-    try {
-      const client = await CDP({ target: targetId });
-      const { Page, Runtime, Target, Network, Emulation, DOM } = client;
-      await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
-      clients.set(targetId, {
-        client,
-        Page,
-        Runtime,
-        Target,
-        Network,
-        Emulation,
-        DOM,
-      });
-    } catch (err) {
-      console.log(err);
-      throw new Error(`请先通过浏览器控制中的"启动浏览器"打开浏览器`);
+const getClientPorts = async (returnFirstPort = false) => {
+  try {
+    // 创建所有端口检查的 Promise 数组
+    const portChecks = [];
+    for (let port = 9222; port < 9322; port++) {
+      portChecks.push(
+        CDP.List({ port })
+          .then(() => port)
+          .catch(() => null)
+      );
     }
+
+    if (returnFirstPort) {
+      // 如果需要返回第一个可用端口，使用 Promise.race
+      const firstPort = await Promise.race(portChecks);
+      if (firstPort) {
+        return firstPort;
+      } else {
+        return null;
+      }
+    }
+
+    // 如果不需要返回第一个端口或没有找到可用端口，并行执行所有检查
+    const results = await Promise.all(portChecks);
+
+    // 过滤出可用的端口
+    return results.filter((port) => port !== null);
+  } catch (error) {
+    throw new Error(`获取客户端列表失败: ${error.message}`);
   }
-  return clients.get(targetId);
+};
+
+const getCurrentClientPort = async () => {
+  if (currentClientPort === null) {
+    const port = await getClientPorts(true);
+    if (port === null) {
+      throw new Error("未找到可用的浏览器实例，请先从实例管理里面启动新的实例");
+    }
+    currentClientPort = port;
+  }
+  return currentClientPort;
+};
+
+const getTargets = async () => {
+  const port = await getCurrentClientPort();
+  return await CDP.List({ port });
+};
+
+const initCDP = async (targetId) => {
+  try {
+    const port = await getCurrentClientPort();
+    const client = await CDP({
+      target: targetId,
+      port,
+    });
+
+    const { Page, Runtime, Target, Network, Emulation, DOM } = client;
+    await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
+
+    return {
+      client,
+      Page,
+      Runtime,
+      Target,
+      Network,
+      Emulation,
+      DOM,
+    };
+  } catch (err) {
+    console.log(err);
+    throw new Error(`连接到浏览器失败: ${err.message}`);
+  }
 };
 
 const cleanupCDP = async (targetId) => {
-  const client = clients.get(targetId);
-  if (client) {
-    await client.client.close();
-    clients.delete(targetId);
+  try {
+    // 直接关闭传入的 client
+    if (targetId?.client) {
+      await targetId.client.close();
+    }
+  } catch (error) {
+    console.log("关闭CDP连接失败:", error);
   }
 };
 
-// 获取所有标签页
 const getTabs = async () => {
-  const targets = await CDP.List();
+  const targets = await getTargets();
   return targets
     .filter((target) => target.type === "page")
     .map((target) => ({
@@ -241,10 +306,8 @@ const getTabs = async () => {
     }));
 };
 
-// 获取当前活动标签页
 const getCurrentTab = async () => {
-  const targets = await CDP.List();
-  // 一般排第一个的就是活动标签页
+  const targets = await getTargets();
   const currentTarget = targets.find((target) => target.type === "page");
 
   if (!currentTarget) {
@@ -258,14 +321,13 @@ const getCurrentTab = async () => {
   };
 };
 
-// 搜索标签页
 const searchTarget = async (tab) => {
   if (!tab || !tab.by || !tab.searchValue || tab.by === "active") {
     const currentTab = await getCurrentTab();
     return currentTab;
   }
 
-  const targets = await CDP.List();
+  const targets = await getTargets();
   const target = targets.find((target) =>
     target[tab.by].includes(tab.searchValue)
   );
@@ -275,13 +337,12 @@ const searchTarget = async (tab) => {
   return target;
 };
 
-// 激活指定标签页
 const activateTab = async (tab) => {
   const target = await searchTarget(tab);
-  await CDP.Activate({ id: target.id });
+  const port = await getCurrentClientPort();
+  await CDP.Activate({ id: target.id, port });
 };
 
-// 创建新标签页
 const createNewTab = async (url = "about:blank") => {
   const currentTab = await getCurrentTab();
   const { Target } = await initCDP(currentTab.id);
@@ -295,11 +356,11 @@ const createNewTab = async (url = "about:blank") => {
   };
 };
 
-// 关闭标签页
 const closeTab = async (tab) => {
   const target = await searchTarget(tab);
+  const port = await getCurrentClientPort();
   await cleanupCDP(target.id);
-  await CDP.Close({ id: target.id });
+  await CDP.Close({ id: target.id, port });
 };
 
 const getUrl = async (tab) => {
@@ -349,7 +410,6 @@ const setCookie = async (tab, cookies, options = {}) => {
   const target = await searchTarget(tab);
   const { Network, Page } = await initCDP(target.id);
   try {
-    // 直接从Page获取URL，避免创建新连接
     const { frameTree } = await Page.getFrameTree();
     const url = frameTree.frame.url;
 
@@ -382,15 +442,10 @@ const getCookie = async (tab, name) => {
 // 捕获标签页截图
 const captureScreenshot = async (tab, options = {}) => {
   const target = await searchTarget(tab);
-  const {
-    format = "png",
-    quality = 100,
-    savePath,
-    selector = null,
-  } = options;
+  const { format = "png", quality = 100, savePath, selector = null } = options;
 
   try {
-    const { Page, Emulation, DOM } = await initCDP(target.id);
+    const { Page, DOM } = await initCDP(target.id);
     await DOM.enable();
 
     let clip = null;
@@ -461,6 +516,31 @@ const captureScreenshot = async (tab, options = {}) => {
   }
 };
 
+const destroyClientByPort = async (port) => {
+  try {
+    const client = await CDP({ port });
+    await client.Browser.close();
+
+    if (port === currentClientPort) {
+      currentClientPort = null;
+    }
+  } catch (error) {
+    throw new Error(`销毁客户端失败，请手动关闭`);
+  }
+};
+
+const switchClientByPort = async (port) => {
+  try {
+    const versionInfo = await CDP.Version({ port });
+    if (!versionInfo) {
+      throw new Error(`端口 ${port} 未找到活动的浏览器实例`);
+    }
+    currentClientPort = port;
+  } catch (error) {
+    throw new Error(`切换客户端失败: ${error.message}`);
+  }
+};
+
 module.exports = {
   launchBrowser,
   killRunningBrowser,
@@ -475,4 +555,9 @@ module.exports = {
   setCookie,
   getCookie,
   captureScreenshot,
+  getClientPorts,
+  destroyClientByPort,
+  switchClientByPort,
+  getCurrentClientPort,
+  getTargets,
 };
