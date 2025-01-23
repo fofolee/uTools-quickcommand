@@ -267,6 +267,73 @@ export const browserCommands = {
       ],
     },
     {
+      value: "quickcomposer.browser.injectRemoteScript",
+      label: "注入脚本/样式",
+      icon: "style",
+      isAsync: true,
+      config: [tabConfig],
+      subCommands: [
+        {
+          label: "注入CDN脚本",
+          value: "quickcomposer.browser.injectRemoteScript",
+          icon: "javascript",
+          config: [
+            {
+              component: "VariableInput",
+              icon: "link",
+              width: 12,
+              placeholder: "输入远程脚本URL",
+            },
+          ],
+        },
+        {
+          label: "注入本地脚本",
+          icon: "javascript",
+          value: "quickcomposer.browser.injectLocalScript",
+          config: [
+            {
+              component: "VariableInput",
+              icon: "folder",
+              width: 12,
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择脚本",
+                    filters: [
+                      {
+                        name: "JavaScript",
+                        extensions: ["js"],
+                      },
+                      {
+                        name: "all",
+                        extensions: ["*"],
+                      },
+                    ],
+                    properties: ["openFile"],
+                  },
+                },
+              },
+              placeholder: "输入本地脚本绝对路径",
+            },
+          ],
+        },
+        {
+          label: "注入CSS",
+          value: "quickcomposer.browser.injectCSS",
+          icon: "style",
+          config: [
+            {
+              component: "CodeEditor",
+              icon: "style",
+              width: 12,
+              placeholder: "输入CSS代码",
+            },
+          ],
+        },
+      ],
+    },
+    {
       value: "quickcomposer.browser.setCookie",
       label: "Cookie操作",
       icon: "cookie",
@@ -353,22 +420,6 @@ export const browserCommands = {
               placeholder: "输入Cookie名称，留空则获取所有",
             },
           ],
-        },
-      ],
-    },
-    {
-      value: "quickcomposer.browser.injectCSS",
-      label: "注入CSS",
-      icon: "style",
-      isAsync: true,
-      config: [
-        tabConfig,
-        {
-          label: "CSS内容",
-          component: "CodeEditor",
-          icon: "style",
-          width: 12,
-          placeholder: "输入CSS代码",
         },
       ],
     },

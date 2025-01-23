@@ -1,4 +1,5 @@
 const { executeScript } = require("./browser");
+const fs = require("fs");
 
 const clickElement = async (tab, selector) => {
   return await executeScript(
@@ -128,10 +129,52 @@ const injectCSS = async (tab, css) => {
     tab,
     `
       const style = document.createElement('style');
-      style.textContent = \`${css}\`;
+      style.textContent = css;
       document.head.appendChild(style);
-    `
+    `,
+    { css }
   );
+};
+
+const injectRemoteScript = async (tab, url) => {
+  return await executeScript(
+    tab,
+    `
+      return await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.type = 'text/javascript';
+        script.onload = () => resolve(true);
+        script.onerror = () => reject(new Error('Failed to load script: ' + url));
+        document.head.appendChild(script);
+      });
+    `,
+    { url }
+  );
+};
+
+const injectLocalScript = async (tab, filePath) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`文件不存在: ${filePath}`);
+    }
+
+    const content = fs.readFileSync(filePath, "utf8");
+
+    return await executeScript(
+      tab,
+      `
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.textContent = content;
+        document.head.appendChild(script);
+        return true;
+      `,
+      { content }
+    );
+  } catch (error) {
+    throw new Error(`注入本地脚本失败: ${error.message}`);
+  }
 };
 
 module.exports = {
@@ -148,4 +191,6 @@ module.exports = {
   getPageSize,
   waitForElement,
   injectCSS,
+  injectRemoteScript,
+  injectLocalScript,
 };
