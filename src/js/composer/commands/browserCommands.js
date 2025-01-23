@@ -183,6 +183,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.captureScreenshot",
       label: "捕获截图",
       icon: "screenshot",
+      isAsync: true,
       config: [
         tabConfig,
         {
@@ -191,37 +192,39 @@ export const browserCommands = {
           icon: "settings",
           width: 12,
           options: {
+            quality: {
+              label: "质量",
+              component: "NumberInput",
+              width: 2,
+              min: 0,
+              max: 100,
+            },
+            selector: {
+              label: "指定元素（CSS选择器）",
+              component: "VariableInput",
+              icon: "code",
+              width: 10,
+              placeholder: "留空截取可视区域，截取整个页面可填body",
+              options: {
+                cssSelector: true,
+              },
+            },
             format: {
               label: "格式",
               component: "QSelect",
-              icon: "format",
-              width: 4,
+              width: 2,
               options: [
                 { label: "PNG", value: "png" },
                 { label: "JPEG", value: "jpeg" },
                 { label: "WebP", value: "webp" },
               ],
             },
-            quality: {
-              label: "质量",
-              component: "NumberInput",
-              icon: "quality",
-              width: 4,
-              min: 0,
-              max: 100,
-            },
-            fullPage: {
-              label: "全屏截图",
-              component: "CheckButton",
-              icon: "fullscreen",
-              width: 4,
-            },
             savePath: {
               label: "保存路径",
               component: "VariableInput",
               icon: "folder",
               placeholder: "留空则不保存",
-              width: 12,
+              width: 10,
               options: {
                 dialog: {
                   type: "save",

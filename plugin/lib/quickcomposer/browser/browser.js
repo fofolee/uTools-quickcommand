@@ -202,8 +202,8 @@ const initCDP = async (targetId) => {
   if (!clients.has(targetId)) {
     try {
       const client = await CDP({ target: targetId });
-      const { Page, Runtime, Target, Network, Emulation } = client;
-      await Promise.all([Page.enable(), Runtime.enable()]);
+      const { Page, Runtime, Target, Network, Emulation, DOM } = client;
+      await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
       clients.set(targetId, {
         client,
         Page,
@@ -211,6 +211,7 @@ const initCDP = async (targetId) => {
         Target,
         Network,
         Emulation,
+        DOM,
       });
     } catch (err) {
       console.log(err);
@@ -381,41 +382,74 @@ const getCookie = async (tab, name) => {
 // 捕获标签页截图
 const captureScreenshot = async (tab, options = {}) => {
   const target = await searchTarget(tab);
-  const { format = "png", quality = 100, fullPage = false, savePath } = options;
+  const {
+    format = "png",
+    quality = 100,
+    savePath,
+    selector = null,
+  } = options;
 
   try {
-    const { Page, Emulation } = await initCDP(target.id);
+    const { Page, Emulation, DOM } = await initCDP(target.id);
+    await DOM.enable();
 
-    if (fullPage) {
-      const metrics = await Page.getLayoutMetrics();
-      const width = Math.max(
-        metrics.contentSize.width,
-        metrics.layoutViewport.clientWidth,
-        metrics.visualViewport.clientWidth
-      );
-      const height = Math.max(
-        metrics.contentSize.height,
-        metrics.layoutViewport.clientHeight,
-        metrics.visualViewport.clientHeight
-      );
-      await Emulation.setDeviceMetricsOverride({
-        width,
-        height,
-        deviceScaleFactor: 1,
-        mobile: false,
+    let clip = null;
+    if (selector) {
+      // 获取DOM节点
+      const { root } = await DOM.getDocument();
+      const { nodeId } = await DOM.querySelector({
+        nodeId: root.nodeId,
+        selector: selector,
       });
+
+      if (!nodeId) {
+        throw new Error(`未找到元素: ${selector}`);
+      }
+
+      // 获取元素的精确四边形坐标
+      const { quads } = await DOM.getContentQuads({ nodeId });
+      if (!quads || quads.length === 0) {
+        throw new Error("无法获取元素位置信息");
+      }
+
+      // 获取布局指标
+      const { visualViewport } = await Page.getLayoutMetrics();
+      const { pageX, pageY } = visualViewport;
+
+      // 计算边界框
+      const quad = quads[0];
+      const x = Math.min(quad[0], quad[2], quad[4], quad[6]);
+      const y = Math.min(quad[1], quad[3], quad[5], quad[7]);
+      const width = Math.max(quad[0], quad[2], quad[4], quad[6]) - x;
+      const height = Math.max(quad[1], quad[3], quad[5], quad[7]) - y;
+
+      clip = {
+        x: Math.round(x - pageX),
+        y: Math.round(y - pageY),
+        width: Math.round(width),
+        height: Math.round(height),
+        scale: 1,
+      };
+
+      // 确保尺寸不为0
+      if (clip.width === 0) clip.width = 1;
+      if (clip.height === 0) clip.height = 1;
     }
 
-    const { data } = await Page.captureScreenshot({
+    const screenshotParams = {
       format,
       quality: format === "jpeg" ? quality : undefined,
       fromSurface: true,
-      captureBeyondViewport: fullPage,
-    });
+      captureBeyondViewport: !!selector,
+    };
 
-    if (fullPage) {
-      await Emulation.clearDeviceMetricsOverride();
+    if (clip) {
+      screenshotParams.clip = clip;
     }
+
+    const { data } = await Page.captureScreenshot(screenshotParams);
+
+    await DOM.disable();
 
     if (savePath) {
       fs.writeFileSync(savePath, data, "base64");
