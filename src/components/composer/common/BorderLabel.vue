@@ -115,7 +115,7 @@ export default {
 
 .content {
   position: relative;
-  padding: 8px;
+  padding: 16px 8px 8px 8px;
   opacity: 1;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
