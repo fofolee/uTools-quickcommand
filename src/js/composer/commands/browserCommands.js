@@ -33,14 +33,14 @@ export const browserCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "quickcomposer.browser.launchBrowser",
+      value: "quickcomposer.browser.startClient",
       label: "浏览器实例管理",
       icon: "launch",
       isAsync: true,
       config: [],
       subCommands: [
         {
-          value: "quickcomposer.browser.launchBrowser",
+          value: "quickcomposer.browser.startClient",
           label: "启动浏览器实例",
           icon: "launch",
           config: [
@@ -119,11 +119,6 @@ export const browserCommands = {
           ],
         },
         {
-          value: "quickcomposer.browser.getClientPorts",
-          label: "获取所有浏览器实例端口",
-          icon: "list",
-        },
-        {
           value: "quickcomposer.browser.destroyClientByPort",
           label: "关闭浏览器实例",
           icon: "close",
@@ -133,12 +128,17 @@ export const browserCommands = {
               component: "NumberInput",
               icon: "label",
               width: 12,
-              defaultValue: 9222,
               min: 9222,
               max: 9322,
               step: 1,
+              placeholder: "留空关闭当前操控的实例",
             },
           ],
+        },
+        {
+          value: "quickcomposer.browser.getClientPorts",
+          label: "获取所有浏览器实例端口",
+          icon: "list",
         },
         {
           value: "quickcomposer.browser.getCurrentClientPort",

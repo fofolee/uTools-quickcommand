@@ -1,4 +1,4 @@
-const { executeScript } = require("./browser");
+const { executeScript } = require("./execScript");
 const fs = require("fs");
 const path = require("path");
 

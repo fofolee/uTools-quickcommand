@@ -1,5 +1,33 @@
-const { executeScript } = require("./browser");
 const fs = require("fs");
+const { initCDP, cleanupCDP } = require("./cdp");
+const { searchTarget } = require("./tabs");
+
+const executeScript = async (tab, script, args = {}) => {
+  const target = await searchTarget(tab);
+  try {
+    const { Runtime } = await initCDP(target.id);
+    const argNames = Object.keys(args);
+    const argValues = Object.values(args).map((v) => JSON.stringify(v));
+
+    const wrappedScript = `
+      (async function(${argNames.join(", ")}) {
+        ${script}
+      })(${argValues.join(", ")})
+    `;
+
+    const { result } = await Runtime.evaluate({
+      expression: wrappedScript,
+      returnByValue: true,
+      awaitPromise: true,
+    });
+
+    await cleanupCDP(target.id);
+    return result.value;
+  } catch (e) {
+    console.log(e);
+    throw new Error("执行脚本失败");
+  }
+};
 
 const clickElement = async (tab, selector) => {
   return await executeScript(
@@ -178,6 +206,7 @@ const injectLocalScript = async (tab, filePath) => {
 };
 
 module.exports = {
+  executeScript,
   clickElement,
   inputText,
   submitForm,
