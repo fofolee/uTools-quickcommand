@@ -238,6 +238,10 @@ export default defineComponent({
     addItem() {
       if (this.options?.disableAdd) return;
       const dict = { ...this.modelValue };
+      if (dict[""]) {
+        quickcommand.showMessageBox("名称不能为空");
+        return;
+      }
       dict[""] = newVarInputVal("str");
       this.$emit("update:modelValue", dict);
     },
