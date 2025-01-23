@@ -19,6 +19,27 @@ const inputText = async (tab, selector, text) => {
   );
 };
 
+const submitForm = async (tab, buttonSelector, inputSelectors) => {
+  return await executeScript(
+    tab,
+    `
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    let el = null;
+    ${inputSelectors
+      .map(
+        (i) =>
+          `el = document.querySelector('${i.selector}');
+          el.value = '${i.value}';
+          el.dispatchEvent(new Event('input'));
+          el.dispatchEvent(new Event('change'));`
+      )
+      .join("await sleep(200);")}
+      await sleep(200);
+      document.querySelector('${buttonSelector}').click();
+    `
+  );
+};
+
 const getText = async (tab, selector) => {
   return await executeScript(
     tab,
@@ -116,6 +137,7 @@ const injectCSS = async (tab, css) => {
 module.exports = {
   clickElement,
   inputText,
+  submitForm,
   getText,
   getHtml,
   hideElement,

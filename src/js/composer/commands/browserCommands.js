@@ -411,6 +411,30 @@ export const browserCommands = {
           ],
         },
         {
+          value: "quickcomposer.browser.submitForm",
+          label: "提交表单",
+          icon: "send",
+          config: [
+            {
+              topLabel: "上方填要点击的提交按钮，下方添加要操作的输入框",
+              component: "ArrayEditor",
+              width: 12,
+              columns: {
+                selector: {
+                  label: "输入框选择器",
+                  options: {
+                    cssSelector: true,
+                  },
+                },
+                value: {
+                  label: "要填入的值",
+                },
+              },
+              isCollapse: false,
+            },
+          ],
+        },
+        {
           value: "quickcomposer.browser.getText",
           label: "获取文本",
           icon: "text_fields",
