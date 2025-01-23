@@ -55,12 +55,17 @@ export const browserCommands = {
             useSingleUserDataDir: {
               label: "使用独立用户数据目录",
               component: "CheckButton",
-              width: 6,
+              width: 4,
             },
             headless: {
-              label: "启用无头模式",
+              label: "无头模式",
               component: "CheckButton",
-              width: 6,
+              width: 4,
+            },
+            incognito: {
+              label: "隐身模式",
+              component: "CheckButton",
+              width: 4,
             },
             windowSize: {
               label: "窗口尺寸",
@@ -97,6 +102,7 @@ export const browserCommands = {
             browserType: "msedge",
             useSingleUserDataDir: true,
             headless: false,
+            incognito: false,
           },
         },
       ],

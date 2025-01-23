@@ -107,10 +107,11 @@ const launchBrowser = async (options) => {
   const {
     browserType = "msedge",
     useSingleUserDataDir = true,
-    headless = false,
     proxy = null,
     browserPath = getBrowserPath(browserType),
     windowSize = null,
+    incognito = false,
+    headless = false,
   } = options;
 
   if (!browserPath) {
@@ -119,14 +120,28 @@ const launchBrowser = async (options) => {
 
   const port = await findAvailablePort(9222);
 
-  const args = [
+  const automationArgs = [
     `--remote-debugging-port=${port}`,
+    "--disable-infobars",
+    "--disable-notifications",
+    "--disable-popup-blocking",
+    "--disable-save-password-bubble",
+    "--disable-translate",
     "--no-first-run",
     "--no-default-browser-check",
-    "--start-maximized",
-    headless ? "--headless" : "",
-    windowSize ? `--window-size=${windowSize}` : "",
+    "--user-data-start-with-quickcomposer",
+  ];
+
+  const incognitoArg = {
+    chrome: "--incognito",
+    msedge: "--inprivate",
+  };
+
+  const optionArgs = [
+    windowSize ? `--window-size=${windowSize}` : "--start-maximized",
     proxy ? `--proxy-server=${proxy}` : "",
+    incognito ? incognitoArg[browserType] : "",
+    headless ? "--headless" : "",
     useSingleUserDataDir
       ? `--user-data-dir=${path.join(
           os.tmpdir(),
@@ -134,6 +149,8 @@ const launchBrowser = async (options) => {
         )}`
       : "",
   ].filter(Boolean);
+
+  const args = [...automationArgs, ...optionArgs];
 
   return new Promise(async (resolve, reject) => {
     if (!useSingleUserDataDir) {
