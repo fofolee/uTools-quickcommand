@@ -5,11 +5,11 @@
     :icon="icon"
     :model-value="isCollapse"
   >
-    <div class="param-grid">
+    <div class="option-grid">
       <div
         v-for="([key, config], index) in Object.entries(options)"
         :key="`${key}-${index}`"
-        class="grid-item"
+        class="option-item"
         :style="getColumnStyle(config.width)"
       >
         <ParamImporter
@@ -72,8 +72,9 @@ export default defineComponent({
         };
       }
       const columnWidth = (width / 12) * 100;
+      const gapWidth = 8;
       return {
-        width: `calc(${columnWidth}% - var(--grid-gap))`,
+        width: `calc(${columnWidth}% - ${gapWidth * (1 - width / 12)}px)`,
         flex: "0 0 auto",
       };
     },
@@ -85,7 +86,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.param-grid {
+.option-grid {
   display: flex;
   flex-wrap: wrap;
   gap: var(--grid-gap);
@@ -93,28 +94,29 @@ export default defineComponent({
   --grid-gap: 8px;
 }
 
-.grid-item {
+.option-item {
   min-width: 50px;
-  margin-bottom: 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.grid-item > * {
+.option-item > * {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 /* 让开关、复选框和按钮组居中显示 */
-.grid-item > .q-toggle,
-.grid-item > .q-checkbox,
-.grid-item > .q-btn-group {
+.option-item > .q-toggle,
+.option-item > .q-checkbox,
+.option-item > .q-btn-group {
   flex: 0 1 auto;
+  width: auto;
 }
 
 @media (max-width: 600px) {
-  .grid-item {
+  .option-item {
     width: 100% !important;
     flex: 1 1 100% !important;
   }

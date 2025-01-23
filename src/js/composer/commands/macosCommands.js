@@ -1,6 +1,3 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
-import { browserCommands } from "js/composer/commands/browserCommands";
-
 export const macosCommands = {
   label: "Mac自动化",
   icon: "laptop_mac",

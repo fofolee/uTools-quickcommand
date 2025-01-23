@@ -3,7 +3,10 @@
     <div
       v-for="(config, index) in configs"
       :key="index"
-      class="grid-item"
+      :class="{
+        'grid-item': config.component !== 'OptionEditor',
+        'option-container': config.component === 'OptionEditor',
+      }"
       :style="getColumnStyle(config.width)"
     >
       <OptionEditor
@@ -64,8 +67,9 @@ export default defineComponent({
         };
       }
       const columnWidth = (width / 12) * 100;
+      const gapWidth = 8; // 与 CSS 中的 --grid-gap 保持一致
       return {
-        width: `calc(${columnWidth}% - var(--grid-gap))`,
+        width: `calc(${columnWidth}% - ${gapWidth * (1 - width / 12)}px)`,
         flex: "0 0 auto",
       };
     },
@@ -80,14 +84,13 @@ export default defineComponent({
 .param-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--grid-gap);
+  gap: 8px;
   width: 100%;
   --grid-gap: 8px;
 }
 
 .grid-item {
   min-width: 50px;
-  margin-bottom: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -103,6 +106,7 @@ export default defineComponent({
 .grid-item > .q-checkbox,
 .grid-item > .q-btn-group {
   flex: 0 1 auto;
+  width: auto;
 }
 
 @media (max-width: 600px) {
@@ -110,5 +114,16 @@ export default defineComponent({
     width: 100% !important;
     flex: 1 1 100% !important;
   }
+}
+
+.option-container {
+  min-width: 50px;
+  width: 100%;
+  display: flex;
+}
+
+.option-container > * {
+  flex: 1;
+  min-width: 0;
 }
 </style>

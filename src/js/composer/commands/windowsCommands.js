@@ -1,5 +1,5 @@
 import { newVarInputVal } from "js/composer/varInputValManager.js";
-import { browserCommands } from "js/composer/commands/browserCommands.js";
+
 const sendKeys = [
   // 特殊按键
   { value: "{ENTER}", label: "回车键 (Enter)" },

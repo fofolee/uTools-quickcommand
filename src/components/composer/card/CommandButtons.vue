@@ -1,5 +1,5 @@
 <template>
-  <div class="command-buttons q-px-sm">
+  <div class="command-buttons q-pl-sm">
     <div class="row items-center no-wrap">
       <!-- 输出变量设置和按钮 -->
       <div
