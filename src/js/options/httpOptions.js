@@ -67,15 +67,22 @@ export const commonHeaders = [
 ];
 
 export const deviceName = [
-  { label: "iPhone 11", value: "iPhone 11" },
   { label: "iPhone X", value: "iPhone X" },
-  { label: "iPad", value: "iPad" },
-  { label: "iPhone 6/7/8 Plus", value: "iPhone 6/7/8 Plus" },
-  { label: "iPhone 6/7/8", value: "iPhone 6/7/8" },
-  { label: "iPhone 5/SE", value: "iPhone 5/SE" },
-  { label: "HUAWEI Mate10", value: "HUAWEI Mate10" },
-  { label: "HUAWEI Mate20", value: "HUAWEI Mate20" },
-  { label: "HUAWEI Mate30", value: "HUAWEI Mate30" },
+  { label: "iPhone 12 Pro", value: "iPhone 12 Pro" },
+  { label: "iPhone 14 Pro Max", value: "iPhone 14 Pro Max" },
+  { label: "iPad Pro", value: "iPad Pro" },
+  { label: "iPad Mini", value: "iPad Mini" },
+  { label: "Pixel 5", value: "Pixel 5" },
+  { label: "Pixel 7", value: "Pixel 7" },
+  {
+    label: "Samsung Galaxy S20 Ultra",
+    value: "Samsung Galaxy S20 Ultra",
+  },
+  {
+    label: "Samsung Galaxy Tab S7",
+    value: "Samsung Galaxy Tab S7",
+  },
+  { label: "Xiaomi 12 Pro", value: "Xiaomi 12 Pro" },
   { label: "HUAWEI Mate30 Pro", value: "HUAWEI Mate30 Pro" },
 ];
 

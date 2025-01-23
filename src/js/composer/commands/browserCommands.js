@@ -1,4 +1,5 @@
 import { newVarInputVal } from "js/composer/varInputValManager";
+import { deviceName, userAgent } from "js/options/httpOptions";
 
 const tabConfig = {
   component: "OptionEditor",
@@ -6,7 +7,6 @@ const tabConfig = {
   options: {
     by: {
       component: "QSelect",
-      label: "标签",
       width: 3,
       options: [
         { label: "当前标签页", value: "active" },
@@ -19,7 +19,7 @@ const tabConfig = {
       component: "VariableInput",
       icon: "tab",
       width: 9,
-      placeholder: "当前标签页留空，其他支持模糊匹配",
+      placeholder: "选择当前标签页留空，URL/标题/ID支持模糊匹配",
     },
   },
   defaultValue: {
@@ -622,6 +622,102 @@ export const browserCommands = {
           value: "quickcomposer.browser.getPageSize",
           label: "获取页面尺寸",
           icon: "open_in_full",
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.setDevice",
+      label: "设备模拟",
+      icon: "devices",
+      isAsync: true,
+      config: [tabConfig],
+      subCommands: [
+        {
+          value: "quickcomposer.browser.setDevice",
+          label: "使用预设设备",
+          icon: "smartphone",
+          config: [
+            {
+              label: "设备",
+              component: "QSelect",
+              icon: "devices",
+              width: 12,
+              options: [
+                ...deviceName,
+                // 桌面设备
+                { label: "Desktop", value: "Desktop" },
+                { label: "MacBook Pro 16", value: "MacBook Pro 16" },
+                { label: "4K Display", value: "4K Display" },
+              ],
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.setCustomDevice",
+          label: "自定义设备",
+          icon: "build",
+          config: [
+            {
+              label: "设备配置",
+              component: "OptionEditor",
+              icon: "settings",
+              width: 12,
+              options: {
+                width: {
+                  label: "宽度",
+                  component: "NumberInput",
+                  width: 3,
+                  defaultValue: 1920,
+                  min: 0,
+                },
+                height: {
+                  label: "高度",
+                  component: "NumberInput",
+                  width: 3,
+                  defaultValue: 1080,
+                  min: 0,
+                },
+                deviceScaleFactor: {
+                  label: "设备像素比",
+                  component: "NumberInput",
+                  width: 3,
+                  defaultValue: 1,
+                  min: 1,
+                  step: 0.1,
+                },
+                mobile: {
+                  label: "移动设备",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                hasTouch: {
+                  label: "触摸屏",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                isLandscape: {
+                  label: "横屏",
+                  component: "CheckButton",
+                  width: 3,
+                },
+                userAgent: {
+                  label: "User Agent",
+                  component: "VariableInput",
+                  icon: "code",
+                  width: 6,
+                  placeholder: "留空使用默认",
+                  options: {
+                    items: userAgent,
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.clearDeviceEmulation",
+          label: "清除设备模拟",
+          icon: "clear",
         },
       ],
     },

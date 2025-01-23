@@ -5,6 +5,7 @@ const tabs = require("./tabs");
 const url = require("./url");
 const cookie = require("./cookie");
 const screenshot = require("./screenshot");
+const device = require("./device");
 
 module.exports = {
   ...url,
@@ -14,4 +15,5 @@ module.exports = {
   ...browserManager,
   ...cookie,
   ...screenshot,
+  ...device,
 };
