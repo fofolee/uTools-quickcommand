@@ -6,6 +6,7 @@ const url = require("./url");
 const cookie = require("./cookie");
 const screenshot = require("./screenshot");
 const device = require("./device");
+const network = require("./network");
 
 module.exports = {
   ...url,
@@ -16,4 +17,5 @@ module.exports = {
   ...cookie,
   ...screenshot,
   ...device,
+  ...network,
 };

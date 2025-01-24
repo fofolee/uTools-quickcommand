@@ -1,5 +1,5 @@
 import { newVarInputVal } from "js/composer/varInputValManager";
-import { deviceName, userAgent } from "js/options/httpOptions";
+import { deviceName, userAgent, commonHeaders } from "js/options/httpOptions";
 
 const tabConfig = {
   component: "OptionEditor",
@@ -622,6 +622,128 @@ export const browserCommands = {
           value: "quickcomposer.browser.getPageSize",
           label: "获取页面尺寸",
           icon: "open_in_full",
+        },
+      ],
+    },
+    {
+      value: "quickcomposer.browser.setRequestInterception",
+      label: "修改请求/响应",
+      icon: "network",
+      isAsync: true,
+      isAsync: true,
+      subCommands: [
+        {
+          value: "quickcomposer.browser.setRequestInterception",
+          label: "修改请求",
+          icon: "upload",
+          config: [
+            tabConfig,
+            {
+              topLabel: "拦截规则",
+              isCollapse: false,
+              component: "ArrayEditor",
+              icon: "rule",
+              columns: {
+                url: {
+                  label: "要拦截的URL",
+                  defaultValue: newVarInputVal("str"),
+                  placeholder: "支持正则，如.*\\.baidu\\.com",
+                  width: 12,
+                },
+                headerKey: {
+                  label: "要修改的请求头",
+                  component: "VariableInput",
+                  options: {
+                    items: commonHeaders,
+                  },
+                  width: 6,
+                },
+                headerValue: {
+                  label: "要修改的请求头值",
+                  component: "VariableInput",
+                  defaultValue: newVarInputVal("str"),
+                  width: 6,
+                },
+                pattern: {
+                  label: "要修改的请求内容（body及url参数）",
+                  defaultValue: newVarInputVal("str"),
+                  width: 6,
+                  placeholder: "支持正则，如(role: )[guest|user]",
+                },
+                replacement: {
+                  label: "替换内容",
+                  defaultValue: newVarInputVal("str"),
+                  width: 6,
+                  placeholder: "支持替换符，如$1admin",
+                },
+                redirectUrl: {
+                  label: "重定向到指定URL",
+                  defaultValue: newVarInputVal("str"),
+                  width: 12,
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.setResponseInterception",
+          label: "修改响应",
+          icon: "download",
+          config: [
+            tabConfig,
+            {
+              topLabel: "拦截规则",
+              isCollapse: false,
+              component: "ArrayEditor",
+              icon: "rule",
+              width: 12,
+              columns: {
+                url: {
+                  label: "要拦截的URL",
+                  defaultValue: newVarInputVal("str"),
+                  placeholder: "支持正则，如.*\\.baidu\\.com",
+                  width: 9,
+                },
+                statusCode: {
+                  label: "状态码",
+                  component: "VariableInput",
+                  defaultValue: 200,
+                  options: {
+                    items: [
+                      { label: "200", value: 200 },
+                      { label: "302", value: 302 },
+                      { label: "401", value: 401 },
+                      { label: "403", value: 403 },
+                      { label: "404", value: 404 },
+                      { label: "500", value: 500 },
+                      { label: "502", value: 502 },
+                      { label: "503", value: 503 },
+                      { label: "504", value: 504 },
+                    ],
+                  },
+                  defaultValue: newVarInputVal("var", ""),
+                  width: 3,
+                },
+                pattern: {
+                  label: "要修改的响应内容",
+                  defaultValue: newVarInputVal("str"),
+                  placeholder: "支持正则，如(role: )[guest|user]",
+                  width: 6,
+                },
+                replacement: {
+                  label: "替换内容",
+                  defaultValue: newVarInputVal("str"),
+                  placeholder: "支持替换符，如$1admin",
+                  width: 6,
+                },
+              },
+            },
+          ],
+        },
+        {
+          value: "quickcomposer.browser.clearInterception",
+          label: "清除所有拦截规则",
+          icon: "clear",
         },
       ],
     },

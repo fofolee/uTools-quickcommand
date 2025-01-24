@@ -9,8 +9,13 @@ const initCDP = async (targetId) => {
       port,
     });
 
-    const { Page, Runtime, Target, Network, Emulation, DOM } = client;
-    await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
+    const { Page, Runtime, Target, Network, Emulation, DOM, Fetch } = client;
+    await Promise.all([
+      Page.enable(),
+      Runtime.enable(),
+      DOM.enable(),
+      Fetch.enable(),
+    ]);
 
     return {
       client,
@@ -20,6 +25,7 @@ const initCDP = async (targetId) => {
       Network,
       Emulation,
       DOM,
+      Fetch,
     };
   } catch (err) {
     console.log(err);
