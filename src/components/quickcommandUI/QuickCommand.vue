@@ -266,12 +266,55 @@ export default {
     // 获取用户数据
     window.quickcommand.userData = this.$root.utools.userData;
 
-    // 添加runCode方法，不在preload中加是因为programs写在了src中-_-
-    quickcommand.runCode = (code, program, runInTerminal = false) => {
+    /**
+     * 执行代码
+     * 添加runCode方法，不在preload中加是因为programs写在了src中-_-
+     * @param code 代码文本
+     * @param options 选项
+     * @param options.language 编程语言
+     * @param options.args 脚本参数
+     * @param options.charset 编码
+     * @param options.charset.scriptCode 脚本编码
+     * @param options.charset.outputCode 输出编码
+     * @param options.runInTerminal 终端运行参数，不传则不在终端运行
+     * @param options.runInTerminal.dir 运行目录
+     * @param options.runInTerminal.windows windows使用的终端，默认wt
+     * @param options.runInTerminal.macos macos使用的终端，默认warp
+     */
+    quickcommand.runCode = (code, options) => {
       return new Promise((reslove, reject) => {
+        const isWin = window.utools.isWindows();
+        const {
+          language = isWin ? "cmd" : "shell",
+          charset = {},
+          args = [],
+          runInTerminal,
+        } = options;
+
+        const unescapeAndQuote = (str) => `"${str.replace(/\\"/g, '"')}"`;
+
+        if (!programs[language]) {
+          return reject(new Error(`不支持的语言: ${language}`));
+        }
+
+        if (!Array.isArray(args)) {
+          return reject(new TypeError(`args 应为 Array, 而非 ${typeof args}`));
+        }
+        const argsStr = args.map(unescapeAndQuote).join(" ");
+
+        const defaultCharset =
+          isWin && ["cmd", "powershell"].includes(language) ? "gbk" : "utf-8";
+          
+        const { scriptCode = defaultCharset, outputCode = defaultCharset } =
+          charset;
+
         window.runCodeFile(
           code,
-          { ...programs[program], charset: {}, scptarg: "" },
+          {
+            ...programs[language],
+            charset: { scriptCode, outputCode },
+            scptarg: argsStr,
+          },
           runInTerminal,
           (result, err) => (err ? reject(err) : reslove(result))
         );

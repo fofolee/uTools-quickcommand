@@ -652,38 +652,63 @@ interface quickcommandApi {
   /**
    * 运行代码
    * @param code 代码
-   * @param program 编程语言
-   * @param runInTerminal 终端运行参数，不传则不在终端运行
-   * @param runInTerminal.dir 运行目录
-   * @param runInTerminal.windows windows使用的终端，默认wt
-   * @param runInTerminal.macos macos使用的终端，默认warp
+   * @param options 选项
+   * @param options.language 编程语言，不传时则根据操作系统选择cmd或是shell
+   * @param options.args 脚本参数
+   * @param options.charset 编码，不传时则根据操作系统及语言选择utf-8或是gbk
+   * @param options.charset.scriptCode 脚本编码
+   * @param options.charset.outputCode 输出编码
+   * @param options.runInTerminal 终端运行参数，不传则不在终端运行
+   * @param options.runInTerminal.dir 运行目录
+   * @param options.runInTerminal.windows windows使用的终端，默认wt
+   * @param options.runInTerminal.macos macos使用的终端，默认warp
    *
    * 支持的编程语言：
    * shell, applescript, cmd, python, powershell, javascript, ruby, php, lua, perl, csharp, c
    *
    * ```js
-   * quickcommand.runCode("print('Hello, World!');", "python");
+   * const script = `
+   * import sys
+   * print(sys.argv[1])
+   * `
+   * const options = {
+   *   language: "python",
+   *   args: ["hello world"]
+   * }
+
+   * quickcommand.runCode(script, options).then(result => {
+   *   console.log(result)
+   * }).catch(e => {
+   *   console.log(e)
+   * })
    * ```
    */
   runCode(
     code: string,
-    program:
-      | "shell"
-      | "applescript"
-      | "cmd"
-      | "python"
-      | "powershell"
-      | "javascript"
-      | "ruby"
-      | "php"
-      | "lua"
-      | "perl"
-      | "csharp"
-      | "c",
-    runInTerminal?: {
-      dir?: string;
-      windows?: "wt" | "cmd";
-      macos?: "warp" | "iterm" | "terminal";
+    options: {
+      language:
+        | "shell"
+        | "applescript"
+        | "cmd"
+        | "python"
+        | "powershell"
+        | "javascript"
+        | "ruby"
+        | "php"
+        | "lua"
+        | "perl"
+        | "csharp"
+        | "c";
+      args?: string[];
+      charset?: {
+        scriptCode?: string;
+        outputCode?: string;
+      };
+      runInTerminal?: {
+        dir?: string;
+        windows?: "wt" | "cmd";
+        macos?: "warp" | "iterm" | "terminal";
+      };
     }
   ): Promise<string>;
 }
