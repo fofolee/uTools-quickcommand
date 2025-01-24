@@ -6,76 +6,73 @@
     :model-value="isCollapse"
   >
     <div class="array-editor">
-      <div
-        v-for="(row, index) in rows"
-        :key="index"
-        class="row items-center q-gutter-sm"
-      >
-        <template v-if="!!columns">
-          <div
-            v-for="column in processedColumns"
-            :key="column.key"
-            :class="[column.width ? `col-${column.width}` : 'col']"
-          >
-            <VariableInput
-              :model-value="row[column.key]"
-              v-bind="column"
-              @update:model-value="
-                (val) => updateColumn(index, column.key, val)
-              "
+      <div v-for="(row, index) in rows" :key="index" class="array-row">
+        <div class="row-content row q-col-gutter-sm">
+          <template v-if="!!columns">
+            <div
+              v-for="column in processedColumns"
+              :key="column.key"
+              :class="[column.width ? `col-${column.width}` : 'col']"
+            >
+              <VariableInput
+                :model-value="row[column.key]"
+                v-bind="column"
+                @update:model-value="
+                  (val) => updateColumn(index, column.key, val)
+                "
+              />
+            </div>
+          </template>
+          <template v-else>
+            <div class="col">
+              <VariableInput
+                :model-value="row"
+                v-bind="$attrs"
+                @update:model-value="(val) => updateValue(index, val)"
+              />
+            </div>
+          </template>
+        </div>
+
+        <div class="btn-container">
+          <template v-if="rows.length === 1">
+            <q-btn
+              flat
+              dense
+              size="sm"
+              icon="add"
+              class="center-btn"
+              @click="addRow"
             />
-          </div>
-        </template>
-        <template v-else>
-          <div class="col">
-            <VariableInput
-              :model-value="row"
-              v-bind="$attrs"
-              @update:model-value="(val) => updateValue(index, val)"
+          </template>
+          <template v-else-if="index === rows.length - 1">
+            <q-btn
+              flat
+              dense
+              size="sm"
+              icon="remove"
+              class="top-btn"
+              @click="removeRow(index)"
             />
-          </div>
-        </template>
-        <div class="col-auto">
-          <div class="btn-container">
-            <template v-if="rows.length === 1">
-              <q-btn
-                flat
-                dense
-                size="sm"
-                icon="add"
-                class="center-btn"
-                @click="addRow"
-              />
-            </template>
-            <template v-else-if="index === rows.length - 1">
-              <q-btn
-                flat
-                dense
-                size="sm"
-                icon="remove"
-                class="top-btn"
-                @click="removeRow(index)"
-              />
-              <q-btn
-                flat
-                dense
-                size="sm"
-                icon="add"
-                class="bottom-btn"
-                @click="addRow"
-              />
-            </template>
-            <template v-else>
-              <q-btn
-                flat
-                dense
-                size="sm"
-                icon="remove"
-                class="center-btn"
-                @click="removeRow(index)"
-              />
-            </template>
-          </div>
+            <q-btn
+              flat
+              dense
+              size="sm"
+              icon="add"
+              class="bottom-btn"
+              @click="addRow"
+            />
+          </template>
+          <template v-else>
+            <q-btn
+              flat
+              dense
+              size="sm"
+              icon="remove"
+              class="center-btn"
+              @click="removeRow(index)"
+            />
+          </template>
         </div>
       </div>
     </div>
@@ -271,7 +268,18 @@ export default defineComponent({
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  /*消除q-gutter-sm为第一行带来的额外padding*/
+  margin-top: -8px;
+  margin-left: -8px;
+}
+
+.array-row {
+  display: flex;
+}
+
+.row-content {
+  flex: 1;
+  margin: 0; /* 覆盖 Quasar 的默认 margin */
 }
 
 /* 防止输入框换行 */
@@ -283,11 +291,12 @@ export default defineComponent({
 
 .btn-container {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  padding-top: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .btn-container .q-btn {
@@ -296,18 +305,20 @@ export default defineComponent({
   height: 16px;
   min-height: 16px;
   padding: 0;
+  /*抵消array-editor的margin-left，顺便和左边保持距离*/
+  margin-right: -8px;
 }
 
 .btn-container .center-btn {
-  position: relative;
+  top: 18px;
 }
 
 .btn-container .top-btn {
-  top: 0;
+  top: 8px;
 }
 
 .btn-container .bottom-btn {
-  bottom: 0;
+  top: 28px;
 }
 
 .array-editor :deep(.q-btn .q-icon) {

@@ -199,11 +199,12 @@ export default defineComponent({
         title: {
           label: "标题",
           noIcon: true,
+          width: 4,
         },
         description: {
           label: "描述",
           noIcon: true,
-          width: 5,
+          width: 6,
         },
       },
       subCommands: [
