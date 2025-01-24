@@ -9,9 +9,9 @@
       <div
         v-for="(item, index) in allItems"
         :key="`${item.type}-${index}`"
-        class="row q-col-gutter-sm items-center"
+        class="row items-center"
       >
-        <div class="col-4">
+        <div class="col-4 q-pr-sm">
           <template v-if="item.type === 'fixed'">
             <q-input
               :model-value="item.key"
@@ -81,10 +81,7 @@
             @update:model-value="(val) => updateItemValue(val, index)"
           />
         </div>
-        <div
-          v-if="item.type !== 'fixed' && !options?.disableAdd"
-          class="col-auto"
-        >
+        <div v-if="item.type !== 'fixed' && !options?.disableAdd">
           <div class="btn-container">
             <template v-if="localItems.length === 1">
               <q-btn
@@ -304,8 +301,9 @@ export default defineComponent({
 
 .btn-container {
   position: relative;
-  width: 32px;
+  width: 16px;
   height: 32px;
+  padding-left: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
