@@ -626,14 +626,14 @@ export const browserCommands = {
       ],
     },
     {
-      value: "quickcomposer.browser.setRequestInterception",
+      value: "quickcomposer.browser.network.setRequestInterception",
       label: "修改请求/响应",
       icon: "network",
       isAsync: true,
       isAsync: true,
       subCommands: [
         {
-          value: "quickcomposer.browser.setRequestInterception",
+          value: "quickcomposer.browser.network.setRequestInterception",
           label: "修改请求",
           icon: "upload",
           config: [
@@ -686,7 +686,7 @@ export const browserCommands = {
           ],
         },
         {
-          value: "quickcomposer.browser.setResponseInterception",
+          value: "quickcomposer.browser.network.setResponseInterception",
           label: "修改响应",
           icon: "download",
           config: [
@@ -741,21 +741,21 @@ export const browserCommands = {
           ],
         },
         {
-          value: "quickcomposer.browser.clearInterception",
+          value: "quickcomposer.browser.network.clearInterception",
           label: "清除所有拦截规则",
           icon: "clear",
         },
       ],
     },
     {
-      value: "quickcomposer.browser.setDevice",
+      value: "quickcomposer.browser.device.setDevice",
       label: "设备模拟",
       icon: "devices",
       isAsync: true,
       config: [tabConfig],
       subCommands: [
         {
-          value: "quickcomposer.browser.setDevice",
+          value: "quickcomposer.browser.device.setDevice",
           label: "使用预设设备",
           icon: "smartphone",
           config: [
@@ -775,7 +775,7 @@ export const browserCommands = {
           ],
         },
         {
-          value: "quickcomposer.browser.setCustomDevice",
+          value: "quickcomposer.browser.device.setCustomDevice",
           label: "自定义设备",
           icon: "build",
           config: [
@@ -837,7 +837,7 @@ export const browserCommands = {
           ],
         },
         {
-          value: "quickcomposer.browser.clearDeviceEmulation",
+          value: "quickcomposer.browser.device.clearDeviceEmulation",
           label: "清除设备模拟",
           icon: "clear",
         },

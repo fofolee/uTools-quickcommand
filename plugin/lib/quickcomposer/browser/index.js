@@ -16,6 +16,6 @@ module.exports = {
   ...browserManager,
   ...cookie,
   ...screenshot,
-  ...device,
-  ...network,
+  device,
+  network,
 };
