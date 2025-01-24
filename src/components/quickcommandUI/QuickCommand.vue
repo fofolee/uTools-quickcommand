@@ -291,6 +291,10 @@ export default {
           runInTerminal,
         } = options;
 
+        // 兼容编排，传入true时，使用默认终端
+        const runInTerminalOptions =
+          runInTerminal === true ? {} : runInTerminal;
+
         const unescapeAndQuote = (str) => `"${str.replace(/\\"/g, '"')}"`;
 
         if (!programs[language]) {
@@ -304,7 +308,7 @@ export default {
 
         const defaultCharset =
           isWin && ["cmd", "powershell"].includes(language) ? "gbk" : "utf-8";
-          
+
         const { scriptCode = defaultCharset, outputCode = defaultCharset } =
           charset;
 
@@ -315,7 +319,7 @@ export default {
             charset: { scriptCode, outputCode },
             scptarg: argsStr,
           },
-          runInTerminal,
+          runInTerminalOptions,
           (result, err) => (err ? reject(err) : reslove(result))
         );
         false;

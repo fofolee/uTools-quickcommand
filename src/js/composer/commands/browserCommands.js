@@ -313,7 +313,7 @@ export const browserCommands = {
           component: "CodeEditor",
           icon: "code",
           width: 12,
-          placeholder: "输入JavaScript代码",
+          placeholder: "输入JavaScript代码，使用return返回结果",
         },
         {
           topLabel: "要传递的参数",

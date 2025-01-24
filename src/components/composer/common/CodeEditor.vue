@@ -1,6 +1,11 @@
 <template>
   <div class="code-editor" :style="{ height: height }">
-    <div ref="editorContainer" class="editor-container"></div>
+    <div ref="editorContainer" class="editor-container" />
+    <div class="placeholder-wrapper" v-show="!value && placeholder">
+      <div class="placeholder">
+        {{ placeholder }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -35,6 +40,11 @@ export default {
     options: {
       type: Object,
       default: () => ({}),
+    },
+    // placeholder提示文本
+    placeholder: {
+      type: String,
+      default: "请输入...",
     },
   },
   emits: ["update:modelValue", "change"],
@@ -202,6 +212,11 @@ export default {
       }
     },
   },
+  computed: {
+    showPlaceholder() {
+      return this.placeholder && (!this.value || this.value.trim() === "");
+    },
+  },
 };
 </script>
 
@@ -211,10 +226,38 @@ export default {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   overflow: hidden;
+  position: relative;
 }
 
 .editor-container {
   width: 100%;
   height: 100%;
+}
+
+.placeholder-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-left: 45px;
+  pointer-events: none;
+}
+
+.placeholder {
+  font-size: 14px;
+  font-family: sans-serif;
+  color: #535353;
+  user-select: none;
+  font-style: italic;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+}
+
+.code-editor:focus-within .placeholder {
+  opacity: 1;
+}
+
+.body--dark .placeholder {
+  color: #666;
 }
 </style>
