@@ -15,11 +15,6 @@ import { toRaw } from "vue";
 import importAll from "js/common/importAll.js";
 import { defineComponent } from "vue";
 
-// 批量导入声明文件
-let apis = importAll(
-  require.context("!raw-loader!plugins/monaco/types/", false, /\.ts$/)
-);
-
 // 批量导入关键字补全
 let languageCompletions = importAll(
   require.context("plugins/monaco/completions/", false, /\.js$/)
@@ -161,9 +156,7 @@ export default defineComponent({
       immediate: true,
       handler(newValue) {
         if (this.editor) {
-          const language = ["webjavascript", "quickcommand"].includes(newValue)
-            ? "javascript"
-            : newValue;
+          const language = this.getHighlighter(newValue);
           monaco.editor.setModelLanguage(this.rawEditor().getModel(), language);
           this.loadTypes();
         }
@@ -182,9 +175,7 @@ export default defineComponent({
   methods: {
     // 初始化编辑器
     initEditor() {
-      const language = ["webjavascript", "quickcommand"].includes(this.language)
-        ? "javascript"
-        : this.language;
+      const language = this.getHighlighter(this.language);
 
       const options = {
         ...this.defaultOptions,
@@ -373,6 +364,19 @@ export default defineComponent({
           "api.d.ts"
         );
       }
+    },
+    getHighlighter(language) {
+      if (
+        ["quickcommand", "javascript", "webjavascript"].includes(
+          language
+        )
+      ) {
+        return "javascript";
+      }
+      if (language === "cmd") {
+        return "bat";
+      }
+      return language;
     },
   },
   computed: {
