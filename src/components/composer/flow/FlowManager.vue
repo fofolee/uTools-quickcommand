@@ -52,6 +52,9 @@
           <div class="section-title">
             <q-icon name="functions" size="16px" />
             <div>函数参数</div>
+            <q-icon name="info" size="12px" class="q-ml-sm">
+              <q-tooltip> 函数的参数，注意不要与局部变量重名 </q-tooltip>
+            </q-icon>
           </div>
           <q-btn
             flat
@@ -94,6 +97,11 @@
           <div class="section-title">
             <q-icon name="data_object" size="16px" />
             <div>局部变量</div>
+            <q-icon name="info" size="12px" class="q-ml-sm">
+              <q-tooltip>
+                会在函数的顶部进行定义，注意赋值时字符串需用引号包裹
+              </q-tooltip>
+            </q-icon>
           </div>
           <q-btn
             flat
@@ -410,5 +418,9 @@ export default defineComponent({
   font-weight: 500;
   align-items: center;
   display: flex;
+}
+
+.q-separator {
+  opacity: 0.3;
 }
 </style>
