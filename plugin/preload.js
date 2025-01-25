@@ -230,7 +230,7 @@ const buildCommandLine = (bin, argv, script, scptarg) => {
 
   if (utools.isWindows() && bin === "bash") {
     const wslPath = script.replace(/\\/g, "/").replace(/C:/i, "/mnt/c");
-    return `${bin} ${argv} "${wslPath}" ${scptarg}`;
+    return `wsl -e ${bin} ${argv} "${wslPath}" ${scptarg}`;
   }
 
   return `${bin} ${argv} "${script}" ${scptarg}`;
