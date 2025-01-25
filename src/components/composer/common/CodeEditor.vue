@@ -12,8 +12,36 @@
 <script>
 import * as monaco from "monaco-editor";
 import { toRaw } from "vue";
+import importAll from "js/common/importAll.js";
+import { defineComponent } from "vue";
 
-export default {
+// 批量导入声明文件
+let apis = importAll(
+  require.context("!raw-loader!plugins/monaco/types/", false, /\.ts$/)
+);
+
+// 批量导入关键字补全
+let languageCompletions = importAll(
+  require.context("plugins/monaco/completions/", false, /\.js$/)
+);
+
+let monacoCompletionProviders = {};
+
+// 声明文件映射
+const typeDefinitions = {
+  javascript: ["lib.es5.d.ts", "common.d.ts", "node.api.d.ts", "electron.d.ts"],
+  quickcommand: [
+    "lib.es5.d.ts",
+    "common.d.ts",
+    "node.api.d.ts",
+    "electron.d.ts",
+    "quickcommand.api.d.ts",
+    "utools.api.d.ts",
+    "shortcode.api.d.ts",
+  ],
+};
+
+export default defineComponent({
   name: "CodeEditor",
   props: {
     // v-model 绑定值
@@ -24,12 +52,12 @@ export default {
     // 编程语言
     language: {
       type: String,
-      default: "plaintext",
+      default: "javascript",
     },
     // 编辑器高度
     height: {
       type: String,
-      default: "200px",
+      default: "300px",
     },
     // 编辑器主题
     theme: {
@@ -128,6 +156,18 @@ export default {
         monaco.editor.setTheme(newValue ? "vs-dark" : "vs");
       },
     },
+    language: {
+      immediate: true,
+      handler(newValue) {
+        if (this.editor) {
+          const language = ["webjavascript", "quickcommand"].includes(newValue)
+            ? "javascript"
+            : newValue;
+          monaco.editor.setModelLanguage(this.rawEditor().getModel(), language);
+          this.loadTypes();
+        }
+      },
+    },
   },
   mounted() {
     this.initEditor();
@@ -141,16 +181,22 @@ export default {
   methods: {
     // 初始化编辑器
     initEditor() {
+      const language = ["webjavascript", "quickcommand"].includes(this.language)
+        ? "javascript"
+        : this.language;
+
       const options = {
         ...this.defaultOptions,
         ...this.options,
         value: this.value || "",
-        language: this.language,
+        language,
         theme: this.theme,
       };
 
       this.editor = monaco.editor.create(this.$refs.editorContainer, options);
       this.listenEditorValue();
+      this.loadTypes();
+      this.registerLanguage();
 
       // 初始化完成后立即触发一次布局更新
       this.$nextTick(() => {
@@ -211,13 +257,129 @@ export default {
         this.editor.focus();
       }
     },
+    registerLanguage() {
+      let that = this;
+      const identifierPattern = "([a-zA-Z_]\\w*)";
+      let getTokens = (code) => {
+        let identifier = new RegExp(identifierPattern, "g");
+        let tokens = [];
+        let array1;
+        while ((array1 = identifier.exec(code)) !== null) {
+          tokens.push(array1[0]);
+        }
+        return Array.from(new Set(tokens));
+      };
+      let createDependencyProposals = (range, keyWords, editor, curWord) => {
+        let keys = [];
+        // fix getValue of undefined
+        let tokens = getTokens(toRaw(editor).getModel()?.getValue());
+        // 自定义变量、字符串
+        for (const item of tokens) {
+          if (item != curWord.word) {
+            keys.push({
+              label: item,
+              kind: monaco.languages.CompletionItemKind.Text,
+              documentation: "",
+              insertText: item,
+              range: range,
+            });
+          }
+        }
+        // 关键字、函数
+        Object.keys(keyWords).forEach((ItemKind) => {
+          keyWords[ItemKind].forEach((item) => {
+            keys.push({
+              label: item,
+              kind: monaco.languages.CompletionItemKind[ItemKind],
+              documentation: "",
+              insertText: item,
+              range: range,
+            });
+          });
+        });
+        return keys;
+      };
+      // 注册 applescript
+      monaco.languages.register({
+        id: "applescript",
+      });
+      // 注册自动补全
+      Object.keys(languageCompletions).forEach((language) => {
+        // 防止自动补全被多次注册
+        if (monacoCompletionProviders[language]) return;
+        monaco.languages.registerCompletionItemProvider(language, {
+          provideCompletionItems: function (model, position) {
+            var word = model.getWordUntilPosition(position);
+            var range = {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: word.startColumn,
+              endColumn: word.endColumn,
+            };
+            return {
+              suggestions: createDependencyProposals(
+                range,
+                languageCompletions[language].default,
+                toRaw(that.editor),
+                word
+              ),
+            };
+          },
+        });
+        monacoCompletionProviders[language] = true;
+      });
+    },
+    loadTypes() {
+      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: false,
+      });
+
+      const options = {
+        target: monaco.languages.typescript.ScriptTarget.ES6,
+        allowNonTsExtensions: true,
+        allowJs: true,
+      };
+
+      // webjavascript 使用默认配置
+      if (this.language === "webjavascript") {
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions(
+          options
+        );
+        return;
+      }
+
+      // 其他语言根据语言加载对应的声明文件
+      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+        ...options,
+        lib: [],
+      });
+
+      const files = typeDefinitions[this.language] || [];
+      const declarations = files.map((file) => {
+        try {
+          return require(`!raw-loader!plugins/monaco/types/${file}`).default;
+        } catch (e) {
+          console.warn(`Failed to load type definition: ${file}`, e);
+          return "";
+        }
+      });
+
+      if (declarations.length > 0) {
+        // 添加声明文件
+        monaco.languages.typescript.javascriptDefaults.addExtraLib(
+          declarations.join("\n"),
+          "api.d.ts"
+        );
+      }
+    },
   },
   computed: {
     showPlaceholder() {
       return this.placeholder && (!this.value || this.value.trim() === "");
     },
   },
-};
+});
 </script>
 
 <style scoped>
@@ -246,7 +408,6 @@ export default {
 .placeholder {
   font-size: 14px;
   font-family: sans-serif;
-  color: #535353;
   user-select: none;
   font-style: italic;
   opacity: 0;
@@ -254,10 +415,6 @@ export default {
 }
 
 .code-editor:focus-within .placeholder {
-  opacity: 1;
-}
-
-.body--dark .placeholder {
-  color: #666;
+  opacity: 0.3;
 }
 </style>

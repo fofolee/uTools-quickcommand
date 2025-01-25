@@ -55,3 +55,7 @@ export const SelectListEditor = defineAsyncComponent(() =>
 export const ReturnEditor = defineAsyncComponent(() =>
   import("components/composer/script/ReturnEditor.vue")
 );
+
+export const ScriptEditor = defineAsyncComponent(() =>
+  import("components/composer/script/ScriptEditor.vue")
+);

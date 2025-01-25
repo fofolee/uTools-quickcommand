@@ -311,6 +311,7 @@ export const browserCommands = {
         {
           label: "脚本内容",
           component: "CodeEditor",
+          language: "webjavascript",
           icon: "code",
           width: 12,
           placeholder: "输入JavaScript代码，使用return返回结果",
@@ -382,6 +383,7 @@ export const browserCommands = {
           config: [
             {
               component: "CodeEditor",
+              language: "css",
               icon: "style",
               width: 12,
               placeholder: "输入CSS代码",

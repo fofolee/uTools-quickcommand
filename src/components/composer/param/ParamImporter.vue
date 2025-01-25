@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, defineAsyncComponent } from "vue";
 // 导入OptionEditor之外的通用组件，因为他还要被OptionEditor使用，防止循环引用
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
@@ -22,8 +22,10 @@ import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import ControlInput from "components/composer/common/ControlInput.vue";
 import CheckGroup from "components/composer/common/CheckGroup.vue";
 import CheckButton from "components/composer/common/CheckButton.vue";
-import CodeEditor from "components/composer/common/CodeEditor.vue";
 import { QInput, QSelect, QToggle, QCheckbox } from "quasar";
+const CodeEditor = defineAsyncComponent(() =>
+  import("components/composer/common/CodeEditor.vue")
+);
 
 export default defineComponent({
   name: "ParamInput",
@@ -36,11 +38,11 @@ export default defineComponent({
     ControlInput,
     CheckGroup,
     CheckButton,
-    CodeEditor,
     QToggle,
     QInput,
     QSelect,
     QCheckbox,
+    CodeEditor,
   },
   props: {
     config: {

@@ -655,9 +655,8 @@ interface quickcommandApi {
    * @param options 选项
    * @param options.language 编程语言，不传时则根据操作系统选择cmd或是shell
    * @param options.args 脚本参数
-   * @param options.charset 编码，不传时则根据操作系统及语言选择utf-8或是gbk
-   * @param options.charset.scriptCode 脚本编码
-   * @param options.charset.outputCode 输出编码
+   * @param options.scriptCode 脚本文件编码
+   * @param options.outputCode 命令行输出编码
    * @param options.runInTerminal 终端运行参数，不传则不在终端运行
    * @param options.runInTerminal.dir 运行目录
    * @param options.runInTerminal.windows windows使用的终端，默认wt
@@ -700,10 +699,8 @@ interface quickcommandApi {
         | "csharp"
         | "c";
       args?: string[];
-      charset?: {
-        scriptCode?: string;
-        outputCode?: string;
-      };
+      scriptCode?: string;
+      outputCode?: string;
       runInTerminal?: {
         dir?: string;
         windows?: "wt" | "cmd";
