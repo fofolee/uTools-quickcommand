@@ -36,7 +36,6 @@
         <CommandHead
           :command="localCommand"
           @update:outputVariable="handleOutputVariableUpdate"
-          @toggle-output="handleToggleOutput"
           @toggle-collapse="handleToggleCollapse"
           @run="runCommand"
           @remove="$emit('remove')"
@@ -96,7 +95,6 @@ import VariableInput from "components/composer/common/VariableInput.vue";
 import MultiParams from "components/composer/MultiParams.vue";
 import CommandHead from "components/composer/card/CommandHead.vue";
 import * as CardComponents from "js/composer/cardComponents";
-import { processVariable } from "js/composer/variableManager";
 import { newVarInputVal } from "js/composer/varInputValManager";
 import ControlCommand from "components/composer/control/ControlCommand.vue";
 
@@ -156,24 +154,28 @@ export default defineComponent({
     return { getCurrentExistingVar };
   },
   methods: {
-    handleOutputVariableUpdate(value) {
-      const result = processVariable({
-        value,
-        existingVars: this.getCurrentExistingVar().map((v) => v.name),
-      });
+    handleOutputVariableUpdate(result) {
+      const { outputVariable, mode, functionInfo } = result;
 
-      if (result.warning) {
-        quickcommand.showMessageBox(result.warning, "info");
-      }
+      if (outputVariable.name || outputVariable.details) {
+        this.localCommand.outputVariable = { ...outputVariable };
+        // 如果是回调模式，添加 callbackFunc 属性
+        if (mode === "callback") {
+          this.localCommand.callbackFunc = functionInfo.name;
+        } else {
+          delete this.localCommand.callbackFunc;
+        }
 
-      this.localCommand.outputVariable = result.processedValue;
-    },
-    handleToggleOutput() {
-      this.localCommand.saveOutput = !this.localCommand.saveOutput;
-
-      // 如果关闭输出，清空变量名
-      if (!this.localCommand.saveOutput) {
-        this.localCommand.outputVariable = null;
+        // 如果是回调函数模式，创建新函数
+        if (mode === "callback" && functionInfo) {
+          this.$emit("add-command", {
+            command: functionInfo,
+            type: "function",
+          });
+        }
+      } else {
+        delete this.localCommand.outputVariable;
+        delete this.localCommand.callbackFunc;
       }
     },
     runCommand() {
@@ -182,9 +184,10 @@ export default defineComponent({
       // 创建一个带临时变量的命令副本
       const tempCommand = {
         ...this.localCommand,
-        outputVariable:
-          this.localCommand.outputVariable || `temp_${Date.now()}`,
-        saveOutput: true,
+        outputVariable: {
+          name: `temp_${Date.now()}`,
+          ...this.localCommand.outputVariable,
+        },
       };
       this.$emit("run", tempCommand);
     },
@@ -234,12 +237,10 @@ export default defineComponent({
     },
     handleAddPrint() {
       // 创建一个打印命令
-      if (!this.localCommand.outputVariable) {
-        this.localCommand.outputVariable = `temp_${parseInt(
-          new Date().getTime() / 1000
-        )}`;
-        this.localCommand.saveOutput = true;
-      }
+      this.localCommand.outputVariable = {
+        name: `temp_${Date.now()}`,
+        ...this.localCommand.outputVariable,
+      };
       const printCommand = {
         value: "console.log",
         label: "显示消息",
@@ -250,7 +251,7 @@ export default defineComponent({
             icon: "info",
           },
         ],
-        argvs: [newVarInputVal("var", this.localCommand.outputVariable)],
+        argvs: [newVarInputVal("var", this.localCommand.outputVariable.name)],
       };
       this.$emit("add-command", {
         command: printCommand,

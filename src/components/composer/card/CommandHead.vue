@@ -46,7 +46,6 @@
       :isFirstCommandInChain="isFirstCommandInChain"
       :isLastCommandInChain="isLastCommandInChain"
       @update:outputVariable="$emit('update:outputVariable', $event)"
-      @toggle-output="$emit('toggle-output')"
       @run="$emit('run')"
       @remove="$emit('remove')"
     />
@@ -67,13 +66,7 @@ export default {
       required: true,
     },
   },
-  emits: [
-    "update:outputVariable",
-    "toggle-output",
-    "run",
-    "remove",
-    "toggle-collapse",
-  ],
+  emits: ["update:outputVariable", "run", "remove", "toggle-collapse"],
   computed: {
     contentClass() {
       return {

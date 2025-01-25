@@ -207,8 +207,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.window.getWindowInfo",
           label: "搜索窗口",
           icon: "search",
-          outputVariable: "windowInfo",
-          saveOutput: true,
         },
         {
           value: "quickcomposer.windows.automation.inspect",
@@ -451,7 +449,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.automation.getvalue",
           label: "获取值",
           icon: "content_paste",
-          outputVariable: "elementValue",
         },
         {
           value: "quickcomposer.windows.automation.select",
@@ -621,8 +618,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.sendmessage.listControls",
           label: "获取控件树",
           icon: "account_tree",
-          outputVariable: "controlsTree",
-          saveOutput: true,
           config: [
             {
               component: "OptionEditor",
@@ -810,8 +805,6 @@ export const windowsCommands = {
       label: "剪贴板/文件监控",
       icon: "monitor_heart",
       isAsync: true,
-      outputVariable: "monitorEvent",
-      saveOutput: true,
       showLoading: true,
       subCommands: [
         {
@@ -879,8 +872,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.process.listProcesses",
           label: "进程列表",
           icon: "list",
-          outputVariable: "processList",
-          saveOutput: true,
         },
         {
           value: "quickcomposer.windows.process.killProcess",
@@ -956,8 +947,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.registry.listKeys",
           label: "列出项",
           icon: "list",
-          outputVariable: "registryKeys",
-          saveOutput: true,
         },
         {
           value: "quickcomposer.windows.registry.getValue",
@@ -983,8 +972,6 @@ export const windowsCommands = {
               placeholder: "要获取的值名称",
             },
           ],
-          outputVariable: "registryValue",
-          saveOutput: true,
         },
         {
           value: "quickcomposer.windows.registry.setValue",
@@ -1072,8 +1059,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.service.listServices",
           label: "服务列表",
           icon: "list",
-          outputVariable: "serviceList",
-          saveOutput: true,
         },
         {
           value: "quickcomposer.windows.service.controlService",
@@ -1116,8 +1101,6 @@ export const windowsCommands = {
           value: "quickcomposer.windows.software.listSoftware",
           label: "软件列表",
           icon: "list",
-          outputVariable: "softwareList",
-          saveOutput: true,
         },
         {
           value: "quickcomposer.windows.software.uninstallSoftware",

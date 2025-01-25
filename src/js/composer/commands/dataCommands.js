@@ -355,8 +355,6 @@ export const dataCommands = {
       componentProps: {
         inputLabel: "要处理的文本",
       },
-      outputVariable: "processedText",
-      saveOutput: true,
     },
     {
       value: "quickcomposer.data.buffer.from",

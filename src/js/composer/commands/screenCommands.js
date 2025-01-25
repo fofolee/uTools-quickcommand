@@ -73,8 +73,6 @@ export const screenCommands = {
       value: "utools.getPrimaryDisplay",
       label: "获取显示器信息",
       icon: "monitor",
-      outputVariable: "display",
-      saveOutput: true,
       subCommands: [
         {
           value: "utools.getPrimaryDisplay",
@@ -104,8 +102,6 @@ export const screenCommands = {
       value: "utools.screenToDipPoint",
       label: "物理/DIP坐标转换",
       icon: "transform",
-      outputVariable: "{x,y}",
-      saveOutput: true,
       config: [XY_DICT_EDITOR],
       subCommands: [
         {
@@ -124,8 +120,6 @@ export const screenCommands = {
       value: "utools.screenToDipRect",
       label: "物理/DIP区域转换",
       icon: "transform",
-      outputVariable: "{x,y,width,height}",
-      saveOutput: true,
       config: [RECT_DICT_EDITOR],
       subCommands: [
         {

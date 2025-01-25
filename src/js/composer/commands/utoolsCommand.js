@@ -47,15 +47,11 @@ export const utoolsCommands = {
       value: "utools.isDarkColors",
       label: "是否深色模式",
       icon: "dark_mode",
-      outputVariable: "isDark",
-      saveOutput: true,
     },
     {
       value: "utools.getUser",
       label: "获取用户信息",
       icon: "person",
-      outputVariable: "{avatar,nickname,type}",
-      saveOutput: true,
     },
     {
       value: "utools.redirect",
@@ -163,20 +159,14 @@ export const utoolsCommands = {
       value: "utools.getWindowType",
       label: "获取当前窗口类型",
       icon: "window",
-      outputVariable: "windowType",
-      saveOutput: true,
     },
     {
       value: "utools.getNativeId",
       label: "获取本地ID",
-      outputVariable: "nativeId",
-      saveOutput: true,
     },
     {
       value: "utools.getAppVersion",
       label: "获取uTools版本",
-      outputVariable: "appVersion",
-      saveOutput: true,
     },
   ],
 };

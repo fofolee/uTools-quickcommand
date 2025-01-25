@@ -7,8 +7,6 @@ export const codingCommands = {
       value: "quickcomposer.coding.base64Encode",
       label: "编解码",
       icon: "code",
-      outputVariable: "processedText",
-      saveOutput: true,
       config: [
         {
           label: "要编解码的文本",
@@ -63,22 +61,16 @@ export const codingCommands = {
       value: "quickcomposer.coding.symmetricCrypto",
       label: "对称加解密",
       component: "SymmetricCryptoEditor",
-      outputVariable: "processedText",
-      saveOutput: true,
     },
     {
       value: "quickcomposer.coding.asymmetricCrypto",
       label: "非对称加解密",
       component: "AsymmetricCryptoEditor",
-      outputVariable: "processedText",
-      saveOutput: true,
     },
     {
       value: "quickcomposer.coding.md5Hash",
       label: "哈希计算",
       icon: "enhanced_encryption",
-      outputVariable: "hashValue",
-      saveOutput: true,
       config: [
         {
           label: "要计算哈希的文本",

@@ -293,12 +293,6 @@ export default defineComponent({
         ...parsedAction,
         id: this.getUniqueId(),
       };
-      if (newCommand.saveOutput && newCommand.outputVariable) {
-        newCommand.outputVariable = processVariable({
-          value: newCommand.outputVariable,
-          existingVars: this.getCurrentExistingVar().map((v) => v.name),
-        }).processedValue;
-      }
       return newCommand;
     },
     getUniqueId() {
@@ -351,7 +345,9 @@ export default defineComponent({
           command,
           {
             //没有输出，则不打印
-            code: `if(${command.outputVariable}!==undefined){console.log(${command.outputVariable})}`,
+            code: `if(${command.outputVariable.name}!==undefined){
+              console.log(${command.outputVariable.name})
+            }`,
           },
         ],
       };
@@ -446,24 +442,31 @@ export default defineComponent({
       });
       return newCommands;
     },
-    handleAddCommand({ command, type }, index) {
-      if (type === "chain") {
-        // 如果是复制链式命令
-        const { startIndex, endIndex } = this.getChainIndex(command.chainId);
-        const chainCommands = this.commands.slice(startIndex, endIndex + 1);
-        const newChainCommands = this.copyCommands(chainCommands);
-        const newCommands = [...this.commands];
-        newCommands.splice(endIndex + 1, 0, ...newChainCommands);
-        this.$emit("update:modelValue", newCommands);
+    handleAddCommand(event, index) {
+      const { command, type } = event;
+      if (type === "function") {
+        // 如果是创建新函数的事件，传递给FlowTabs处理
+        this.$emit("action", "addFlow", command);
       } else {
-        // 单个命令的复制逻辑
-        const newCommand = {
-          ...command,
-          id: this.getUniqueId(),
-        };
-        const newCommands = [...this.commands];
-        newCommands.splice(index + 1, 0, newCommand);
-        this.$emit("update:modelValue", newCommands);
+        // 原有的复制命令逻辑保持不变
+        if (type === "chain") {
+          // 如果是复制链式命令
+          const { startIndex, endIndex } = this.getChainIndex(command.chainId);
+          const chainCommands = this.commands.slice(startIndex, endIndex + 1);
+          const newChainCommands = this.copyCommands(chainCommands);
+          const newCommands = [...this.commands];
+          newCommands.splice(endIndex + 1, 0, ...newChainCommands);
+          this.$emit("update:modelValue", newCommands);
+        } else {
+          // 单个命令的复制逻辑
+          const newCommand = {
+            ...command,
+            id: this.getUniqueId(),
+          };
+          const newCommands = [...this.commands];
+          newCommands.splice(index + 1, 0, newCommand);
+          this.$emit("update:modelValue", newCommands);
+        }
       }
     },
     handleToggleChainDisable({ chainId, disabled }) {

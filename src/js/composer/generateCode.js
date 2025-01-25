@@ -2,8 +2,7 @@ export function generateCode(flow) {
   const { commands, name, label, customVariables = [] } = flow;
 
   const params = customVariables.filter((v) => v.type === "param") || [];
-  const manualVars =
-    customVariables.filter((v) => v.type === "var") || [];
+  const manualVars = customVariables.filter((v) => v.type === "var") || [];
   // 检查是否包含异步函数
   const hasAsyncFunction = commands.some((cmd) => cmd.isAsync);
 
@@ -25,15 +24,41 @@ export function generateCode(flow) {
     // 跳过禁用的命令
     if (cmd.disabled) return;
     if (!cmd.code) return;
-    let line = indent;
 
+    let cmdCode = cmd.code;
+    // 处理输出变量
     if (cmd.outputVariable) {
-      line += `let ${cmd.outputVariable} = `;
+      const { name, details } = cmd.outputVariable;
+      if (cmd.isAsync) {
+        if (cmd.callbackFunc) {
+          // 使用回调函数模式
+          cmdCode = `${cmdCode}.then(${cmd.callbackFunc})`;
+        } else {
+          // 使用 await 模式
+          cmdCode = `const ${name} = await ${cmdCode}`;
+          code.push(indent + cmdCode);
+          // 处理详细变量
+          if (details) {
+            Object.entries(details).forEach(([path, varName]) => {
+              code.push(`${indent}let ${varName} = ${name}.${path};`);
+            });
+          }
+          return;
+        }
+      } else {
+        cmdCode = `const ${name} = ${cmdCode}`;
+        code.push(indent + cmdCode);
+        // 处理详细变量
+        if (details) {
+          Object.entries(details).forEach(([path, varName]) => {
+            code.push(`${indent}let ${varName} = ${name}.${path};`);
+          });
+        }
+        return;
+      }
     }
 
-    let awaitCmd = cmd.isAsync ? "await " : "";
-    line += `${awaitCmd} ${cmd.code}`;
-    code.push(line);
+    code.push(indent + cmdCode);
   });
 
   code.push("}"); // Close the function

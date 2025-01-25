@@ -223,16 +223,12 @@ export const simulateCommands = {
       label: "屏幕取色",
       icon: "colorize",
       isAsync: true,
-      outputVariable: "{hex,rgb}",
-      saveOutput: true,
     },
     {
       value: "quickcomposer.simulate.captureScreen",
       label: "屏幕截图",
       icon: "screenshot_monitor",
       isAsync: true,
-      outputVariable: "base64Data",
-      saveOutput: true,
       config: [
         {
           label: "截图范围",

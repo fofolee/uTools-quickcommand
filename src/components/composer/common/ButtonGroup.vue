@@ -9,6 +9,9 @@
       <div
         v-for="opt in options"
         :key="opt.value"
+        :style="{
+          height: height,
+        }"
         :class="['button-item', { active: modelValue === opt.value }]"
         @click="$emit('update:modelValue', opt.value)"
       >
@@ -30,6 +33,10 @@ export default defineComponent({
   props: {
     modelValue: {
       required: true,
+    },
+    height: {
+      type: String,
+      default: "26px",
     },
     options: {
       type: Array,
@@ -67,7 +74,6 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 26px;
   padding: 0 12px;
   font-size: 12px;
   border-radius: 4px;

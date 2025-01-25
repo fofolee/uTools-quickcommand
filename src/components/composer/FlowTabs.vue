@@ -84,7 +84,7 @@
         v-model="showVariableManager"
         :flow="flow"
         :variables="flow.customVariables"
-        @update-flow="updateFlow(flow)"
+        @update-flow="Sub(flow)"
         :is-main-flow="flow.id === 'main'"
         :output-variables="outputVariables"
         class="variable-panel"
@@ -102,7 +102,6 @@ import FlowManager from "components/composer/flow/FlowManager.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { generateUniqSuffix } from "js/composer/variableManager";
-import { parseVariables } from "js/composer/variableManager";
 export default defineComponent({
   name: "FlowTabs",
   components: {
@@ -152,9 +151,10 @@ export default defineComponent({
     const getOutputVariables = (flow = getCurrentFlow()) => {
       const variables = [];
       for (const [index, cmd] of flow.commands.entries()) {
-        if (cmd.saveOutput && cmd.outputVariable) {
+        if (cmd.outputVariable) {
+          const { name, details = {} } = cmd.outputVariable;
           variables.push(
-            ...parseVariables(cmd.outputVariable).map((variable) => ({
+            ...[name, ...Object.values(details)].map((variable) => ({
               name: variable,
               // 提供来源命令的标志信息
               sourceCommand: {
@@ -231,16 +231,43 @@ export default defineComponent({
         )
       );
     },
-    addFlow() {
+    addFlow(options = {}) {
       const id = this.$root.getUniqueId();
-      const name = this.generateFlowName();
-      this.subFlows.push({
+      const name = options.name || this.generateFlowName();
+      const newFlow = {
         id,
         name,
         label: name.replace("func_", "函数"),
         commands: [],
         customVariables: [],
-      });
+      };
+
+      // 添加函数参数
+      if (options.params) {
+        options.params.forEach((param) => {
+          newFlow.customVariables.push({
+            name: param,
+            type: "param",
+          });
+        });
+      }
+
+      // 添加局部变量
+      if (options.localVars && options.localVars.length > 0) {
+        options.localVars.forEach((varInfo) => {
+          newFlow.customVariables.push({
+            name: varInfo.name,
+            type: "var",
+            value: varInfo.value,
+          });
+        });
+      }
+
+      this.subFlows.push(newFlow);
+      if (options.params || options.localVars) {
+        return;
+      }
+
       this.activeTab = id;
       this.$nextTick(() => {
         this.toggleVariableManager();
@@ -252,6 +279,16 @@ export default defineComponent({
         this.subFlows.splice(index, 1);
         this.activeTab = this.flows[0].id;
       }
+    },
+    updateSubFlow(index, payload) {
+      const { params, localVars } = payload;
+      this.subFlows[index].customVariables = [
+        ...params.map((param) => ({
+          name: param,
+          type: "param",
+        })),
+        ...localVars,
+      ];
     },
     generateFlowCode(flow) {
       return generateCode(flow);
@@ -282,6 +319,16 @@ export default defineComponent({
         case "toggleVariableManager":
           this.toggleVariableManager();
           break;
+        case "addFlow":
+          // 处理新函数创建
+          const index = this.subFlows.findIndex((f) => f.name === payload.name);
+          if (index > -1) {
+            // 如果函数已存在，则更新
+            this.updateSubFlow(index, payload);
+          } else {
+            this.addFlow(payload);
+          }
+          break;
         default:
           this.$emit("action", type, this.generateAllFlowCode());
       }
@@ -295,18 +342,22 @@ export default defineComponent({
         ...flow,
         commands: flow.commands.map((cmd) => {
           const cmdCopy = { ...cmd };
-          // 移除不必要的属性
+          // 移除不必要保存的属性
           const uselessProps = [
             "config",
             "code",
             "label",
             "component",
             "subCommands",
+            "outputs",
             "options",
             "defaultValue",
             "icon",
             "width",
             "placeholder",
+            "isAsync",
+            "summary",
+            "type",
           ];
           uselessProps.forEach((prop) => delete cmdCopy[prop]);
           return cmdCopy;
@@ -323,6 +374,7 @@ export default defineComponent({
       const newFlows = flowsData.map((flow) => ({
         ...flow,
         commands: flow.commands.map((cmd) => {
+          // 恢复所有属性
           const command = findCommandByValue(cmd.value);
           return {
             ...command,
@@ -330,7 +382,7 @@ export default defineComponent({
           };
         }),
       }));
-      this.updateFlow(newFlows);
+      this.Sub(newFlows);
       this.activeTab = this.mainFlow.id;
     },
     runFlows(flow) {
@@ -358,7 +410,7 @@ export default defineComponent({
       this.activeTab = flow.id;
       this.toggleVariableManager();
     },
-    updateFlow(flow) {
+    Sub(flow) {
       this.mainFlow = flow[0];
       this.subFlows = flow.slice(1);
     },

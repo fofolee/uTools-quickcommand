@@ -14,15 +14,11 @@ export const userdataCommands = {
           icon: "title",
         },
       ],
-      outputVariable: "userData",
-      saveOutput: true,
     },
     {
       value: "quickcommand.userData.all",
       label: "获取所有用户数据",
       icon: "database",
-      outputVariable: "userDatas",
-      saveOutput: true,
     },
     {
       value: "quickcommand.userData.put",

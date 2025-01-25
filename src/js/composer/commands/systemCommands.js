@@ -72,8 +72,6 @@ export const systemCommands = {
     {
       value: "electron.clipboard.readText",
       label: "读取剪贴板",
-      outputVariable: "clipboardContent",
-      saveOutput: true,
       subCommands: [
         {
           value: "electron.clipboard.readText",
@@ -112,8 +110,6 @@ export const systemCommands = {
     {
       value: "utools.getPath",
       label: "获取系统路径",
-      outputVariable: "systemPath",
-      saveOutput: true,
       defaultValue: "home",
       config: [
         {

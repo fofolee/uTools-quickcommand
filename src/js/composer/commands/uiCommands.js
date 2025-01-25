@@ -169,8 +169,9 @@ export const uiCommands = {
       value: "quickcommand.showConfirmBox",
       label: "确认框",
       isAsync: true,
-      outputVariable: "confirmed",
-      saveOutput: true,
+      outputs: {
+        label: "是否确认",
+      },
       config: [
         {
           label: "提示内容",
@@ -219,8 +220,6 @@ export const uiCommands = {
       value: "quickcommand.showButtonBox",
       label: "按钮组",
       isAsync: true,
-      outputVariable: "{id,text}",
-      saveOutput: true,
       width: 12,
       config: [
         {
@@ -256,8 +255,6 @@ export const uiCommands = {
       value: "quickcommand.showInputBox",
       label: "输入框",
       isAsync: true,
-      outputVariable: "[inputValue1]",
-      saveOutput: true,
       config: [
         {
           label: "输入框",
@@ -302,8 +299,6 @@ export const uiCommands = {
       value: "quickcommand.showTextArea",
       label: "文本框",
       isAsync: true,
-      outputVariable: "textareaValue",
-      saveOutput: true,
       config: [
         {
           label: "文本框占位符",
@@ -372,8 +367,6 @@ export const uiCommands = {
     {
       value: "utools.showOpenDialog",
       label: "文件选择框",
-      outputVariable: "filePaths",
-      saveOutput: true,
       subCommands: [
         {
           value: "utools.showOpenDialog",

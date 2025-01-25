@@ -6,39 +6,18 @@
         class="output-section row items-center no-wrap"
         v-if="!isControlFlow"
       >
-        <!-- 变量输入框 -->
-        <q-input
-          v-if="command.saveOutput"
-          v-model="inputValue"
-          @focus="sourceValue = inputValue"
-          @blur="handleBlur"
-          outlined
-          placeholder="变量名"
-          class="variable-input"
-          align="center"
-        >
-        </q-input>
-        <!-- 保存变量按钮 -->
+        <!-- 输出变量按钮 -->
         <q-icon
-          :name="command.saveOutput ? 'data_object' : 'output'"
+          name="output"
           v-if="!command.neverHasOutput"
           class="output-btn"
-          @click="$emit('toggle-output')"
+          :color="command.outputVariable ? 'primary' : ''"
+          @click="showOutputEditor = true"
         >
           <q-tooltip>
-            <div class="text-body2">
-              {{
-                command.saveOutput
-                  ? "当前命令的输出将保存到变量中"
-                  : "点击将此命令的输出保存为变量以供后续使用"
-              }}
-            </div>
+            <div class="text-body2">配置命令输出变量</div>
             <div class="text-caption text-grey-5">
-              {{
-                command.saveOutput
-                  ? "点击取消输出到变量"
-                  : "保存后可在其他命令中使用此变量"
-              }}
+              将命令的输出保存为变量以供后续使用
             </div>
           </q-tooltip>
         </q-icon>
@@ -113,12 +92,24 @@
         </q-icon>
       </div>
     </div>
+
+    <!-- 输出编辑器 -->
+    <OutputEditor
+      v-model="showOutputEditor"
+      :command="command"
+      @confirm="$emit('update:outputVariable', $event)"
+    />
   </div>
 </template>
 
 <script>
+import OutputEditor from "./OutputEditor.vue";
+
 export default {
   name: "CommandButtons",
+  components: {
+    OutputEditor,
+  },
   props: {
     command: {
       type: Object,
@@ -143,18 +134,11 @@ export default {
   },
   data() {
     return {
-      inputValue: this.command.outputVariable || "",
-      sourceValue: "",
+      showOutputEditor: false,
     };
-  },
-  watch: {
-    "command.outputVariable"(newVal) {
-      this.inputValue = newVal || "";
-    },
   },
   emits: [
     "update:outputVariable",
-    "toggle-output",
     "run",
     "remove",
     "toggle-collapse",
@@ -162,17 +146,6 @@ export default {
     "toggle-disable",
     "add-print",
   ],
-  methods: {
-    handleBlur() {
-      // 如果输入框的值和源值相同，则不更新
-      if (
-        this.inputValue.replace(/[ ]/g, "") ===
-        this.sourceValue.replace(/[ ]/g, "")
-      )
-        return;
-      this.$emit("update:outputVariable", this.inputValue);
-    },
-  },
 };
 </script>
 
@@ -185,35 +158,7 @@ export default {
 
 /* 输出部分样式 */
 .output-section {
-  /* margin-right: 8px; */
   gap: 8px;
-}
-
-.variable-input {
-  width: 120px;
-}
-
-.output-section :deep(.q-field) {
-  border-radius: 4px;
-}
-
-.output-section :deep(.q-field__control) {
-  height: 20px;
-  min-height: 20px;
-  padding: 0 4px;
-}
-
-.output-section :deep(.q-field__marginal) {
-  height: 20px;
-  width: 24px;
-  min-width: 24px;
-}
-
-.output-section :deep(.q-field__native) {
-  padding: 0;
-  font-size: 12px;
-  min-height: 20px;
-  text-align: center;
 }
 
 /* 按钮样式 */
@@ -251,14 +196,6 @@ export default {
 }
 
 /* 暗色模式适配 */
-.body--dark .output-section :deep(.q-field) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.body--dark .output-section :deep(.q-field--focused) {
-  background: #1d1d1d;
-}
-
 .body--dark .output-btn {
   border-color: rgba(255, 255, 255, 0.1);
 }
