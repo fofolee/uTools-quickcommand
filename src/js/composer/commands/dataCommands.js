@@ -103,7 +103,7 @@ export const dataCommands = {
           ],
         },
         {
-          value: "quickcomposer.data.string.case",
+          value: "quickcomposer.data.string.changeCase",
           label: "大小写转换",
           icon: "text_fields",
           config: [

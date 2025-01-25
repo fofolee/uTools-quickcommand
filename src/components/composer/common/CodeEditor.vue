@@ -38,6 +38,7 @@ const typeDefinitions = {
     "quickcommand.api.d.ts",
     "utools.api.d.ts",
     "shortcode.api.d.ts",
+    "quickcomposer.d.ts",
   ],
 };
 

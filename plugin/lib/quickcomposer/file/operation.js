@@ -84,7 +84,7 @@ async function write(config) {
 /**
  * 文件删除操作
  */
-async function delete_(config) {
+async function remove(config) {
   const { filePath, recursive, force, targetType } = config;
 
   // 检查文件是否存在
@@ -338,7 +338,7 @@ async function operation(config) {
     case "stat":
       return await stat(config);
     case "delete":
-      return await delete_(config);
+      return await remove(config);
     case "manage":
       return await manage(config);
     default:
@@ -351,7 +351,7 @@ module.exports = {
   write,
   list,
   stat,
-  delete: delete_,
+  remove,
   manage,
   operation,
 };

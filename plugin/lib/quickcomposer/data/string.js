@@ -27,7 +27,7 @@ const string = {
   },
 
   // 大小写转换
-  case: function (text, mode = "upper") {
+  changeCase: function (text, mode = "upper") {
     switch (mode) {
       case "upper":
         return text.toUpperCase();
