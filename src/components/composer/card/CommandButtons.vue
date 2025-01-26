@@ -19,7 +19,20 @@
           <q-tooltip>
             <div class="text-body2">输出配置</div>
             <div class="text-caption text-grey-5">
-              配置输出变量、是否等待执行完毕等
+              <div class="row items-center">
+                本命令配置输出变量数
+                <q-badge color="primary" class="output-badge">
+                  {{ outputLength }}
+                </q-badge>
+              </div>
+              <div class="row items-center">
+                {{ isThenCommand ? "不用" : "需要" }}等待命令运行完毕
+                <q-badge color="primary" class="output-badge">
+                  <q-icon
+                    :name="isThenCommand ? 'update_disabled' : 'schedule'"
+                  />
+                </q-badge>
+              </div>
             </div>
           </q-tooltip>
         </q-icon>
@@ -139,6 +152,17 @@ export default {
       showOutputEditor: false,
     };
   },
+  computed: {
+    isThenCommand() {
+      return this.command.asyncMode === "then";
+    },
+    outputLength() {
+      return (
+        Object.keys(this.command.outputVariable?.details || {}).length +
+        (this.command.outputVariable?.name ? 1 : 0)
+      );
+    },
+  },
   emits: [
     "update:outputVariable",
     "run",
@@ -224,5 +248,15 @@ export default {
 .more-menu :deep(.q-item__section--avatar) {
   min-width: 24px;
   padding: 0 4px;
+}
+
+.output-badge {
+  font-size: 10px;
+  width: 13px;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
 }
 </style>

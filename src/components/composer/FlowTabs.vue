@@ -154,16 +154,18 @@ export default defineComponent({
         if (cmd.outputVariable && cmd.asyncMode !== "then") {
           const { name, details = {} } = cmd.outputVariable;
           variables.push(
-            ...[name, ...Object.values(details)].map((variable) => ({
-              name: variable,
-              // 提供来源命令的标志信息
-              sourceCommand: {
-                label: cmd.label,
-                id: cmd.id,
-                index,
-              },
-              type: "output",
-            }))
+            ...[name, ...Object.values(details)]
+              .filter((v) => v)
+              .map((variable) => ({
+                name: variable,
+                // 提供来源命令的标志信息
+                sourceCommand: {
+                  label: cmd.label,
+                  id: cmd.id,
+                  index,
+                },
+                type: "output",
+              }))
           );
         }
       }
@@ -274,10 +276,7 @@ export default defineComponent({
         (v) => v.type === "var"
       );
       // 完全更新参数
-      this.subFlows[index].customVariables = [
-        ...newParams,
-        ...localVars,
-      ];
+      this.subFlows[index].customVariables = [...newParams, ...localVars];
     },
     generateFlowCode(flow) {
       return generateCode(flow);
