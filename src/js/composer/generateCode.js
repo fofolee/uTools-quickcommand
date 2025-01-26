@@ -10,6 +10,9 @@ export function generateCode(flow) {
       return `${varName} = ${varValue};`;
     }
     usedVarNames[funcName].push(varName);
+    if (!varValue) {
+      return `let ${varName};`;
+    }
     return `let ${varName} = ${varValue};`;
   };
 

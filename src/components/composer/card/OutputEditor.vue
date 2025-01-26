@@ -4,174 +4,82 @@
       <div class="row justify-center q-px-sm q-pt-md">
         {{ commandName }}
       </div>
-      <div class="simple-output q-px-sm">
-        <q-badge color="primary" class="q-mb-sm q-pa-xs">完整结果</q-badge>
-        <q-input v-model="simpleOutputVar" filled dense autofocus>
-          <template v-slot:prepend>
-            <div class="variable-label">
-              {{ currentOutputs?.label || "输出变量名" }}
-            </div>
-          </template>
-        </q-input>
-      </div>
-      <div v-if="currentOutputs?.structure">
-        <div class="row items-center">
-          <q-badge color="primary" class="q-ma-sm q-pa-xs">详细输出</q-badge>
-          <div
-            v-if="Array.isArray(currentOutputs.structure)"
-            class="text-caption text-grey-5"
-          >
-            数组中第一个元素
-          </div>
-        </div>
-        <q-scroll-area
-          style="height: 200px"
-          :thumb-style="{
-            width: '2px',
-          }"
-        >
-          <div class="detail-output column q-col-gutter-sm q-px-sm">
-            <!-- 处理数组类型的structure -->
-            <template v-if="Array.isArray(currentOutputs.structure)">
-              <div
-                v-for="(output, key) in currentOutputs.structure[0]"
-                :key="key"
-              >
-                <!-- 如果是嵌套对象 -->
-                <div v-if="hasNestedFields(output)">
-                  <BorderLabel
-                    :label="output.label || key"
-                    :model-value="false"
-                  >
-                    <div class="column q-col-gutter-sm">
-                      <div
-                        v-for="(subOutput, subKey) in getNestedFields(output)"
-                        :key="subKey"
-                      >
-                        <div class="output-item">
-                          <q-input
-                            v-model="outputVars[`[0].${key}.${subKey}`]"
-                            filled
-                            dense
-                            autofocus
-                            class="col"
-                            :placeholder="subOutput.placeholder"
-                          >
-                            <template v-slot:prepend>
-                              <div class="variable-label">
-                                {{ subOutput.label }}
-                              </div>
-                            </template>
-                          </q-input>
-                        </div>
-                      </div>
-                    </div>
-                  </BorderLabel>
-                </div>
-                <!-- 如果是普通字段 -->
-                <div v-else class="output-item">
-                  <q-input
-                    v-model="outputVars[`[0].${key}`]"
-                    filled
-                    dense
-                    class="col"
-                    :placeholder="output.placeholder"
-                    autofocus
-                  >
-                    <template v-slot:prepend>
-                      <div class="variable-label">{{ output.label }}</div>
-                    </template>
-                  </q-input>
-                </div>
-              </div>
-            </template>
-            <!-- 处理对象类型的structure -->
-            <template v-else>
-              <div
-                v-for="(output, key) in currentOutputs?.structure"
-                :key="key"
-              >
-                <!-- 如果是嵌套对象 -->
-                <div v-if="hasNestedFields(output)">
-                  <BorderLabel
-                    :label="output.label || key"
-                    :model-value="false"
-                  >
-                    <div class="column q-col-gutter-sm">
-                      <div
-                        v-for="(subOutput, subKey) in getNestedFields(output)"
-                        :key="subKey"
-                      >
-                        <div class="output-item">
-                          <q-input
-                            v-model="outputVars[`${key}.${subKey}`]"
-                            filled
-                            dense
-                            autofocus
-                            class="col"
-                            :placeholder="subOutput.placeholder"
-                          >
-                            <template v-slot:prepend>
-                              <div class="variable-label">
-                                {{ subOutput.label }}
-                              </div>
-                            </template>
-                          </q-input>
-                        </div>
-                      </div>
-                    </div>
-                  </BorderLabel>
-                </div>
-                <!-- 如果是普通字段 -->
-                <div v-else class="output-item">
-                  <q-input
-                    v-model="outputVars[key]"
-                    filled
-                    dense
-                    class="col"
-                    :placeholder="output.placeholder"
-                    autofocus
-                  >
-                    <template v-slot:prepend>
-                      <div class="variable-label">{{ output.label }}</div>
-                    </template>
-                  </q-input>
-                </div>
-              </div>
-            </template>
-          </div>
-        </q-scroll-area>
-      </div>
 
-      <div v-if="!!asyncMode">
-        <q-badge color="primary" class="q-ma-sm q-pa-xs">运行模式</q-badge>
-        <div class="row q-col-gutter-sm q-px-sm">
-          <q-select
-            v-model="asyncMode"
-            :options="asyncModeOptions"
-            filled
-            dense
-            autofocus
-            emit-value
-            map-options
-            class="col"
+      <!-- 完整结果部分 -->
+      <SectionBlock title="完整结果">
+        <OutputField
+          v-model="simpleOutputVar"
+          :label="currentOutputs?.label || '输出变量名'"
+          autofocus
+          class="q-px-sm"
+        />
+      </SectionBlock>
+
+      <!-- 详细输出部分 -->
+      <template v-if="currentOutputs?.structure">
+        <SectionBlock
+          title="详细输出"
+          :subtitle="
+            Array.isArray(currentOutputs.structure) ? '数组中第一个元素' : ''
+          "
+        >
+          <q-scroll-area
+            style="height: 200px"
+            :thumb-style="{
+              width: '2px',
+            }"
           >
-          </q-select>
-          <q-input
-            v-model="callbackFunc"
-            filled
-            dense
-            autofocus
-            class="col-8"
-            v-if="asyncMode === 'then'"
-            placeholder="新函数名则自动创建"
-          >
-            <template v-slot:prepend>
-              <div class="variable-label">回调函数</div>
+            <div class="detail-output column q-col-gutter-sm q-px-sm">
+              <template v-if="Array.isArray(currentOutputs.structure)">
+                <template
+                  v-for="(output, key) in currentOutputs.structure[0]"
+                  :key="key"
+                >
+                  <OutputStructure
+                    :output="output"
+                    :output-key="key"
+                    :is-array="true"
+                    v-model="outputVars"
+                  />
+                </template>
+              </template>
+              <template v-else>
+                <template
+                  v-for="(output, key) in currentOutputs?.structure"
+                  :key="key"
+                >
+                  <OutputStructure
+                    :output="output"
+                    :output-key="key"
+                    v-model="outputVars"
+                  />
+                </template>
+              </template>
+            </div>
+          </q-scroll-area>
+        </SectionBlock>
+      </template>
+
+      <!-- 运行模式部分 -->
+      <template v-if="!!asyncMode">
+        <SectionBlock title="运行模式">
+          <div class="row q-col-gutter-sm q-px-sm">
+            <OutputField
+              v-model="asyncMode"
+              class="col"
+              :options="asyncModeOptions"
+            />
+            <template v-if="asyncMode === 'then'">
+              <OutputField
+                v-model="callbackFunc"
+                label="回调函数"
+                placeholder="新函数名则自动创建"
+                class="col-8"
+              />
             </template>
-          </q-input>
-        </div>
-      </div>
+          </div>
+        </SectionBlock>
+      </template>
 
       <div class="row justify-end q-px-sm q-py-sm">
         <q-btn flat label="取消" color="primary" v-close-popup />
@@ -183,12 +91,17 @@
 
 <script>
 import { defineComponent } from "vue";
-import BorderLabel from "components/composer/common/BorderLabel.vue";
+import { validateVariableName } from "js/common/variableValidator";
+import OutputField from "./output/OutputField.vue";
+import SectionBlock from "./output/SectionBlock.vue";
+import OutputStructure from "./output/OutputStructure.vue";
 
 export default defineComponent({
   name: "OutputEditor",
   components: {
-    BorderLabel,
+    OutputField,
+    SectionBlock,
+    OutputStructure,
   },
   props: {
     modelValue: {
@@ -263,39 +176,6 @@ export default defineComponent({
     },
   },
   methods: {
-    hasNestedFields(output) {
-      if (!output) return false;
-      return Object.keys(output).some(
-        (key) => key !== "label" && key !== "placeholder"
-      );
-    },
-    /**
-     * 只处理一层嵌套，手动在配置文件中控制outputs结构不要太复杂
-     * 第二层嵌套只嵌套对象，不嵌套数组
-     * 最复杂的情况：
-     * outputs: {
-     *   label: "测试",
-     *   structure: [
-     *     {
-     *       position: { label: "位置", {
-     *         x: { label: "X坐标" },
-     *         y: { label: "Y坐标" }
-     *       }
-     *     }
-     *   ]
-     * }
-     *
-     *
-     */
-    getNestedFields(output) {
-      const fields = {};
-      Object.entries(output).forEach(([key, value]) => {
-        if (key !== "label" && key !== "placeholder") {
-          fields[key] = value;
-        }
-      });
-      return fields;
-    },
     initOutputVars(outputVariable) {
       // 初始化完整输出变量名
       if (!outputVariable) return;
@@ -338,6 +218,25 @@ export default defineComponent({
         }
       }
 
+      // 检查变量名是否合法
+      const varNames = [
+        outputVariable.name,
+        ...Object.keys(outputVariable.details || {}),
+        result.callbackFunc,
+      ].filter(Boolean);
+
+      const invalidVars = varNames.filter((name) => {
+        return !validateVariableName(name).isValid;
+      });
+
+      if (invalidVars.length > 0) {
+        quickcommand.showMessageBox(
+          `变量名/函数名 ${invalidVars.join(", ")} 包含无效字符，请修改`,
+          "error"
+        );
+        return;
+      }
+
       this.$emit("confirm", result);
       this.isOpen = false;
     },
@@ -348,45 +247,5 @@ export default defineComponent({
 <style scoped>
 .output-editor {
   width: 450px;
-}
-
-.output-item {
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.output-item:hover {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.variable-label {
-  font-size: 12px;
-  border-radius: 4px;
-  padding-right: 10px;
-  text-align: center;
-}
-
-.body--dark .output-item:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.output-editor :deep(.q-field--filled .q-field__control),
-.output-editor :deep(.q-field--filled .q-field__control > *),
-.output-editor :deep(.q-field--filled .q-field__native) {
-  max-height: 36px;
-  min-height: 36px;
-  border-radius: 5px;
-  font-size: 12px;
-}
-
-/* 去除filled输入框边框 */
-.output-editor :deep(.q-field__control:before) {
-  border: none;
-}
-
-/* 去除filled输入框下划线 */
-.output-editor :deep(.q-field__control:after) {
-  height: 0;
-  border-bottom: none;
 }
 </style>

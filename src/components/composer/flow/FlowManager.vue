@@ -35,6 +35,7 @@
                 dense
                 borderless
                 class="var-input"
+                @blur="validateVariable(localFlow)"
               >
                 <template #prepend>
                   <div class="var-label">标识</div>
@@ -76,8 +77,8 @@
               dense
               borderless
               class="var-input"
-              @blur="validateVariable(variable, 'param')"
-              @keydown.enter="validateVariable(variable, 'param')"
+              @blur="validateVariable(variable)"
+              @keydown.enter="validateVariable(variable)"
             />
             <q-btn
               flat
@@ -125,8 +126,8 @@
                 borderless
                 class="var-input"
                 placeholder="变量名"
-                @blur="validateVariable(variable, 'var')"
-                @keydown.enter="validateVariable(variable, 'var')"
+                @blur="validateVariable(variable)"
+                @keydown.enter="validateVariable(variable)"
               />
               <q-separator vertical />
               <q-input
@@ -174,6 +175,7 @@
 
 <script>
 import { defineComponent } from "vue";
+import { validateVariableName } from "js/common/variableValidator";
 
 export default defineComponent({
   name: "FlowManager",
@@ -242,14 +244,14 @@ export default defineComponent({
         this.localFlow.customVariables = newVars;
       }
     },
-    validateVariable(variable, type) {
-      if (!variable.name) {
-        const prefix = type === "param" ? "param_" : "var_";
-        const count = this.localFlow.customVariables.filter(
-          (v) => v.type === type
-        ).length;
-        variable.name = prefix + count;
+    validateVariable(variable) {
+      if (validateVariableName(variable.name).isValid) {
+        return;
       }
+      quickcommand.showMessageBox(
+        `变量/函数名 ${variable.name} 包含无效字符，请修改`,
+        "error"
+      );
     },
   },
 });
