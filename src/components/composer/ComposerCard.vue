@@ -192,14 +192,26 @@ export default defineComponent({
       if (!this.localCommand.code)
         return quickcommand.showMessageBox("请检查参数是否正确", "info");
       // 创建一个带临时变量的命令副本
+      const outputVariable = this.getAvailableOutputVariable();
       const tempCommand = {
         ...this.localCommand,
-        outputVariable: {
-          name: `temp_${Date.now()}`,
-          ...this.localCommand.outputVariable,
-        },
+        outputVariable,
       };
-      this.$emit("run", tempCommand);
+      const consoleLogVars =
+        this.getAvailableOutputVariableName(outputVariable);
+      const tempFlow = {
+        name: "main",
+        commands: [
+          tempCommand,
+          {
+            //没有输出，则不打印
+            code: `if(${consoleLogVars}!==undefined){
+              console.log(${consoleLogVars})
+            }`,
+          },
+        ],
+      };
+      this.$emit("run", tempFlow);
     },
     handleToggleCollapse() {
       if (this.localCommand.isControlFlow) {
@@ -245,13 +257,33 @@ export default defineComponent({
         this.localCommand.disabled = !this.localCommand.disabled;
       }
     },
+    getAvailableOutputVariable() {
+      let outputVariable = this.localCommand.outputVariable || {};
+      if (!outputVariable.name && !outputVariable.details) {
+        outputVariable.name = `temp_${Date.now()}`;
+      }
+      return outputVariable;
+    },
+    getAvailableOutputVariableName(outputVariable) {
+      const availableVars = [
+        outputVariable.name,
+        ...Object.values(outputVariable.details || {}),
+      ].filter((v) => v);
+
+      const finalVars =
+        availableVars.length > 1
+          ? `{ ${availableVars.join(", ")} }`
+          : availableVars[0];
+      return finalVars;
+    },
     handleAddPrint() {
       // 创建一个打印命令
-      this.localCommand.outputVariable = {
-        name: `temp_${Date.now()}`,
-        ...this.localCommand.outputVariable,
-      };
-      const printCommand = {
+      const outputVariable = this.getAvailableOutputVariable();
+      this.localCommand.outputVariable = outputVariable;
+      const consoleLogVars =
+        this.getAvailableOutputVariableName(outputVariable);
+
+      const consoleLogCommand = {
         value: "console.log",
         label: "显示消息",
         config: [
@@ -261,10 +293,10 @@ export default defineComponent({
             icon: "info",
           },
         ],
-        argvs: [newVarInputVal("var", this.localCommand.outputVariable.name)],
+        argvs: [newVarInputVal("var", consoleLogVars)],
       };
       this.$emit("add-command", {
-        command: printCommand,
+        command: consoleLogCommand,
         type: "single",
       });
     },

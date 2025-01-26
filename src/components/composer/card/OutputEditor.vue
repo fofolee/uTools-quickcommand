@@ -189,9 +189,11 @@ export default defineComponent({
       }
     },
     handleConfirm() {
-      const outputVariable = {
-        name: this.simpleOutputVar,
-      };
+      const outputVariable = {};
+
+      if (this.simpleOutputVar) {
+        outputVariable.name = this.simpleOutputVar;
+      }
 
       if (this.currentOutputs) {
         const flatVars = {};

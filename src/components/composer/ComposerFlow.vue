@@ -39,10 +39,10 @@
                   v-model="commands[index]"
                   :command-index="index"
                   @remove="removeCommand(index)"
-                  @run="handleRunCommand"
+                  @run="$emit('action', 'run', $event)"
                   @add-branch="addBranch"
-                  @toggle-collapse="(event) => handleChainCollapse(event)"
-                  @add-command="(event) => handleAddCommand(event, index)"
+                  @toggle-collapse="handleChainCollapse"
+                  @add-command="handleAddCommand($event, index)"
                   @toggle-chain-disable="handleToggleChainDisable"
                 />
               </div>
@@ -335,23 +335,6 @@ export default defineComponent({
         // 如果不是链式命令的起始命令，直接删除
         this.removeRangeCommand(index);
       }
-    },
-    handleRunCommand(command) {
-      // 创建一个临时的命令流程
-      const tempFlow = {
-        name: "main",
-        commands: [
-          command,
-          {
-            //没有输出，则不打印
-            code: `if(${command.outputVariable.name}!==undefined){
-              console.log(${command.outputVariable.name})
-            }`,
-          },
-        ],
-      };
-      // 触发运行事件
-      this.$emit("action", "run", tempFlow);
     },
     // 查找不可重复出现的分支
     findUniqueBranch(chainId, commandType) {
