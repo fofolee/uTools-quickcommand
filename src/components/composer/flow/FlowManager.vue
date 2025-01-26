@@ -160,7 +160,7 @@
         </div>
         <div class="var-list">
           <div
-            v-for="(variable, index) in localFlow.outputVariables"
+            v-for="(variable, index) in outputVariables"
             :key="index"
             class="var-item output-var"
           >
@@ -197,6 +197,11 @@ export default defineComponent({
     flow: {
       type: Object,
       required: true,
+    },
+    outputVariables: {
+      type: Array,
+      required: true,
+      default: () => [],
     },
   },
   emits: ["update:modelValue", "update:flow"],

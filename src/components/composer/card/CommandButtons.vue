@@ -10,8 +10,10 @@
         <q-icon
           name="output"
           v-if="!command.neverHasOutput"
-          class="output-btn"
-          :color="command.outputVariable ? 'primary' : ''"
+          :class="[
+            'output-btn',
+            command.outputVariable ? 'output-btn-active' : '',
+          ]"
           @click="showOutputEditor = true"
         >
           <q-tooltip>
@@ -193,6 +195,11 @@ export default {
 
 .output-btn.q-btn--active {
   color: var(--q-primary);
+}
+
+.output-btn-active {
+  color: var(--q-primary);
+  opacity: 1;
 }
 
 /* 暗色模式适配 */

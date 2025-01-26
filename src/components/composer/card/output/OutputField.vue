@@ -12,6 +12,14 @@
     <template v-slot:prepend>
       <div class="variable-label">{{ label }}</div>
     </template>
+    <template v-slot:append>
+      <VariableList
+        :show-variable-list="showVariableList"
+        :show-function-list="showFunctionList"
+        @emit-value="updateValBySelect"
+        class="variable-list-btn"
+      />
+    </template>
   </q-input>
   <q-select
     v-else
@@ -28,8 +36,12 @@
 
 <script>
 import { defineComponent } from "vue";
+import VariableList from "components/composer/common/varinput/VariableList.vue";
 
 export default defineComponent({
+  components: {
+    VariableList,
+  },
   name: "OutputField",
   props: {
     modelValue: {
@@ -51,8 +63,21 @@ export default defineComponent({
       type: null,
       default: null,
     },
+    showVariableList: {
+      type: Boolean,
+      default: false,
+    },
+    showFunctionList: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["update:modelValue"],
+  methods: {
+    updateValBySelect(_type, val) {
+      this.$emit("update:modelValue", val);
+    },
+  },
 });
 </script>
 
@@ -73,6 +98,14 @@ export default defineComponent({
   font-size: 12px;
 }
 
+.output-field:not(.q-select) :deep(.q-field__control) {
+  padding-right: 0;
+}
+
+.output-field.q-select :deep(.q-field__append) {
+  font-size: 16px;
+}
+
 /* 去除filled输入框边框 */
 .output-field :deep(.q-field__control:before) {
   border: none;
@@ -82,5 +115,19 @@ export default defineComponent({
 .output-field :deep(.q-field__control:after) {
   height: 0;
   border-bottom: none;
+}
+
+.variable-list-btn {
+  padding: 0 12px;
+}
+
+/* 去掉下拉按钮的焦点效果 */
+.variable-list-btn :deep(.q-focus-helper) {
+  display: none !important;
+}
+
+/* 移除波纹效果 */
+.variable-list-btn :deep(.q-ripple) {
+  display: none;
 }
 </style>

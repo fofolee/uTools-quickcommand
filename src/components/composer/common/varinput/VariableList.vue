@@ -4,12 +4,13 @@
     dense
     stretch
     size="sm"
-    class="variable-dropdown"
+    :dropdown-icon="icon"
+    :no-icon-animation="icon !== 'arrow_drop_down'"
     @click="({ variables, functions } = getAvailableVariablesAndFunctions())"
   >
     <q-list class="variable-list">
       <template v-if="variables.length || functions.length">
-        <div v-if="variables.length">
+        <div v-if="variables.length && showVariableList">
           <q-item-label header class="variable-label">
             <q-separator class="separator-left" />
             <div class="label-content">
@@ -35,7 +36,7 @@
             </q-item-section>
           </q-item>
         </div>
-        <div v-if="functions.length">
+        <div v-if="functions.length && showFunctionList">
           <q-item-label header class="variable-label">
             <q-separator class="separator-left" />
             <div class="label-content">
@@ -143,13 +144,15 @@ export default defineComponent({
 
     const getAvailableVariables = () => {
       const variables = getCurrentVariables();
-      return variables.filter((variable) =>
+      const usableVariables = variables.filter((variable) =>
         // 输出变量只显示在当前命令之前的
         variable.type === "output"
           ? variable.sourceCommand.index < commandIndex.value
           : // 参数和局部变量显示所有
             true
       );
+      // 去除名称重复的变量，只保留最新的
+      return [...new Map(usableVariables.map((v) => [v.name, v])).values()];
     };
 
     const getCurrentFunctions = inject("getCurrentFunctions");
@@ -186,6 +189,20 @@ export default defineComponent({
           .join(", ") +
         ")"
       );
+    },
+  },
+  props: {
+    showVariableList: {
+      type: Boolean,
+      default: true,
+    },
+    showFunctionList: {
+      type: Boolean,
+      default: true,
+    },
+    icon: {
+      type: String,
+      default: "arrow_drop_down",
     },
   },
 });
@@ -291,15 +308,6 @@ export default defineComponent({
 .item {
   padding: 2px 0;
   color: var(--q-grey-7);
-}
-
-/* 暗色模式 */
-.variable-dropdown {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.body--dark .variable-dropdown {
-  background: rgba(255, 255, 255, 0.02);
 }
 
 .body--dark .variable-item:hover {

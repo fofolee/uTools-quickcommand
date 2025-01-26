@@ -1,15 +1,12 @@
 export function generateCode(flow) {
-  let usedVarNames = {};
+  let usedVarNames = [];
 
   // 获取变量赋值代码，如果变量已经存在，则直接赋值，否则声明并赋值
-  const getVarAssignCode = (varName, varValue, funcName) => {
-    if (!usedVarNames[funcName]) {
-      usedVarNames[funcName] = [];
-    }
-    if (usedVarNames[funcName].includes(varName)) {
+  const getVarAssignCode = (varName, varValue) => {
+    if (usedVarNames.includes(varName)) {
       return `${varName} = ${varValue};`;
     }
-    usedVarNames[funcName].push(varName);
+    usedVarNames.push(varName);
     if (!varValue) {
       return `let ${varName};`;
     }
@@ -42,7 +39,7 @@ export function generateCode(flow) {
 
   // 局部变量赋值
   manualVars.forEach((v) => {
-    code.push(indent + getVarAssignCode(v.name, v.value, flow.name));
+    code.push(indent + getVarAssignCode(v.name, v.value));
   });
 
   commands.forEach((cmd) => {
@@ -94,7 +91,8 @@ export function generateCode(flow) {
             code.push(
               `${indent}${getVarAssignCode(
                 varName,
-                getVarByPath(promiseName, path)
+                getVarByPath(promiseName, path),
+                flow.name
               )}`
             );
           });
@@ -107,7 +105,11 @@ export function generateCode(flow) {
         if (details) {
           Object.entries(details).forEach(([path, varName]) => {
             code.push(
-              `${indent}${getVarAssignCode(varName, getVarByPath(name, path))}`
+              `${indent}${getVarAssignCode(
+                varName,
+                getVarByPath(name, path),
+                flow.name
+              )}`
             );
           });
         }

@@ -47,7 +47,12 @@
         class="prepend-btn"
       />
       <!-- 变量选择下拉 -->
-      <VariableList @emit-value="updateValBySelect" class="prepend-btn" />
+      <VariableList
+        @emit-value="updateValBySelect"
+        :show-variable-list="true"
+        :show-function-list="true"
+        class="prepend-btn variable-list-btn"
+      />
     </template>
     <template v-slot:prepend>
       <q-icon v-if="!noIcon" :name="icon || 'code'" />
@@ -293,5 +298,14 @@ export default defineComponent({
   transform: translateX(0);
   margin-left: 5px;
   transition: all 0.6s ease;
+}
+
+/* 暗色模式 */
+.variable-list-btn {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.body--dark .variable-list-btn {
+  background: rgba(255, 255, 255, 0.02);
 }
 </style>

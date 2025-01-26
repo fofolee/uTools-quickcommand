@@ -11,6 +11,7 @@
           v-model="simpleOutputVar"
           :label="currentOutputs?.label || '输出变量名'"
           autofocus
+          :show-variable-list="true"
           class="q-px-sm"
         />
       </SectionBlock>
@@ -75,6 +76,7 @@
                 label="回调函数"
                 placeholder="新函数名则自动创建"
                 class="col-8"
+                :show-function-list="true"
               />
             </template>
           </div>
