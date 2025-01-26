@@ -60,6 +60,8 @@ export const browserCommands = {
                 },
                 useSingleUserDataDir: {
                   label: "使用独立用户数据目录",
+                  placeholder:
+                    "⚠️注意：不勾选时，会自动关闭所有已打开的浏览器；如需运行多实例必须勾选",
                   component: "CheckButton",
                   width: 3,
                 },

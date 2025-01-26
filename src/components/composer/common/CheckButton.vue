@@ -19,7 +19,7 @@
             class="q-ml-xs check-btn-icon"
           />
         </div>
-        <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
+        <q-tooltip v-if="placeholder">{{ placeholder }}</q-tooltip>
       </template>
     </q-btn>
   </div>
@@ -43,7 +43,7 @@ export default defineComponent({
       type: String,
       default: "",
     },
-    tooltip: {
+    placeholder: {
       type: String,
       default: "",
     },
