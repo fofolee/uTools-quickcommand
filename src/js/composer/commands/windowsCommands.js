@@ -189,6 +189,48 @@ const searchElementConfig = [
   },
 ];
 
+const windowInfoStructure = {
+  title: { label: "窗口标题", suggestName: "windowTitle" },
+  class: { label: "窗口类名", suggestName: "windowClass" },
+  handle: { label: "窗口句柄", suggestName: "windowHandle" },
+  x: { label: "窗口X坐标", suggestName: "windowX" },
+  y: { label: "窗口Y坐标", suggestName: "windowY" },
+  width: { label: "窗口宽度", suggestName: "windowWidth" },
+  height: { label: "窗口高度", suggestName: "windowHeight" },
+  processName: { label: "窗口进程名", suggestName: "windowProcessName" },
+  processPath: { label: "窗口进程路径", suggestName: "windowProcessPath" },
+  element: {
+    label: "元素信息",
+    name: { label: "元素名称", suggestName: "elementName" },
+    class: { label: "元素类名", suggestName: "elementClass" },
+    type: { label: "元素类型", suggestName: "elementType" },
+    automationId: {
+      label: "元素AutomationId",
+      suggestName: "elementAutomationId",
+    },
+    xpath: { label: "元素XPath", suggestName: "elementXPath" },
+    handle: { label: "元素句柄", suggestName: "elementHandle" },
+    x: { label: "元素X坐标", suggestName: "elementX" },
+    y: { label: "元素Y坐标", suggestName: "elementY" },
+    width: { label: "元素宽度", suggestName: "elementWidth" },
+    height: { label: "元素高度", suggestName: "elementHeight" },
+  },
+  position: {
+    label: "鼠标位置",
+    x: { label: "鼠标X坐标", suggestName: "mouseX" },
+    y: { label: "鼠标Y坐标", suggestName: "mouseY" },
+  },
+};
+
+const controlResultStructure = {
+  success: { label: "是否成功", suggestName: "isSuccess" },
+  error: {
+    label: "错误信息",
+    suggestName: "errorMessage",
+    placeholder: "操作失败时的错误信息",
+  },
+};
+
 export const windowsCommands = {
   label: "Win自动化",
   icon: "window",
@@ -209,17 +251,24 @@ export const windowsCommands = {
           icon: "search",
           outputs: {
             label: "窗口信息",
+            suggestName: "windowInfo",
             structure: [
               {
-                handle: { label: "窗口句柄" },
-                title: { label: "窗口标题" },
-                class: { label: "窗口类名" },
-                x: { label: "窗口X坐标" },
-                y: { label: "窗口Y坐标" },
-                width: { label: "窗口宽度" },
-                height: { label: "窗口高度" },
-                processName: { label: "窗口进程名" },
-                processPath: { label: "窗口进程路径" },
+                handle: { label: "窗口句柄", suggestName: "windowHandle" },
+                title: { label: "窗口标题", suggestName: "windowTitle" },
+                class: { label: "窗口类名", suggestName: "windowClass" },
+                x: { label: "窗口X坐标", suggestName: "windowX" },
+                y: { label: "窗口Y坐标", suggestName: "windowY" },
+                width: { label: "窗口宽度", suggestName: "windowWidth" },
+                height: { label: "窗口高度", suggestName: "windowHeight" },
+                processName: {
+                  label: "窗口进程名",
+                  suggestName: "windowProcessName",
+                },
+                processPath: {
+                  label: "窗口进程路径",
+                  suggestName: "windowProcessPath",
+                },
               },
             ],
           },
@@ -228,6 +277,11 @@ export const windowsCommands = {
           value: "quickcomposer.windows.automation.inspect",
           label: "手动选择窗口",
           icon: "my_location",
+          outputs: {
+            label: "窗口信息",
+            suggestName: "windowInfo",
+            structure: windowInfoStructure,
+          },
         },
         {
           value: "quickcomposer.windows.automation.inspectPosition",
@@ -254,6 +308,11 @@ export const windowsCommands = {
               },
             },
           ],
+          outputs: {
+            label: "窗口信息",
+            suggestName: "windowInfo",
+            structure: windowInfoStructure,
+          },
         },
       ],
     },
@@ -263,6 +322,11 @@ export const windowsCommands = {
       label: "窗口控制",
       icon: "window",
       config: windowHandleConfig,
+      outputs: {
+        label: "操作结果",
+        suggestName: "windowControlResult",
+        structure: controlResultStructure,
+      },
       subCommands: [
         {
           value: "quickcomposer.windows.window.setTopMost",
@@ -406,6 +470,11 @@ export const windowsCommands = {
       icon: "smart_button",
       asyncMode: "await",
       config: searchElementConfig,
+      outputs: {
+        label: "操作结果",
+        suggestName: "automationResult",
+        structure: controlResultStructure,
+      },
       subCommands: [
         {
           value: "quickcomposer.windows.automation.click",
@@ -465,6 +534,14 @@ export const windowsCommands = {
           value: "quickcomposer.windows.automation.getvalue",
           label: "获取值",
           icon: "content_paste",
+          outputs: {
+            label: "操作结果",
+            suggestName: "getValueResult",
+            structure: {
+              ...controlResultStructure,
+              data: { label: "元素值", suggestName: "elementValue" },
+            },
+          },
         },
         {
           value: "quickcomposer.windows.automation.select",
@@ -629,6 +706,11 @@ export const windowsCommands = {
       icon: "smart_button",
       asyncMode: "await",
       config: windowHandleConfig,
+      outputs: {
+        label: "操作结果",
+        suggestName: "sendMessageResult",
+        structure: controlResultStructure,
+      },
       subCommands: [
         {
           value: "quickcomposer.windows.sendmessage.listControls",
@@ -663,6 +745,29 @@ export const windowsCommands = {
               },
             },
           ],
+          outputs: {
+            label: "控件树信息",
+            suggestName: "controlsTree",
+            structure: [
+              {
+                handle: { label: "句柄", suggestName: "handle" },
+                class: { label: "类名", suggestName: "class" },
+                text: { label: "文本", suggestName: "text" },
+                visible: { label: "是否可见", suggestName: "visible" },
+                location: {
+                  label: "位置",
+                  suggestName: "location",
+                  placeholder: "对象，x,y,width,height",
+                },
+                matched: { label: "是否匹配", suggestName: "matched" },
+                children: {
+                  label: "子控件",
+                  suggestName: "childrenControls",
+                  placeholder: "数组，所有子控件信息",
+                },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.windows.sendmessage.click",
@@ -827,6 +932,21 @@ export const windowsCommands = {
           value: "quickcomposer.windows.monitor.watchClipboard",
           label: "等待剪贴板变化",
           icon: "content_paste",
+          outputs: {
+            label: "剪贴板变化事件",
+            suggestName: "clipboardChangeEvent",
+            structure: {
+              format: {
+                label: "变化内容类型",
+                suggestName: "clipboardContentFormat",
+                placeholder: "如: text, files",
+              },
+              content: {
+                label: "剪切板内容",
+                suggestName: "clipboardContent",
+              },
+            },
+          },
         },
         {
           value: "quickcomposer.windows.monitor.watchFileSystem",
@@ -874,6 +994,21 @@ export const windowsCommands = {
               },
             },
           ],
+          outputs: {
+            label: "文件夹变化事件",
+            suggestName: "fileChangeEvent",
+            structure: {
+              event: {
+                label: "事件类型",
+                suggestName: "fileChangeEventType",
+                placeholder: "如: created, modified, deleted",
+              },
+              path: {
+                label: "变化文件路径",
+                suggestName: "changedFilePath",
+              },
+            },
+          },
         },
       ],
     },
@@ -888,6 +1023,32 @@ export const windowsCommands = {
           value: "quickcomposer.windows.process.listProcesses",
           label: "进程列表",
           icon: "list",
+          outputs: {
+            label: "进程列表",
+            suggestName: "processList",
+            structure: [
+              {
+                id: { label: "进程ID", suggestName: "processId" },
+                name: { label: "进程名称", suggestName: "processName" },
+                title: { label: "进程标题", suggestName: "processTitle" },
+                path: { label: "进程路径", suggestName: "processPath" },
+                startTime: {
+                  label: "启动时间",
+                  suggestName: "processStartTime",
+                },
+                cpuTime: { label: "CPU时间", suggestName: "processCpuTime" },
+                memory: { label: "内存使用", suggestName: "processMemory" },
+                threads: { label: "线程数", suggestName: "processThreads" },
+                priority: { label: "优先级", suggestName: "processPriority" },
+                description: {
+                  label: "描述",
+                  suggestName: "processDescription",
+                },
+                company: { label: "公司", suggestName: "processCompany" },
+                version: { label: "版本", suggestName: "processVersion" },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.windows.process.killProcess",
@@ -903,6 +1064,11 @@ export const windowsCommands = {
               required: true,
             },
           ],
+          outputs: {
+            label: "是否成功",
+            suggestName: "isProcessTerminateSuccess",
+            typeName: "布尔值",
+          },
         },
         {
           value: "quickcomposer.windows.process.startProcess",
@@ -926,7 +1092,6 @@ export const windowsCommands = {
                   },
                 },
               },
-              required: true,
             },
             {
               label: "启动参数",
@@ -936,6 +1101,11 @@ export const windowsCommands = {
               placeholder: "可选的启动参数",
             },
           ],
+          outputs: {
+            label: "是否成功",
+            suggestName: "isProcessStartSuccess",
+            typeName: "布尔值",
+          },
         },
       ],
     },
@@ -955,7 +1125,6 @@ export const windowsCommands = {
           options: {
             items: registryPaths,
           },
-          required: true,
         },
       ],
       subCommands: [
@@ -963,6 +1132,22 @@ export const windowsCommands = {
           value: "quickcomposer.windows.registry.listKeys",
           label: "列出项",
           icon: "list",
+          outputs: {
+            label: "注册表项列表",
+            suggestName: "registryKeys",
+            structure: [
+              {
+                path: {
+                  label: "注册表路径",
+                  suggestName: "registryPath",
+                },
+                name: {
+                  label: "项名称",
+                  suggestName: "registryName",
+                },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.windows.registry.getValue",
@@ -1075,6 +1260,20 @@ export const windowsCommands = {
           value: "quickcomposer.windows.service.listServices",
           label: "服务列表",
           icon: "list",
+          outputs: {
+            label: "服务列表",
+            suggestName: "serviceList",
+            structure: [
+              {
+                name: { label: "服务名称", suggestName: "serviceName" },
+                displayName: {
+                  label: "显示名称",
+                  suggestName: "serviceDisplayName",
+                },
+                status: { label: "状态", suggestName: "serviceStatus" },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.windows.service.controlService",
@@ -1117,6 +1316,22 @@ export const windowsCommands = {
           value: "quickcomposer.windows.software.listSoftware",
           label: "软件列表",
           icon: "list",
+          outputs: {
+            label: "软件列表",
+            suggestName: "softwareList",
+            structure: [
+              {
+                name: { label: "软件名称", suggestName: "softwareName" },
+                publisher: {
+                  label: "发布者",
+                  suggestName: "softwarePublisher",
+                },
+                version: { label: "版本", suggestName: "softwareVersion" },
+                source: { label: "来源", suggestName: "softwareSource" },
+                id: { label: "ID", suggestName: "softwareId" },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.windows.software.uninstallSoftware",
