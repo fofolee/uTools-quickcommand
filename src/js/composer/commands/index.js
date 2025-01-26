@@ -22,7 +22,7 @@ import { browserCommands } from "./browserCommands";
 
 const platformCommands = {
   win32: [windowsCommands],
-  darwin: [macosCommands, windowsCommands],
+  darwin: [macosCommands],
   linux: [],
 };
 
