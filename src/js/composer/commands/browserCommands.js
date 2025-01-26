@@ -36,7 +36,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.startClient",
       label: "浏览器实例管理",
       icon: "launch",
-      isAsync: true,
+      asyncMode: "await",
       config: [],
       subCommands: [
         {
@@ -168,7 +168,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.getUrl",
       label: "获取/设置网址",
       icon: "link",
-      isAsync: true,
+      asyncMode: "await",
       config: [tabConfig],
       subCommands: [
         {
@@ -196,7 +196,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.getTabs",
       label: "标签操作",
       icon: "tab",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.browser.getTabs",
@@ -240,7 +240,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.captureScreenshot",
       label: "捕获截图",
       icon: "screenshot",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         tabConfig,
         {
@@ -305,7 +305,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.executeScript",
       label: "执行脚本",
       icon: "code",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         tabConfig,
         {
@@ -328,7 +328,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.injectRemoteScript",
       label: "注入脚本/样式",
       icon: "style",
-      isAsync: true,
+      asyncMode: "await",
       config: [tabConfig],
       subCommands: [
         {
@@ -396,7 +396,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.setCookie",
       label: "Cookie操作",
       icon: "cookie",
-      isAsync: true,
+      asyncMode: "await",
       config: [tabConfig],
       subCommands: [
         {
@@ -486,7 +486,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.clickElement",
       label: "元素操作",
       icon: "web",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         tabConfig,
         {
@@ -591,7 +591,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.scrollTo",
       label: "滚动及页面尺寸",
       icon: "open_in_full",
-      isAsync: true,
+      asyncMode: "await",
       config: [tabConfig],
       subCommands: [
         {
@@ -631,8 +631,8 @@ export const browserCommands = {
       value: "quickcomposer.browser.network.setRequestInterception",
       label: "修改请求/响应",
       icon: "network",
-      isAsync: true,
-      isAsync: true,
+      asyncMode: "await",
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.browser.network.setRequestInterception",
@@ -753,7 +753,7 @@ export const browserCommands = {
       value: "quickcomposer.browser.device.setDevice",
       label: "设备模拟",
       icon: "devices",
-      isAsync: true,
+      asyncMode: "await",
       config: [tabConfig],
       subCommands: [
         {

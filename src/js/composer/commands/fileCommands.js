@@ -7,7 +7,7 @@ export const fileCommands = {
       value: "quickcomposer.file.operation",
       label: "文件/文件夹操作",
       component: "FileOperationEditor",
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "utools.shellOpenItem",
@@ -67,7 +67,7 @@ export const fileCommands = {
       value: "quickcomposer.file.archive",
       label: "文件归档",
       icon: "archive",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "操作类型",

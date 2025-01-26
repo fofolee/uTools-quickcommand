@@ -709,7 +709,7 @@ export const dataCommands = {
       label: "数据压缩解压",
       component: "ZlibEditor",
       icon: "compress",
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "quickcomposer.data.htmlParser",

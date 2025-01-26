@@ -105,7 +105,7 @@ export const systemCommands = {
       label: "执行系统命令",
       component: "SystemCommandEditor",
       icon: "terminal",
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "utools.getPath",

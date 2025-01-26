@@ -1,10 +1,28 @@
 export function generateCode(flow) {
+  let usedVarNames = {};
+
+  // 获取变量赋值代码，如果变量已经存在，则直接赋值，否则声明并赋值
+  const getVarAssignCode = (varName, varValue, funcName) => {
+    if (!usedVarNames[funcName]) {
+      usedVarNames[funcName] = [];
+    }
+    if (usedVarNames[funcName].includes(varName)) {
+      return `${varName} = ${varValue};`;
+    }
+    usedVarNames[funcName].push(varName);
+    return `let ${varName} = ${varValue};`;
+  };
+
+  const getVarByPath = (name, path) => {
+    return `${name}${path.startsWith("[") ? "" : "."}${path}`;
+  };
+
   const { commands, name, label, customVariables = [] } = flow;
 
   const params = customVariables.filter((v) => v.type === "param") || [];
   const manualVars = customVariables.filter((v) => v.type === "var") || [];
   // 检查是否包含异步函数
-  const hasAsyncFunction = commands.some((cmd) => cmd.isAsync);
+  const hasAsyncFunction = commands.some((cmd) => cmd.asyncMode);
 
   let code = [];
   const funcName = name || "func_" + new Date().getTime();
@@ -17,8 +35,12 @@ export function generateCode(flow) {
       .join(", ")}) {`
   );
 
-  code.push(manualVars.map((v) => `  let ${v.name} = ${v.value};`).join("\n"));
   const indent = "  ";
+
+  // 局部变量赋值
+  manualVars.forEach((v) => {
+    code.push(indent + getVarAssignCode(v.name, v.value, flow.name));
+  });
 
   commands.forEach((cmd) => {
     // 跳过禁用的命令
@@ -29,36 +51,71 @@ export function generateCode(flow) {
     // 处理输出变量
     if (cmd.outputVariable) {
       const { name, details } = cmd.outputVariable;
-      if (cmd.isAsync) {
+      if (cmd.asyncMode === "then") {
+        // 使用回调函数模式
         if (cmd.callbackFunc) {
-          // 使用回调函数模式
-          cmdCode = `${cmdCode}.then(${cmd.callbackFunc})`;
-        } else {
-          // 使用 await 模式
-          cmdCode = `const ${name} = await ${cmdCode}`;
-          code.push(indent + cmdCode);
-          // 处理详细变量
-          if (details) {
-            Object.entries(details).forEach(([path, varName]) => {
-              code.push(`${indent}let ${varName} = ${name}.${path};`);
-            });
+          // 如果回调函数存在，则使用回调函数模式，否则保持原样
+          if (!details) {
+            cmdCode = `${cmdCode}.then(${cmd.callbackFunc})`;
+          } else {
+            // 如果输出变量有详细变量，则需要为每个变量赋值
+            const promiseName = name || "result";
+
+            const extractVarCode = Object.entries(details)
+              .map(
+                ([path, varName]) =>
+                  `let ${varName} = ${getVarByPath(promiseName, path)}`
+              )
+              .join("\n");
+
+            const funcName = cmd.callbackFunc;
+
+            const funcParams =
+              (name ? `${name},` : "") + Object.values(details).join(",");
+
+            cmdCode = `${cmdCode}.then((${promiseName})=>{
+              ${extractVarCode}
+              ${funcName}(${funcParams})
+              })`;
           }
-          return;
         }
-      } else {
-        cmdCode = `const ${name} = ${cmdCode}`;
+        code.push(indent + cmdCode);
+      } else if (cmd.asyncMode === "await") {
+        // 使用 await 模式
+        const promiseName = name || "result";
+        cmdCode = getVarAssignCode(promiseName, `await ${cmdCode}`);
         code.push(indent + cmdCode);
         // 处理详细变量
         if (details) {
           Object.entries(details).forEach(([path, varName]) => {
-            code.push(`${indent}let ${varName} = ${name}.${path};`);
+            code.push(
+              `${indent}${getVarAssignCode(
+                varName,
+                getVarByPath(promiseName, path)
+              )}`
+            );
+          });
+        }
+      } else {
+        // 非Async命令
+        cmdCode = getVarAssignCode(name, `${cmdCode}`);
+        code.push(indent + cmdCode);
+        // 处理详细变量
+        if (details) {
+          Object.entries(details).forEach(([path, varName]) => {
+            code.push(
+              `${indent}${getVarAssignCode(varName, getVarByPath(name, path))}`
+            );
           });
         }
         return;
       }
+    } else {
+      if (cmd.asyncMode === "await") {
+        cmdCode = `await ${cmdCode}`;
+      }
+      code.push(indent + cmdCode);
     }
-
-    code.push(indent + cmdCode);
   });
 
   code.push("}"); // Close the function

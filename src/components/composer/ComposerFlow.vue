@@ -63,7 +63,6 @@ import ComposerCard from "./ComposerCard.vue";
 import ChainStyles from "./flow/ChainStyles.vue";
 import DropArea from "./flow/DropArea.vue";
 import { findCommandByValue } from "js/composer/composerConfig";
-import { processVariable } from "js/composer/variableManager";
 
 // 拖拽前的命令列表，非响应式
 let commandsBeforeDrag = [];

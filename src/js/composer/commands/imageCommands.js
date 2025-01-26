@@ -25,7 +25,7 @@ export const imageCommands = {
       value: "quickcomposer.image.analyze",
       label: "图片信息",
       icon: "analytics",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "图片文件",
@@ -54,7 +54,7 @@ export const imageCommands = {
       value: "quickcomposer.image.resize",
       label: "调整大小",
       icon: "aspect_ratio",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "输入文件",
@@ -140,7 +140,7 @@ export const imageCommands = {
       value: "quickcomposer.image.rotate",
       label: "旋转图片",
       icon: "rotate_right",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "输入文件",
@@ -207,7 +207,7 @@ export const imageCommands = {
       value: "quickcomposer.image.crop",
       label: "裁剪图片",
       icon: "crop",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "输入文件",
@@ -302,7 +302,7 @@ export const imageCommands = {
       value: "quickcomposer.image.watermark",
       label: "添加水印",
       icon: "format_color_text",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "输入文件",
@@ -409,7 +409,7 @@ export const imageCommands = {
       value: "quickcomposer.image.convert",
       label: "格式转换",
       icon: "transform",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "输入文件",

@@ -270,7 +270,7 @@ const customComponentGuide = {
       },
       optionalFields: {
         desc: "命令描述",
-        isAsync: "是否异步命令",
+        asyncMode: "async模式，可选值为await/then",
         isControlFlow: "是否控制流命令",
       },
     },

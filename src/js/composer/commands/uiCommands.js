@@ -111,7 +111,7 @@ export const uiCommands = {
     {
       value: "quickcommand.showMessageBox",
       label: "消息提示",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "提示内容",
@@ -168,7 +168,7 @@ export const uiCommands = {
     {
       value: "quickcommand.showConfirmBox",
       label: "确认框",
-      isAsync: true,
+      asyncMode: "await",
       outputs: {
         label: "是否确认",
       },
@@ -219,7 +219,7 @@ export const uiCommands = {
     {
       value: "quickcommand.showButtonBox",
       label: "按钮组",
-      isAsync: true,
+      asyncMode: "await",
       width: 12,
       config: [
         {
@@ -254,7 +254,7 @@ export const uiCommands = {
     {
       value: "quickcommand.showInputBox",
       label: "输入框",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "输入框",
@@ -293,12 +293,12 @@ export const uiCommands = {
       value: "quickcommand.showSelectList",
       label: "选择列表",
       component: "SelectListEditor",
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "quickcommand.showTextArea",
       label: "文本框",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "文本框占位符",
@@ -329,7 +329,7 @@ export const uiCommands = {
     {
       value: "quickcommand.showSystemWaitButton",
       label: "等待操作按钮",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           component: "OptionEditor",

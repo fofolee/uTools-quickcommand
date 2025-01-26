@@ -133,7 +133,7 @@ export const audioCommands = {
       value: "quickcomposer.audio.media.play",
       label: "音频播放",
       icon: "music_note",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.audio.media.play",
@@ -175,7 +175,7 @@ export const audioCommands = {
       value: "quickcomposer.audio.record",
       label: "音频录制",
       icon: "mic",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "录制时长(ms)",
@@ -211,7 +211,7 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.media.beep",
       label: "系统音效",
-      isAsync: true,
+      asyncMode: "await",
       icon: "notifications_active",
       config: [
         {
@@ -238,7 +238,7 @@ export const audioCommands = {
       value: "quickcomposer.audio.media.analyze",
       label: "音频信息",
       icon: "analytics",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "音频文件",

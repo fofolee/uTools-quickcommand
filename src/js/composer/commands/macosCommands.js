@@ -7,7 +7,7 @@ export const macosCommands = {
       value: "quickcomposer.macos.app.getFrontmost",
       label: "应用及窗口控制",
       icon: "apps",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.macos.app.getFrontmost",
@@ -15,29 +15,32 @@ export const macosCommands = {
           icon: "front_hand",
           outputs: {
             label: "前台应用信息",
-            name: { label: "应用名称" },
-            displayedName: { label: "应用显示名称" },
-            path: { label: "应用路径" },
-            version: { label: "应用版本" },
-            pid: { label: "应用进程ID" },
-            backgroundOnly: { label: "是否后台运行" },
-            visible: { label: "是否可见" },
-            frontmost: { label: "是否前台运行" },
-            window: {
-              label: "窗口信息",
-              name: { label: "窗口名称" },
-              title: { label: "窗口标题" },
-              index: { label: "窗口索引" },
-              position: {
-                label: "窗口位置",
-                placeholder: "数组， 第一个元素是 x 坐标，第二个元素是 y 坐标",
+            structure: {
+              name: { label: "应用名称" },
+              displayedName: { label: "应用显示名称" },
+              path: { label: "应用路径" },
+              version: { label: "应用版本" },
+              pid: { label: "应用进程ID" },
+              backgroundOnly: { label: "是否后台运行" },
+              visible: { label: "是否可见" },
+              frontmost: { label: "是否前台运行" },
+              window: {
+                label: "窗口信息",
+                name: { label: "窗口名称" },
+                title: { label: "窗口标题" },
+                index: { label: "窗口索引" },
+                position: {
+                  label: "窗口位置",
+                  placeholder:
+                    "数组， 第一个元素是 x 坐标，第二个元素是 y 坐标",
+                },
+                size: {
+                  label: "窗口大小",
+                  placeholder: "数组， 第一个元素是宽度，第二个元素是高度",
+                },
+                minimized: { label: "是否最小化" },
+                fullscreen: { label: "是否全屏" },
               },
-              size: {
-                label: "窗口大小",
-                placeholder: "数组， 第一个元素是宽度，第二个元素是高度",
-              },
-              minimized: { label: "是否最小化" },
-              fullscreen: { label: "是否全屏" },
             },
           },
         },
@@ -164,7 +167,7 @@ export const macosCommands = {
       value: "quickcomposer.macos.system.setVolume",
       label: "系统管理",
       icon: "settings",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.macos.system.setVolume",
@@ -284,7 +287,7 @@ export const macosCommands = {
       value: "quickcomposer.macos.finder.getSelection",
       label: "访达管理",
       icon: "folder",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.macos.finder.getSelection",

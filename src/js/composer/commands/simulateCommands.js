@@ -216,19 +216,19 @@ export const simulateCommands = {
       label: "屏幕找图",
       component: "ImageSearchEditor",
       config: [],
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "quickcomposer.simulate.screenColorPick",
       label: "屏幕取色",
       icon: "colorize",
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "quickcomposer.simulate.captureScreen",
       label: "屏幕截图",
       icon: "screenshot_monitor",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "截图范围",

@@ -199,7 +199,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.window.getWindowInfo",
       label: "搜索/选择窗口",
       icon: "window",
-      isAsync: true,
+      asyncMode: "await",
       config: [],
       subCommands: [
         {
@@ -207,6 +207,22 @@ export const windowsCommands = {
           value: "quickcomposer.windows.window.getWindowInfo",
           label: "搜索窗口",
           icon: "search",
+          outputs: {
+            label: "窗口信息（数组）",
+            structure: [
+              {
+                handle: { label: "窗口句柄" },
+                title: { label: "窗口标题" },
+                class: { label: "窗口类名" },
+                x: { label: "窗口X坐标" },
+                y: { label: "窗口Y坐标" },
+                width: { label: "窗口宽度" },
+                height: { label: "窗口高度" },
+                processName: { label: "窗口进程名" },
+                processPath: { label: "窗口进程路径" },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.windows.automation.inspect",
@@ -381,14 +397,14 @@ export const windowsCommands = {
           ],
         },
       ],
-      isAsync: true,
+      asyncMode: "await",
     },
     // automation
     {
       value: "quickcomposer.windows.automation.click",
       label: "界面自动化",
       icon: "smart_button",
-      isAsync: true,
+      asyncMode: "await",
       config: searchElementConfig,
       subCommands: [
         {
@@ -611,7 +627,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.sendmessage.listControls",
       label: "发送控制消息",
       icon: "smart_button",
-      isAsync: true,
+      asyncMode: "await",
       config: windowHandleConfig,
       subCommands: [
         {
@@ -804,7 +820,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.monitor.watchClipboard",
       label: "剪贴板/文件监控",
       icon: "monitor_heart",
-      isAsync: true,
+      asyncMode: "await",
       showLoading: true,
       subCommands: [
         {
@@ -866,7 +882,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.process.listProcesses",
       label: "进程管理",
       icon: "memory",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.windows.process.listProcesses",
@@ -928,7 +944,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.registry.listKeys",
       label: "注册表管理",
       icon: "settings",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "注册表路径",
@@ -1053,7 +1069,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.service.listServices",
       label: "服务管理",
       icon: "miscellaneous_services",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.windows.service.listServices",
@@ -1095,7 +1111,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.software.listSoftware",
       label: "软件管理",
       icon: "apps",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.windows.software.listSoftware",
@@ -1124,7 +1140,7 @@ export const windowsCommands = {
       value: "quickcomposer.windows.utils.setWallpaper",
       label: "系统工具",
       icon: "build",
-      isAsync: true,
+      asyncMode: "await",
       subCommands: [
         {
           value: "quickcomposer.windows.utils.setWallpaper",

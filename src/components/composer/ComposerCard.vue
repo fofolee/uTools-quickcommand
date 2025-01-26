@@ -155,27 +155,37 @@ export default defineComponent({
   },
   methods: {
     handleOutputVariableUpdate(result) {
-      const { outputVariable, mode, functionInfo } = result;
+      const { outputVariable, asyncMode, callbackFunc } = result;
 
       if (outputVariable.name || outputVariable.details) {
         this.localCommand.outputVariable = { ...outputVariable };
+      } else {
+        delete this.localCommand.outputVariable;
+      }
+
+      if (asyncMode) {
+        this.localCommand.asyncMode = asyncMode;
         // 如果是回调模式，添加 callbackFunc 属性
-        if (mode === "callback") {
-          this.localCommand.callbackFunc = functionInfo.name;
+        if (callbackFunc) {
+          this.localCommand.callbackFunc = callbackFunc;
+          let params = [];
+          if (outputVariable?.name) {
+            params.push(outputVariable.name);
+          }
+          if (outputVariable?.details) {
+            params.push(...Object.values(outputVariable.details));
+          }
+          this.$emit("add-command", {
+            command: {
+              name: callbackFunc,
+              params,
+              silent: true,
+            },
+            type: "function",
+          });
         } else {
           delete this.localCommand.callbackFunc;
         }
-
-        // 如果是回调函数模式，创建新函数
-        if (mode === "callback" && functionInfo) {
-          this.$emit("add-command", {
-            command: functionInfo,
-            type: "function",
-          });
-        }
-      } else {
-        delete this.localCommand.outputVariable;
-        delete this.localCommand.callbackFunc;
       }
     },
     runCommand() {

@@ -103,7 +103,7 @@ const commonComponentGuide = {
       },
       optionalFields: {
         desc: "命令描述",
-        isAsync: "是否异步命令",
+        asyncMode: "async模式，可选值为await/then",
         icon: "命令图标",
       },
     },

@@ -252,19 +252,9 @@ export default defineComponent({
         });
       }
 
-      // 添加局部变量
-      if (options.localVars && options.localVars.length > 0) {
-        options.localVars.forEach((varInfo) => {
-          newFlow.customVariables.push({
-            name: varInfo.name,
-            type: "var",
-            value: varInfo.value,
-          });
-        });
-      }
-
       this.subFlows.push(newFlow);
-      if (options.params || options.localVars) {
+
+      if (options.silent) {
         return;
       }
 
@@ -281,12 +271,17 @@ export default defineComponent({
       }
     },
     updateSubFlow(index, payload) {
-      const { params, localVars } = payload;
+      const { params } = payload;
+      const newParams = params.map((param) => ({
+        name: param,
+        type: "param",
+      }));
+      const localVars = this.subFlows[index].customVariables.filter(
+        (v) => v.type === "var"
+      );
+      // 完全更新参数
       this.subFlows[index].customVariables = [
-        ...params.map((param) => ({
-          name: param,
-          type: "param",
-        })),
+        ...newParams,
         ...localVars,
       ];
     },
@@ -355,7 +350,6 @@ export default defineComponent({
             "icon",
             "width",
             "placeholder",
-            "isAsync",
             "summary",
             "type",
           ];

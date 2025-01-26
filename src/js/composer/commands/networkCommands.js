@@ -26,14 +26,14 @@ export const networkCommands = {
           icon: "public",
         },
       ],
-      isAsync: true,
+      asyncMode: "await",
     },
     {
       value: "ubrowser",
       label: "ubrowser浏览器操作",
       config: [],
       component: "UBrowserEditor",
-      isAsync: true,
+      asyncMode: "await",
       icon: "public",
     },
     {
@@ -41,7 +41,7 @@ export const networkCommands = {
       label: "HTTP请求(Axios)",
       config: [],
       component: "AxiosConfigEditor",
-      isAsync: true,
+      asyncMode: "await",
       icon: "http",
     },
     {
@@ -246,7 +246,7 @@ export const networkCommands = {
       value: "quickcomposer.network.dns.lookupHost",
       label: "DNS操作",
       icon: "dns",
-      isAsync: true,
+      asyncMode: "await",
       config: [],
       subCommands: [
         {
@@ -389,7 +389,7 @@ export const networkCommands = {
       value: "quickcommand.downloadFile",
       label: "下载文件",
       icon: "file_download",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "文件URL",
@@ -411,7 +411,7 @@ export const networkCommands = {
       value: "quickcommand.uploadFile",
       label: "上传文件",
       icon: "file_upload",
-      isAsync: true,
+      asyncMode: "await",
       config: [
         {
           label: "上传接口地址",

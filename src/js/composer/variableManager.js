@@ -7,12 +7,7 @@ import { validateVariableName } from "js/common/variableValidator";
  */
 function generateRandomSuffix(varCount, withPrefix = true) {
   // 根据变量数量决定后缀长度
-  let length = 1; // 默认1位
-  if (varCount >= 100) {
-    length = 3;
-  } else if (varCount >= 10) {
-    length = 2;
-  }
+  let length = varCount > 100 ? 3 : 2;
 
   return (
     (withPrefix ? "_" : "") +
@@ -100,7 +95,9 @@ export function processVariable({ value, existingVars, baseName = "var" }) {
       isValid: true,
       processedValue: processedVar,
       warning:
-        processedVar !== value ? `输入值非法，已被修改为: ${processedVar}` : null,
+        processedVar !== value
+          ? `输入值非法，已被修改为: ${processedVar}`
+          : null,
     };
   }
 

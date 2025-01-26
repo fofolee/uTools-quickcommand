@@ -15,9 +15,9 @@
           @click="showOutputEditor = true"
         >
           <q-tooltip>
-            <div class="text-body2">配置命令输出变量</div>
+            <div class="text-body2">输出配置</div>
             <div class="text-caption text-grey-5">
-              将命令的输出保存为变量以供后续使用
+              配置输出变量、是否等待执行完毕等
             </div>
           </q-tooltip>
         </q-icon>
