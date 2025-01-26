@@ -151,7 +151,7 @@ export default defineComponent({
     const getOutputVariables = (flow = getCurrentFlow()) => {
       const variables = [];
       for (const [index, cmd] of flow.commands.entries()) {
-        if (cmd.outputVariable) {
+        if (cmd.outputVariable && cmd.asyncMode !== "then") {
           const { name, details = {} } = cmd.outputVariable;
           variables.push(
             ...[name, ...Object.values(details)].map((variable) => ({
@@ -198,12 +198,6 @@ export default defineComponent({
     };
 
     provide("getCurrentVariables", getCurrentVariables);
-
-    const getCurrentExistingVar = () => {
-      return [...getCurrentVariables(), ...getCurrentFunctions()];
-    };
-
-    provide("getCurrentExistingVar", getCurrentExistingVar);
 
     return {
       flows,
@@ -352,6 +346,7 @@ export default defineComponent({
             "placeholder",
             "summary",
             "type",
+            "defaultOutputVariable",
           ];
           uselessProps.forEach((prop) => delete cmdCopy[prop]);
           return cmdCopy;

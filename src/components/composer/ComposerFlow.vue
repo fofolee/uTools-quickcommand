@@ -90,10 +90,6 @@ export default defineComponent({
       default: true,
     },
   },
-  setup() {
-    const getCurrentExistingVar = inject("getCurrentExistingVar");
-    return { getCurrentExistingVar };
-  },
   emits: ["update:modelValue", "add-command", "action"],
   data() {
     return {

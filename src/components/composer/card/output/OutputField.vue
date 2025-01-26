@@ -13,6 +13,21 @@
       <div class="variable-label">{{ label }}</div>
     </template>
     <template v-slot:append>
+      <q-btn
+        v-if="suggestName"
+        flat
+        dense
+        @click="updateSuggestName(suggestName)"
+      >
+        <q-icon
+          name="emoji_objects"
+          size="14px"
+          :style="{
+            opacity: 0.8,
+          }"
+        />
+        <q-tooltip> 取名困难症？点我！ </q-tooltip>
+      </q-btn>
       <VariableList
         :show-variable-list="showVariableList"
         :show-function-list="showFunctionList"
@@ -35,7 +50,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, inject } from "vue";
 import VariableList from "components/composer/common/varinput/VariableList.vue";
 
 export default defineComponent({
@@ -52,6 +67,10 @@ export default defineComponent({
       type: String,
     },
     placeholder: {
+      type: String,
+      default: "",
+    },
+    suggestName: {
       type: String,
       default: "",
     },
@@ -77,6 +96,31 @@ export default defineComponent({
     updateValBySelect(_type, val) {
       this.$emit("update:modelValue", val);
     },
+    updateSuggestName(val) {
+      const existingNames = this.getExistingFuncAndParams();
+      // 重名检测，主要检测函数名和参数名
+      if (existingNames.includes(val)) {
+        quickcommand.showMessageBox(
+          "和已有函数名和参数名重复，已自动添加下划线前缀",
+          "warning"
+        );
+        val = "_" + val;
+      }
+      this.$emit("update:modelValue", val);
+    },
+  },
+  setup() {
+    const getCurrentFunctions = inject("getCurrentFunctions");
+    const getCurrentVariables = inject("getCurrentVariables");
+    const getExistingFuncAndParams = () => {
+      return [
+        ...getCurrentFunctions(),
+        ...getCurrentVariables().filter((v) => v.type === "param"),
+      ].map((v) => v.name);
+    };
+    return {
+      getExistingFuncAndParams,
+    };
   },
 });
 </script>
@@ -118,7 +162,7 @@ export default defineComponent({
 }
 
 .variable-list-btn {
-  padding: 0 12px;
+  padding: 0 12px 0 3px;
 }
 
 /* 去掉下拉按钮的焦点效果 */

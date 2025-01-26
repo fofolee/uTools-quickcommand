@@ -3,7 +3,7 @@
     <OperationCard
       v-if="hasSubCommands"
       :model-value="funcName"
-      @update:model-value="funcName = $event"
+      @update:model-value="updateFuncName"
       :options="localCommand.subCommands"
     />
     <ParamInput :configs="localConfig" :values="argvs" @update="updateArgv" />
@@ -203,6 +203,15 @@ export default defineComponent({
       return {
         width: `calc(${columnWidth}% - var(--grid-gap))`,
       };
+    },
+    updateFuncName(value) {
+      this.funcName = value;
+      // 如果切换了子命令，更新输出变量
+      const selectSubCommand = this.getSelectSubCommand(value);
+      if (!selectSubCommand) return;
+      const newModelValue = { ...this.modelValue, value: value };
+      delete newModelValue.outputVariable;
+      this.$emit("update:modelValue", newModelValue);
     },
   },
   mounted() {

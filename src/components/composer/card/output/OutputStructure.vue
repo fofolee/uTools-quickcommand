@@ -11,6 +11,7 @@
                 @update:model-value="updateField(subKey, $event)"
                 :label="subOutput.label"
                 :placeholder="subOutput.placeholder"
+                :suggest-name="subOutput.suggestName"
                 autofocus
               />
             </div>
@@ -25,6 +26,7 @@
         @update:model-value="updateField('', $event)"
         :label="output.label"
         :placeholder="output.placeholder"
+        :suggest-name="output.suggestName"
         autofocus
       />
     </div>
@@ -78,18 +80,23 @@ export default defineComponent({
       default: () => ({}),
     },
   },
+  data() {
+    return {
+      fixedFields: ["label", "placeholder", "suggestName"],
+    };
+  },
   emits: ["update:modelValue"],
   computed: {
     hasNestedFields() {
       if (!this.output) return false;
       return Object.keys(this.output).some(
-        (key) => key !== "label" && key !== "placeholder"
+        (key) => !this.fixedFields.includes(key)
       );
     },
     getNestedFields() {
       const fields = {};
       Object.entries(this.output).forEach(([key, value]) => {
-        if (key !== "label" && key !== "placeholder") {
+        if (!this.fixedFields.includes(key)) {
           fields[key] = value;
         }
       });

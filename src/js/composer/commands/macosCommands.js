@@ -15,31 +15,46 @@ export const macosCommands = {
           icon: "front_hand",
           outputs: {
             label: "前台应用信息",
+            suggestName: "frontmostApp",
             structure: {
-              name: { label: "应用名称" },
-              displayedName: { label: "应用显示名称" },
-              path: { label: "应用路径" },
-              version: { label: "应用版本" },
-              pid: { label: "应用进程ID" },
-              backgroundOnly: { label: "是否后台运行" },
-              visible: { label: "是否可见" },
-              frontmost: { label: "是否前台运行" },
+              name: { label: "应用名称", suggestName: "appName" },
+              displayedName: {
+                label: "应用显示名称",
+                suggestName: "appDisplayName",
+              },
+              path: { label: "应用路径", suggestName: "appPath" },
+              version: { label: "应用版本", suggestName: "appVersion" },
+              pid: { label: "应用进程ID", suggestName: "appPid" },
+              backgroundOnly: {
+                label: "是否后台运行",
+                suggestName: "appBackgroundOnly",
+              },
+              visible: { label: "是否可见", suggestName: "appVisible" },
+              frontmost: { label: "是否前台运行", suggestName: "appFrontmost" },
               window: {
                 label: "窗口信息",
-                name: { label: "窗口名称" },
-                title: { label: "窗口标题" },
-                index: { label: "窗口索引" },
+                name: { label: "窗口名称", suggestName: "windowName" },
+                title: { label: "窗口标题", suggestName: "windowTitle" },
+                index: { label: "窗口索引", suggestName: "windowIndex" },
                 position: {
                   label: "窗口位置",
                   placeholder:
                     "数组， 第一个元素是 x 坐标，第二个元素是 y 坐标",
+                  suggestName: "windowPosition",
                 },
                 size: {
                   label: "窗口大小",
                   placeholder: "数组， 第一个元素是宽度，第二个元素是高度",
+                  suggestName: "windowSize",
                 },
-                minimized: { label: "是否最小化" },
-                fullscreen: { label: "是否全屏" },
+                minimized: {
+                  label: "是否最小化",
+                  suggestName: "windowMinimized",
+                },
+                fullscreen: {
+                  label: "是否全屏",
+                  suggestName: "windowFullscreen",
+                },
               },
             },
           },
@@ -48,6 +63,10 @@ export const macosCommands = {
           value: "quickcomposer.macos.app.getRunningApps",
           label: "获取活动应用",
           icon: "list",
+          outputs: {
+            label: "活动应用列表（数组）",
+            suggestName: "runningApps",
+          },
         },
         {
           value: "quickcomposer.macos.app.launch",

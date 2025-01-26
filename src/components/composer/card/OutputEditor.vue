@@ -10,6 +10,7 @@
         <OutputField
           v-model="simpleOutputVar"
           :label="currentOutputs?.label || '输出变量名'"
+          :suggest-name="currentOutputs?.suggestName"
           autofocus
           :show-variable-list="true"
           class="q-px-sm"
@@ -131,6 +132,12 @@ export default defineComponent({
         (cmd) => cmd.value === this.command.value
       );
     },
+    defaultOutputVariable() {
+      return (
+        this.currentSubCommand?.defaultOutputVariable ||
+        this.command.defaultOutputVariable
+      );
+    },
     commandName() {
       return this.currentSubCommand.label || this.command.label;
     },
@@ -158,35 +165,36 @@ export default defineComponent({
   },
   watch: {
     "command.outputVariable": {
-      immediate: true,
-      deep: true,
-      handler(newValue) {
-        this.initOutputVars(newValue);
+      handler(value) {
+        this.initOutputVars(value);
       },
+      immediate: true,
     },
     "command.asyncMode": {
-      immediate: true,
-      handler(newValue) {
-        this.asyncMode = newValue;
+      handler(value) {
+        this.asyncMode = value;
       },
+      immediate: true,
     },
     "command.callbackFunc": {
-      immediate: true,
-      handler(newValue) {
-        this.callbackFunc = newValue;
+      handler(value) {
+        this.callbackFunc = value;
       },
+      immediate: true,
     },
   },
   methods: {
-    initOutputVars(outputVariable) {
+    initOutputVars(value) {
+      const outputVariable = value || this.defaultOutputVariable;
       // 初始化完整输出变量名
-      if (!outputVariable) return;
-      this.simpleOutputVar = outputVariable.name || "";
-
-      if (this.currentOutputs) {
-        // 初始化详细输出变量，直接使用扁平化的结构
-        this.outputVars = outputVariable?.details || {};
+      if (!outputVariable) {
+        this.simpleOutputVar = "";
+        this.outputVars = {};
+        return;
       }
+
+      this.simpleOutputVar = outputVariable.name;
+      this.outputVars = outputVariable.details;
     },
     handleConfirm() {
       const outputVariable = {};
