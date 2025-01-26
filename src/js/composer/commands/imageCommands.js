@@ -49,6 +49,47 @@ export const imageCommands = {
           },
         },
       ],
+      outputs: {
+        label: "图片信息",
+        suggestName: "imageInfo",
+        structure: {
+          width: { label: "宽度", suggestName: "imageWidth" },
+          height: { label: "高度", suggestName: "imageHeight" },
+          aspectRatio: { label: "宽高比", suggestName: "imageAspectRatio" },
+          resolution: { label: "分辨率", suggestName: "imageResolution" },
+          type: { label: "类型", suggestName: "imageType" },
+          format: { label: "格式", suggestName: "imageFormat" },
+          size: { label: "大小", suggestName: "imageSize" },
+          bytes: { label: "字节", suggestName: "imageBytes" },
+          createTime: { label: "创建时间", suggestName: "imageCreateTime" },
+          modifyTime: { label: "修改时间", suggestName: "imageModifyTime" },
+          accessTime: { label: "访问时间", suggestName: "imageAccessTime" },
+          path: { label: "路径", suggestName: "imagePath" },
+          filename: { label: "文件名", suggestName: "imageFilename" },
+          colorInfo: {
+            label: "颜色信息",
+            averageColor: {
+              label: "平均RGBA",
+              suggestName: "imageAverageRgba",
+            },
+            isTransparent: {
+              label: "是否透明",
+              suggestName: "imageIsTransparent",
+            },
+            hasAlphaChannel: {
+              label: "是否包含Alpha通道",
+              suggestName: "imageHasAlphaChannel",
+            },
+          },
+          exif: { label: "EXIF", suggestName: "imageExif" },
+          rawExif: { label: "原始EXIF", suggestName: "imageRawExif" },
+          naturalWidth: { label: "自然宽度", suggestName: "imageNaturalWidth" },
+          naturalHeight: {
+            label: "自然高度",
+            suggestName: "imageNaturalHeight",
+          },
+        },
+      },
     },
     {
       value: "quickcomposer.image.resize",
@@ -475,6 +516,7 @@ export const imageCommands = {
     {
       value: "quickcomposer.image.pngToIcon",
       label: "PNG转图标",
+      neverHasOutput: true,
       icon: "transform",
       config: [
         {

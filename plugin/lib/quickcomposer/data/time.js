@@ -76,44 +76,207 @@ const time = {
   parse: function (time, format) {
     if (!time) return null;
 
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth() + 1; // 转换为正常月份
+    let day = now.getDate();
+    let hours = 0;
+    let minutes = 0;
+    let seconds = 0;
+
     // 处理时间戳
     if (format === "timestamp") {
-      return new Date(Number(time) * 1000);
+      const date = new Date(Number(time) * 1000);
+      return this._formatTimeObject(date);
     }
     if (format === "timestamp_ms") {
-      return new Date(Number(time));
+      const date = new Date(Number(time));
+      return this._formatTimeObject(date);
     }
 
-    // 处理标准格式
-    const now = new Date();
-    const year = now.getFullYear();
-    let result;
+    // 如果没有指定格式，尝试自动识别
+    if (!format) {
+      // 尝试直接解析
+      const date = new Date(time);
+      if (date.getTime()) {
+        return this._formatTimeObject(date);
+      }
 
-    switch (format) {
-      case "YYYY-MM-DD":
-      case "YYYY-MM-DD HH:mm:ss":
-      case "YYYY-MM-DD HH:mm":
-        result = new Date(time);
-        break;
-      case "YYYY年MM月DD日":
-        time = time.replace(/[年月日]/g, (match) => {
-          return { 年: "-", 月: "-", 日: "" }[match];
-        });
-        result = new Date(time);
-        break;
-      case "MM/DD/YYYY":
-        const [month, day, yyyy] = time.split("/");
-        result = new Date(yyyy, month - 1, day);
-        break;
-      case "DD/MM/YYYY":
-        const [dd, mm, yy] = time.split("/");
-        result = new Date(yy, mm - 1, dd);
-        break;
-      default:
-        result = new Date(time);
+      // 尝试解析常见格式
+      const patterns = {
+        // 标准格式
+        "YYYY-MM-DD HH:mm:ss":
+          /^(\d{4})-(\d{1,2})-(\d{1,2}) (\d{1,2}):(\d{1,2}):(\d{1,2})$/,
+        "YYYY-MM-DD HH:mm": /^(\d{4})-(\d{1,2})-(\d{1,2}) (\d{1,2}):(\d{1,2})$/,
+        "YYYY-MM-DD": /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
+        // 中文格式
+        "YYYY年MM月DD日 HH时mm分ss秒":
+          /^(\d{4})年(\d{1,2})月(\d{1,2})日 (\d{1,2})时(\d{1,2})分(\d{1,2})秒$/,
+        "YYYY年MM月DD日 HH:mm:ss":
+          /^(\d{4})年(\d{1,2})月(\d{1,2})日 (\d{1,2}):(\d{1,2}):(\d{1,2})$/,
+        YYYY年MM月DD日: /^(\d{4})年(\d{1,2})月(\d{1,2})日$/,
+        // 斜杠格式
+        "MM/DD/YYYY HH:mm:ss":
+          /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{1,2}):(\d{1,2})$/,
+        "DD/MM/YYYY HH:mm:ss":
+          /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{1,2}):(\d{1,2})$/,
+        "MM/DD/YYYY": /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+        "DD/MM/YYYY": /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+        // 点号格式
+        "DD.MM.YYYY": /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/,
+        // 时间格式
+        "HH:mm:ss": /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/,
+        "HH:mm": /^(\d{1,2}):(\d{1,2})$/,
+      };
+
+      for (const [patternFormat, regex] of Object.entries(patterns)) {
+        const matches = time.match(regex);
+        if (matches) {
+          format = patternFormat;
+          break;
+        }
+      }
     }
 
-    return result.getTime() ? result : null;
+    // 解析时间字符串
+    const parseTimeString = (timeStr) => {
+      const parts = timeStr.split(/[: ]/);
+      return {
+        hours: parseInt(parts[0]) || 0,
+        minutes: parseInt(parts[1]) || 0,
+        seconds: parseInt(parts[2]) || 0,
+      };
+    };
+
+    // 根据格式解析
+    if (format) {
+      // 移除所有非数字和分隔符
+      const cleanTime = time.replace(/[^0-9/\-.: ]/g, "");
+      const parts = cleanTime.split(/[/\-.: ]/);
+
+      switch (format) {
+        case "YYYY-MM-DD":
+        case "YYYY-MM-DD HH:mm:ss":
+        case "YYYY-MM-DD HH:mm":
+        case "YYYY年MM月DD日":
+        case "YYYY年MM月DD日 HH:mm:ss":
+        case "YYYY年MM月DD日 HH时mm分ss秒":
+          year = parseInt(parts[0]);
+          month = parseInt(parts[1]);
+          day = parseInt(parts[2]);
+          if (parts.length > 3) {
+            const timeStr = parts.slice(3).join(":");
+            const timeObj = parseTimeString(timeStr);
+            hours = timeObj.hours;
+            minutes = timeObj.minutes;
+            seconds = timeObj.seconds;
+          }
+          break;
+        case "MM/DD/YYYY":
+        case "MM/DD/YYYY HH:mm:ss":
+          year = parseInt(parts[2]);
+          month = parseInt(parts[0]);
+          day = parseInt(parts[1]);
+          if (parts.length > 3) {
+            const timeStr = parts.slice(3).join(":");
+            const timeObj = parseTimeString(timeStr);
+            hours = timeObj.hours;
+            minutes = timeObj.minutes;
+            seconds = timeObj.seconds;
+          }
+          break;
+        case "DD/MM/YYYY":
+        case "DD/MM/YYYY HH:mm:ss":
+        case "DD.MM.YYYY":
+          year = parseInt(parts[2]);
+          month = parseInt(parts[1]);
+          day = parseInt(parts[0]);
+          if (parts.length > 3) {
+            const timeStr = parts.slice(3).join(":");
+            const timeObj = parseTimeString(timeStr);
+            hours = timeObj.hours;
+            minutes = timeObj.minutes;
+            seconds = timeObj.seconds;
+          }
+          break;
+        case "HH:mm:ss":
+        case "HH:mm":
+          const timeObj = parseTimeString(cleanTime);
+          hours = timeObj.hours;
+          minutes = timeObj.minutes;
+          seconds = timeObj.seconds;
+          break;
+        default:
+          // 尝试使用原生解析
+          const date = new Date(time);
+          if (date.getTime()) {
+            year = date.getFullYear();
+            month = date.getMonth() + 1;
+            day = date.getDate();
+            hours = date.getHours();
+            minutes = date.getMinutes();
+            seconds = date.getSeconds();
+          }
+      }
+    }
+
+    // 验证日期是否有效
+    const testDate = new Date(year, month - 1, day, hours, minutes, seconds);
+    if (!testDate.getTime()) return null;
+
+    return this._formatTimeObject(testDate);
+  },
+
+  // 格式化时间对象
+  _formatTimeObject: function (date) {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+
+    return {
+      date: {
+        year,
+        month,
+        day,
+      },
+      time: {
+        hours,
+        minutes,
+        seconds,
+      },
+      formats: {
+        // 标准格式
+        iso: date.toISOString(),
+        locale: date.toLocaleString(),
+        localeDate: date.toLocaleDateString(),
+        localeTime: date.toLocaleTimeString(),
+        // 常用格式
+        "YYYY-MM-DD": `${year}-${this._pad(month)}-${this._pad(day)}`,
+        "YYYY-MM-DD HH:mm:ss": `${year}-${this._pad(month)}-${this._pad(
+          day
+        )} ${this._pad(hours)}:${this._pad(minutes)}:${this._pad(seconds)}`,
+        dateCN: `${year}年${this._pad(month)}月${this._pad(day)}日`,
+        "MM/DD/YYYY": `${this._pad(month)}/${this._pad(day)}/${year}`,
+        "DD/MM/YYYY": `${this._pad(day)}/${this._pad(month)}/${year}`,
+        "HH:mm:ss": `${this._pad(hours)}:${this._pad(minutes)}:${this._pad(
+          seconds
+        )}`,
+      },
+      timestamp: Math.floor(date.getTime() / 1000),
+      timestamp_ms: date.getTime(),
+      // 日历信息
+      calendar: {
+        week: date.getDay(),
+        weekText: ["日", "一", "二", "三", "四", "五", "六"][date.getDay()],
+        isWeekend: date.getDay() === 0 || date.getDay() === 6,
+        isLeapYear: (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0,
+        daysInMonth: new Date(year, month, 0).getDate(),
+        constellation: this._getConstellation(month, day),
+      },
+    };
   },
 
   // 时间加减

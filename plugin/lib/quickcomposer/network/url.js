@@ -54,17 +54,6 @@ function formatQuery(queryParams) {
   }
 }
 
-// 解析路径名
-function parsePath(path) {
-  return url.parse(path);
-}
-
-// 解析主机名
-function parseHost(host) {
-  const { hostname, port } = url.parse(`http://${host}`);
-  return { hostname, port };
-}
-
 // 解析 URL 参数
 function getQueryParam(urlString, param) {
   const { query } = url.parse(urlString, true);
@@ -92,32 +81,13 @@ function isAbsolute(urlString) {
   return url.parse(urlString).protocol !== null;
 }
 
-// 解析 URL 的各个部分
-function parseComponents(urlString) {
-  const { protocol, auth, hostname, port, pathname, search, hash } =
-    url.parse(urlString);
-
-  return {
-    protocol: protocol?.replace(":", ""),
-    auth,
-    hostname,
-    port,
-    pathname,
-    search: search?.replace("?", ""),
-    hash: hash?.replace("#", ""),
-  };
-}
-
 module.exports = {
   parse,
   format,
   parseQuery,
   formatQuery,
-  parsePath,
-  parseHost,
   getQueryParam,
   addQueryParam,
   removeQueryParam,
   isAbsolute,
-  parseComponents,
 };

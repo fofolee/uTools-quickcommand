@@ -75,15 +75,18 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    arrayIndex: {
+      type: Number,
+      default: 0,
+    },
     modelValue: {
       type: Object,
       default: () => ({}),
     },
-  },
-  data() {
-    return {
-      fixedFields: ["label", "placeholder", "suggestName"],
-    };
+    fixedFields: {
+      type: Array,
+      default: () => [],
+    },
   },
   emits: ["update:modelValue"],
   computed: {
@@ -105,7 +108,9 @@ export default defineComponent({
   },
   methods: {
     getFieldPath(subKey = "") {
-      const base = this.isArray ? `[0].${this.outputKey}` : this.outputKey;
+      const base = this.isArray
+        ? `[${this.arrayIndex}]?.${this.outputKey}`
+        : this.outputKey;
       return subKey ? `${base}.${subKey}` : base;
     },
     updateField(subKey, value) {

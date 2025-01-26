@@ -6,6 +6,7 @@ export const notifyCommands = {
     {
       value: "console.log",
       label: "显示消息",
+      neverHasOutput: true,
       config: [
         {
           label: "要打印的消息文本",
@@ -17,6 +18,7 @@ export const notifyCommands = {
     {
       value: "utools.showNotification",
       label: "发送系统消息",
+      neverHasOutput: true,
       config: [
         {
           label: "要发送的系统消息文本",

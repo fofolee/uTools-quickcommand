@@ -103,11 +103,21 @@ export const mathCommands = {
           value: "quickcomposer.math.random.number",
           label: "随机数",
           icon: "casino",
+          outputs: {
+            label: "随机数",
+            suggestName: "randomNumber",
+            typeName: "数字",
+          },
         },
         {
           value: "quickcomposer.math.random.integer",
           label: "随机整数",
           icon: "casino",
+          outputs: {
+            label: "随机整数",
+            suggestName: "randomInteger",
+            typeName: "数字",
+          },
         },
       ],
     },
@@ -298,6 +308,11 @@ export const mathCommands = {
       value: "quickcomposer.math.conversion.base",
       label: "进制转换",
       icon: "swap_horiz",
+      outputs: {
+        label: "转换结果",
+        suggestName: "convertedResult",
+        typeName: "字符串",
+      },
       config: [
         {
           label: "数值",

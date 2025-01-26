@@ -4,6 +4,7 @@ const zlib = require("./zlib");
 const { htmlParser } = require("./htmlParser");
 const array = require("./array");
 const time = require("./time");
+const { regexTransform } = require("./regexTransform");
 
 module.exports = {
   htmlParser,
@@ -12,4 +13,5 @@ module.exports = {
   zlib,
   array,
   time,
+  regexTransform,
 };

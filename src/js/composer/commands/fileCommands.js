@@ -8,10 +8,15 @@ export const fileCommands = {
       label: "文件/文件夹操作",
       component: "FileOperationEditor",
       asyncMode: "await",
+      outputs: {
+        label: "文件/文件夹操作结果",
+        suggestName: "fileOperationResult",
+      },
     },
     {
       value: "utools.shellOpenItem",
       label: "默认程序打开",
+      neverHasOutput: true,
       config: [
         {
           label: "文件、文件夹或软件的绝对路径",
@@ -29,6 +34,7 @@ export const fileCommands = {
     {
       value: "utools.shellShowItemInFolder",
       label: "文件管理器中显示",
+      neverHasOutput: true,
       config: [
         {
           label: "文件、文件夹或软件的绝对路径",
@@ -62,6 +68,10 @@ export const fileCommands = {
           },
         },
       ],
+      outputs: {
+        label: "文件图标",
+        suggestName: "fileIcon",
+      },
     },
     {
       value: "quickcomposer.file.archive",
@@ -124,6 +134,7 @@ export const fileCommands = {
       value: "utools.shellTrashItem",
       label: "删除文件到回收站",
       icon: "delete",
+      neverHasOutput: true,
       config: [
         {
           label: "文件或文件夹的绝对路径",

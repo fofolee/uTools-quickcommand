@@ -77,16 +77,39 @@ export const systemCommands = {
           value: "electron.clipboard.readText",
           label: "剪贴板文本",
           icon: "content_copy",
+          outputs: {
+            label: "剪贴板文本",
+            suggestName: "clipboardText",
+          },
         },
         {
           value: "quickcommand.readClipboardImage",
           label: "剪贴板图片",
           icon: "image",
+          outputs: {
+            label: "图片DataURL",
+            suggestName: "clipboardImageDataURL",
+          },
         },
         {
           value: "utools.getCopyedFiles",
           label: "剪贴板文件",
           icon: "file_copy",
+          outputs: {
+            label: "剪贴板文件列表",
+            suggestName: "clipboardFileList",
+            structure: [
+              {
+                isFile: { label: "是否是文件", suggestName: "isFile" },
+                isDirectory: {
+                  label: "是否是目录",
+                  suggestName: "isDirectory",
+                },
+                name: { label: "文件名", suggestName: "name" },
+                path: { label: "文件路径", suggestName: "path" },
+              },
+            ],
+          },
         },
         {
           value: "electron.clipboard.readRTF",
@@ -106,6 +129,10 @@ export const systemCommands = {
       component: "SystemCommandEditor",
       icon: "terminal",
       asyncMode: "await",
+      outputs: {
+        label: "执行结果",
+        suggestName: "execResult",
+      },
     },
     {
       value: "utools.getPath",
@@ -175,6 +202,10 @@ export const systemCommands = {
           ],
         },
       ],
+      outputs: {
+        label: "系统路径",
+        suggestName: "systemPath",
+      },
     },
     {
       value: "utools.isMacOS",
@@ -184,16 +215,31 @@ export const systemCommands = {
           value: "utools.isMacOS",
           label: "是否Mac",
           icon: "computer",
+          outputs: {
+            label: "是否是Mac",
+            typeName: "布尔值",
+            suggestName: "isMacOS",
+          },
         },
         {
           value: "utools.isWindows",
           label: "是否Windows",
           icon: "computer",
+          outputs: {
+            label: "是否是Windows",
+            typeName: "布尔值",
+            suggestName: "isWindows",
+          },
         },
         {
           value: "utools.isLinux",
           label: "是否Linux",
           icon: "computer",
+          outputs: {
+            label: "是否是Linux",
+            typeName: "布尔值",
+            suggestName: "isLinux",
+          },
         },
       ],
     },
@@ -212,18 +258,24 @@ export const systemCommands = {
           value: "quickcomposer.system.os.cpus",
           label: "CPU信息",
           icon: "developer_board",
-          config: [
-            {
-              label: "信息格式",
-              component: "ButtonGroup",
-              options: [
-                { label: "完整信息", value: "full" },
-                { label: "仅型号和速度", value: "simple" },
-              ],
-              defaultValue: "full",
-              width: 12,
-            },
-          ],
+          outputs: {
+            label: "CPU信息",
+            suggestName: "cpuInfo",
+            structure: [
+              {
+                model: { label: "型号", suggestName: "model" },
+                speed: { label: "速度", suggestName: "speed" },
+                times: {
+                  label: "时间",
+                  user: { label: "user", suggestName: "user" },
+                  nice: { label: "nice", suggestName: "nice" },
+                  sys: { label: "sys", suggestName: "sys" },
+                  idle: { label: "idle", suggestName: "idle" },
+                  irq: { label: "irq", suggestName: "irq" },
+                },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.system.os.memory",
@@ -323,6 +375,17 @@ export const systemCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "路径解析结果",
+            suggestName: "pathParseResult",
+            structure: {
+              root: { label: "根路径", suggestName: "parseRoot" },
+              dir: { label: "目录", suggestName: "parseDir" },
+              base: { label: "基本名称", suggestName: "parseBaseName" },
+              ext: { label: "扩展名", suggestName: "parseExtName" },
+              name: { label: "文件名", suggestName: "parseFileName" },
+            },
+          },
         },
         {
           value: "quickcomposer.system.path.dirname",
@@ -482,6 +545,7 @@ export const systemCommands = {
       value: "quickcommand.kill",
       label: "关闭进程",
       icon: "dangerous",
+      neverHasOutput: true,
       config: [
         {
           label: "进程ID",

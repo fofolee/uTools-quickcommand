@@ -14,11 +14,27 @@ export const userdataCommands = {
           icon: "title",
         },
       ],
+      outputs: {
+        label: "数据值",
+        suggestName: "userDataValue",
+        typeName: "字符串",
+      },
     },
     {
       value: "quickcommand.userData.all",
       label: "获取所有用户数据",
       icon: "database",
+      outputs: {
+        label: "所有用户数据",
+        suggestName: "allUserData",
+        structure: [
+          {
+            id: { label: "数据标识", suggestName: "userDataId" },
+            isNative: { label: "是否是本地数据", suggestName: "isNativeData" },
+            value: { label: "数据值", suggestName: "userDataValue" },
+          },
+        ],
+      },
     },
     {
       value: "quickcommand.userData.put",
@@ -44,6 +60,11 @@ export const userdataCommands = {
           width: 2,
         },
       ],
+      outputs: {
+        label: "是否成功",
+        suggestName: "isSetUserDataSuccess",
+        typeName: "布尔值",
+      },
     },
     {
       value: "quickcommand.userData.del",
@@ -56,6 +77,11 @@ export const userdataCommands = {
           icon: "title",
         },
       ],
+      outputs: {
+        label: "是否成功",
+        suggestName: "isDelUserDataSuccess",
+        typeName: "布尔值",
+      },
     },
   ],
 };

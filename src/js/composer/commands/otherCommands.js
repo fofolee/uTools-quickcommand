@@ -4,8 +4,9 @@ export const otherCommands = {
   defaultOpened: false,
   commands: [
     {
-      value: "quickcommand.sleep",
+      value: "quickcommand.asyncSleep",
       label: "添加延时",
+      asyncMode: "await",
       config: [
         {
           label: "延迟的毫秒数",

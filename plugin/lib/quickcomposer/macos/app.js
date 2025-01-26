@@ -192,7 +192,8 @@ module.exports = {
 
   // 启动应用
   launch: async function (appName) {
-    return await quickcommand.runAppleScript(`
+    if (!appName) return;
+    await quickcommand.runAppleScript(`
       tell application "${appName}"
         activate
       end tell
@@ -201,7 +202,8 @@ module.exports = {
 
   // 退出应用
   quit: async function (appName) {
-    return await quickcommand.runAppleScript(`
+    if (!appName) return;
+    await quickcommand.runAppleScript(`
       tell application "${appName}"
         quit
       end tell
@@ -210,7 +212,8 @@ module.exports = {
 
   // 隐藏应用
   hide: async function (appName) {
-    return await quickcommand.runAppleScript(`
+    if (!appName) return;
+    await quickcommand.runAppleScript(`
       tell application "System Events"
         set visible of process "${appName}" to false
       end tell
@@ -219,7 +222,8 @@ module.exports = {
 
   // 显示应用
   show: async function (appName) {
-    return await quickcommand.runAppleScript(`
+    if (!appName) return;
+    await quickcommand.runAppleScript(`
       tell application "System Events"
         set visible of process "${appName}" to true
       end tell
@@ -231,7 +235,8 @@ module.exports = {
 
   // 最小化窗口
   minimize: async function (appName) {
-    return await quickcommand.runAppleScript(`
+    if (!appName) return;
+    await quickcommand.runAppleScript(`
       tell application "System Events"
         tell process "${appName}"
           try
@@ -244,7 +249,8 @@ module.exports = {
 
   // 最大化窗口
   maximize: async function (appName) {
-    return await quickcommand.runAppleScript(`
+    if (!appName) return;
+    await quickcommand.runAppleScript(`
       tell application "System Events"
         tell process "${appName}"
           try
@@ -258,6 +264,7 @@ module.exports = {
 
   // 获取窗口信息
   getWindows: async function (appName) {
+    if (!appName) return;
     const result = await quickcommand.runAppleScript(`
       tell application "System Events"
         tell process "${appName}"
@@ -341,6 +348,7 @@ module.exports = {
 
   // 获取应用脚本字典
   getScriptDictionary: async function (appName) {
+    if (!appName) return;
     try {
       const { execSync } = require("child_process");
 

@@ -6,15 +6,22 @@ export const utoolsCommands = {
       value: "utools.hideMainWindow",
       label: "隐藏主窗口",
       icon: "visibility_off",
+      outputs: {
+        label: "是否隐藏成功",
+        typeName: "布尔值",
+        suggestName: "isHideMainWindowSuccess",
+      },
     },
     {
       value: "quickcommand.wakeUtools",
       label: "唤醒uTools",
+      neverHasOutput: true,
       icon: "visibility",
     },
     {
       value: "utools.setExpendHeight",
       label: "设置uTools高度",
+      neverHasOutput: true,
       icon: "height",
       config: [
         {
@@ -30,6 +37,7 @@ export const utoolsCommands = {
     {
       value: "utools.outPlugin",
       label: "退出插件",
+      neverHasOutput: true,
       icon: "exit_to_app",
       config: [
         {
@@ -47,15 +55,30 @@ export const utoolsCommands = {
       value: "utools.isDarkColors",
       label: "是否深色模式",
       icon: "dark_mode",
+      outputs: {
+        label: "是否深色模式",
+        suggestName: "isDarkColors",
+        typeName: "布尔值",
+      },
     },
     {
       value: "utools.getUser",
       label: "获取用户信息",
       icon: "person",
+      outputs: {
+        label: "用户信息",
+        suggestName: "userInfo",
+        structure: {
+          avatar: { label: "头像", suggestName: "userAvatar" },
+          nickname: { label: "昵称", suggestName: "userNickname" },
+          type: { label: "类型", suggestName: "userType" },
+        },
+      },
     },
     {
       value: "utools.redirect",
       label: "转至指定插件",
+      neverHasOutput: true,
       config: [
         {
           label: "要跳转至的插件名称",
@@ -74,6 +97,7 @@ export const utoolsCommands = {
     {
       value: "utools.findInPage",
       label: "插件内查找",
+      neverHasOutput: true,
       icon: "search",
       subCommands: [
         {
@@ -137,6 +161,7 @@ export const utoolsCommands = {
         {
           value: "utools.stopFindInPage",
           label: "停止查找",
+          neverHasOutput: true,
           icon: "stop",
           config: [
             {
@@ -159,14 +184,29 @@ export const utoolsCommands = {
       value: "utools.getWindowType",
       label: "获取当前窗口类型",
       icon: "window",
+      outputs: {
+        label: "窗口类型",
+        suggestName: "windowType",
+        typeName: "字符串",
+      },
     },
     {
       value: "utools.getNativeId",
       label: "获取本地ID",
+      outputs: {
+        label: "本地ID",
+        suggestName: "nativeId",
+        typeName: "字符串",
+      },
     },
     {
       value: "utools.getAppVersion",
       label: "获取uTools版本",
+      outputs: {
+        label: "uTools版本",
+        suggestName: "appVersion",
+        typeName: "字符串",
+      },
     },
   ],
 };

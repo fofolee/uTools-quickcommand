@@ -72,7 +72,8 @@ const submitForm = async (tab, buttonSelector, inputSelectors) => {
 const getText = async (tab, selector) => {
   return await executeScript(
     tab,
-    `document.querySelector('${selector}')?.textContent || ''`
+    `const element = document.querySelector('${selector}');
+      return element?.textContent || element?.innerText || '';`
   );
 };
 
@@ -80,7 +81,7 @@ const getHtml = async (tab, selector) => {
   return await executeScript(
     tab,
     `const element = document.querySelector('${selector}');
-      return element ? element.innerHTML : '';`
+      return element?.outerHTML || '';`
   );
 };
 
@@ -110,7 +111,7 @@ const scrollToElement = async (tab, selector) => {
 };
 
 const getScrollPosition = async (tab) => {
-  return await executeScript(
+  const result = await executeScript(
     tab,
     `
       return JSON.stringify({
@@ -119,10 +120,11 @@ const getScrollPosition = async (tab) => {
       });
     `
   );
+  return JSON.parse(result);
 };
 
 const getPageSize = async (tab) => {
-  return await executeScript(
+  const result = await executeScript(
     tab,
     `
       return JSON.stringify({
@@ -137,6 +139,7 @@ const getPageSize = async (tab) => {
       });
     `
   );
+  return JSON.parse(result);
 };
 
 const waitForElement = async (tab, selector, timeout = 5000) => {

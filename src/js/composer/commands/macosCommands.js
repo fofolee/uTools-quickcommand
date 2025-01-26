@@ -1,3 +1,44 @@
+const windowOutputStructure = {
+  name: { label: "应用名称", suggestName: "appName" },
+  displayedName: {
+    label: "应用显示名称",
+    suggestName: "appDisplayName",
+  },
+  path: { label: "应用路径", suggestName: "appPath" },
+  version: { label: "应用版本", suggestName: "appVersion" },
+  pid: { label: "应用进程ID", suggestName: "appPid" },
+  backgroundOnly: {
+    label: "是否后台运行",
+    suggestName: "appBackgroundOnly",
+  },
+  visible: { label: "是否可见", suggestName: "appVisible" },
+  frontmost: { label: "是否前台运行", suggestName: "appFrontmost" },
+  window: {
+    label: "窗口信息",
+    name: { label: "窗口名称", suggestName: "windowName" },
+    title: { label: "窗口标题", suggestName: "windowTitle" },
+    index: { label: "窗口索引", suggestName: "windowIndex" },
+    position: {
+      label: "窗口位置",
+      placeholder: "数组，分别为 x 坐标，y 坐标",
+      suggestName: "windowPosition",
+    },
+    size: {
+      label: "窗口大小",
+      placeholder: "数组，分别为 宽度，高度",
+      suggestName: "windowSize",
+    },
+    minimized: {
+      label: "是否最小化",
+      suggestName: "windowMinimized",
+    },
+    fullscreen: {
+      label: "是否全屏",
+      suggestName: "windowFullscreen",
+    },
+  },
+};
+
 export const macosCommands = {
   label: "Mac自动化",
   icon: "laptop_mac",
@@ -16,47 +57,7 @@ export const macosCommands = {
           outputs: {
             label: "前台应用信息",
             suggestName: "frontmostApp",
-            structure: {
-              name: { label: "应用名称", suggestName: "appName" },
-              displayedName: {
-                label: "应用显示名称",
-                suggestName: "appDisplayName",
-              },
-              path: { label: "应用路径", suggestName: "appPath" },
-              version: { label: "应用版本", suggestName: "appVersion" },
-              pid: { label: "应用进程ID", suggestName: "appPid" },
-              backgroundOnly: {
-                label: "是否后台运行",
-                suggestName: "appBackgroundOnly",
-              },
-              visible: { label: "是否可见", suggestName: "appVisible" },
-              frontmost: { label: "是否前台运行", suggestName: "appFrontmost" },
-              window: {
-                label: "窗口信息",
-                name: { label: "窗口名称", suggestName: "windowName" },
-                title: { label: "窗口标题", suggestName: "windowTitle" },
-                index: { label: "窗口索引", suggestName: "windowIndex" },
-                position: {
-                  label: "窗口位置",
-                  placeholder:
-                    "数组， 第一个元素是 x 坐标，第二个元素是 y 坐标",
-                  suggestName: "windowPosition",
-                },
-                size: {
-                  label: "窗口大小",
-                  placeholder: "数组， 第一个元素是宽度，第二个元素是高度",
-                  suggestName: "windowSize",
-                },
-                minimized: {
-                  label: "是否最小化",
-                  suggestName: "windowMinimized",
-                },
-                fullscreen: {
-                  label: "是否全屏",
-                  suggestName: "windowFullscreen",
-                },
-              },
-            },
+            structure: windowOutputStructure,
           },
         },
         {
@@ -64,7 +65,7 @@ export const macosCommands = {
           label: "获取活动应用",
           icon: "list",
           outputs: {
-            label: "活动应用列表（数组）",
+            label: "活动应用列表",
             suggestName: "runningApps",
           },
         },
@@ -78,7 +79,7 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
         },
@@ -92,7 +93,7 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
         },
@@ -106,7 +107,7 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
         },
@@ -120,7 +121,7 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
         },
@@ -134,7 +135,7 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
         },
@@ -148,7 +149,7 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
         },
@@ -162,9 +163,14 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
+          outputs: {
+            label: "窗口信息",
+            suggestName: "windows",
+            structure: [windowOutputStructure],
+          },
         },
         {
           value: "quickcomposer.macos.app.getScriptDictionary",
@@ -176,9 +182,40 @@ export const macosCommands = {
               component: "VariableInput",
               icon: "apps",
               width: 12,
-              placeholder: "输入应用名称",
+              placeholder: "输入应用名称，如 Finder",
             },
           ],
+          outputs: {
+            label: "应用脚本字典",
+            suggestName: "appScriptDictionary",
+            structure: {
+              commands: {
+                label: "命令列表",
+                suggestName: "appCommands",
+                placeholder: "数组",
+              },
+              properties: {
+                label: "属性列表",
+                suggestName: "appProperties",
+                placeholder: "数组",
+              },
+              summary: {
+                label: "概要信息",
+                totalCommands: {
+                  label: "命令总数",
+                  suggestName: "appTotalCommands",
+                },
+                totalProperties: {
+                  label: "属性总数",
+                  suggestName: "appTotalProperties",
+                },
+                hasScriptingSupport: {
+                  label: "是否支持脚本",
+                  suggestName: "appHasScriptingSupport",
+                },
+              },
+            },
+          },
         },
       ],
     },
@@ -312,11 +349,48 @@ export const macosCommands = {
           value: "quickcomposer.macos.finder.getSelection",
           label: "获取选中项",
           icon: "select_all",
+          outputs: {
+            label: "选中项",
+            suggestName: "selectedItems",
+            structure: [
+              {
+                name: { label: "名称", suggestName: "firstItemName" },
+                path: { label: "路径", suggestName: "firstItemPath" },
+                kind: { label: "类型", suggestName: "firstItemKind" },
+                size: { label: "大小", suggestName: "firstItemSize" },
+                created: {
+                  label: "创建时间",
+                  suggestName: "firstItemCreatedTime",
+                },
+                modified: {
+                  label: "修改时间",
+                  suggestName: "firstItemModifiedTime",
+                },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.macos.finder.getCurrentFolder",
-          label: "获取打开的路径",
+          label: "获取打开的文件夹信息",
           icon: "folder_open",
+          outputs: {
+            label: "打开的文件夹信息",
+            suggestName: "currentFolder",
+            structure: {
+              name: { label: "名称", suggestName: "currentFolderName" },
+              path: { label: "路径", suggestName: "currentFolderPath" },
+              kind: { label: "类型", suggestName: "currentFolderKind" },
+              created: {
+                label: "创建时间",
+                suggestName: "currentFolderCreatedTime",
+              },
+              modified: {
+                label: "修改时间",
+                suggestName: "currentFolderModifiedTime",
+              },
+            },
+          },
         },
         {
           value: "quickcomposer.macos.finder.setShowHiddenFiles",
@@ -335,6 +409,21 @@ export const macosCommands = {
           value: "quickcomposer.macos.finder.getWindows",
           label: "获取窗口列表",
           icon: "window",
+          outputs: {
+            label: "窗口列表",
+            suggestName: "finderWindows",
+            structure: [
+              {
+                name: { label: "名称", suggestName: "firstFinderWindowName" },
+                index: { label: "索引", suggestName: "firstFinderWindowIndex" },
+                bounds: {
+                  label: "边界",
+                  suggestName: "firstFinderWindowBounds",
+                },
+                target: { label: "路径", suggestName: "firstFinderWindowPath" },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.macos.finder.activateWindow",

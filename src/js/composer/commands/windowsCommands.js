@@ -208,7 +208,7 @@ export const windowsCommands = {
           label: "搜索窗口",
           icon: "search",
           outputs: {
-            label: "窗口信息（数组）",
+            label: "窗口信息",
             structure: [
               {
                 handle: { label: "窗口句柄" },

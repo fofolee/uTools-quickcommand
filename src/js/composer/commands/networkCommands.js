@@ -8,6 +8,7 @@ export const networkCommands = {
     {
       value: "utools.shellOpenExternal",
       label: "默认浏览器打开网址",
+      neverHasOutput: true,
       config: [
         {
           label: "要访问的网址链接",
@@ -19,6 +20,7 @@ export const networkCommands = {
     {
       value: "utools.ubrowser.goto",
       label: "ubrowser打开网址",
+      neverHasOutput: true,
       config: [
         {
           label: "要访问的网址链接",
@@ -43,6 +45,21 @@ export const networkCommands = {
       component: "AxiosConfigEditor",
       asyncMode: "await",
       icon: "http",
+      outputs: {
+        label: "HTTP请求结果",
+        suggestName: "responseResult",
+        structure: {
+          status: { label: "HTTP状态码", suggestName: "responseStatus" },
+          statusText: {
+            label: "HTTP状态信息",
+            suggestName: "responseStatusText",
+          },
+          headers: { label: "服务器响应头", suggestName: "responseHeaders" },
+          config: { label: "请求配置信息", suggestName: "requestConfig" },
+          request: { label: "发送的请求", suggestName: "request" },
+          data: { label: "响应数据", suggestName: "responseData" },
+        },
+      },
     },
     {
       value: "quickcomposer.network.url.parse",
@@ -54,12 +71,44 @@ export const networkCommands = {
           value: "quickcomposer.network.url.parse",
           label: "解析URL",
           icon: "link_off",
+          config: [
+            {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: 12,
+            },
+          ],
+          outputs: {
+            label: "URL解析结果",
+            suggestName: "urlParseResult",
+            structure: {
+              protocol: { label: "协议", suggestName: "protocol" },
+              slashes: { label: "是否包含斜杠", suggestName: "slashes" },
+              auth: { label: "认证信息", suggestName: "auth" },
+              host: { label: "主机", suggestName: "host" },
+              port: { label: "端口", suggestName: "port" },
+              hostname: { label: "主机名", suggestName: "hostname" },
+              hash: { label: "锚点", suggestName: "hash" },
+              search: { label: "查询字符串", suggestName: "search" },
+              query: { label: "查询参数", suggestName: "query" },
+              pathname: { label: "路径", suggestName: "pathname" },
+              path: { label: "路径", suggestName: "path" },
+              href: { label: "完整URL", suggestName: "href" },
+            },
+          },
         },
         {
           value: "quickcomposer.network.url.format",
           label: "格式化URL",
           icon: "link",
           config: [
+            {
+              label: "URL",
+              component: "VariableInput",
+              icon: "link",
+              width: 12,
+            },
             {
               label: "协议",
               component: "VariableInput",
@@ -102,6 +151,10 @@ export const networkCommands = {
               width: 6,
             },
           ],
+          outputs: {
+            label: "URL格式化结果",
+            suggestName: "urlFormatResult",
+          },
         },
         {
           value: "quickcomposer.network.url.parseQuery",
@@ -114,6 +167,10 @@ export const networkCommands = {
               icon: "search",
             },
           ],
+          outputs: {
+            label: "解析结果",
+            suggestName: "queryParseResult",
+          },
         },
         {
           value: "quickcomposer.network.url.formatQuery",
@@ -126,30 +183,10 @@ export const networkCommands = {
               icon: "edit",
             },
           ],
-        },
-        {
-          value: "quickcomposer.network.url.parsePath",
-          label: "解析路径",
-          icon: "folder_open",
-          config: [
-            {
-              label: "路径",
-              component: "VariableInput",
-              icon: "folder",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.network.url.parseHost",
-          label: "解析主机名",
-          icon: "dns",
-          config: [
-            {
-              label: "主机名",
-              component: "VariableInput",
-              icon: "dns",
-            },
-          ],
+          outputs: {
+            label: "格式化结果",
+            suggestName: "queryFormatResult",
+          },
         },
         {
           value: "quickcomposer.network.url.getQueryParam",
@@ -169,6 +206,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "参数值",
+            suggestName: "paramValue",
+          },
         },
         {
           value: "quickcomposer.network.url.addQueryParam",
@@ -194,6 +235,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "处理后URL",
+            suggestName: "urlAfterAddParam",
+          },
         },
         {
           value: "quickcomposer.network.url.removeQueryParam",
@@ -213,6 +258,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "处理后URL",
+            suggestName: "urlAfterRemoveParam",
+          },
         },
         {
           value: "quickcomposer.network.url.isAbsolute",
@@ -226,19 +275,11 @@ export const networkCommands = {
               width: "auto",
             },
           ],
-        },
-        {
-          value: "quickcomposer.network.url.parseComponents",
-          label: "解析组成部分",
-          icon: "category",
-          config: [
-            {
-              label: "URL",
-              component: "VariableInput",
-              icon: "link",
-              width: "auto",
-            },
-          ],
+          outputs: {
+            label: "是否是绝对URL",
+            typeName: "布尔值",
+            suggestName: "isAbsoluteUrl",
+          },
         },
       ],
     },
@@ -279,6 +320,14 @@ export const networkCommands = {
               width: 2.5,
             },
           ],
+          outputs: {
+            label: "解析结果",
+            suggestName: "dnsLookupResult",
+            structure: {
+              address: { label: "IP地址", suggestName: "address" },
+              family: { label: "IP版本", suggestName: "family" },
+            },
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveAll",
@@ -292,6 +341,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "解析地址列表",
+            suggestName: "dnsResolveIpList",
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveIpv4",
@@ -305,6 +358,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "IPv4地址列表",
+            suggestName: "ipv4AddressList",
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveIpv6",
@@ -318,6 +375,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "IPv6地址列表",
+            suggestName: "ipv6AddressList",
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveMxRecords",
@@ -331,6 +392,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "MX记录列表",
+            suggestName: "mxRecordList",
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveTxtRecords",
@@ -344,6 +409,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "TXT记录列表",
+            suggestName: "txtRecordList",
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveNsRecords",
@@ -357,6 +426,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "NS记录列表",
+            suggestName: "nsRecordList",
+          },
         },
         {
           value: "quickcomposer.network.dns.resolveCnameRecords",
@@ -370,6 +443,10 @@ export const networkCommands = {
               width: "auto",
             },
           ],
+          outputs: {
+            label: "CNAME记录列表",
+            suggestName: "cnameRecordList",
+          },
         },
         {
           value: "quickcomposer.network.dns.reverseResolve",
@@ -382,6 +459,10 @@ export const networkCommands = {
               component: "VariableInput",
             },
           ],
+          outputs: {
+            label: "解析域名列表",
+            suggestName: "reverseResolveDomainList",
+          },
         },
       ],
     },

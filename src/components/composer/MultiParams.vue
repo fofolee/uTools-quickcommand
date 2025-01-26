@@ -3,7 +3,7 @@
     <OperationCard
       v-if="hasSubCommands"
       :model-value="funcName"
-      @update:model-value="updateFuncName"
+      @update:model-value="funcName = $event"
       :options="localCommand.subCommands"
     />
     <ParamInput :configs="localConfig" :values="argvs" @update="updateArgv" />
@@ -77,7 +77,7 @@ export default defineComponent({
           newArgvs[this.commonConfig.length + index] = config.defaultValue;
         });
 
-        this.updateModelValue(value, newArgvs);
+        this.updateModelValue(value, newArgvs, true);
       },
     },
     argvs() {
@@ -189,29 +189,24 @@ export default defineComponent({
         );
       return `${subFeature}${allArgvs.join(",")}`;
     },
-    updateModelValue(funcName, argvs) {
-      this.$emit("update:modelValue", {
+    updateModelValue(funcName, argvs, resetOutputVariable = false) {
+      const newModelValue = {
         ...this.modelValue,
         value: funcName,
         argvs,
         summary: this.getSummary(argvs),
         code: this.generateCode(funcName, argvs),
-      });
+      };
+      if (resetOutputVariable) {
+        delete newModelValue.outputVariable;
+      }
+      this.$emit("update:modelValue", newModelValue);
     },
     getColumnStyle(width = 12) {
       const columnWidth = (width / 12) * 100;
       return {
         width: `calc(${columnWidth}% - var(--grid-gap))`,
       };
-    },
-    updateFuncName(value) {
-      this.funcName = value;
-      // 如果切换了子命令，更新输出变量
-      const selectSubCommand = this.getSelectSubCommand(value);
-      if (!selectSubCommand) return;
-      const newModelValue = { ...this.modelValue, value: value };
-      delete newModelValue.outputVariable;
-      this.$emit("update:modelValue", newModelValue);
     },
   },
   mounted() {

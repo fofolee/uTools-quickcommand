@@ -171,6 +171,8 @@ export const uiCommands = {
       asyncMode: "await",
       outputs: {
         label: "是否确认",
+        suggestName: "isConfirmed",
+        typeName: "布尔值",
       },
       config: [
         {
@@ -221,6 +223,21 @@ export const uiCommands = {
       label: "按钮组",
       asyncMode: "await",
       width: 12,
+      outputs: {
+        label: "选择的按钮",
+        suggestName: "selectedButton",
+        structure: {
+          id: {
+            label: "按钮序号",
+            suggestName: "buttonId",
+            placeholder: "按钮的序号，从0开始",
+          },
+          text: {
+            label: "按钮文本",
+            suggestName: "buttonText",
+          },
+        },
+      },
       config: [
         {
           label: "按钮",
@@ -255,6 +272,15 @@ export const uiCommands = {
       value: "quickcommand.showInputBox",
       label: "输入框",
       asyncMode: "await",
+      outputs: {
+        label: "输入框值",
+        suggestName: "inputValues",
+        structure: [
+          { label: "第一个输入框的值", suggestName: "inputValue1" },
+          { label: "第二个输入框的值", suggestName: "inputValue2" },
+          { label: "第三个输入框的值", suggestName: "inputValue3" },
+        ],
+      },
       config: [
         {
           label: "输入框",
@@ -294,11 +320,42 @@ export const uiCommands = {
       label: "选择列表",
       component: "SelectListEditor",
       asyncMode: "await",
+      outputs: {
+        label: "选择结果",
+        suggestName: "selectedItem",
+        structure: {
+          id: {
+            label: "选项序号",
+            suggestName: "itemId",
+            placeholder: "选项的序号，从0开始",
+          },
+          text: {
+            label: "选项文本",
+            suggestName: "itemText",
+            placeholder: "纯文本模式时选项的文本",
+          },
+          title: {
+            label: "选项标题",
+            suggestName: "itemTitle",
+            placeholder: "JSON模式时选项的标题",
+          },
+          description: {
+            label: "选项描述",
+            suggestName: "itemDescription",
+            placeholder: "JSON模式时选项的描述",
+          },
+        },
+      },
     },
     {
       value: "quickcommand.showTextArea",
       label: "文本框",
       asyncMode: "await",
+      outputs: {
+        label: "文本框内容",
+        suggestName: "textAreaContent",
+        typeName: "字符串",
+      },
       config: [
         {
           label: "文本框占位符",
@@ -330,6 +387,11 @@ export const uiCommands = {
       value: "quickcommand.showSystemWaitButton",
       label: "等待操作按钮",
       asyncMode: "await",
+      outputs: {
+        label: "是否点击按钮",
+        suggestName: "isWaitButtonClicked",
+        typeName: "布尔值",
+      },
       config: [
         {
           component: "OptionEditor",
@@ -383,6 +445,15 @@ export const uiCommands = {
               },
             },
           ],
+          outputs: {
+            label: "选择的文件列表",
+            suggestName: "selectedFiles",
+            structure: [
+              { label: "第一个文件路径", suggestName: "firstFilePath" },
+              { label: "第二个文件路径", suggestName: "secondFilePath" },
+              { label: "第三个文件路径", suggestName: "thirdFilePath" },
+            ],
+          },
         },
         {
           value: "utools.showSaveDialog",
@@ -399,6 +470,11 @@ export const uiCommands = {
               },
             },
           ],
+          outputs: {
+            label: "保存文件路径",
+            suggestName: "selectedSavePath",
+            typeName: "字符串",
+          },
         },
       ],
     },

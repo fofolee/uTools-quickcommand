@@ -236,6 +236,18 @@ interface quickcommandApi {
   setTimeout(callback: () => void, ms);
 
   /**
+   * async 等待
+   *
+   * @param ms 等待的毫秒数
+   * ```js
+   * quickcommand.asyncSleep(2000).then(() => {
+   *   console.log('2000毫秒后执行')
+   * })
+   * ```
+   */
+  asyncSleep(ms: number): Promise<number>;
+
+  /**
    * 将给定的html字符串解析为 DOM 对象，用于快速编写爬虫脚本
    *
    * ```js

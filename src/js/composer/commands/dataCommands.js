@@ -22,6 +22,11 @@ export const dataCommands = {
               width: 12,
             },
           ],
+          outputs: {
+            label: "反转结果",
+            suggestName: "reversedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.replace",
@@ -47,6 +52,11 @@ export const dataCommands = {
               width: 6,
             },
           ],
+          outputs: {
+            label: "替换结果",
+            suggestName: "replacedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.substring",
@@ -76,6 +86,11 @@ export const dataCommands = {
               width: 6,
             },
           ],
+          outputs: {
+            label: "截取结果",
+            suggestName: "substringedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.trim",
@@ -101,6 +116,11 @@ export const dataCommands = {
               width: 4,
             },
           ],
+          outputs: {
+            label: "去除空白结果",
+            suggestName: "trimmedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.changeCase",
@@ -130,6 +150,11 @@ export const dataCommands = {
               width: 4,
             },
           ],
+          outputs: {
+            label: "转换结果",
+            suggestName: "changedCaseString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.pad",
@@ -170,6 +195,11 @@ export const dataCommands = {
               width: 4,
             },
           ],
+          outputs: {
+            label: "填充结果",
+            suggestName: "paddedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.split",
@@ -190,6 +220,11 @@ export const dataCommands = {
               defaultValue: newVarInputVal("str", ","),
             },
           ],
+          outputs: {
+            label: "分割结果",
+            suggestName: "splitedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.join",
@@ -210,6 +245,11 @@ export const dataCommands = {
               defaultValue: newVarInputVal("str", ","),
             },
           ],
+          outputs: {
+            label: "合并结果",
+            suggestName: "joinedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.repeat",
@@ -232,6 +272,11 @@ export const dataCommands = {
               defaultValue: 1,
             },
           ],
+          outputs: {
+            label: "重复结果",
+            suggestName: "repeatedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.extract",
@@ -259,6 +304,11 @@ export const dataCommands = {
               width: 4,
             },
           ],
+          outputs: {
+            label: "提取结果",
+            suggestName: "extractedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.count",
@@ -288,6 +338,11 @@ export const dataCommands = {
               width: 4,
             },
           ],
+          outputs: {
+            label: "统计结果",
+            suggestName: "countedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.wrap",
@@ -310,6 +365,11 @@ export const dataCommands = {
               defaultValue: 80,
             },
           ],
+          outputs: {
+            label: "换行结果",
+            suggestName: "wrappedString",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.data.string.align",
@@ -345,6 +405,11 @@ export const dataCommands = {
               defaultValue: 80,
             },
           ],
+          outputs: {
+            label: "对齐结果",
+            suggestName: "alignedString",
+            typeName: "字符串",
+          },
         },
       ],
     },
@@ -1208,26 +1273,62 @@ export const dataCommands = {
               label: "时间字符串",
               component: "VariableInput",
               icon: "schedule",
-              width: 8,
-              placeholder: "2024-01-01 12:00:00",
-            },
-            {
-              label: "原格式",
-              component: "QSelect",
-              icon: "format_shapes",
-              width: 4,
-              options: [
-                { label: "YYYY-MM-DD", value: "YYYY-MM-DD" },
-                { label: "YYYY-MM-DD HH:mm:ss", value: "YYYY-MM-DD HH:mm:ss" },
-                { label: "YYYY年MM月DD日", value: "YYYY年MM月DD日" },
-                { label: "MM/DD/YYYY", value: "MM/DD/YYYY" },
-                { label: "DD/MM/YYYY", value: "DD/MM/YYYY" },
-                { label: "时间戳(秒)", value: "timestamp" },
-                { label: "时间戳(毫秒)", value: "timestamp_ms" },
-              ],
-              defaultValue: "YYYY-MM-DD HH:mm:ss",
+              width: 12,
+              placeholder: "2024-01-01 或 now 或 timestamp",
             },
           ],
+          outputs: {
+            label: "时间解析结果",
+            suggestName: "timeParseResult",
+            structure: {
+              date: {
+                label: "日期",
+                year: { label: "年", suggestName: "dateYear" },
+                month: { label: "月", suggestName: "dateMonth" },
+                day: { label: "日", suggestName: "dateDay" },
+              },
+              time: {
+                label: "时间",
+                hours: { label: "时", suggestName: "timeHours" },
+                minutes: { label: "分", suggestName: "timeMinutes" },
+                seconds: { label: "秒", suggestName: "timeSeconds" },
+              },
+              formats: {
+                label: "格式化结果",
+                iso: { label: "ISO 8601 格式", suggestName: "formatIso" },
+                locale: { label: "本地格式", suggestName: "formatLocale" },
+                localeDate: {
+                  label: "本地日期",
+                  suggestName: "formatLocaleDate",
+                },
+                localeTime: {
+                  label: "本地时间",
+                  suggestName: "formatLocaleTime",
+                },
+                dateCN: {
+                  label: "YYYY年MM月DD日",
+                  suggestName: "formatDateCN",
+                },
+              },
+              timestamp: {
+                label: "时间戳(秒)",
+                suggestName: "formatTimestamp",
+              },
+              timestamp_ms: {
+                label: "时间戳(毫秒)",
+                suggestName: "formatTimestampMs",
+              },
+              calendar: {
+                label: "日历信息",
+                week: { label: "周", suggestName: "calendarWeek" },
+                weekText: { label: "周文本", suggestName: "canlendarweekText" },
+                isWeekend: { label: "是否周末", suggestName: "isWeekend" },
+                isLeapYear: { label: "是否闰年", suggestName: "isLeapYear" },
+                daysInMonth: { label: "月份天数", suggestName: "daysInMonth" },
+                constellation: { label: "星座", suggestName: "constellation" },
+              },
+            },
+          },
         },
         {
           value: "quickcomposer.data.time.add",
@@ -1376,20 +1477,6 @@ export const dataCommands = {
                 { label: "DD/MM/YYYY", value: "DD/MM/YYYY" },
               ],
               defaultValue: "YYYY-MM-DD",
-            },
-          ],
-        },
-        {
-          value: "quickcomposer.data.time.calendar",
-          label: "日历信息",
-          icon: "calendar_month",
-          config: [
-            {
-              label: "时间",
-              component: "VariableInput",
-              icon: "schedule",
-              width: 12,
-              placeholder: "2024-01-01 或 now",
             },
           ],
         },

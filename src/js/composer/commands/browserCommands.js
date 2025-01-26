@@ -117,6 +117,14 @@ export const browserCommands = {
               },
             },
           ],
+          outputs: {
+            label: "实例信息",
+            suggestName: "browserInstance",
+            structure: {
+              pid: { label: "进程ID", suggestName: "instancePid" },
+              port: { label: "端口", suggestName: "instancePort" },
+            },
+          },
         },
         {
           value: "quickcomposer.browser.destroyClientByPort",
@@ -139,11 +147,25 @@ export const browserCommands = {
           value: "quickcomposer.browser.getClientPorts",
           label: "获取所有浏览器实例端口",
           icon: "list",
+          outputs: {
+            label: "实例端口列表",
+            suggestName: "instancePorts",
+            structure: [
+              { label: "实例一端口", suggestName: "instancePort1" },
+              { label: "实例二端口", suggestName: "instancePort2" },
+              { label: "实例三端口", suggestName: "instancePort3" },
+            ],
+          },
         },
         {
           value: "quickcomposer.browser.getCurrentClientPort",
           label: "获取当前操控的实例端口",
           icon: "label",
+          outputs: {
+            label: "实例端口",
+            suggestName: "currentInstancePort",
+            typeName: "数字",
+          },
         },
         {
           value: "quickcomposer.browser.switchClientByPort",
@@ -175,6 +197,11 @@ export const browserCommands = {
           value: "quickcomposer.browser.getUrl",
           label: "获取当前地址",
           icon: "link",
+          outputs: {
+            label: "当前地址",
+            suggestName: "currentUrl",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.browser.setUrl",
@@ -202,6 +229,17 @@ export const browserCommands = {
           value: "quickcomposer.browser.getTabs",
           label: "获取标签列表",
           icon: "tab",
+          outputs: {
+            label: "标签列表",
+            suggestName: "tabList",
+            structure: [
+              {
+                url: { label: "标签一网址", suggestName: "firstTabUrl" },
+                title: { label: "标签一标题", suggestName: "firstTabTitle" },
+                id: { label: "标签一ID", suggestName: "firstTabId" },
+              },
+            ],
+          },
         },
         {
           value: "quickcomposer.browser.activateTab",
@@ -213,6 +251,15 @@ export const browserCommands = {
           value: "quickcomposer.browser.getCurrentTab",
           label: "获取当前标签页",
           icon: "tab",
+          outputs: {
+            label: "当前标签页",
+            suggestName: "currentTab",
+            structure: {
+              url: { label: "标签网址", suggestName: "currentTabUrl" },
+              title: { label: "标签标题", suggestName: "currentTabTitle" },
+              id: { label: "标签ID", suggestName: "currentTabId" },
+            },
+          },
         },
         {
           value: "quickcomposer.browser.createNewTab",
@@ -227,6 +274,15 @@ export const browserCommands = {
               placeholder: "留空则打开about:blank",
             },
           ],
+          outputs: {
+            label: "新标签页",
+            suggestName: "newTab",
+            structure: {
+              url: { label: "新标签网址", suggestName: "newTabUrl" },
+              title: { label: "新标签标题", suggestName: "newTabTitle" },
+              id: { label: "新标签ID", suggestName: "newTabId" },
+            },
+          },
         },
         {
           value: "quickcomposer.browser.closeTab",
@@ -323,6 +379,11 @@ export const browserCommands = {
           width: 12,
         },
       ],
+      outputs: {
+        label: "执行结果",
+        suggestName: "executeResult",
+        typeName: "字符串",
+      },
     },
     {
       value: "quickcomposer.browser.injectRemoteScript",
@@ -479,6 +540,32 @@ export const browserCommands = {
               placeholder: "输入Cookie名称，留空则获取所有",
             },
           ],
+          outputs: {
+            label: "Cookie",
+            suggestName: "cookie",
+            structure: {
+              name: { label: "名称", suggestName: "cookieName" },
+              value: { label: "值", suggestName: "cookieValue" },
+              domain: { label: "域名", suggestName: "cookieDomain" },
+              path: { label: "路径", suggestName: "cookiePath" },
+              expires: { label: "过期时间", suggestName: "cookieExpires" },
+              size: { label: "大小", suggestName: "cookieSize" },
+              httpOnly: { label: "HTTPOnly", suggestName: "isCookieHttpOnly" },
+              secure: { label: "安全", suggestName: "isCookieSecure" },
+              session: { label: "会话", suggestName: "isCookieSession" },
+              sameSite: { label: "同站", suggestName: "isCookieSameSite" },
+              priority: { label: "优先级", suggestName: "cookiePriority" },
+              sameParty: { label: "同域", suggestName: "isCookieSameParty" },
+              sourceScheme: {
+                label: "来源协议",
+                suggestName: "cookieSourceScheme",
+              },
+              sourcePort: {
+                label: "来源端口",
+                suggestName: "cookieSourcePort",
+              },
+            },
+          },
         },
       ],
     },
@@ -546,13 +633,23 @@ export const browserCommands = {
         },
         {
           value: "quickcomposer.browser.getText",
-          label: "获取文本",
+          label: "获取元素文本",
           icon: "text_fields",
+          outputs: {
+            label: "元素文本",
+            suggestName: "elementInnerText",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.browser.getHtml",
-          label: "获取HTML",
+          label: "获取元素HTML",
           icon: "code",
+          outputs: {
+            label: "元素outerHTML",
+            suggestName: "elementOuterHTML",
+            typeName: "字符串",
+          },
         },
         {
           value: "quickcomposer.browser.hideElement",
@@ -619,11 +716,27 @@ export const browserCommands = {
           value: "quickcomposer.browser.getScrollPosition",
           label: "获取滚动位置",
           icon: "open_in_full",
+          outputs: {
+            label: "滚动位置",
+            suggestName: "scrollPosition",
+            structure: {
+              x: { label: "X坐标", suggestName: "scrollPositionX" },
+              y: { label: "Y坐标", suggestName: "scrollPositionY" },
+            },
+          },
         },
         {
           value: "quickcomposer.browser.getPageSize",
           label: "获取页面尺寸",
           icon: "open_in_full",
+          outputs: {
+            label: "页面尺寸",
+            suggestName: "pageSize",
+            structure: {
+              width: { label: "宽度", suggestName: "pageWidth" },
+              height: { label: "高度", suggestName: "pageHeight" },
+            },
+          },
         },
       ],
     },
@@ -686,6 +799,20 @@ export const browserCommands = {
               },
             },
           ],
+          outputs: {
+            label: "设置结果",
+            suggestName: "interceptRequestResult",
+            structure: {
+              success: {
+                label: "是否成功",
+                suggestName: "isInterceptRequestSuccess",
+              },
+              message: {
+                label: "消息",
+                suggestName: "interceptRequestMessage",
+              },
+            },
+          },
         },
         {
           value: "quickcomposer.browser.network.setResponseInterception",
@@ -741,11 +868,39 @@ export const browserCommands = {
               },
             },
           ],
+          outputs: {
+            label: "设置结果",
+            suggestName: "interceptResponseResult",
+            structure: {
+              success: {
+                label: "是否成功",
+                suggestName: "isInterceptResponseSuccess",
+              },
+              message: {
+                label: "消息",
+                suggestName: "interceptResponseMessage",
+              },
+            },
+          },
         },
         {
           value: "quickcomposer.browser.network.clearInterception",
           label: "清除所有拦截规则",
           icon: "clear",
+          outputs: {
+            label: "清除结果",
+            suggestName: "clearInterceptionResult",
+            structure: {
+              success: {
+                label: "是否成功",
+                suggestName: "isClearInterceptionSuccess",
+              },
+              message: {
+                label: "消息",
+                suggestName: "clearInterceptionMessage",
+              },
+            },
+          },
         },
       ],
     },

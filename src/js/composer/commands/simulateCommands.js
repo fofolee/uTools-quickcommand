@@ -10,15 +10,18 @@ export const simulateCommands = {
       label: "模拟按键",
       config: [],
       component: "KeyEditor",
+      neverHasOutput: true,
     },
     {
       value: "quickcomposer.simulate.keySequence",
       label: "按键序列",
       component: "KeySequenceEditor",
+      neverHasOutput: true,
     },
     {
       value: "quickcommand.simulateCopy",
       label: "模拟复制粘贴",
+      neverHasOutput: true,
       config: [],
       subCommands: [
         {
@@ -36,6 +39,11 @@ export const simulateCommands = {
     {
       value: "utools.hideMainWindowTypeString",
       label: "发送文本",
+      outputs: {
+        label: "是否发送成功",
+        suggestName: "isSendSuccess",
+        typeName: "布尔值",
+      },
       config: [
         {
           label: "要发送的文本内容",
@@ -60,6 +68,11 @@ export const simulateCommands = {
     {
       value: "utools.hideMainWindowPasteFile",
       label: "模拟粘贴文件/图片",
+      outputs: {
+        label: "是否粘贴成功",
+        suggestName: "isPasteSuccess",
+        typeName: "布尔值",
+      },
       icon: "file_copy",
       subCommands: [
         {
@@ -112,6 +125,7 @@ export const simulateCommands = {
     {
       value: "quickcomposer.simulate.mouseClick",
       label: "鼠标点击",
+      neverHasOutput: true,
       config: [
         {
           component: "ButtonGroup",
@@ -208,6 +222,20 @@ export const simulateCommands = {
           label: "获取坐标",
           value: "utools.getCursorScreenPoint",
           icon: "mouse",
+          outputs: {
+            label: "鼠标坐标",
+            suggestName: "mousePoint",
+            structure: {
+              x: {
+                label: "X坐标",
+                suggestName: "mouseX",
+              },
+              y: {
+                label: "Y坐标",
+                suggestName: "mouseY",
+              },
+            },
+          },
         },
       ],
     },
@@ -217,12 +245,52 @@ export const simulateCommands = {
       component: "ImageSearchEditor",
       config: [],
       asyncMode: "await",
+      outputs: {
+        label: "图片坐标",
+        suggestName: "foundImagePosition",
+        structure: {
+          x: {
+            label: "X坐标",
+            suggestName: "imageX",
+          },
+          y: {
+            label: "Y坐标",
+            suggestName: "imageY",
+          },
+          width: {
+            label: "宽度",
+            suggestName: "imageWidth",
+          },
+          height: {
+            label: "高度",
+            suggestName: "imageHeight",
+          },
+          confidence: {
+            label: "置信度",
+            suggestName: "imageConfidence",
+          },
+        },
+      },
     },
     {
       value: "quickcomposer.simulate.screenColorPick",
       label: "屏幕取色",
       icon: "colorize",
       asyncMode: "await",
+      outputs: {
+        label: "颜色值",
+        suggestName: "colorValue",
+        structure: {
+          hex: {
+            label: "十六进制颜色值",
+            suggestName: "colorHex",
+          },
+          rgb: {
+            label: "RGB颜色值",
+            suggestName: "colorRgb",
+          },
+        },
+      },
     },
     {
       value: "quickcomposer.simulate.captureScreen",
@@ -252,6 +320,11 @@ export const simulateCommands = {
           label: "保存到dataUrl",
           value: "quickcomposer.simulate.captureScreen",
           icon: "link",
+          outputs: {
+            label: "图片dataUrl",
+            suggestName: "imageDataUrl",
+            typeName: "字符串",
+          },
         },
         {
           label: "保存到文件",

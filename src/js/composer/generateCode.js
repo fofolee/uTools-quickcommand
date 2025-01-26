@@ -91,15 +91,15 @@ export function generateCode(flow) {
             code.push(
               `${indent}${getVarAssignCode(
                 varName,
-                getVarByPath(promiseName, path),
-                flow.name
+                getVarByPath(promiseName, path)
               )}`
             );
           });
         }
       } else {
         // 非Async命令
-        cmdCode = getVarAssignCode(name, `${cmdCode}`);
+        const resultVarName = name || "result";
+        cmdCode = getVarAssignCode(resultVarName, `${cmdCode}`);
         code.push(indent + cmdCode);
         // 处理详细变量
         if (details) {
@@ -107,8 +107,7 @@ export function generateCode(flow) {
             code.push(
               `${indent}${getVarAssignCode(
                 varName,
-                getVarByPath(name, path),
-                flow.name
+                getVarByPath(resultVarName, path)
               )}`
             );
           });
@@ -130,5 +129,9 @@ export function generateCode(flow) {
     code.push("\nmain();"); // Call the main function
   }
 
-  return code.join("\n");
+  const finalCode = code.join("\n");
+
+  console.log(finalCode);
+
+  return finalCode;
 }

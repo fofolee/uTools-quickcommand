@@ -25,6 +25,11 @@ export const scriptCommands = {
       component: "ScriptEditor",
       desc: "运行各种编程语言的代码",
       asyncMode: "await",
+      outputs: {
+        label: "运行结果",
+        suggestName: "runScriptResult",
+        typeName: "字符串",
+      },
     },
     {
       value: "return",

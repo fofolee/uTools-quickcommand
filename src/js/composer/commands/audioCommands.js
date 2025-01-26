@@ -106,6 +106,7 @@ export const audioCommands = {
     {
       value: "quickcomposer.audio.speech.speak",
       label: "文本朗读",
+      asyncMode: "await",
       icon: "record_voice_over",
       subCommands: [
         {
@@ -262,6 +263,15 @@ export const audioCommands = {
           },
         },
       ],
+      outputs: {
+        label: "音频信息",
+        suggestName: "audioInfo",
+        structure: {
+          duration: { label: "时长", suggestName: "audioDuration" },
+          channels: { label: "声道", suggestName: "audioChannels" },
+          sampleRate: { label: "采样率", suggestName: "audioSampleRate" },
+        },
+      },
     },
   ],
 };

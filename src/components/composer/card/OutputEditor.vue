@@ -6,7 +6,7 @@
       </div>
 
       <!-- 完整结果部分 -->
-      <SectionBlock title="完整结果">
+      <SectionBlock title="完整结果" :subtitle="outputTypeName || ''">
         <OutputField
           v-model="simpleOutputVar"
           :label="currentOutputs?.label || '输出变量名'"
@@ -22,27 +22,61 @@
         <SectionBlock
           title="详细输出"
           :subtitle="
-            Array.isArray(currentOutputs.structure) ? '数组中第一个元素' : ''
+            isOutputTypeArray && currentOutputs.structure.length === 1
+              ? '第一个元素'
+              : ''
           "
         >
           <q-scroll-area
-            style="height: 200px"
+            :style="{
+              height: `${Math.min(220, 44 * inputNumbers)}px`,
+            }"
             :thumb-style="{
               width: '2px',
             }"
           >
             <div class="detail-output column q-col-gutter-sm q-px-sm">
-              <template v-if="Array.isArray(currentOutputs.structure)">
-                <template
-                  v-for="(output, key) in currentOutputs.structure[0]"
-                  :key="key"
-                >
-                  <OutputStructure
-                    :output="output"
-                    :output-key="key"
-                    :is-array="true"
-                    v-model="outputVars"
-                  />
+              <template v-if="isOutputTypeArray">
+                <!-- 处理数组结构但内部是简单对象的情况 -->
+                <template v-if="isSimpleArrayStructure">
+                  <template
+                    v-for="(output, index) in currentOutputs.structure"
+                    :key="index"
+                  >
+                    <OutputField
+                      v-model="outputVars['[' + index + ']']"
+                      :label="output.label"
+                      :placeholder="output.placeholder"
+                      :suggest-name="output.suggestName"
+                      :show-variable-list="true"
+                    />
+                  </template>
+                </template>
+                <!-- 处理数组结构且内部是复杂对象的情况 -->
+                <template v-else>
+                  <template
+                    v-for="(item, index) in currentOutputs.structure"
+                    :key="index"
+                  >
+                    <div
+                      class="text-caption q-px-sm"
+                      v-if="currentOutputs.structure.length > 1"
+                    >
+                      第{{ index + 1 }}个元素
+                    </div>
+                    <div class="q-col-gutter-sm column">
+                      <OutputStructure
+                        v-for="(output, key) in item"
+                        :key="key"
+                        :output="output"
+                        :output-key="key"
+                        :is-array="true"
+                        :array-index="index"
+                        :fixed-fields="fixedFields"
+                        v-model="outputVars"
+                      />
+                    </div>
+                  </template>
                 </template>
               </template>
               <template v-else>
@@ -53,6 +87,7 @@
                   <OutputStructure
                     :output="output"
                     :output-key="key"
+                    :fixed-fields="fixedFields"
                     v-model="outputVars"
                   />
                 </template>
@@ -85,6 +120,7 @@
       </template>
 
       <div class="row justify-end q-px-sm q-py-sm">
+        <q-btn flat label="清空" color="primary" @click="handleClear" />
         <q-btn flat label="取消" color="primary" v-close-popup />
         <q-btn flat label="确定" color="primary" @click="handleConfirm" />
       </div>
@@ -126,6 +162,41 @@ export default defineComponent({
         this.$emit("update:modelValue", value);
       },
     },
+    inputNumbers() {
+      const structure = this.currentOutputs?.structure;
+      if (!structure) return 0;
+      if (Array.isArray(structure)) {
+        if (this.isSimpleArrayStructure) {
+          return structure.length;
+        }
+        return Object.keys(structure[0]).length;
+      }
+      return Object.keys(structure).length;
+    },
+    outputTypeName() {
+      const structure = this.currentOutputs?.structure;
+      if (Array.isArray(structure)) {
+        return "数组";
+      }
+      if (typeof structure === "object") {
+        return "对象";
+      }
+      return this.currentOutputs?.typeName;
+    },
+    isOutputTypeArray() {
+      return this.outputTypeName === "数组";
+    },
+    isSimpleArrayStructure() {
+      if (!this.isOutputTypeArray || !this.currentOutputs?.structure?.length) {
+        return false;
+      }
+      const firstItem = this.currentOutputs.structure[0];
+      // 如果数组第一项只包含 label 和 placeholder，则认为是简单结构
+      return (
+        Object.keys(firstItem).every((key) => this.fixedFields.includes(key)) &&
+        firstItem.label
+      );
+    },
     currentSubCommand() {
       if (!this.command.subCommands) return {};
       return this.command.subCommands.find(
@@ -161,6 +232,7 @@ export default defineComponent({
           value: "then",
         },
       ],
+      fixedFields: ["label", "placeholder", "suggestName"],
     };
   },
   watch: {
@@ -233,7 +305,7 @@ export default defineComponent({
       // 检查变量名是否合法
       const varNames = [
         outputVariable.name,
-        ...Object.keys(outputVariable.details || {}),
+        ...Object.values(outputVariable.details || {}),
         result.callbackFunc,
       ].filter(Boolean);
 
@@ -251,6 +323,10 @@ export default defineComponent({
 
       this.$emit("confirm", result);
       this.isOpen = false;
+    },
+    handleClear() {
+      this.simpleOutputVar = "";
+      this.outputVars = {};
     },
   },
 });

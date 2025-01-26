@@ -58,11 +58,17 @@ const quickcommand = {
       {
         timeout: ms,
       },
-      (err, stdout, stderr) => {
+      () => {
         var end = new Date().getTime();
         callback(end - start);
       }
     );
+  },
+
+  asyncSleep: async function (ms) {
+    return new Promise((resolve) => {
+      this.setTimeout(resolve, ms);
+    });
   },
 
   // 关闭进程

@@ -23,7 +23,7 @@ module.exports = {
         return json
       end tell
     `);
-    return JSON.parse(result);
+    return JSON.parse(result.replace(/missing value/g, "null"));
   },
 
   // 获取当前文件夹
