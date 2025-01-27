@@ -427,6 +427,129 @@ export const uiCommands = {
       ],
     },
     {
+      value: "quickcommand.showProcessBar",
+      label: "显示进度条",
+      description:
+        "显示一个带有暂停、恢复、关闭回调功能的进度条，支持动态更新进度，注意，即使设置等待运行完毕，显示进度条的过程中也不会阻塞后续运行，请通过关闭回调来处理关闭事件。",
+      asyncMode: "await",
+      outputs: {
+        label: "进度条对象",
+        suggestName: "processBar",
+      },
+      config: [
+        {
+          component: "OptionEditor",
+          options: {
+            title: {
+              label: "标题",
+              component: "VariableInput",
+              width: 6,
+              defaultValue: newVarInputVal("str", "进度"),
+            },
+            text: {
+              label: "文本",
+              component: "VariableInput",
+              width: 6,
+              defaultValue: newVarInputVal("str", "处理中..."),
+            },
+            value: {
+              label: "初始进度值",
+              component: "NumberInput",
+              width: 3,
+              min: 0,
+              max: 100,
+              defaultValue: 0,
+            },
+            position: {
+              label: "位置",
+              component: "QSelect",
+              width: 3,
+              options: [
+                { label: "屏幕左上角", value: "top-left" },
+                { label: "屏幕右上角", value: "top-right" },
+                { label: "屏幕左下角", value: "bottom-left" },
+                { label: "屏幕右下角", value: "bottom-right" },
+              ],
+              defaultValue: "bottom-right",
+            },
+            onClose: {
+              label: "关闭按钮回调函数",
+              component: "VariableInput",
+              disableToggleType: true,
+              width: 6,
+            },
+            onPause: {
+              label: "暂停按钮回调函数",
+              component: "VariableInput",
+              disableToggleType: true,
+              width: 6,
+              placeholder: "必须和恢复回调一起配置",
+            },
+            onResume: {
+              label: "恢复按钮回调函数",
+              component: "VariableInput",
+              disableToggleType: true,
+              width: 6,
+              placeholder: "必须和暂停回调一起配置",
+            },
+          },
+          defaultValue: {
+            title: newVarInputVal("str", "进度"),
+            text: newVarInputVal("str", "处理中..."),
+            value: 0,
+            position: "bottom-right",
+            onClose: newVarInputVal("var"),
+            onPause: newVarInputVal("var"),
+            onResume: newVarInputVal("var"),
+          },
+        },
+      ],
+    },
+    {
+      value: "quickcommand.updateProcessBar",
+      label: "更新进度条",
+      neverHasOutput: true,
+      config: [
+        {
+          component: "OptionEditor",
+          options: {
+            value: {
+              label: "进度值",
+              component: "NumberInput",
+              width: 4,
+              min: 0,
+              max: 100,
+              defaultValue: 0,
+            },
+            text: {
+              label: "文本",
+              component: "VariableInput",
+              width: 4,
+            },
+            complete: {
+              label: "完成并关闭",
+              component: "CheckButton",
+              width: 4,
+              defaultValue: false,
+            },
+          },
+          defaultValue: {
+            value: 0,
+            text: newVarInputVal("str"),
+            complete: false,
+          },
+        },
+        {
+          label: "进度条对象",
+          component: "VariableInput",
+          width: 12,
+          placeholder: "不传则更新最近的进度条",
+          defaultValue: newVarInputVal("var"),
+          disableToggleType: true,
+        },
+      ],
+    },
+    {
       value: "utools.showOpenDialog",
       label: "文件选择框",
       subCommands: [
