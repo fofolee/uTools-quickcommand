@@ -201,6 +201,47 @@ const showSystemSelectList = async (items, options = {}) => {
 };
 
 /**
+ * 计算窗口位置
+ * @param {object} options - 配置选项
+ * @param {string} [options.position="bottom-right"] - 窗口位置，可选值：top-left, top-right, bottom-left, bottom-right
+ * @param {number} options.width - 窗口宽度
+ * @param {number} options.height - 窗口高度
+ * @param {number} [options.padding=20] - 边距
+ * @returns {{x: number, y: number}} 窗口位置坐标
+ */
+const calculateWindowPosition = (options) => {
+  const { position = "bottom-right", width, height, padding = 20 } = options;
+
+  // 获取主屏幕尺寸
+  const primaryDisplay = utools.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } =
+    primaryDisplay.workAreaSize;
+
+  let x, y;
+  switch (position) {
+    case "top-left":
+      x = padding;
+      y = padding;
+      break;
+    case "top-right":
+      x = screenWidth - width - padding;
+      y = padding;
+      break;
+    case "bottom-left":
+      x = padding;
+      y = screenHeight - height - padding;
+      break;
+    case "bottom-right":
+    default:
+      x = screenWidth - width - padding;
+      y = screenHeight - height - padding;
+      break;
+  }
+
+  return { x, y };
+};
+
+/**
  * 显示一个系统级等待按钮
  * @param {object} options - 配置选项
  * @param {string} [options.text="等待操作"] - 按钮文本
@@ -228,42 +269,11 @@ const showSystemWaitButton = async (options = {}) => {
   const textWidth = span.offsetWidth;
   document.body.removeChild(span);
 
-  const dialogOptions = {
-    width: Math.max(textWidth + 32 + (showCancel ? 25 : 0), 80), // 文本宽度 + padding + 取消按钮宽度(如果有)
-    height: 36,
-    opacity: 1,
-  };
+  const width = Math.max(textWidth + 32 + (showCancel ? 25 : 0), 80);
+  const height = 36;
 
-  // 获取主屏幕尺寸
-  const primaryDisplay = utools.getPrimaryDisplay();
-  const { width, height } = primaryDisplay.workAreaSize;
-
-  // 根据position计算窗口位置
-  const padding = 20;
-  let x, y;
-
-  switch (position) {
-    case "top-left":
-      x = padding;
-      y = padding;
-      break;
-    case "top-right":
-      x = width - dialogOptions.width - padding;
-      y = padding;
-      break;
-    case "bottom-left":
-      x = padding;
-      y = height - dialogOptions.height - padding;
-      break;
-    case "bottom-right":
-    default:
-      x = width - dialogOptions.width - padding;
-      y = height - dialogOptions.height - padding;
-      break;
-  }
-
-  dialogOptions.x = x;
-  dialogOptions.y = y;
+  // 计算窗口位置
+  const { x, y } = calculateWindowPosition({ position, width, height });
 
   return await createDialog(
     {
@@ -271,8 +281,169 @@ const showSystemWaitButton = async (options = {}) => {
       text,
       showCancel,
     },
-    dialogOptions
+    {
+      width,
+      height,
+      x,
+      y,
+      opacity: 1,
+    }
   );
+};
+
+let lastProcessBar = null;
+
+/**
+ * 显示一个进度条对话框
+ * @param {object} options - 配置选项
+ * @param {string} [options.title="进度"] - 对话框标题
+ * @param {string} [options.text="处理中..."] - 进度条上方的文本
+ * @param {number} [options.value=0] - 初始进度值(0-100)
+ * @param {string} [options.position="bottom-right"] - 进度条位置，可选值：top-left, top-right, bottom-left, bottom-right
+ * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
+ * @param {Function} [options.onPause] - 暂停按钮点击时的回调函数
+ * @param {Function} [options.onResume] - 恢复按钮点击时的回调函数
+ * @returns {Promise<{id: number, close: Function}>} 返回进度条窗口ID和关闭函数
+ * @throws {Error} 如果只配置了onPause或onResume中的一个会抛出错误
+ */
+const showProcessBar = async (options = {}) => {
+  const {
+    title = "进度",
+    text = "处理中...",
+    value = 0,
+    position = "bottom-right",
+    onClose,
+    onPause,
+    onResume,
+  } = options;
+
+  // 校验暂停/恢复回调必须同时配置
+  if ((onPause && !onResume) || (!onPause && onResume)) {
+    throw new Error("onPause 和 onResume 必须同时配置");
+  }
+
+  const windowWidth = 300;
+  const windowHeight = 60;
+
+  // 计算窗口位置
+  const { x, y } = calculateWindowPosition({
+    position,
+    width: windowWidth,
+    height: windowHeight,
+  });
+
+  return new Promise((resolve) => {
+    const UBrowser = createBrowserWindow(
+      "lib/dialog/view.html",
+      {
+        title,
+        width: windowWidth,
+        height: windowHeight,
+        x,
+        y,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        fullscreenable: false,
+        skipTaskbar: true,
+        alwaysOnTop: true,
+        frame: false,
+        opacity: 0,
+        movable: true,
+        webPreferences: {
+          preload: "lib/dialog/controller.js",
+          devTools: utools.isDev(),
+        },
+      },
+      () => {
+        const windowId = UBrowser.webContents.id;
+
+        // 发送配置到子窗口
+        ipcRenderer.sendTo(windowId, "dialog-config", {
+          type: "process",
+          title,
+          text,
+          value,
+          isDark: utools.isDarkColors(),
+          platform: process.platform,
+          showPause: Boolean(onPause && onResume),
+        });
+
+        // 监听窗口准备就绪
+        ipcRenderer.once("dialog-ready", () => {
+          UBrowser.setOpacity(1);
+        });
+
+        // 监听对话框结果
+        ipcRenderer.once("dialog-result", (event, result) => {
+          if (result === "close" && typeof onClose === "function") {
+            onClose();
+          }
+          UBrowser.destroy();
+        });
+
+        // 监听暂停/恢复事件
+        if (onPause && onResume) {
+          ipcRenderer.on("process-pause", (event, isPaused) => {
+            if (isPaused) {
+              onPause();
+            } else {
+              onResume();
+            }
+          });
+        }
+
+        const processBar = {
+          id: windowId,
+          close: () => {
+            if (typeof onClose === "function") {
+              onClose();
+            }
+            lastProcessBar = null;
+            UBrowser.destroy();
+          },
+        };
+
+        lastProcessBar = processBar;
+
+        // 返回窗口ID和关闭函数
+        resolve(processBar);
+      }
+    );
+  });
+};
+
+/**
+ * 更新进度条的进度
+ * @param {object} options - 配置选项
+ * @param {number} options.value - 新的进度值(0-100)
+ * @param {string} [options.text] - 新的进度文本
+ * @param {boolean} [options.complete] - 是否完成并关闭进度条
+ * @param {{id: number, close: Function}|undefined} processBar - 进度条对象, 如果不传入则使用上一次创建的进度条
+ * @throws {Error} 如果传入的processBar对象不是有效的进度条对象
+ */
+const updateProcessBar = (options = {}, processBar = null) => {
+  if (!processBar) {
+    if (!lastProcessBar) {
+      throw new Error("没有找到已创建的进度条");
+    }
+    processBar = lastProcessBar;
+  }
+  // 校验processBar对象
+  if (
+    typeof processBar !== "object" ||
+    typeof processBar.id !== "number" ||
+    typeof processBar.close !== "function"
+  ) {
+    throw new Error("processBar对象格式错误");
+  }
+
+  const { value, text, complete } = options;
+  ipcRenderer.sendTo(processBar.id, "update-process", { value, text });
+
+  if (complete) {
+    processBar.close();
+  }
 };
 
 module.exports = {
@@ -283,4 +454,6 @@ module.exports = {
   showSystemTextArea,
   showSystemSelectList,
   showSystemWaitButton,
+  showProcessBar,
+  updateProcessBar,
 };

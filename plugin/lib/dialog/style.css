@@ -583,3 +583,145 @@ textarea:focus {
 #wait-cancel-btn:hover {
   background-color: var(--wait-btn-hover);
 }
+
+/* 进度条对话框样式 */
+.dialog-process .title-bar,
+.dialog-process .button-bar {
+  display: none;
+}
+
+.dialog-process .content-wrapper {
+  padding: 0;
+  background: var(--button-bg);
+  color: white;
+}
+
+#process {
+  display: none;
+  padding: 8px 12px;
+  position: relative;
+  -webkit-app-region: drag;
+}
+
+.process-text {
+  font-size: 13px;
+  margin-bottom: 8px;
+  padding-right: 20px;
+}
+
+.process-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.process-bar-inner {
+  width: 0;
+  height: 100%;
+  background: white;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* 进度条按钮容器 */
+.process-buttons {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  display: flex;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+/* 进度条关闭按钮 */
+.process-close-btn {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.process-close-btn:hover {
+  opacity: 1;
+}
+
+.process-close-btn::before,
+.process-close-btn::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 1px;
+  background-color: white;
+  transform-origin: center;
+}
+
+.process-close-btn::before {
+  transform: rotate(45deg);
+}
+
+.process-close-btn::after {
+  transform: rotate(-45deg);
+}
+
+/* 进度条暂停按钮 */
+.process-pause-btn {
+  width: 16px;
+  height: 16px;
+  display: none;
+  /* 默认隐藏 */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  position: relative;
+}
+
+.process-pause-btn:hover {
+  opacity: 1;
+}
+
+/* 暂停状态（显示两条竖线） */
+.process-pause-btn::before,
+.process-pause-btn::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.process-pause-btn::before {
+  transform: translateX(-3px);
+}
+
+.process-pause-btn::after {
+  transform: translateX(3px);
+}
+
+/* 播放状态（显示三角形） */
+.process-pause-btn.paused::before {
+  width: 0;
+  height: 0;
+  background: none;
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent white;
+  transform: translateX(1px);
+}
+
+.process-pause-btn.paused::after {
+  display: none;
+}
+
+/* 显示暂停按钮 */
+.show-pause .process-pause-btn {
+  display: flex;
+}

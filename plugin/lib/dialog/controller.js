@@ -357,8 +357,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
         waitButtonContainer.appendChild(buttonGroup);
         break;
+
+      case "process":
+        document.getElementById("process").style.display = "block";
+        document.body.classList.add("dialog-process");
+
+        // 设置初始文本和进度
+        document.getElementById("process-text").textContent = config.text;
+        document.getElementById(
+          "process-bar-inner"
+        ).style.width = `${config.value}%`;
+
+        // 如果需要显示暂停按钮
+        if (config.showPause) {
+          document.body.classList.add("show-pause");
+          const pauseBtn = document.getElementById("process-pause-btn");
+          let isPaused = false;
+
+          pauseBtn.onclick = () => {
+            isPaused = !isPaused;
+            pauseBtn.classList.toggle("paused", isPaused);
+            ipcRenderer.sendTo(parentId, "process-pause", isPaused);
+          };
+        }
+
+        // 添加关闭按钮点击事件
+        document.getElementById("process-close-btn").onclick = () => {
+          ipcRenderer.sendTo(parentId, "dialog-result", "close");
+        };
+        break;
     }
     ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());
+  });
+
+  // 监听进度条更新事件
+  ipcRenderer.on("update-process", (event, data) => {
+    const { value, text } = data;
+    if (typeof value === "number") {
+      document.getElementById("process-bar-inner").style.width = `${value}%`;
+    }
+    if (text) {
+      document.getElementById("process-text").textContent = text;
+    }
   });
 
   const calculateHeight = () => {

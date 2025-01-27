@@ -720,6 +720,125 @@ interface quickcommandApi {
       };
     }
   ): Promise<string>;
+
+  /**
+   * 显示一个带有暂停、恢复、关闭回调功能的进度条，支持动态更新进度
+   * @param {object} options - 配置选项
+   * @param {string} [options.title="进度"] - 对话框标题
+   * @param {string} [options.text="处理中..."] - 进度条上方的文本
+   * @param {number} [options.value=0] - 初始进度值(0-100)
+   * @param {string} [options.position="bottom-right"] - 进度条位置，可选值：top-left, top-right, bottom-left, bottom-right
+   * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
+   * @param {Function} [options.onPause] - 暂停按钮点击时的回调函数，必须和onResume一起配置
+   * @param {Function} [options.onResume] - 恢复按钮点击时的回调函数，必须和onPause一起配置
+   * @returns {Promise<{id: number, close: Function}>} 返回进度条对象
+   *
+   * ```js
+   * // 基本使用
+   * const processBar = await quickcommand.showProcessBar({
+   *   title: "下载进度",
+   *   text: "正在下载文件...",
+   *   value: 0,
+   *   position: "bottom-right"
+   * });
+   *
+   * // 带暂停/恢复，关闭回调功能
+   * let isPaused = false;
+   * const processBar = await quickcommand.showProcessBar({
+   *   title: "下载进度",
+   *   text: "正在下载文件...",
+   *   value: 0,
+   *   onPause: () => {
+   *     isPaused = true;
+   *     console.log("暂停下载");
+   *   },
+   *   onResume: () => {
+   *     isPaused = false;
+   *     console.log("继续下载");
+   *   },
+   *   onClose: () => {
+   *     console.log("用户关闭了进度条");
+   *   }
+   * });
+   *
+   * // 动态更新进度
+   * const items = Array(100).fill(0);
+   * for (let i = 0; i < items.length; i++) {
+   *   // 检查是否暂停
+   *   while (isPaused) {
+   *     await quickcommand.asyncSleep(100);
+   *   }
+   *
+   *   // 更新进度
+   *   quickcommand.updateProcessBar({
+   *     value: Math.round((i + 1) / items.length * 100),
+   *     text: `正在处理第 ${i + 1}/${items.length} 项`
+   *   });
+   *
+   *   await someAsyncOperation();
+   * }
+   *
+   * // 完成时更新并关闭
+   * quickcommand.updateProcessBar({
+   *   value: 100,
+   *   text: "处理完成！",
+   *   complete: true
+   * });
+   * ```
+   */
+  showProcessBar(options?: {
+    title?: string;
+    text?: string;
+    value?: number;
+    position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+    onClose?: () => void;
+    onPause?: () => void;
+    onResume?: () => void;
+  }): Promise<{
+    id: number;
+    close: () => void;
+  }>;
+
+  /**
+   * 更新进度条的进度
+   * @param {object} options - 配置选项
+   * @param {number} options.value - 新的进度值(0-100)
+   * @param {string} [options.text] - 新的进度文本
+   * @param {boolean} [options.complete] - 是否完成并关闭进度条
+   * @param {{id: number, close: Function}|undefined} processBar - 进度条对象，如果不传入则使用上一次创建的进度条
+   *
+   * ```js
+   * // 使用最近创建的进度条
+   * quickcommand.updateProcessBar({
+   *   value: 50,
+   *   text: "已完成50%"
+   * });
+   *
+   * // 使用指定的进度条
+   * quickcommand.updateProcessBar({
+   *   value: 50,
+   *   text: "已完成50%"
+   * }, processBar);
+   *
+   * // 完成并关闭
+   * quickcommand.updateProcessBar({
+   *   value: 100,
+   *   text: "完成！",
+   *   complete: true
+   * });
+   * ```
+   */
+  updateProcessBar(
+    options: {
+      value: number;
+      text?: string;
+      complete?: boolean;
+    },
+    processBar?: {
+      id: number;
+      close: () => void;
+    }
+  ): void;
 }
 
 declare var quickcommand: quickcommandApi;
