@@ -32,6 +32,16 @@
       </div>
     </div>
 
+    <q-icon
+      name="info"
+      class="info-icon"
+      v-if="command.description && !isCollapsed"
+    >
+      <q-tooltip max-width="300px">
+        {{ command.description }}
+      </q-tooltip>
+    </q-icon>
+
     <!-- 主要内容区域 -->
     <div :class="contentClass">
       <slot></slot>
@@ -136,5 +146,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.info-icon {
+  opacity: 0.6;
+  font-size: 12px;
 }
 </style>

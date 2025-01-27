@@ -18,7 +18,7 @@
         >
           <q-tooltip>
             <div class="text-body2">输出配置</div>
-            <div class="text-caption text-grey-5">
+            <div class="text-caption output-info">
               <div class="row items-center">
                 本命令配置输出变量数
                 <q-badge color="primary" class="output-badge">
@@ -248,6 +248,11 @@ export default {
 .more-menu :deep(.q-item__section--avatar) {
   min-width: 24px;
   padding: 0 4px;
+}
+
+.output-info {
+  opacity: 0.8;
+  filter: grayscale(0.1);
 }
 
 .output-badge {

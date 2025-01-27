@@ -19,7 +19,9 @@
             class="q-ml-xs check-btn-icon"
           />
         </div>
-        <q-tooltip v-if="placeholder">{{ placeholder }}</q-tooltip>
+        <q-tooltip v-if="placeholder" max-width="300px">{{
+          placeholder
+        }}</q-tooltip>
       </template>
     </q-btn>
   </div>
