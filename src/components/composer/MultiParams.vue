@@ -3,7 +3,7 @@
     <OperationCard
       v-if="hasSubCommands"
       :model-value="funcName"
-      @update:model-value="funcName = $event"
+      @update:model-value="updateFuncName($event)"
       :options="localCommand.subCommands"
     />
     <ParamInput :configs="localConfig" :values="argvs" @update="updateArgv" />
@@ -15,7 +15,11 @@ import { defineComponent } from "vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
 import ParamInput from "components/composer/param/ParamInput.vue";
 import { stringifyArgv, parseFunction } from "js/composer/formatString";
-import { newVarInputVal } from "js/composer/varInputValManager";
+import {
+  newVarInputVal,
+  isVarInputVal,
+  stringifyVarInputVal,
+} from "js/composer/varInputValManager";
 
 export default defineComponent({
   name: "MultiParams",
@@ -59,26 +63,8 @@ export default defineComponent({
     defaultArgvs() {
       return this.localConfig.map((item) => item.value);
     },
-    funcName: {
-      get() {
-        return this.modelValue.value;
-      },
-      set(value) {
-        // 构建新的参数数组
-        const newArgvs = [];
-
-        // 保留通用配置的参数值
-        this.commonConfig.forEach((_, index) => {
-          newArgvs[index] = this.argvs[index];
-        });
-
-        // 使用新选择的函数独有配置的默认值
-        this.getSelectSubCommand(value)?.config?.forEach((config, index) => {
-          newArgvs[this.commonConfig.length + index] = config.defaultValue;
-        });
-
-        this.updateModelValue(value, newArgvs, true);
-      },
+    funcName() {
+      return this.modelValue.value;
     },
     argvs() {
       return (
@@ -100,6 +86,22 @@ export default defineComponent({
       newArgvs[index] = value;
 
       this.updateModelValue(this.funcName, newArgvs);
+    },
+    updateFuncName(value) {
+      // 构建新的参数数组
+      const newArgvs = [];
+
+      // 保留通用配置的参数值
+      this.commonConfig.forEach((_, index) => {
+        newArgvs[index] = this.argvs[index];
+      });
+
+      // 使用新选择的函数独有配置的默认值
+      this.getSelectSubCommand(value)?.config?.forEach((config, index) => {
+        newArgvs[this.commonConfig.length + index] = config.defaultValue;
+      });
+
+      this.updateModelValue(value, newArgvs, true);
     },
     generateCode(funcName, argvs) {
       if (this.localCommand.isExpression) {
@@ -175,18 +177,31 @@ export default defineComponent({
       }
       return argvs;
     },
-    getSummary(argvs) {
+    getAllInputValues(argvs) {
+      const flatArgvs = [];
+      argvs.forEach((item) => {
+        if (isVarInputVal(item) && item.value) {
+          flatArgvs.push(stringifyVarInputVal(item));
+        } else if (typeof item === "number") {
+          flatArgvs.push(item.toString());
+        } else if (Array.isArray(item)) {
+          flatArgvs.push(...this.getAllInputValues(item));
+        } else if (typeof item === "object") {
+          flatArgvs.push(...this.getAllInputValues(Object.values(item)));
+        }
+      });
+      return flatArgvs;
+    },
+    getSummary(funcName, argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间
-      const funcNameLabel = this.getSelectSubCommand()?.label;
+      const funcNameLabel = this.getSelectSubCommand(funcName)?.label;
       const subFeature = funcNameLabel ? `${funcNameLabel} ` : "";
-      const allArgvs = argvs
-        .filter((item) => item != null && item != "")
-        .map((item) =>
-          window.lodashM.truncate(stringifyArgv(item).toString(), {
-            length: 30,
-            omission: "...",
-          })
-        );
+      const allArgvs = this.getAllInputValues(argvs).map((item) =>
+        window.lodashM.truncate(item, {
+          length: 30,
+          omission: "...",
+        })
+      );
       return `${subFeature}${allArgvs.join(",")}`;
     },
     updateModelValue(funcName, argvs, resetOutputVariable = false) {
@@ -194,7 +209,7 @@ export default defineComponent({
         ...this.modelValue,
         value: funcName,
         argvs,
-        summary: this.getSummary(argvs),
+        summary: this.getSummary(funcName, argvs),
         code: this.generateCode(funcName, argvs),
       };
       if (resetOutputVariable) {
