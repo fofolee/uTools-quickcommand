@@ -19,6 +19,7 @@ import { statusCommands } from "./statusCommands";
 import { macosCommands } from "./macosCommands";
 import { scriptCommands } from "./scriptCommands";
 import { browserCommands } from "./browserCommands";
+import { videoCommands } from "./videoCommands";
 
 const platformCommands = {
   win32: [windowsCommands],
@@ -32,6 +33,7 @@ export const commandCategories = [
   systemCommands,
   audioCommands,
   imageCommands,
+  ...(utools.runFFmpeg ? [videoCommands] : []),
   utoolsCommands,
   ...platformCommands[window.processPlatform],
   browserCommands,

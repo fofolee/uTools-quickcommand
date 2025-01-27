@@ -12,6 +12,7 @@ const quickcomposer = {
   macos: require("./quickcomposer/macos"),
   status: require("./quickcomposer/status"),
   browser: require("./quickcomposer/browser"),
+  video: require("./quickcomposer/video"),
 };
 
 module.exports = quickcomposer;

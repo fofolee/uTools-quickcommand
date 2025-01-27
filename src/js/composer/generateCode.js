@@ -131,7 +131,5 @@ export function generateCode(flow) {
 
   const finalCode = code.join("\n");
 
-  console.log(finalCode);
-
   return finalCode;
 }

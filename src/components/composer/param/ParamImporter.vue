@@ -22,6 +22,7 @@ import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import ControlInput from "components/composer/common/ControlInput.vue";
 import CheckGroup from "components/composer/common/CheckGroup.vue";
 import CheckButton from "components/composer/common/CheckButton.vue";
+import TimeInput from "components/composer/common/TimeInput.vue";
 import { QInput, QSelect, QToggle, QCheckbox } from "quasar";
 const CodeEditor = defineAsyncComponent(() =>
   import("components/composer/common/CodeEditor.vue")
@@ -42,6 +43,7 @@ export default defineComponent({
     QInput,
     QSelect,
     QCheckbox,
+    TimeInput,
     CodeEditor,
   },
   props: {

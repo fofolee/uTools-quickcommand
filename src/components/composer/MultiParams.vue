@@ -179,15 +179,22 @@ export default defineComponent({
     },
     getAllInputValues(argvs) {
       const flatArgvs = [];
+      if (!argvs) return flatArgvs;
+
       argvs.forEach((item) => {
+        if (!item) return;
+
         if (isVarInputVal(item) && item.value) {
           flatArgvs.push(stringifyVarInputVal(item));
         } else if (typeof item === "number") {
           flatArgvs.push(item.toString());
         } else if (Array.isArray(item)) {
           flatArgvs.push(...this.getAllInputValues(item));
-        } else if (typeof item === "object") {
-          flatArgvs.push(...this.getAllInputValues(Object.values(item)));
+        } else if (typeof item === "object" && item !== null) {
+          const values = Object.values(item);
+          if (values.length > 0) {
+            flatArgvs.push(...this.getAllInputValues(values));
+          }
         }
       });
       return flatArgvs;
@@ -226,7 +233,7 @@ export default defineComponent({
   },
   mounted() {
     const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
+    if (!this.modelValue.code && Array.isArray(argvs)) {
       this.updateModelValue(this.funcName, argvs);
     }
   },

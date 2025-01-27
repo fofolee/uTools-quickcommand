@@ -322,7 +322,7 @@ const showProcessBar = async (options = {}) => {
     throw new Error("onPause 和 onResume 必须同时配置");
   }
 
-  const windowWidth = 300;
+  const windowWidth = 350;
   const windowHeight = 60;
 
   // 计算窗口位置

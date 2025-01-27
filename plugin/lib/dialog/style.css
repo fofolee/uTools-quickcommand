@@ -606,7 +606,16 @@ textarea:focus {
 .process-text {
   font-size: 13px;
   margin-bottom: 8px;
-  padding-right: 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  width: calc(100% - 30px);
+  box-sizing: border-box;
+}
+
+.process-text::-webkit-scrollbar {
+  display: none;
 }
 
 .process-bar {
@@ -633,6 +642,21 @@ textarea:focus {
   display: flex;
   gap: 8px;
   -webkit-app-region: no-drag;
+  z-index: 1;
+}
+
+/* 添加按钮区域的渐变遮罩 */
+.process-buttons::before {
+  content: "";
+  position: absolute;
+  right: -8px;
+  /* 对应#process的padding-right */
+  top: -6px;
+  /* 对应#process的padding-top */
+  width: 80px;
+  height: 30px;
+  background: linear-gradient(to right, transparent, var(--button-bg) 60%);
+  pointer-events: none;
 }
 
 /* 进度条关闭按钮 */
