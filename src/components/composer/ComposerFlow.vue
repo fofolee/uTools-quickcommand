@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { defineComponent, inject } from "vue";
+import { defineComponent } from "vue";
 import draggable from "vuedraggable";
 import ComposerCard from "./ComposerCard.vue";
 import ChainStyles from "./flow/ChainStyles.vue";

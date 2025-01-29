@@ -1,26 +1,21 @@
-export {
-  ubrowserOperationConfigs,
-  defaultUBrowserConfigs,
-} from "./ubrowserConfig";
+import { commandCategories } from "./commands";
 
-import { commandCategories as categories } from "./commands";
+let availableCommands = [];
+let commandValueMap = {};
 
 // 从commandCategories中提取所有命令
-export const availableCommands = categories.reduce((commands, category) => {
-  return commands.concat(
-    category.commands.map((cmd) => ({
+commandCategories.forEach((category) => {
+  category.commands.forEach((cmd) => {
+    availableCommands.push({
       type: category.label,
       ...cmd,
-    }))
-  );
-}, []);
+    });
+    commandValueMap[cmd.value] = cmd;
+  });
+});
 
-export const findCommandByValue = (value) => {
-  return availableCommands.find(
-    (cmd) =>
-      cmd.value === value ||
-      cmd.subCommands?.find((subCmd) => subCmd.value === value)
-  );
+const findCommandByValue = (value) => {
+  return commandValueMap[value];
 };
 
-export const commandCategories = categories;
+export { availableCommands, commandCategories, findCommandByValue };

@@ -2,8 +2,8 @@
   <div class="multi-params">
     <OperationCard
       v-if="hasSubCommands"
-      :model-value="funcName"
-      @update:model-value="updateFuncName($event)"
+      :model-value="subCommand"
+      @update:model-value="updateSubCommand($event)"
       :options="localCommand.subCommands"
     />
     <ParamInput :configs="localConfig" :values="argvs" @update="updateArgv" />
@@ -63,8 +63,8 @@ export default defineComponent({
     defaultArgvs() {
       return this.localConfig.map((item) => item.value);
     },
-    funcName() {
-      return this.modelValue.value;
+    subCommand() {
+      return this.modelValue.subCommand || this.modelValue.value;
     },
     argvs() {
       return (
@@ -76,18 +76,18 @@ export default defineComponent({
     },
   },
   methods: {
-    getSelectSubCommand(funcName = this.funcName) {
+    getSelectSubCommand(subCommand = this.subCommand) {
       return this.modelValue.subCommands?.find(
-        (item) => item.value === funcName
+        (item) => item.value === subCommand
       );
     },
     updateArgv(index, value) {
       const newArgvs = [...this.argvs];
       newArgvs[index] = value;
 
-      this.updateModelValue(this.funcName, newArgvs);
+      this.updateModelValue(this.subCommand, newArgvs);
     },
-    updateFuncName(value) {
+    updateSubCommand(value) {
       // 构建新的参数数组
       const newArgvs = [];
 
@@ -103,7 +103,7 @@ export default defineComponent({
 
       this.updateModelValue(value, newArgvs, true);
     },
-    generateCode(funcName, argvs) {
+    generateCode(subCommand, argvs) {
       if (this.localCommand.isExpression) {
         return argvs.join("");
       }
@@ -120,13 +120,13 @@ export default defineComponent({
        * 5. 如果不想传递对应参数，将varInput切为变量模式并留空
        * 6. 如果想传递空参数，将varInput切为变量模式并设置为null或undefined
 
-       * [undefined, undefined] -> funcName()
+       * [undefined, undefined] -> subCommand()
        * [undefined, 1] -> ''
-       * [1, undefined] -> funcName(1)
-       * [null, 1] -> funcName(null, 1)
-       * [1, 字符串模式下varInput留空] -> funcName(1, "")
-       * [1, 变量模式下varInput留空] -> funcName(1)
-       * [1, 变量模式下varInput设置为null] -> funcName(1, null)
+       * [1, undefined] -> subCommand(1)
+       * [null, 1] -> subCommand(null, 1)
+       * [1, 字符串模式下varInput留空] -> subCommand(1, "")
+       * [1, 变量模式下varInput留空] -> subCommand(1)
+       * [1, 变量模式下varInput设置为null] -> subCommand(1, null)
        */
       // 空参数后面跟着非空参数，不生成代码
       const isEmpty = (v) => v === undefined || v === "" || v === null;
@@ -139,7 +139,7 @@ export default defineComponent({
       // 过滤空参数，由于前面已经对处于非空参数中间的空参数做了处理，这里直接过滤空参数不会对参数顺序造成影响
       const finalArgvs = stringifiedArgvs.filter((v) => !isEmpty(v));
 
-      return `${funcName}(${finalArgvs.join(",")})`;
+      return `${subCommand}(${finalArgvs.join(",")})`;
     },
     parseCodeToArgvs(code) {
       let argvs = window.lodashM.cloneDeep(this.defaultArgvs);
@@ -199,10 +199,10 @@ export default defineComponent({
       });
       return flatArgvs;
     },
-    getSummary(funcName, argvs) {
+    getSummary(subCommand, argvs) {
       // 虽然header里对溢出做了处理，但是这里截断主要是为了节省存储空间
-      const funcNameLabel = this.getSelectSubCommand(funcName)?.label;
-      const subFeature = funcNameLabel ? `${funcNameLabel} ` : "";
+      const subCommandLabel = this.getSelectSubCommand(subCommand)?.label;
+      const subFeature = subCommandLabel ? `${subCommandLabel} ` : "";
       const allArgvs = this.getAllInputValues(argvs).map((item) =>
         window.lodashM.truncate(item, {
           length: 30,
@@ -211,13 +211,13 @@ export default defineComponent({
       );
       return `${subFeature}${allArgvs.join(",")}`;
     },
-    updateModelValue(funcName, argvs, resetOutputVariable = false) {
+    updateModelValue(subCommand, argvs, resetOutputVariable = false) {
       const newModelValue = {
         ...this.modelValue,
-        value: funcName,
+        subCommand,
         argvs,
-        summary: this.getSummary(funcName, argvs),
-        code: this.generateCode(funcName, argvs),
+        summary: this.getSummary(subCommand, argvs),
+        code: this.generateCode(subCommand, argvs),
       };
       if (resetOutputVariable) {
         delete newModelValue.outputVariable;
@@ -234,7 +234,7 @@ export default defineComponent({
   mounted() {
     const argvs = this.modelValue.argvs || this.defaultArgvs;
     if (!this.modelValue.code && Array.isArray(argvs)) {
-      this.updateModelValue(this.funcName, argvs);
+      this.updateModelValue(this.subCommand, argvs);
     }
   },
 });
