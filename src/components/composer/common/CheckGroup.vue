@@ -18,7 +18,9 @@
           { 'check-btn--selected': isSelected(option.value) },
         ]"
         :style="{
-          flex: `1 0 ${100 / options.length}%`,
+          flex: `1 0 calc(${100 / options.length}% - ${
+            (4 * (options.length - 1)) / options.length
+          }px)`,
         }"
         @click="toggleOption(option.value)"
       >
@@ -108,7 +110,7 @@ export default defineComponent({
   height: auto !important;
   min-height: 32px;
   font-size: 12px;
-  padding: 4px 12px;
+  padding: 4px 8px;
   border-radius: 4px !important;
   transition: all 0.3s;
   background-color: rgba(0, 0, 0, 0.03);

@@ -1,52 +1,57 @@
 <template>
   <div class="ubrowser-editor">
-    <!-- 标签页导航 -->
     <q-tabs
-      v-model="step"
-      class="ubrowser-tabs"
+      v-model="tab"
       dense
+      class="text-grey"
+      active-color="primary"
+      indicator-color="primary"
       align="left"
       narrow-indicator
+      no-caps
       inline-label
-      active-class="ubrowser-tabs-active"
+      outside-arrows
+      mobile-arrows
     >
-      <q-tab name="1" icon="settings" label="基础参数" size="sm" />
-      <q-tab name="2" icon="touch_app" label="浏览器操作" size="sm" />
-      <q-tab name="3" icon="settings_applications" label="运行参数" size="sm" />
+      <q-tab name="1" label="基础配置" icon="link" class="q-px-sm" />
+      <q-tab name="2" label="操作配置" icon="touch_app" class="q-px-sm" />
+      <q-tab name="3" label="运行配置" icon="settings" class="q-px-sm" />
     </q-tabs>
 
-    <!-- 内容区域 -->
-    <q-tab-panels v-model="step" class="ubrowser-panels">
+    <q-separator />
+
+    <q-tab-panels v-model="tab" class="ubrowser-panels" animated>
       <q-tab-panel name="1" class="panel-content">
-        <UBrowserBasic :configs="configs" @update:configs="updateConfigs" />
+        <UBrowserBasic
+          v-model="argvs.goto"
+          @update:model-value="updateArgvs('goto', $event)"
+        />
       </q-tab-panel>
 
       <q-tab-panel name="2" class="panel-content">
         <UBrowserOperations
-          :configs="configs"
-          :selected-actions="selectedActions"
-          @update:configs="updateConfigs"
-          @update:selected-actions="(val) => (selectedActions = val)"
-          @remove-action="removeAction"
+          v-model="argvs.operations"
+          @update:model-value="updateArgvs('operations', $event)"
         />
       </q-tab-panel>
 
       <q-tab-panel name="3" class="panel-content">
-        <UBrowserRun :configs="configs" @update:configs="updateConfigs" />
+        <UBrowserRun
+          v-model="argvs.run"
+          @update:model-value="updateArgvs('run', $event)"
+        />
       </q-tab-panel>
     </q-tab-panels>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref, computed } from "vue";
-import UBrowserBasic from "./UBrowserBasic.vue";
-import UBrowserOperations from "./UBrowserOperations.vue";
-import UBrowserRun from "./UBrowserRun.vue";
-import { defaultUBrowserConfigs } from "js/composer/ubrowserConfig";
+import UBrowserBasic from "components/composer/ubrowser/UBrowserBasic.vue";
+import UBrowserOperations from "components/composer/ubrowser/UBrowserOperations.vue";
+import UBrowserRun from "components/composer/ubrowser/UBrowserRun.vue";
 import { generateUBrowserCode } from "js/composer/generateUBrowserCode";
 
-export default defineComponent({
+export default {
   name: "UBrowserEditor",
   components: {
     UBrowserBasic,
@@ -59,76 +64,59 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:modelValue"],
-  setup(props, { emit }) {
-    // 基础状态
-    const step = ref("1");
-    const selectedActions = ref([]);
-
-    // 初始化配置，确保包含 run 参数
-    const localConfigs = ref(window.lodashM.cloneDeep(defaultUBrowserConfigs));
-    if (props.modelValue?.argvs) {
-      // 合并配置，保留默认的 run 参数
-      localConfigs.value = {
-        ...localConfigs.value,
-        ...props.modelValue.argvs,
-        run: {
-          ...localConfigs.value.run,
-          ...props.modelValue.argvs.run,
-        },
-      };
-    }
-
-    const getSummary = (argvs) => {
-      return argvs.goto.url.value;
-    };
-
-    // 计算 argvs
-    const argvs = computed({
-      get: () => localConfigs.value,
-      set: (val) => {
-        // 确保保留 run 参数
-        const newConfigs = {
-          ...val,
-          run: {
-            ...localConfigs.value.run,
-            ...val.run,
-          },
-        };
-        localConfigs.value = newConfigs;
-        emit("update:modelValue", {
-          ...props.modelValue,
-          argvs: newConfigs,
-          summary: getSummary(newConfigs),
-          code: generateUBrowserCode(newConfigs, selectedActions.value),
-        });
-      },
-    });
-
-    // 更新配置
-    const updateConfigs = (newConfigs) => {
-      argvs.value = window.lodashM.cloneDeep(newConfigs);
-    };
-
-    // 移除操作
-    const removeAction = (action) => {
-      selectedActions.value = selectedActions.value.filter(
-        (a) => a.id !== action.id
-      );
-      const newConfigs = { ...argvs.value };
-      delete newConfigs[action.value];
-      argvs.value = newConfigs;
-    };
-
+  emits: ["update:model-value"],
+  data() {
     return {
-      step,
-      selectedActions,
-      configs: argvs,
-      updateConfigs,
-      removeAction,
+      tab: "1",
+      defaultArgvs: {
+        goto: [],
+        operations: [],
+        run: {},
+      },
     };
   },
-});
+  computed: {
+    configs() {
+      return this.modelValue;
+    },
+    argvs() {
+      return this.modelValue.argvs || this.defaultArgvs;
+    },
+    summary() {
+      const goto = this.argvs.goto?.url || "";
+      return `访问 ${goto}`;
+    },
+  },
+  mounted() {
+    this.initializeConfigs();
+  },
+  methods: {
+    initializeConfigs() {
+      if (!this.modelValue.argvs) {
+        this.updateModelValue(this.defaultArgvs);
+      }
+    },
+    generateCode() {
+      return generateUBrowserCode(this.argvs);
+    },
+    updateArgvs(key, value) {
+      const newArgvs = { ...this.argvs };
+      newArgvs[key] = value;
+      this.updateModelValue(newArgvs);
+    },
+    updateModelValue(argvs) {
+      this.$emit("update:model-value", {
+        ...this.modelValue,
+        argvs,
+        summary: this.summary,
+        code: this.generateCode(),
+      });
+    },
+    parseCodeToArgvs(code) {
+      // TODO: 实现代码解析逻辑
+    },
+  },
+};
 </script>
 
 <style>
@@ -137,42 +125,67 @@ export default defineComponent({
   flex-direction: column;
   height: 100%;
   width: 100%;
-}
-
-.ubrowser-tabs-active {
-  color: var(--q-primary);
-}
-
-.ubrowser-tabs {
-  flex-shrink: 0;
+  background-color: var(--q-card-background);
 }
 
 .ubrowser-panels {
+  flex: 1;
+  overflow: hidden;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.ubrowser-panels :deep(.q-tab-panel) {
+  padding: 0;
   flex: 1;
   overflow: auto;
 }
 
 .panel-content {
-  padding: 8px;
-  min-height: 200px;
+  padding: 12px;
+  height: 100%;
+  overflow: auto;
 }
 
-.ubrowser-panels :deep(.q-tab-panel) {
-  padding: 0;
+.ubrowser-editor :deep(.q-tabs) {
+  min-height: 36px;
+  padding: 0 8px;
+  background-color: var(--q-card-background);
 }
 
-.ubrowser-tabs :deep(.q-tab) {
-  min-height: 40px;
-  padding: 0 16px;
+.ubrowser-editor :deep(.q-tab) {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  opacity: 0.7;
 }
 
-.ubrowser-tabs :deep(.q-tab__icon) {
-  font-size: 20px;
+.ubrowser-editor :deep(.q-tab--active) {
+  opacity: 1;
 }
 
-.ubrowser-tabs :deep(.q-tab__label) {
-  font-size: 14px;
+.ubrowser-editor :deep(.q-tab__icon) {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.ubrowser-editor :deep(.q-tab__label) {
   line-height: 1.2;
-  margin-left: 8px;
+}
+
+.ubrowser-editor :deep(.q-tab__indicator) {
+  height: 2px;
+}
+
+/* 暗色模式适配 */
+.body--dark .ubrowser-editor {
+  background-color: var(--q-dark);
+}
+
+.body--dark .ubrowser-editor :deep(.q-tabs) {
+  background-color: var(--q-dark);
 }
 </style>

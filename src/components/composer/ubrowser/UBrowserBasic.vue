@@ -1,126 +1,161 @@
 <template>
-  <div class="row q-col-gutter-sm">
-    <!-- 基础配置 -->
-    <div class="col-12">
-      <VariableInput
-        v-model="localConfigs.goto.url"
-        label="网址"
-        icon="link"
-        @update:model-value="updateConfigs"
-      />
-    </div>
-
-    <!-- Headers配置 -->
-    <div class="col-12">
-      <div class="row q-col-gutter-sm">
-        <div class="col-12">
-          <VariableInput
-            v-model="localConfigs.goto.headers.Referer"
-            label="Referer"
-            icon="link"
-            @update:model-value="updateConfigs"
-          />
-        </div>
-        <div class="col-12">
-          <div class="row q-col-gutter-sm">
-            <div class="col">
-              <VariableInput
-                v-model="localConfigs.goto.headers.userAgent"
-                label="User-Agent"
-                icon="devices"
-                @update:model-value="updateConfigs"
-              />
-            </div>
-            <div class="col-auto">
-              <q-select
-                :model-value="selectedUA"
-                @update:model-value="handleUAChange"
-                :options="userAgentOptions"
-                label="常用 UA"
-                dense
-                filled
-                emit-value
-                map-options
-                options-dense
-                style="min-width: 150px"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="list" />
-                </template>
-              </q-select>
-            </div>
+  <div class="ubrowser-basic">
+    <div class="row q-col-gutter-sm">
+      <!-- 基础配置 -->
+      <div class="col-12">
+        <div class="row q-col-gutter-sm">
+          <div class="col-9">
+            <VariableInput
+              v-model="url"
+              label="网址"
+              icon="link"
+              class="col"
+              :options="{
+                items: userAgentOptions,
+              }"
+            />
+          </div>
+          <div class="col-3">
+            <NumberInput
+              v-model="timeout"
+              label="超时时间(ms)"
+              icon="timer"
+              :min="0"
+              :step="1000"
+            />
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 超时配置 -->
-    <div class="col-12">
-      <NumberInput
-        v-model="localConfigs.goto.timeout"
-        icon="timer"
-        label="超时时间(ms)"
-        @update:model-value="updateConfigs"
-      />
+      <!-- Headers配置 -->
+      <div class="col-12">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <VariableInput
+              v-model="userAgent"
+              label="User-Agent"
+              icon="devices"
+              :options="{
+                items: userAgentOptions,
+              }"
+            />
+          </div>
+          <div class="col-12">
+            <DictEditor
+              v-model="otherHeaders"
+              label="其他请求头"
+              :options="{
+                optionKeys: commonHeaders,
+              }"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref, computed } from "vue";
-import { userAgent } from "js/options/httpOptions";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
+import DictEditor from "components/composer/common/DictEditor.vue";
+import { userAgent, commonHeaders } from "js/options/httpOptions";
 import { newVarInputVal } from "js/composer/varInputValManager";
-export default defineComponent({
+
+export default {
   name: "UBrowserBasic",
   components: {
     VariableInput,
     NumberInput,
+    DictEditor,
   },
   props: {
-    configs: {
+    modelValue: {
       type: Object,
       required: true,
     },
   },
-  emits: ["update:configs"],
-  setup(props, { emit }) {
-    const selectedUA = ref(null);
-
-    // 使用 computed 处理配置
-    const localConfigs = computed({
-      get: () => props.configs,
-      set: (val) => {
-        emit("update:configs", val);
-      },
-    });
-
-    // 更新配置
-    const updateConfigs = () => {
-      emit("update:configs", localConfigs.value);
-    };
-
-    // 处理 UA 选择
-    const handleUAChange = (val) => {
-      if (!val) return;
-
-      const newConfigs = window.lodashM.cloneDeep(props.configs);
-      if (!newConfigs.goto.headers) {
-        newConfigs.goto.headers = {};
-      }
-      newConfigs.goto.headers.userAgent = newVarInputVal("str", val);
-      emit("update:configs", newConfigs);
-      selectedUA.value = null;
-    };
-
+  emits: ["update:model-value"],
+  data() {
     return {
-      selectedUA,
-      localConfigs,
+      selectedUA: null,
       userAgentOptions: userAgent,
-      updateConfigs,
-      handleUAChange,
+      commonHeaders: commonHeaders,
     };
   },
-});
+  computed: {
+    url: {
+      get() {
+        return this.modelValue.url || newVarInputVal("str", "");
+      },
+      set(value) {
+        this.updateField("url", value);
+      },
+    },
+    userAgent: {
+      get() {
+        return (
+          this.modelValue.headers?.["User-Agent"] || newVarInputVal("str", "")
+        );
+      },
+      set(value) {
+        this.updateHeaders("User-Agent", value);
+      },
+    },
+    timeout: {
+      get() {
+        return this.modelValue.timeout || 60000;
+      },
+      set(value) {
+        this.updateField("timeout", value);
+      },
+    },
+    otherHeaders: {
+      get() {
+        if (!this.modelValue.headers) return {};
+        const standardHeaders = ["User-Agent"];
+        return Object.entries(this.modelValue.headers)
+          .filter(([key]) => !standardHeaders.includes(key))
+          .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+          }, {});
+      },
+      set(value) {
+        const userAgent = this.modelValue.headers?.["User-Agent"];
+        const newHeaders = {
+          ...(userAgent ? { "User-Agent": userAgent } : {}),
+          ...value,
+        };
+        this.updateField("headers", newHeaders);
+      },
+    },
+  },
+  methods: {
+    updateField(field, value) {
+      this.$emit("update:model-value", {
+        ...this.modelValue,
+        [field]: value,
+      });
+    },
+    updateHeaders(key, value) {
+      const headers = {
+        ...this.modelValue.headers,
+        [key]: value,
+      };
+      this.updateField("headers", headers);
+    },
+    handleUAChange(value) {
+      if (!value) return;
+      this.updateHeaders("User-Agent", newVarInputVal("str", value));
+      this.selectedUA = null;
+    },
+  },
+};
 </script>
+
+<style scoped>
+.ubrowser-basic {
+  width: 100%;
+}
+</style>

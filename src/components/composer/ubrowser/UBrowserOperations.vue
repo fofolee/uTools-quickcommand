@@ -1,179 +1,174 @@
 <template>
-  <div class="row q-col-gutter-sm">
-    <div class="col-12">
-      <!-- 操作选择网格 -->
-      <div class="row q-col-gutter-xs">
-        <div
-          v-for="action in ubrowserOperationConfigs"
-          :key="action.value"
-          class="col-2"
-        >
-          <q-card
-            flat
-            bordered
-            class="action-card cursor-pointer"
-            :class="{
-              'action-selected': selectedActions.some(
-                (a) => a.value === action.value
-              ),
-            }"
-            @click="toggleAction(action)"
+  <div class="ubrowser-operations">
+    <div class="row q-col-gutter-sm">
+      <div class="col-12">
+        <!-- 操作选择网格 -->
+        <div class="row q-col-gutter-xs">
+          <div
+            v-for="[actionKey, action] in Object.entries(operationsMap)"
+            :key="actionKey"
+            class="col-2"
           >
-            <div class="q-pa-xs text-caption text-wrap text-center">
-              {{ action.label }}
-            </div>
-          </q-card>
+            <q-card
+              flat
+              bordered
+              class="action-card cursor-pointer"
+              :class="{
+                'action-selected': selectedActionKeys.includes(actionKey),
+              }"
+              @click="toggleAction(actionKey)"
+            >
+              <div class="q-pa-xs text-caption text-wrap text-center">
+                {{ action.label }}
+              </div>
+            </q-card>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- 已选操作列表 -->
-      <q-list separator class="operation-list q-mt-md">
-        <div
-          v-for="(action, index) in selectedActions"
-          :key="action.id"
-          class="operation-item"
-        >
-          <div class="row items-center justify-between">
-            <q-chip
-              square
-              removable
-              @remove="$emit('remove-action', action)"
-              class="text-caption q-mx-none q-mb-sm"
-            >
-              <q-avatar color="primary">
-                <q-icon
-                  color="white"
-                  :name="getActionProps(action, 'icon') || 'touch_app'"
-                  size="14px"
-                />
-              </q-avatar>
-              <div class="q-mx-sm">{{ action.label }}</div>
-            </q-chip>
-            <div class="row items-start q-gutter-xs">
-              <q-btn
-                round
-                dense
-                color="primary"
-                icon="north"
-                v-show="index !== 0"
-                @click="moveAction(index, -1)"
-                size="xs"
-                class="q-mb-xs move-btn"
+    <!-- 已选操作列表 -->
+    <q-list separator class="operation-list q-mt-md">
+      <div
+        v-for="(selectedActionKey, index) in selectedActionKeys"
+        :key="selectedActionKey"
+        class="operation-item"
+      >
+        <div class="row items-center justify-between">
+          <q-chip
+            square
+            removable
+            @remove="toggleAction(selectedActionKey)"
+            class="text-caption q-mb-sm"
+            :style="{
+              paddingLeft: '7px',
+            }"
+          >
+            <q-avatar color="primary">
+              <q-icon
+                color="white"
+                :name="operationsMap[selectedActionKey].icon || 'touch_app'"
+                size="14px"
               />
-              <q-btn
-                round
-                dense
-                color="primary"
-                icon="south"
-                v-show="index !== selectedActions.length - 1"
-                @click="moveAction(index, 1)"
-                size="xs"
-                class="move-btn"
-              />
+            </q-avatar>
+            <div class="q-mx-sm">
+              {{ operationsMap[selectedActionKey].label }}
             </div>
-          </div>
-          <div v-if="getActionProps(action, 'config')">
-            <UBrowserOperation
-              :configs="configs"
-              :action="action.value"
-              :fields="getActionProps(action, 'config')"
-              @update:configs="$emit('update:configs', $event)"
+          </q-chip>
+          <div class="row items-start q-gutter-xs">
+            <q-btn
+              round
+              dense
+              color="primary"
+              icon="north"
+              v-show="index !== 0"
+              @click="moveAction(index, -1)"
+              size="xs"
+              class="q-mb-xs move-btn"
+            />
+            <q-btn
+              round
+              dense
+              color="primary"
+              icon="south"
+              v-show="index !== selectedActionKeys.length - 1"
+              @click="moveAction(index, 1)"
+              size="xs"
+              class="move-btn"
             />
           </div>
         </div>
-      </q-list>
-    </div>
+        <div
+          v-if="operationsMap[selectedActionKey].config"
+          class="operation-config"
+        >
+          <ParamInput
+            :configs="operationsMap[selectedActionKey].config"
+            :values="selectedActionArgs[index]"
+            @update="
+              (argvIndex, argvVal) =>
+                updateActionArgs(argvIndex, argvVal, index)
+            "
+          />
+        </div>
+      </div>
+    </q-list>
   </div>
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import { ubrowserOperationConfigs } from "js/composer/composerConfig";
-import UBrowserOperation from "./operations/UBrowserOperation.vue";
+import { ubrowserOperationConfigs } from "js/composer/ubrowserConfig";
+import ParamInput from "components/composer/param/ParamInput.vue";
 
-export default defineComponent({
+export default {
   name: "UBrowserOperations",
   components: {
-    UBrowserOperation,
+    ParamInput,
   },
   props: {
-    configs: {
-      type: Object,
-      required: true,
-    },
-    selectedActions: {
+    modelValue: {
       type: Array,
       required: true,
+      default: () => [],
     },
   },
-  emits: ["remove-action", "update:selectedActions", "update:configs"],
-  setup() {
+  emits: ["update:model-value"],
+  data() {
     return {
-      ubrowserOperationConfigs,
+      operationsMap: ubrowserOperationConfigs,
     };
+  },
+  computed: {
+    selectedActionKeys() {
+      return this.modelValue.map((x) => x.key || x.value);
+    },
+    selectedActionArgs() {
+      return this.modelValue.map((x) => x.args);
+    },
   },
   methods: {
     moveAction(index, direction) {
       const newIndex = index + direction;
-      if (newIndex >= 0 && newIndex < this.selectedActions.length) {
-        const actions = [...this.selectedActions];
-        [actions[index], actions[newIndex]] = [
-          actions[newIndex],
-          actions[index],
+      if (newIndex >= 0 && newIndex < this.selectedActionKeys.length) {
+        const newOperation = [...this.modelValue];
+        [newOperation[index], newOperation[newIndex]] = [
+          newOperation[newIndex],
+          newOperation[index],
         ];
-        this.$emit("update:selectedActions", actions);
+        this.$emit("update:model-value", newOperation);
       }
     },
-    toggleAction(action) {
-      const index = this.selectedActions.findIndex(
-        (a) => a.value === action.value
-      );
-
-      if (index === -1) {
-        // 添加操作
-        const newAction = {
-          ...action,
-          id: this.$root.getUniqueId(),
-          argv: "",
-          saveOutput: false,
-          cmd: action.value || action.cmd,
-          value: action.value || action.cmd,
-        };
-
-        this.$emit("update:selectedActions", [
-          ...this.selectedActions,
-          newAction,
-        ]);
-
-        // 初始化配置对象
-        const { config } = action;
-        if (config) {
-          const newConfigs = { ...this.configs };
-          if (!newConfigs[action.value]) {
-            newConfigs[action.value] = {};
-            // 设置默认值
-            config.forEach((field) => {
-              if (field.defaultValue !== undefined) {
-                newConfigs[action.value][field.key] = field.defaultValue;
-              }
-            });
-            this.$emit("update:configs", newConfigs);
-          }
-        }
-      } else {
+    toggleAction(actionKey) {
+      const index = this.selectedActionKeys.indexOf(actionKey);
+      let newOperation = [...this.modelValue];
+      if (index !== -1) {
         // 移除操作
-        const newActions = [...this.selectedActions];
-        newActions.splice(index, 1);
-        this.$emit("update:selectedActions", newActions);
+        newOperation.splice(index, 1);
+      } else {
+        // 添加操作
+        const { config, value } = this.operationsMap[actionKey];
+        const args = config?.length
+          ? config.map((field) => field.defaultValue)
+          : [];
+
+        const newOperationItem = { value, args };
+        if (actionKey !== value) {
+          newOperationItem.key = actionKey;
+        }
+
+        newOperation.push(newOperationItem);
       }
+      this.$emit("update:model-value", newOperation);
     },
-    getActionProps(action, key) {
-      return this.ubrowserOperationConfigs.find(
-        (a) => a.value === action.value
-      )?.[key];
+    updateActionArgs(argvIndex, argvVal, actionIndex) {
+      const newOperation = [...this.modelValue];
+      const newArgs = [...newOperation[actionIndex].args];
+      newArgs[argvIndex] = argvVal;
+      newOperation[actionIndex].args = newArgs;
+      this.$emit("update:model-value", newOperation);
     },
   },
-});
+};
 </script>
 
 <style scoped>
@@ -196,14 +191,10 @@ export default defineComponent({
   padding: 2px 4px;
   border-color: rgba(0, 0, 0, 0.15);
 }
-/*
-.operation-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
 
-.body--dark .operation-item:hover {
-  background: rgba(0, 0, 0, 0.25);
-} */
+.operation-config {
+  width: 100%;
+}
 
 .move-btn {
   opacity: 0.6;
@@ -214,32 +205,9 @@ export default defineComponent({
   opacity: 1;
 }
 
-.delete-btn {
-  opacity: 0.6;
-  transition: opacity 0.3s;
-}
-
-.operation-item:hover .delete-btn {
-  opacity: 1;
-}
-
-.text-subtitle2 {
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.q-item-section {
-  transition: all 0.3s;
-}
-
-.operation-item:hover .q-item-section {
-  opacity: 1;
-}
-
 .action-card {
   transition: all 0.3s ease;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  /* min-height: 42px; */
 }
 
 .action-card:hover {

@@ -74,6 +74,7 @@
                 filled
                 emit-value
                 map-options
+                options-dense
                 :options="contentTypes"
                 @update:model-value="
                   updateArgvs('headers.Content-Type', $event)

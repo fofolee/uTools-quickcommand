@@ -168,7 +168,10 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   created() {
-    if (!this.modelValue || Object.keys(this.modelValue).length === 0) {
+    if (
+      (!this.modelValue || Object.keys(this.modelValue).length === 0) &&
+      !this.options?.disableAdd
+    ) {
       this.$emit("update:modelValue", { "": newVarInputVal("str") });
     }
   },

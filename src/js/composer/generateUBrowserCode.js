@@ -1,361 +1,102 @@
 /**
  * 生成 UBrowser 代码
- * @param {Object} configs UBrowser 配置对象
- * @param {Array} selectedActions 已选择的操作列表
+ * @param {Object} argvs UBrowser 配置对象
  * @returns {string} 生成的代码
  */
+import { stringifyVarInputVal } from "./varInputValManager";
 import { stringifyArgv } from "./formatString";
 
-// 生成 goto 参数字符串
-function generateGotoArgs(goto) {
-  const args = [];
-
-  // URL
-  const urlStr = stringifyArgv(goto.url);
-  args.push(urlStr);
-
-  // Headers
-  if (goto.headers?.Referer?.value || goto.headers?.userAgent?.value) {
-    const headers = {};
-    if (goto.headers.Referer?.value) {
-      headers.Referer = goto.headers.Referer;
-    }
-    if (goto.headers.userAgent?.value) {
-      headers.userAgent = goto.headers.userAgent;
-    }
-    console.log("Headers:", JSON.stringify(headers, null, 2));
-    args.push(stringifyArgv(headers, true));
-  }
-
-  // Timeout
-  if (goto.timeout !== 60000) {
-    args.push(goto.timeout);
-  }
-
-  return args.join(", ");
-}
-
-// 生成 run 参数字符串
-function generateRunArgs(run) {
-  const options = {};
-  const defaultValues = {
-    show: true,
-    center: true,
-    alwaysOnTop: false,
-    fullscreen: false,
-    fullscreenable: true,
-    resizable: true,
-    movable: true,
-    minimizable: true,
-    maximizable: true,
-    enableLargerThanScreen: false,
-    opacity: 1,
-  };
-
-  // 窗口显示控制
-  if (run.show !== undefined && run.show !== defaultValues.show)
-    options.show = run.show;
-  if (run.center !== undefined && run.center !== defaultValues.center)
-    options.center = run.center;
-  if (
-    run.alwaysOnTop !== undefined &&
-    run.alwaysOnTop !== defaultValues.alwaysOnTop
-  )
-    options.alwaysOnTop = run.alwaysOnTop;
-  if (
-    run.fullscreen !== undefined &&
-    run.fullscreen !== defaultValues.fullscreen
-  )
-    options.fullscreen = run.fullscreen;
-  if (
-    run.fullscreenable !== undefined &&
-    run.fullscreenable !== defaultValues.fullscreenable
-  )
-    options.fullscreenable = run.fullscreenable;
-
-  // 窗口尺寸和位置 - 只有设置了值才添加
-  if (run.width !== undefined && run.width > 0) options.width = run.width;
-  if (run.height !== undefined && run.height > 0) options.height = run.height;
-  if (run.x !== undefined && run.x !== 0) options.x = run.x;
-  if (run.y !== undefined && run.y !== 0) options.y = run.y;
-
-  // 最大最小尺寸 - 只有设置了值才添加
-  if (run.minWidth !== undefined && run.minWidth > 0)
-    options.minWidth = run.minWidth;
-  if (run.minHeight !== undefined && run.minHeight > 0)
-    options.minHeight = run.minHeight;
-  if (run.maxWidth !== undefined && run.maxWidth > 0)
-    options.maxWidth = run.maxWidth;
-  if (run.maxHeight !== undefined && run.maxHeight > 0)
-    options.maxHeight = run.maxHeight;
-
-  // 窗口行为控制
-  if (run.resizable !== undefined && run.resizable !== defaultValues.resizable)
-    options.resizable = run.resizable;
-  if (run.movable !== undefined && run.movable !== defaultValues.movable)
-    options.movable = run.movable;
-  if (
-    run.minimizable !== undefined &&
-    run.minimizable !== defaultValues.minimizable
-  )
-    options.minimizable = run.minimizable;
-  if (
-    run.maximizable !== undefined &&
-    run.maximizable !== defaultValues.maximizable
-  )
-    options.maximizable = run.maximizable;
-  if (
-    run.enableLargerThanScreen !== undefined &&
-    run.enableLargerThanScreen !== defaultValues.enableLargerThanScreen
-  )
-    options.enableLargerThanScreen = run.enableLargerThanScreen;
-
-  // 透明度 - 只有不是1时才添加
-  if (run.opacity !== undefined && run.opacity !== defaultValues.opacity)
-    options.opacity = run.opacity;
-
-  // 其他参数 - 只有设置了值才添加
-  if (run.headless) options.headless = run.headless;
-  if (run.devtools) options.devtools = run.devtools;
-  if (run.timeout && run.timeout !== 60000) options.timeout = run.timeout;
-  if (run.proxy) options.proxy = run.proxy;
-  if (run.viewport) options.viewport = run.viewport;
-
-  return Object.keys(options).length ? stringifyArgv(options) : "";
-}
-
-// 生成操作参数字符串
-function generateActionArgs(action, config) {
-  console.log(
-    "Generating args for action:",
-    action,
-    "config:",
-    JSON.stringify(config, null, 2)
-  );
-  if (!config) return "";
-
-  let result;
-  switch (action) {
-    case "wait":
-      result = generateWaitArgs(config);
-      break;
-    case "click":
-    case "mousedown":
-    case "mouseup":
-    case "focus":
-      result = stringifyArgv(config.selector);
-      break;
-    case "css":
-    case "paste":
-      result = stringifyArgv(config.value);
-      break;
-    case "press":
-      result = generatePressArgs(config);
-      break;
-    case "screenshot":
-      result = generateScreenshotArgs(config);
-      break;
-    case "pdf":
-      result = generatePdfArgs(config);
-      break;
-    case "device":
-      result = generateDeviceArgs(config);
-      break;
-    case "cookies":
-    case "removeCookies":
-      result = stringifyArgv(config.name);
-      break;
-    case "setCookies":
-      result = generateSetCookiesArgs(config);
-      break;
-    case "evaluate":
-      result = generateEvaluateArgs(config);
-      break;
-    case "when":
-      result = generateWhenArgs(config);
-      break;
-    case "file":
-      result = generateFileArgs(config);
-      break;
-    case "value":
-      result = generateValueArgs(config);
-      break;
-    case "check":
-      result = generateCheckArgs(config);
-      break;
-    case "scroll":
-      result = generateScrollArgs(config);
-      break;
-    case "download":
-      result = generateDownloadArgs(config);
-      break;
-    case "devTools":
-      result = stringifyArgv(config.mode);
-      break;
-    default:
-      result = "";
-  }
-  console.log(
-    "Generated args for action:",
-    action,
-    "result:",
-    JSON.stringify(result)
-  );
-  return result;
-}
-
-// 生成 wait 参数字符串
-function generateWaitArgs(config) {
-  switch (config.type) {
-    case "selector":
-      return stringifyArgv(config.selector);
-    case "function":
-      return config.function;
-    case "time":
-      return config.time;
-    default:
-      return "";
-  }
-}
-
-// 生成 press 参数字符串
-function generatePressArgs(config) {
-  const args = [stringifyArgv(config.key)];
-  if (config.modifiers?.length) {
-    args.push(JSON.stringify(config.modifiers));
-  }
-  return args.join(", ");
-}
-
-// 生成 screenshot 参数字符串
-function generateScreenshotArgs(config) {
-  const args = [];
-  if (config.rect) {
-    args.push(stringifyArgv(config.rect));
-  } else if (config.selector) {
-    args.push(stringifyArgv(config.selector));
-  }
-  if (config.savePath) {
-    args.push(stringifyArgv(config.savePath));
-  }
-  return args.join(", ");
-}
-
-// 生成 pdf 参数字符串
-function generatePdfArgs(config) {
-  const args = [];
-  if (config.savePath) {
-    args.push(stringifyArgv(config.savePath));
-  }
-  if (config.options) {
-    args.push(stringifyArgv(config.options));
-  }
-  return args.join(", ");
-}
-
-// 生成 device 参数字符串
-function generateDeviceArgs(config) {
-  if (config.type === "preset") {
-    return stringifyArgv(config.deviceName);
-  } else {
-    const options = {};
-    if (config.size) options.size = config.size;
-    if (config.useragent) options.userAgent = config.useragent;
-    return stringifyArgv(options);
-  }
-}
-
-// 生成 setCookies 参数字符串
-function generateSetCookiesArgs(config) {
-  if (!config.items?.length) return "[]";
-  return stringifyArgv(config.items);
-}
-
-// 生成 evaluate 参数字符串
-function generateEvaluateArgs(config) {
-  const args = [config.function];
-  if (config.args?.length) {
-    args.push(...config.args.map(stringifyArgv));
-  }
-  return args.join(", ");
-}
-
-// 生成 when 参数字符串
-function generateWhenArgs(config) {
-  if (config.type === "function") {
-    return config.function;
-  } else {
-    return stringifyArgv(config.selector);
-  }
-}
-
-// 生成 file 参数字符串
-function generateFileArgs(config) {
-  const args = [stringifyArgv(config.selector)];
-  if (config.files) {
-    args.push(stringifyArgv(config.files));
-  }
-  return args.join(", ");
-}
-
-// 生成 value 参数字符串
-function generateValueArgs(config) {
-  return `${stringifyArgv(config.selector)}, ${stringifyArgv(
-    config.value
-  )}`;
-}
-
-// 生成 check 参数字符串
-function generateCheckArgs(config) {
-  return `${stringifyArgv(config.selector)}, ${config.checked}`;
-}
-
-// 生成 scroll 参数字符串
-function generateScrollArgs(config) {
-  if (config.type === "element") {
-    return stringifyArgv(config.selector);
-  } else {
-    if (config.x !== undefined) {
-      return `${config.x}, ${config.y}`;
-    } else {
-      return String(config.y);
-    }
-  }
-}
-
-// 生成 download 参数字符串
-function generateDownloadArgs(config) {
-  const args = [stringifyArgv(config.url)];
-  if (config.savePath) {
-    args.push(stringifyArgv(config.savePath));
-  }
-  return args.join(", ");
-}
+// ubrowser 默认运行配置
+const defaultRunConfigs = {
+  show: true,
+  width: 800,
+  height: 600,
+  center: true,
+  minWidth: 0,
+  minHeight: 0,
+  resizable: true,
+  movable: true,
+  minimizable: true,
+  maximizable: true,
+  alwaysOnTop: false,
+  fullscreen: false,
+  fullscreenable: true,
+  enableLargerThanScreen: false,
+  opacity: 1,
+};
 
 // 生成完整的 ubrowser 代码
-export function generateUBrowserCode(configs, selectedActions) {
-  const lines = [];
-  const indent = "  ";
+export function generateUBrowserCode(argvs) {
+  const lines = ["utools.ubrowser"];
 
-  // 添加 goto 参数
-  if (configs.goto) {
-    const gotoArgs = generateGotoArgs(configs.goto);
-    lines.push(`${indent}goto(${gotoArgs}),`);
+  // 首先添加 goto 操作
+  if (argvs.goto) {
+    const args = [];
+    // url
+    if (argvs.goto.url) {
+      args.push(stringifyVarInputVal(argvs.goto.url));
+    }
+
+    // headers
+    const headers = {};
+    // 处理标准headers
+    Object.entries(argvs.goto.headers || {}).forEach(([key, value]) => {
+      if (value?.value) {
+        headers[key] = value.value;
+      }
+    });
+    // 处理其他headers
+    Object.entries(argvs.goto.otherHeaders || {}).forEach(([key, value]) => {
+      if (value?.value) {
+        headers[key] = value.value;
+      }
+    });
+
+    if (Object.keys(headers).length > 0) {
+      args.push(stringifyArgv(headers));
+    }
+
+    // timeout
+    if (argvs.goto.timeout) {
+      if (args.length === 1) {
+        args.push("undefined");
+      }
+      args.push(argvs.goto.timeout);
+    }
+
+    lines[0] += `.goto(${args.join(", ")})`;
   }
 
-  // 添加选中的操作
-  if (selectedActions?.length) {
-    selectedActions.forEach((action) => {
-      const args = generateActionArgs(action.value, configs[action.value]);
-      lines.push(`${indent}${action.value}(${args}),`);
+  // 添加其他操作
+  if (argvs.operations?.length) {
+    argvs.operations.forEach(({ value, args }) => {
+      if (!args?.length) return;
+
+      const stringifiedArgs = args
+        .map((arg) => stringifyArgv(arg))
+        .filter(Boolean);
+
+      lines.push(`  .${value}(${stringifiedArgs.join(", ")})`);
     });
   }
 
-  // 添加 run 参数
-  const runArgs = generateRunArgs(configs.run || {});
-  const runLine = runArgs ? `${indent}run(${runArgs})` : `${indent}run()`;
-  lines.push(runLine);
+  // 最后添加 run 配置（只包含非默认值）
+  if (argvs.run) {
+    const runOptions = {};
+    Object.entries(argvs.run).forEach(([key, value]) => {
+      if (value !== defaultRunConfigs[key]) {
+        runOptions[key] = value;
+      }
+    });
 
-  // 生成最终代码
-  return `utools.ubrowser\n${lines.join("\n")}`;
+    if (Object.keys(runOptions).length > 0) {
+      lines.push(
+        `  .run(${JSON.stringify(runOptions, null, 2).replace(/\n/g, "\n  ")})`
+      );
+    } else {
+      lines.push("  .run()");
+    }
+  }
+
+  return lines.join("\n");
 }

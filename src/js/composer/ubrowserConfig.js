@@ -1,549 +1,591 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
+import { deviceName, userAgent } from "js/options/httpOptions";
 
 // ubrowser 浏览器操作配置
-export const ubrowserOperationConfigs = [
-  {
+export const ubrowserOperationConfigs = {
+  waitTime: {
     value: "wait",
-    label: "等待",
+    label: "等待时间",
+    icon: "timer",
     config: [
       {
-        key: "type",
-        label: "等待类型",
-        type: "button-toggle",
-        options: [
-          { label: "等待时间", value: "time" },
-          { label: "等待元素", value: "selector" },
-          { label: "等待条件", value: "function" },
-        ],
-        defaultValue: "time",
-      },
-      {
-        key: "time",
         label: "等待时间(ms)",
         icon: "timer",
         component: "NumberInput",
+        min: 0,
+        step: 100,
         width: 12,
-        showWhen: "type",
-        showValue: "time",
       },
+    ],
+  },
+  waitElement: {
+    value: "wait",
+    label: "等待元素",
+    icon: "find_in_page",
+    config: [
       {
-        key: "selector",
         label: "等待元素的CSS选择器",
         icon: "find_in_page",
         component: "VariableInput",
         width: 12,
-        showWhen: "type",
-        showValue: "selector",
       },
+    ],
+  },
+  waitCondition: {
+    value: "wait",
+    label: "等待条件",
+    icon: "code",
+    config: [
       {
-        key: "function",
-        label: "等待条件(返回 true 时结束等待)",
+        label: "等待条件",
         icon: "code",
-        type: "function-with-params",
+        component: "FunctionInput",
+        placeholder: "返回true时结束等待",
         width: 12,
-        showWhen: "type",
-        showValue: "function",
       },
       {
-        key: "timeout",
         label: "超时时间(ms)",
         icon: "timer_off",
         component: "NumberInput",
         width: 12,
         defaultValue: 60000,
-        showWhen: "type",
-        showValue: ["selector", "function"],
+      },
+      {
+        topLabel: "传递给函数的参数值",
+        component: "ArrayEditor",
       },
     ],
-    icon: "timer",
   },
-  {
+  click: {
     value: "click",
     label: "点击",
+    icon: "mouse",
     config: [
       {
-        key: "selector",
         label: "点击元素的CSS选择器",
         icon: "mouse",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "mouse",
   },
-  {
+  css: {
     value: "css",
     label: "注入CSS",
+    icon: "style",
     config: [
       {
-        key: "value",
         label: "注入的CSS样式",
         icon: "style",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "style",
   },
-  {
+  press: {
     value: "press",
     label: "按键",
+    icon: "keyboard",
     config: [
       {
-        key: "key",
         label: "按键",
         icon: "keyboard",
         component: "VariableInput",
-        width: 5,
+        width: 4,
       },
       {
-        key: "modifiers",
-        label: "修饰键",
-        type: "checkbox-group",
+        component: "CheckGroup",
         options: [
           { label: "Ctrl", value: "ctrl" },
           { label: "Shift", value: "shift" },
           { label: "Alt", value: "alt" },
           { label: "Meta", value: "meta" },
         ],
-        defaultValue: [],
-        width: 7,
+        width: 8,
       },
     ],
-    icon: "keyboard",
   },
-  {
+  paste: {
     value: "paste",
     label: "粘贴",
+    icon: "content_paste",
     config: [
       {
-        key: "text",
         label: "粘贴内容",
         icon: "content_paste",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "content_paste",
   },
-  {
+  viewport: {
     value: "viewport",
     label: "视窗",
+    icon: "crop",
     config: [
       {
-        key: "width",
         label: "视窗宽度",
-        icon: "width",
+        icon: "swap_horiz",
         component: "NumberInput",
+        min: 0,
+        step: 100,
         width: 6,
       },
       {
-        key: "height",
         label: "视窗高度",
         icon: "height",
         component: "NumberInput",
+        min: 0,
+        step: 100,
         width: 6,
       },
     ],
-    icon: "crop",
   },
-  {
+  screenshotElement: {
     value: "screenshot",
-    label: "截图",
+    label: "元素截图",
+    icon: "picture_as_pdf",
     config: [
       {
-        key: "selector",
         label: "元素选择器",
         icon: "crop",
         component: "VariableInput",
+        width: 12,
       },
       {
-        key: "rect.x",
-        label: "X坐标",
-        icon: "drag_handle",
-        component: "NumberInput",
-        width: 3,
-      },
-      {
-        key: "rect.y",
-        label: "Y坐标",
-        icon: "drag_handle",
-        component: "NumberInput",
-        width: 3,
-      },
-      {
-        key: "rect.width",
-        label: "宽度",
-        icon: "width",
-        component: "NumberInput",
-        width: 3,
-      },
-      {
-        key: "rect.height",
-        label: "高度",
-        icon: "height",
-        component: "NumberInput",
-        width: 3,
-      },
-      {
-        key: "savePath",
         label: "保存路径",
         icon: "save",
         component: "VariableInput",
+        options: {
+          dialog: {
+            type: "save",
+            options: {
+              defaultPath: "screenshot.png",
+            },
+          },
+        },
+        width: 12,
       },
     ],
-    icon: "picture_as_pdf",
   },
-  {
+  screenshotPosition: {
+    value: "screenshot",
+    label: "区域截图",
+    icon: "crop",
+    config: [
+      {
+        component: "OptionEditor",
+        options: {
+          x: {
+            label: "X坐标",
+            icon: "drag_handle",
+            component: "NumberInput",
+            min: 0,
+            step: 100,
+            width: 3,
+          },
+          y: {
+            label: "Y坐标",
+            icon: "drag_handle",
+            component: "NumberInput",
+            min: 0,
+            step: 100,
+            width: 3,
+          },
+          width: {
+            label: "宽度",
+            icon: "swap_horiz",
+            component: "NumberInput",
+            min: 0,
+            step: 100,
+            width: 3,
+          },
+          height: {
+            label: "高度",
+            icon: "height",
+            component: "NumberInput",
+            min: 0,
+            step: 100,
+            width: 3,
+          },
+        },
+      },
+      {
+        label: "保存路径",
+        icon: "save",
+        options: {
+          dialog: {
+            type: "save",
+            options: {
+              defaultPath: "screenshot.png",
+            },
+          },
+        },
+        width: 12,
+      },
+    ],
+  },
+  pdf: {
     value: "pdf",
     label: "导出PDF",
+    icon: "picture_as_pdf",
     config: [
       {
-        key: "options.marginsType",
-        label: "边距类型",
-        component: "q-select",
-        options: [
-          { label: "默认边距", value: 0 },
-          { label: "无边距", value: 1 },
-          { label: "最小边距", value: 2 },
-        ],
-        width: 6,
+        component: "OptionEditor",
+        options: {
+          format: {
+            label: "格式",
+            component: "QSelect",
+            options: [
+              "A0",
+              "A1",
+              "A2",
+              "A3",
+              "A4",
+              "A5",
+              "A6",
+              "Legal",
+              "Letter",
+              "Tabloid",
+              "Ledger",
+            ],
+            width: 3,
+          },
+          landscape: {
+            label: "横向打印",
+            component: "CheckButton",
+            width: 3,
+          },
+          pageRanges: {
+            label: "页码范围",
+            component: "VariableInput",
+            placeholder: "1-5, 8",
+            width: 3,
+          },
+          scale: {
+            label: "缩放",
+            component: "NumberInput",
+            min: 0,
+            step: 0.1,
+            width: 3,
+          },
+        },
+        defaultValue: {
+          format: "A4",
+          landscape: false,
+          pageRanges: "",
+          scale: 1,
+        },
       },
       {
-        key: "options.pageSize",
-        label: "页面大小",
-        component: "q-select",
-        options: ["A3", "A4", "A5", "Legal", "Letter", "Tabloid"],
-        width: 6,
-      },
-      {
-        key: "savePath",
         label: "保存路径",
         icon: "save",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "devices",
   },
-  {
+  device: {
     value: "device",
     label: "模拟设备",
+    icon: "phone_iphone",
     config: [
       {
-        key: "type",
-        label: "设备类型",
-        type: "button-toggle",
-        options: [
-          { label: "特定设备", value: "preset" },
-          { label: "自定义设备", value: "custom" },
-        ],
-        defaultValue: "preset",
-      },
-      {
-        key: "deviceName",
-        label: "设备名称",
-        icon: "smartphone",
-        component: "VariableInput",
-        width: 12,
-        showWhen: "type",
-        showValue: "preset",
-      },
-      {
-        key: "size",
-        label: "设备尺寸",
-        type: "device-size",
-        width: 12,
-        showWhen: "type",
-        showValue: "custom",
-      },
-      {
-        key: "useragent",
-        label: "User-Agent",
-        icon: "devices",
-        component: "VariableInput",
-        width: 12,
-        showWhen: "type",
-        showValue: "custom",
+        component: "OptionEditor",
+        options: {
+          size: {
+            component: "DictEditor",
+            options: {
+              fixedKeys: ["width", "height"],
+              disableAdd: true,
+            },
+          },
+          userAgent: {
+            label: "User-Agent",
+            component: "VariableInput",
+            options: {
+              items: userAgent,
+            },
+          },
+        },
       },
     ],
-    icon: "phone_iphone",
   },
-  {
+  cookies: {
     value: "cookies",
     label: "获取Cookie",
+    icon: "cookie",
     config: [
       {
-        key: "name",
         label: "Cookie名称",
         icon: "cookie",
         component: "VariableInput",
         width: 12,
       },
     ],
-    icon: "cookie",
   },
-  {
+  setCookies: {
     value: "setCookies",
     label: "设置Cookie",
-    config: [{ key: "items", label: "Cookie列表", type: "cookie-list" }],
     icon: "cookie",
-  },
-  {
-    value: "removeCookies",
-    label: "删除Cookie",
     config: [
       {
-        key: "name",
+        label: "Cookie列表",
+        component: "ArrayEditor",
+        columns: {
+          name: {
+            label: "名称",
+          },
+          value: {
+            label: "值",
+          },
+        },
+      },
+    ],
+  },
+  removeCookies: {
+    value: "removeCookies",
+    label: "删除Cookie",
+    icon: "cookie",
+    config: [
+      {
         label: "Cookie名称",
         icon: "cookie",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "cookie",
   },
-  {
+  clearCookies: {
     value: "clearCookies",
     label: "清空Cookie",
+    icon: "cookie",
     config: [
       {
-        key: "url",
         label: "URL(可选)",
         icon: "link",
         component: "VariableInput",
-      },
-    ],
-    icon: "cookie",
-  },
-  {
-    value: "evaluate",
-    label: "执行代码",
-    config: [
-      {
-        key: "function",
-        label: "执行的代码",
-        icon: "code",
-        type: "function-with-params",
         width: 12,
       },
     ],
-    icon: "code",
   },
-  {
-    value: "when",
-    label: "条件判断",
+  evaluate: {
+    value: "evaluate",
+    label: "执行代码",
+    icon: "code",
     config: [
       {
-        key: "type",
-        label: "条件类型",
-        type: "button-toggle",
-        options: [
-          { label: "等待元素", value: "selector" },
-          { label: "等待条件", value: "function" },
-        ],
-        defaultValue: "selector",
+        label: "执行的代码",
+        icon: "code",
+        component: "FunctionInput",
+        width: 12,
       },
       {
-        key: "selector",
-        label: "等待元素的CSS选择器",
+        topLabel: "传递给函数的参数值",
+        component: "ArrayEditor",
+      },
+    ],
+  },
+  whenElement: {
+    value: "when",
+    label: "判断元素",
+    icon: "rule",
+    config: [
+      {
+        label: "判断元素的CSS选择器",
         icon: "find_in_page",
         component: "VariableInput",
         width: 12,
-        showWhen: "type",
-        showValue: "selector",
-      },
-      {
-        key: "function",
-        label: "等待条件(返回 true 时结束等待)",
-        icon: "code",
-        type: "function-with-params",
-        width: 12,
-        showWhen: "type",
-        showValue: "function",
-      },
-      {
-        key: "timeout",
-        label: "超时时间(ms)",
-        icon: "timer_off",
-        component: "NumberInput",
-        width: 12,
-        defaultValue: 60000,
-        showWhen: "type",
-        showValue: ["selector", "function"],
       },
     ],
+  },
+  whenCondition: {
+    value: "when",
+    label: "判断条件",
     icon: "rule",
-  },
-  {
-    value: "end",
-    label: "结束条件",
-    config: [],
-    icon: "stop",
-  },
-  {
-    value: "mousedown",
-    label: "按下鼠标",
     config: [
       {
-        key: "selector",
+        label: "判断条件",
+        icon: "code",
+        component: "FunctionInput",
+        width: 12,
+        placeholder: "返回true时结束判断",
+      },
+      {
+        topLabel: "传递给函数的参数值",
+        component: "ArrayEditor",
+      },
+    ],
+  },
+  end: {
+    value: "end",
+    label: "结束判断",
+    icon: "stop",
+    config: [],
+  },
+  mousedown: {
+    value: "mousedown",
+    label: "按下鼠标",
+    icon: "mouse",
+    config: [
+      {
         label: "按下元素选择器",
         icon: "mouse",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "mouse",
   },
-  {
+  mouseup: {
     value: "mouseup",
     label: "释放鼠标",
+    icon: "mouse",
     config: [
       {
-        key: "selector",
         label: "释放元素选择器",
         icon: "mouse",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "mouse",
   },
-  {
+  file: {
     value: "file",
     label: "上传文件",
+    icon: "upload_file",
     config: [
       {
-        key: "selector",
         label: "文件输入框选择器",
         icon: "upload_file",
         component: "VariableInput",
+        placeholder: "必须是可选择文件的输入元素 input[type=file]",
+        width: 12,
       },
-      { key: "files", label: "文件列表", type: "file-list", width: 12 },
+      {
+        label: "文件列表",
+        component: "VariableInput",
+        icon: "image",
+        width: 12,
+        options: {
+          dialog: {
+            type: "open",
+            options: {
+              title: "选择文件",
+              properties: ["openFile", "multiSelections"],
+            },
+          },
+        },
+      },
     ],
-    icon: "upload_file",
   },
-  {
-    value: "value",
+  setValue: {
+    value: "setValue",
     label: "设置值",
+    icon: "check_box",
     config: [
       {
-        key: "selector",
         label: "元素选择器",
         icon: "varInput",
         component: "VariableInput",
         width: 6,
       },
       {
-        key: "value",
         label: "设置的值",
         icon: "edit",
         component: "VariableInput",
         width: 6,
       },
     ],
-    icon: "check_box",
   },
-  {
+  check: {
     value: "check",
     label: "设置选中",
+    icon: "center_focus_strong",
     config: [
       {
-        key: "selector",
         label: "复选框/选框选择器",
         icon: "check_box",
         component: "VariableInput",
         width: 8,
       },
       {
-        key: "checked",
         label: "选中状态",
-        type: "boolean-toggle",
+        component: "CheckButton",
         defaultValue: false,
         width: 4,
       },
     ],
-    icon: "center_focus_strong",
   },
-  {
+  focus: {
     value: "focus",
     label: "聚焦元素",
+    icon: "swap_vert",
     config: [
       {
-        key: "selector",
         label: "元素选择器",
         icon: "center_focus_strong",
         component: "VariableInput",
+        width: 12,
       },
     ],
-    icon: "swap_vert",
   },
-  {
+  scrollToElement: {
     value: "scroll",
-    label: "滚动",
+    label: "滚动到元素",
+    icon: "download",
     config: [
       {
-        key: "type",
-        label: "滚动类型",
-        type: "button-toggle",
-        options: [
-          { label: "滚动到元素", value: "element" },
-          { label: "滚动到坐标", value: "position" },
-        ],
-        defaultValue: "element",
-      },
-      {
-        key: "selector",
         label: "目标元素选择器",
         icon: "swap_vert",
         component: "VariableInput",
         width: 12,
-        showWhen: "type",
-        showValue: "element",
       },
+    ],
+  },
+  scrollToPosition: {
+    value: "scroll",
+    label: "滚动到坐标",
+    icon: "download",
+    config: [
       {
-        key: "x",
         label: "X坐标",
         icon: "drag_handle",
         component: "NumberInput",
         width: 6,
-        showWhen: "type",
-        showValue: "position",
       },
       {
-        key: "y",
         label: "Y坐标",
         icon: "drag_handle",
         component: "NumberInput",
         width: 6,
-        showWhen: "type",
-        showValue: "position",
       },
     ],
-    icon: "download",
   },
-  {
+  download: {
     value: "download",
     label: "下载",
+    icon: "download",
     config: [
       {
-        key: "url",
         label: "下载URL",
         icon: "link",
         component: "VariableInput",
         width: 6,
       },
       {
-        key: "savePath",
         label: "保存路径",
         icon: "save",
         component: "VariableInput",
         width: 6,
       },
     ],
-    icon: "download",
   },
-  {
+  devTools: {
     value: "devTools",
     label: "开发工具",
+    icon: "developer_board",
     config: [
       {
-        key: "mode",
-        label: "开发工具位置",
-        type: "button-toggle",
+        component: "ButtonGroup",
         options: [
           { label: "右侧", value: "right" },
           { label: "底部", value: "bottom" },
@@ -551,142 +593,20 @@ export const ubrowserOperationConfigs = [
           { label: "分离", value: "detach" },
         ],
         defaultValue: "right",
+        width: 12,
       },
     ],
-    icon: "developer_board",
   },
-  {
+  hide: {
     value: "hide",
     label: "隐藏",
-    config: [],
     icon: "visibility_off",
+    config: [],
   },
-  {
+  show: {
     value: "show",
     label: "显示",
-    config: [],
     icon: "visibility",
+    config: [],
   },
-];
-
-// 添加默认运行配置
-const defaultUBrowserRunConfigs = {
-  show: true,
-  width: 1280,
-  height: 800,
-  center: true,
-  minWidth: 800,
-  minHeight: 600,
-  resizable: true,
-  movable: true,
-  minimizable: true,
-  maximizable: true,
-  alwaysOnTop: false,
-  fullscreen: false,
-  fullscreenable: true,
-  enableLargerThanScreen: false,
-  opacity: 1,
-};
-
-// ubrowser 默认配置 基础参数-浏览器操作-运行参数
-export const defaultUBrowserConfigs = {
-  // 基础参数
-  goto: {
-    url: newVarInputVal("str"),
-    headers: {
-      Referer: newVarInputVal("str"),
-      userAgent: newVarInputVal("str"),
-    },
-    timeout: 60000,
-  },
-  // 浏览器操作
-  wait: {
-    value: "",
-    timeout: 60000,
-  },
-  click: {
-    selector: newVarInputVal("str"),
-  },
-  css: {
-    value: newVarInputVal("str"),
-  },
-  press: {
-    key: newVarInputVal("str"),
-    modifiers: [],
-  },
-  paste: {
-    text: newVarInputVal("str"),
-  },
-  screenshot: {
-    selector: newVarInputVal("str"),
-    rect: { x: 0, y: 0, width: 0, height: 0 },
-    savePath: newVarInputVal("str"),
-  },
-  pdf: {
-    options: {
-      marginsType: 0,
-      pageSize: "A4",
-    },
-    savePath: newVarInputVal("str"),
-  },
-  device: {
-    size: { width: 1280, height: 800 },
-    useragent: newVarInputVal("str"),
-  },
-  cookies: {
-    name: newVarInputVal("str"),
-  },
-  setCookies: {
-    items: [
-      {
-        name: newVarInputVal("str"),
-        value: newVarInputVal("str"),
-      },
-    ],
-  },
-  removeCookies: {
-    name: newVarInputVal("str"),
-  },
-  clearCookies: {
-    url: newVarInputVal("str"),
-  },
-  evaluate: {
-    function: "",
-    params: [],
-  },
-  when: {
-    condition: newVarInputVal("var"),
-  },
-  mousedown: {
-    selector: newVarInputVal("str"),
-  },
-  mouseup: {
-    selector: newVarInputVal("str"),
-  },
-  file: {
-    selector: newVarInputVal("str"),
-    files: [],
-  },
-  value: {
-    selector: newVarInputVal("str"),
-    value: newVarInputVal("str"),
-  },
-  check: {
-    selector: newVarInputVal("str"),
-    checked: false,
-  },
-  focus: {
-    selector: newVarInputVal("str"),
-  },
-  scroll: {
-    target: newVarInputVal("str"),
-    x: 0,
-    y: 0,
-  },
-  download: {
-    url: newVarInputVal("str"),
-    savePath: newVarInputVal("str"),
-  },
-  // 运行参数
-  run: defaultUBrowserRunConfigs,
 };

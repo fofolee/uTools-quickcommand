@@ -375,7 +375,8 @@ export const browserCommands = {
           placeholder: "输入JavaScript代码，使用return返回结果",
         },
         {
-          topLabel: "要传递的参数",
+          label: "要传递的参数",
+          isCollapse: false,
           component: "DictEditor",
           icon: "data_array",
           width: 12,
