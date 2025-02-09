@@ -1,10 +1,7 @@
 <template>
   <div class="config-page-container">
     <!-- 主界面内容 -->
-    <div
-      class="main-content"
-      :class="{ hide: isCommandEditorShow && !isEditorLeaving }"
-    >
+    <div class="main-content">
       <BackgroundLayer />
       <!-- 标签栏 -->
       <TagBar
@@ -39,15 +36,16 @@
     </div>
 
     <!-- 命令编辑界面 -->
-    <CommandEditor
-      v-if="isCommandEditorShow"
-      ref="commandEditor"
-      :action="commandEditorAction"
-      @editorEvent="editorEvent"
-      :allQuickCommandTags="allQuickCommandTags"
-      :isLeaving="isEditorLeaving"
-      @animationend="handleAnimationEnd"
-    ></CommandEditor>
+    <transition name="slide">
+      <div v-if="isEditorShow" class="editor-container">
+        <component
+          :is="commandEditorAction.data.component"
+          :action="commandEditorAction"
+          @editorEvent="editorEvent"
+          :allQuickCommandTags="allQuickCommandTags"
+        />
+      </div>
+    </transition>
 
     <CommandRunResult
       :action="{ type: 'config' }"
@@ -63,6 +61,7 @@ import importAll from "js/common/importAll.js";
 import changeLog from "js/options/changeLog.js";
 import pinyinMatch from "pinyin-match";
 import CommandEditor from "components/CommandEditor";
+import ComposerEditor from "components/ComposerEditor";
 import FooterBar from "src/components/config/FooterBar.vue";
 import TagBar from "src/components/config/TagBar.vue";
 import BackgroundLayer from "src/components/config/BackgroundLayer.vue";
@@ -78,6 +77,7 @@ let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
 export default {
   components: {
     CommandEditor,
+    ComposerEditor,
     CommandRunResult,
     FooterBar,
     TagBar,
@@ -93,10 +93,9 @@ export default {
       allQuickCommands: {},
       allQuickCommandTags: [],
       commandSearchKeyword: "",
-      isCommandEditorShow: false,
+      isEditorShow: false,
       commandEditorAction: {},
       footerBarHeight: "40px",
-      isEditorLeaving: false,
     };
   },
   computed: {
@@ -286,7 +285,7 @@ export default {
         type: "edit",
         data: window.lodashM.cloneDeep(command),
       };
-      this.isCommandEditorShow = true;
+      this.isEditorShow = true;
     },
     // 是否为默认命令
     isDefaultCommand(code) {
@@ -419,12 +418,14 @@ export default {
       }
     },
     // 新建命令
-    addNewCommand() {
+    addNewCommand(component = "CommandEditor") {
       this.commandEditorAction = {
         type: "new",
-        data: {},
+        data: {
+          component,
+        },
       };
-      this.isCommandEditorShow = true;
+      this.isEditorShow = true;
     },
     saveCommand(command) {
       let code = command.features.code;
@@ -444,7 +445,7 @@ export default {
           this.saveCommand(event.data);
           break;
         case "back":
-          this.isEditorLeaving = true;
+          this.isEditorShow = false;
           break;
         default:
           return;
@@ -468,12 +469,6 @@ export default {
           "cfg_loggedVersion",
           lastNeedLogEvent.version
         );
-      }
-    },
-    handleAnimationEnd(e) {
-      if (this.isEditorLeaving) {
-        this.isEditorLeaving = false;
-        this.isCommandEditorShow = false;
       }
     },
     handleCommandsReorder({ tag, commands }) {
@@ -522,11 +517,40 @@ export default {
   background: transparent;
 }
 
-.main-content {
-  transition: opacity 0.3s ease;
+.editor-container {
+  color: black;
+  background: white;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5000;
+  background: var(--q-page-background);
 }
 
-.main-content.hide {
-  opacity: 0;
+.body--dark .editor-container {
+  color: white;
+  background: var(--q-dark-page);
+}
+
+/* 编辑器容器动画 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease-in-out;
+}
+
+.slide-enter-from {
+  transform: translateY(100%);
+}
+
+.slide-leave-to {
+  transform: translateY(100%);
+}
+
+.slide-enter-to,
+.slide-leave-from {
+  transform: translateY(0);
 }
 </style>

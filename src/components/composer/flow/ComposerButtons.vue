@@ -1,7 +1,9 @@
 <template>
   <div class="composer-buttons">
     <div class="right-buttons">
-      <q-separator vertical />
+      <q-btn icon="close" dense flat v-close-popup v-if="showCloseButton">
+        <q-tooltip>退出可视化编排</q-tooltip>
+      </q-btn>
       <q-btn
         :icon="isAllCollapsed ? 'unfold_more' : 'unfold_less'"
         dense
@@ -10,7 +12,6 @@
       >
         <q-tooltip>{{ isAllCollapsed ? "展开所有" : "折叠所有" }}</q-tooltip>
       </q-btn>
-      <q-separator vertical />
       <q-btn
         icon="settings"
         dense
@@ -19,7 +20,6 @@
       >
         <q-tooltip>流程管理</q-tooltip>
       </q-btn>
-      <q-separator vertical />
       <q-btn
         @click="$q.dark.toggle()"
         :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
@@ -28,11 +28,7 @@
         v-if="isDev"
       >
       </q-btn>
-      <q-btn icon="close" dense flat v-close-popup v-if="showCloseButton">
-        <q-tooltip>退出可视化编排</q-tooltip>
-      </q-btn>
-      <q-separator vertical v-if="showCloseButton" />
-      <q-btn
+      <!-- <q-btn
         dense
         icon="read_more"
         flat
@@ -41,7 +37,7 @@
         v-if="showCloseButton"
       >
         <q-tooltip>插入到编辑器光标处</q-tooltip>
-      </q-btn>
+      </q-btn> -->
       <q-btn
         dense
         flat
@@ -52,14 +48,12 @@
       >
         <q-tooltip>清空编辑器内容并插入</q-tooltip>
       </q-btn>
-      <q-separator vertical v-if="showCloseButton" />
       <q-btn dense flat icon="save" @click="$emit('action', 'save')">
         <q-tooltip>保存</q-tooltip>
       </q-btn>
       <q-btn dense flat icon="history" @click="$emit('action', 'load')">
         <q-tooltip>载入</q-tooltip>
       </q-btn>
-      <q-separator vertical />
       <q-btn flat dense icon="preview" @click="isVisible = true">
         <q-tooltip>预览代码</q-tooltip>
       </q-btn>

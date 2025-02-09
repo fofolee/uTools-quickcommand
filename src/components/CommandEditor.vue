@@ -1,84 +1,74 @@
 <template>
-  <div
-    class="command-editor-container"
-    :class="{ leaving: isLeaving, 'run-code': isRunCodePage }"
-    @animationend="$emit('animationend')"
-  >
-    <!-- 命令设置栏 -->
-    <CommandSideBar
-      ref="sidebar"
-      :canCommandSave="canCommandSave"
-      :quickcommandInfo="quickcommandInfo"
-      class="absolute-left shadow-1"
-      :style="{
-        width: sideBarWidth + 'px',
-        zIndex: 1,
-        transform: isFullscreen ? 'translateX(-100%)' : 'translateX(0)',
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      }"
-      :sideBarWidth="sideBarWidth"
-      v-if="showSidebar"
-      @back="handleBack"
-    ></CommandSideBar>
+  <!-- 命令设置栏 -->
+  <CommandSideBar
+    ref="sidebar"
+    :canCommandSave="canCommandSave"
+    :quickcommandInfo="quickcommandInfo"
+    class="absolute-left shadow-1"
+    :style="{
+      width: sideBarWidth + 'px',
+      zIndex: 1,
+      transform: isFullscreen ? 'translateX(-100%)' : 'translateX(0)',
+      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    }"
+    :sideBarWidth="sideBarWidth"
+    v-if="showSidebar"
+    @back="handleBack"
+  ></CommandSideBar>
 
-    <!-- 编程语言栏 -->
-    <CommandLanguageBar
-      class="absolute-top"
-      :style="{
-        left: showSidebar ? sideBarWidth + 'px' : 65,
-        zIndex: 1,
-        transform: isFullscreen ? 'translateY(-100%)' : 'translateY(0)',
-        opacity: isFullscreen ? 0 : 1,
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      }"
-      v-model="quickcommandInfo"
-      :height="languageBarHeight"
-      :canCommandSave="canCommandSave"
-      :isRunCodePage="isRunCodePage"
-      @program-changed="programChanged"
-      @run="runCurrentCommand"
-      @save="saveCurrentCommand"
-      @show-composer="showComposer = true"
-    />
+  <!-- 编程语言栏 -->
+  <CommandLanguageBar
+    class="absolute-top"
+    :style="{
+      left: showSidebar ? sideBarWidth + 'px' : 65,
+      zIndex: 1,
+      transform: isFullscreen ? 'translateY(-100%)' : 'translateY(0)',
+      opacity: isFullscreen ? 0 : 1,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    }"
+    v-model="quickcommandInfo"
+    :height="languageBarHeight"
+    :canCommandSave="canCommandSave"
+    :isRunCodePage="isRunCodePage"
+    @program-changed="programChanged"
+    @run="runCurrentCommand"
+    @save="saveCurrentCommand"
+    @show-composer="showComposer = true"
+  />
 
-    <!-- 编辑器 -->
-    <MonacoEditor
-      class="editor-transition"
-      :placeholder="true"
-      ref="editor"
-      @loaded="monacoInit"
-      @typing="(val) => monacoTyping(val)"
-      @keyStroke="monacoKeyStroke"
-      :style="{
-        position: 'absolute',
-        top: isFullscreen ? 0 : languageBarHeight + 'px',
-        left: isFullscreen
-          ? 0
-          : action.type === 'run'
-          ? 0
-          : sideBarWidth + 'px',
-        right: 0,
-        bottom: 0,
-      }"
-    />
+  <!-- 编辑器 -->
+  <MonacoEditor
+    class="editor-transition"
+    :placeholder="true"
+    ref="editor"
+    @loaded="monacoInit"
+    @typing="(val) => monacoTyping(val)"
+    @keyStroke="monacoKeyStroke"
+    :style="{
+      position: 'absolute',
+      top: isFullscreen ? 0 : languageBarHeight + 'px',
+      left: isFullscreen ? 0 : action.type === 'run' ? 0 : sideBarWidth + 'px',
+      right: 0,
+      bottom: 0,
+    }"
+  />
 
-    <!-- 编辑器工具按钮组 -->
-    <EditorTools
-      ref="editorTools"
-      :commandCode="quickcommandInfo?.features?.code || 'temp'"
-      :isFullscreen="isFullscreen"
-      @restore="restoreHistory"
-      @toggle-fullscreen="toggleFullscreen"
-    />
+  <!-- 编辑器工具按钮组 -->
+  <EditorTools
+    ref="editorTools"
+    :commandCode="quickcommandInfo?.features?.code || 'temp'"
+    :isFullscreen="isFullscreen"
+    @restore="restoreHistory"
+    @toggle-fullscreen="toggleFullscreen"
+  />
 
-    <!-- 可视化编排 -->
-    <q-dialog v-model="showComposer" maximized>
-      <CommandComposer ref="composer" @use-composer="handleComposer" />
-    </q-dialog>
+  <!-- 可视化编排 -->
+  <q-dialog v-model="showComposer" maximized>
+    <CommandComposer ref="composer" @use-composer="handleComposer" />
+  </q-dialog>
 
-    <!-- 运行结果 -->
-    <CommandRunResult :action="action" ref="result"></CommandRunResult>
-  </div>
+  <!-- 运行结果 -->
+  <CommandRunResult :action="action" ref="result"></CommandRunResult>
 </template>
 
 <script>
@@ -337,73 +327,5 @@ export default {
 .editor-transition {
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, left, top, opacity;
-}
-
-.command-editor-container {
-  color: black;
-  background: white;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 5000;
-  background: var(--q-page-background);
-  animation: slideUpDefault 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.command-editor-container.run-code {
-  animation: none;
-}
-
-.command-editor-container.leaving {
-  animation: slideDownOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: transparent;
-}
-
-.command-editor-container.leaving.run-code {
-  animation: slideUpOut 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideUpDefault {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDownIn {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDownOut {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes slideUpOut {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-100%);
-  }
-}
-
-.body--dark .command-editor-container {
-  color: white;
-  background: var(--q-dark-page);
 }
 </style>

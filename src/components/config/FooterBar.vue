@@ -68,20 +68,32 @@
             flat
             @click="goShareCenter"
             color="primary"
-            label="分享中心"
             icon="groups"
             class="share-btn"
-          />
+          >
+            <q-tooltip>分享中心</q-tooltip>
+          </q-btn>
           <!-- 新建按钮 -->
           <q-btn
             split
             flat
-            @click="$emit('add-new')"
+            @click="$emit('add-new', 'CommandEditor')"
             color="primary"
-            label="新建"
-            icon="add"
             class="new-btn"
-          />
+          >
+            <q-icon name="code" class="icon-with-badge" />
+            <q-tooltip>新建命令（直接编写脚本）</q-tooltip>
+          </q-btn>
+          <q-btn
+            split
+            flat
+            @click="$emit('add-new', 'ComposerEditor')"
+            color="primary"
+            class="new-btn"
+          >
+            <q-icon name="view_timeline" class="icon-with-badge" />
+            <q-tooltip>新建命令（可视化编排）</q-tooltip>
+          </q-btn>
           <!-- 菜单按钮 -->
           <q-btn
             stretch
@@ -225,5 +237,29 @@ export default {
 .q-field--focused .q-field__prepend .q-icon {
   animation: searchIconShake 0.8s ease;
   color: var(--q-primary);
+}
+
+/* 图标角标样式 */
+.icon-with-badge {
+  position: relative;
+}
+
+.icon-with-badge::after {
+  content: "+";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  transform: translate(50%, -50%);
+  background-color: var(--q-primary);
+  color: white;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  display: grid;
+  place-items: center;
+  font-family: monospace;
+  line-height: 0;
 }
 </style>
