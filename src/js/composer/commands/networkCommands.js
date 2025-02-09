@@ -18,27 +18,6 @@ export const networkCommands = {
       ],
     },
     {
-      value: "utools.ubrowser.goto",
-      label: "ubrowser打开网址",
-      neverHasOutput: true,
-      config: [
-        {
-          label: "要访问的网址链接",
-          component: "VariableInput",
-          icon: "public",
-        },
-      ],
-      asyncMode: "await",
-    },
-    {
-      value: "ubrowser",
-      label: "ubrowser浏览器操作",
-      config: [],
-      component: "UBrowserEditor",
-      asyncMode: "await",
-      icon: "public",
-    },
-    {
       value: "axios",
       label: "HTTP请求(Axios)",
       config: [],
@@ -60,6 +39,14 @@ export const networkCommands = {
           data: { label: "响应数据", suggestName: "responseData" },
         },
       },
+    },
+    {
+      value: "ubrowser",
+      label: "ubrowser控制",
+      config: [],
+      component: "UBrowserEditor",
+      asyncMode: "await",
+      icon: "public",
     },
     {
       value: "quickcomposer.network.url.parse",
