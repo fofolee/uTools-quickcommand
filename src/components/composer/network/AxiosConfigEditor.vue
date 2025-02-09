@@ -1,5 +1,5 @@
 <template>
-  <div class="row q-col-gutter-sm">
+  <div class="row q-col-gutter-sm axios-config-editor">
     <!-- 基础配置 -->
     <div class="col-12">
       <div class="row q-col-gutter-sm">
@@ -64,7 +64,7 @@
 
       <q-tab-panels v-model="activeTab" animated class="q-px-none">
         <!-- Headers tab -->
-        <q-tab-panel name="headers" class="q-pa-sm">
+        <q-tab-panel name="headers" class="q-pa-none q-pt-sm">
           <div class="row q-col-gutter-sm">
             <div class="col-12">
               <q-select
@@ -112,14 +112,18 @@
         </q-tab-panel>
 
         <!-- 请求体和URL参数 tabs -->
-        <q-tab-panel v-if="hasRequestData" name="data" class="q-pa-sm">
+        <q-tab-panel
+          v-if="hasRequestData"
+          name="data"
+          class="q-pa-none q-pt-sm"
+        >
           <DictEditor
             v-model="argvs.data"
             @update:model-value="updateArgvs('data', $event)"
           />
         </q-tab-panel>
 
-        <q-tab-panel name="params" class="q-pa-sm">
+        <q-tab-panel name="params" class="q-pa-none q-pt-sm">
           <DictEditor
             v-model="argvs.params"
             @update:model-value="updateArgvs('params', $event)"
@@ -128,7 +132,7 @@
 
         <!-- 其他通用 panels -->
         <template v-for="panel in commonPanels" :key="panel.name">
-          <q-tab-panel :name="panel.name" class="q-pa-sm">
+          <q-tab-panel :name="panel.name" class="q-pa-none q-pt-sm">
             <div class="row q-col-gutter-sm">
               <div
                 v-for="field in panel.fields"
@@ -501,3 +505,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.axios-config-editor :deep(.q-tab-panel) {
+  overflow: hidden;
+}
+</style>

@@ -119,7 +119,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .ubrowser-editor {
   display: flex;
   flex-direction: column;
@@ -142,8 +142,8 @@ export default {
   overflow: auto;
 }
 
-.panel-content {
-  padding: 12px;
+.ubrowser-editor :deep(.panel-content) {
+  padding: 8px 0 0 0;
   height: 100%;
   overflow: auto;
 }
@@ -152,15 +152,6 @@ export default {
   min-height: 36px;
   padding: 0 8px;
   background-color: var(--q-card-background);
-}
-
-.ubrowser-editor :deep(.q-tab) {
-  min-height: 36px;
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: none;
-  opacity: 0.7;
 }
 
 .ubrowser-editor :deep(.q-tab--active) {
@@ -172,12 +163,12 @@ export default {
   margin-right: 4px;
 }
 
-.ubrowser-editor :deep(.q-tab__label) {
-  line-height: 1.2;
-}
-
 .ubrowser-editor :deep(.q-tab__indicator) {
   height: 2px;
+}
+
+.ubrowser-editor :deep(.q-tab__label) {
+  font-size: 13px;
 }
 
 /* 暗色模式适配 */
