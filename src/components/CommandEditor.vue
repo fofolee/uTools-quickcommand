@@ -9,7 +9,7 @@
       ref="sidebar"
       :canCommandSave="canCommandSave"
       :quickcommandInfo="quickcommandInfo"
-      class="absolute-left shadow-10"
+      class="absolute-left shadow-1"
       :style="{
         width: sideBarWidth + 'px',
         zIndex: 1,
