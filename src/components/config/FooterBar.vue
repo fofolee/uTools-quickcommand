@@ -99,11 +99,10 @@
             stretch
             color="primary"
             flat
-            size="xs"
             id="menuBtn"
+            icon="settings"
             :style="{ height: height }"
           >
-            <q-spinner-bars color="primary" size="1.5em" />
             <ConfigurationMenu
               :isTagStared="isTagStared"
               :currentTag="currentTag"
@@ -247,9 +246,8 @@ export default {
 .icon-with-badge::after {
   content: "+";
   position: absolute;
-  top: 4px;
   right: 4px;
-  transform: translate(50%, -50%);
+  transform: translate(50%, 50%);
   background-color: var(--q-primary);
   color: white;
   width: 14px;
