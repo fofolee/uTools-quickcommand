@@ -102,6 +102,7 @@ import FlowManager from "components/composer/flow/FlowManager.vue";
 import { generateCode } from "js/composer/generateCode";
 import { findCommandByValue } from "js/composer/composerConfig";
 import { generateUniqSuffix } from "js/composer/variableManager";
+import { getUniqueId } from "js/common/uuid";
 export default defineComponent({
   name: "FlowTabs",
   components: {
@@ -228,7 +229,7 @@ export default defineComponent({
       );
     },
     addFlow(options = {}) {
-      const id = this.$root.getUniqueId();
+      const id = getUniqueId();
       const name = options.name || this.generateFlowName();
       const newFlow = {
         id,

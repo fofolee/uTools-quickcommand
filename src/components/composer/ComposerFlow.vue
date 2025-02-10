@@ -63,6 +63,7 @@ import ComposerCard from "./ComposerCard.vue";
 import ChainStyles from "./flow/ChainStyles.vue";
 import DropArea from "./flow/DropArea.vue";
 import { findCommandByValue } from "js/composer/composerConfig";
+import { getUniqueId } from "js/common/uuid";
 
 // 拖拽前的命令列表，非响应式
 let commandsBeforeDrag = [];
@@ -262,7 +263,7 @@ export default defineComponent({
           }
         } else {
           // 处理链式命令
-          const chainId = this.getUniqueId();
+          const chainId = getUniqueId();
           let insertIndex =
             this.dragIndex >= 0 ? this.dragIndex : newCommands.length;
 
@@ -270,7 +271,7 @@ export default defineComponent({
           for (const commandType of commandChain) {
             const commandItem = {
               ...newCommand,
-              id: this.getUniqueId(),
+              id: getUniqueId(),
               commandType,
               chainId,
             };
@@ -286,12 +287,9 @@ export default defineComponent({
     createNewCommand(parsedAction) {
       const newCommand = {
         ...parsedAction,
-        id: this.getUniqueId(),
+        id: getUniqueId(),
       };
       return newCommand;
-    },
-    getUniqueId() {
-      return this.$root.getUniqueId();
     },
     isFirstCommandInChain(command) {
       if (!command.commandChain) return false;
@@ -347,7 +345,7 @@ export default defineComponent({
       const newCommands = [...this.commands];
       const branchCommand = {
         ...window.lodashM.cloneDeep(findCommandByValue(value)),
-        id: this.getUniqueId(),
+        id: getUniqueId(),
         chainId: chainId,
         commandType: commandType,
       };
@@ -409,12 +407,12 @@ export default defineComponent({
     },
     copyCommands(commands) {
       // 生成新的chainId
-      const newChainId = this.getUniqueId();
+      const newChainId = getUniqueId();
       // 复制并修改每个命令
       const newCommands = [];
       commands.forEach((cmd) => {
         const copiedCommand = window.lodashM.cloneDeep(cmd);
-        copiedCommand.id = this.getUniqueId();
+        copiedCommand.id = getUniqueId();
         if (copiedCommand.chainId) copiedCommand.chainId = newChainId;
         newCommands.push(copiedCommand);
       });
@@ -439,7 +437,7 @@ export default defineComponent({
           // 单个命令的复制逻辑
           const newCommand = {
             ...command,
-            id: this.getUniqueId(),
+            id: getUniqueId(),
           };
           const newCommands = [...this.commands];
           newCommands.splice(index + 1, 0, newCommand);
