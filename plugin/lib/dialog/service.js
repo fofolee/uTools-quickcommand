@@ -12,7 +12,8 @@ const createDialog = (config, customDialogOptions = {}) => {
     const dialogPath = "lib/dialog/view.html";
     const preloadPath = "lib/dialog/controller.js";
 
-    const platform = os.platform();
+    // linux 和 win32 都使用 win32 的样式
+    const platform = os.platform() === "darwin" ? "darwin" : "win32";
 
     const dialogWidth =
       config.type === "textarea" || config.type === "select"
