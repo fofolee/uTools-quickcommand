@@ -1,16 +1,20 @@
 /* app global css */
 :root {
+  --utools-bright-bg: #f4f4f4;
+  --utools-bright-font-color: #333;
+  --utools-dark-bg: #303133;
+  --utools-dark-font-color: #fff;
   --q-dark: #464646;
-  --q-dark-page: #303133;
+  --q-dark-page: var(--utools-dark-bg);
 }
 
 .q-card--dark {
-  background: var(--q-dark-page);
+  background: var(--utools-dark-bg);
 }
 
 body {
-  background: #f4f4f4;
-  color: #333;
+  background: var(--utools-bright-bg);
+  color: var(--utools-bright-font-color);
 }
 
 /* Monaco Editor 调整行号栏样式 */

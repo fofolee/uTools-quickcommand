@@ -370,10 +370,10 @@ export default {
 
 <style>
 .quickcommand-ui.q-card {
-  background-color: #f4f4f4;
+  background-color: var(--utools-bright-bg);
 }
 
 .body--dark .quickcommand-ui.q-card {
-  background-color: var(--q-dark-page);
+  background-color: var(--utools-dark-bg);
 }
 </style>

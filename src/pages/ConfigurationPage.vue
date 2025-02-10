@@ -39,7 +39,7 @@
     <transition name="slide">
       <div v-if="isEditorShow" class="editor-container">
         <component
-          :is="commandEditorAction.data.component"
+          :is="commandEditorAction.component"
           :action="commandEditorAction"
           @editorEvent="editorEvent"
           :allQuickCommandTags="allQuickCommandTags"
@@ -284,6 +284,7 @@ export default {
       this.commandEditorAction = {
         type: "edit",
         data: window.lodashM.cloneDeep(command),
+        component: "CommandEditor",
       };
       this.isEditorShow = true;
     },
@@ -421,9 +422,8 @@ export default {
     addNewCommand(component = "CommandEditor") {
       this.commandEditorAction = {
         type: "new",
-        data: {
-          component,
-        },
+        data: {},
+        component,
       };
       this.isEditorShow = true;
     },
@@ -518,8 +518,7 @@ export default {
 }
 
 .editor-container {
-  color: black;
-  background: white;
+  color: var(--utools-bright-font-color);
   overflow: hidden;
   position: fixed;
   top: 0;
@@ -527,12 +526,12 @@ export default {
   right: 0;
   bottom: 0;
   z-index: 5000;
-  background: var(--q-page-background);
+  background: var(--utools-bright-bg);
 }
 
 .body--dark .editor-container {
-  color: white;
-  background: var(--q-dark-page);
+  color: var(--utools-dark-font-color);
+  background: var(--utools-dark-bg);
 }
 
 /* 编辑器容器动画 */

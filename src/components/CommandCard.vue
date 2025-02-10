@@ -119,6 +119,6 @@ export default {
 }
 
 .card-wrapper-hover {
-  transform: scale(1.02);
+  transform: translateY(-1px);
 }
 </style>
