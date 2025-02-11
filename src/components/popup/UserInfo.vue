@@ -4,7 +4,7 @@
       <q-avatar size="48px">
         <q-img :src="userInfo.avatar" />
         <q-badge
-          v-if="isVIP"
+          v-if="$root.isVIP"
           floating
           color="deep-orange"
           :label="isDoubleVIP ? 'V²' : 'V'"
@@ -146,19 +146,10 @@ export default {
       showPayPage: false,
       memberPrice: 2,
       isPluginVIP: false,
+      isUtoolsVIP: false,
+      isDoubleVIP: false,
       goodsId: "3LHZ9WdXnUnBSgGRzr2c7bDOyGJBzUyD",
     };
-  },
-  computed: {
-    isDoubleVIP() {
-      return this.isUtoolsVIP && this.isPluginVIP;
-    },
-    isVIP() {
-      return this.isUtoolsVIP || this.isPluginVIP;
-    },
-    isUtoolsVIP() {
-      return this.userInfo.type === "member";
-    },
   },
   props: {
     allFeaturesLength: Number,
@@ -168,7 +159,7 @@ export default {
     this.getUserInfo();
   },
   methods: {
-    getUserInfo() {
+    async getUserInfo() {
       Object.assign(this.userInfo, this.$root.utools.whole.getUser());
       this.userInfo.exp = this.$root.utools.getDB("cfg_exp");
       this.userInfo.level = this.levelDetail
@@ -183,11 +174,13 @@ export default {
             ).toFixed(2)
           )
         : 1;
-      this.$root.utools.whole.fetchUserPayments().then((ret) => {
-        console.log("PayInfo:", ret);
-        !ret.filter((x) => x.goods_id === this.goodsId).length ||
-          (this.isPluginVIP = true);
-      });
+      let ret = await this.$root.utools.whole.fetchUserPayments();
+      console.log("PayInfo:", ret);
+
+      this.isPluginVIP = ret.find((x) => x.goods_id === this.goodsId);
+      this.isUtoolsVIP = this.userInfo.type === "member";
+      this.isDoubleVIP = this.isUtoolsVIP && this.isPluginVIP;
+      this.$root.isVIP = this.isUtoolsVIP || this.isPluginVIP;
     },
     thinkOver() {
       let that = this;

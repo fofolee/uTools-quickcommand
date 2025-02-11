@@ -31,6 +31,7 @@ export default defineComponent({
       cronJobs: {},
       enterData: {},
       subInputEvent: null,
+      isVIP: false,
     };
   },
   created: function () {

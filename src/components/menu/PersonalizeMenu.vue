@@ -1,14 +1,14 @@
 <template>
   <q-menu anchor="top end" self="top start">
     <q-list>
-      <q-item clickable :disable="!user.isVIP">
+      <q-item clickable :disable="!$root.isVIP">
         <q-item-section side>
           <q-icon name="color_lens" />
         </q-item-section>
         <q-item-section>主颜色</q-item-section>
         <q-tooltip>你可以更改界面的主题色，会员限定 😎</q-tooltip>
         <q-menu
-          v-if="user.isVIP"
+          v-if="$root.isVIP"
           anchor="center left"
           self="center right"
           style="min-width: 250px"
@@ -29,13 +29,13 @@
           </div>
         </q-menu>
       </q-item>
-      <q-item clickable :disable="!user.isVIP" class="bg-img-menu">
+      <q-item clickable :disable="!$root.isVIP" class="bg-img-menu">
         <q-item-section side>
           <q-icon name="image" />
         </q-item-section>
         <q-item-section>背景图片设置</q-item-section>
         <q-tooltip>设置背景图片，会员限定 😎</q-tooltip>
-        <q-menu v-if="user.isVIP" anchor="center left" self="center right">
+        <q-menu v-if="$root.isVIP" anchor="center left" self="center right">
           <q-list style="min-width: 280px">
             <q-item>
               <q-item-section>
@@ -84,7 +84,7 @@
           </q-list>
         </q-menu>
       </q-item>
-      <q-item clickable :disable="!user.isVIP">
+      <q-item clickable :disable="!$root.isVIP">
         <q-item-section side>
           <q-icon name="blur_on" />
         </q-item-section>
@@ -97,6 +97,7 @@
               :min="0"
               :max="12"
               :step="1"
+              :disable="!$root.isVIP"
               color="primary"
               @update:model-value="toggleGlassEffect"
               size="34px"
@@ -109,7 +110,7 @@
           </div>
         </q-item-section>
       </q-item>
-      <q-item clickable :disable="!user.isVIP">
+      <q-item clickable :disable="!$root.isVIP">
         <q-item-section side>
           <q-icon name="label" />
         </q-item-section>
@@ -120,7 +121,7 @@
         <q-item-section side>
           <q-toggle
             v-model="$root.profile.denseTagBar"
-            :disable="!user.isVIP"
+            :disable="!$root.isVIP"
             color="primary"
             @update:model-value="$root.saveProfile"
           />
@@ -149,9 +150,6 @@ import pictureCompress from "picture-compressor";
 
 export default {
   name: "PersonalizeMenu",
-  props: {
-    user: Object,
-  },
   data() {
     return {
       selectFileLight: null,

@@ -9,7 +9,6 @@
     >
       <!-- 用户信息 -->
       <UserInfo
-        ref="user"
         :allQuickCommandsLength="allQuickCommandsLength"
         :allFeaturesLength="allFeaturesLength"
       />
@@ -49,7 +48,7 @@
             <q-icon name="keyboard_arrow_left" />
           </q-item-section>
           <q-item-section>个性化设置</q-item-section>
-          <PersonalizeMenu :user="$refs.user" />
+          <PersonalizeMenu />
         </q-item>
 
         <!-- 收藏 -->
