@@ -7,7 +7,7 @@
   >
     <div class="check-btn-group">
       <q-btn
-        v-for="option in options"
+        v-for="option in formattedOptions"
         :key="option.value"
         :color="isSelected(option.value) ? 'primary' : 'grey-7'"
         :flat="!isSelected(option.value)"
@@ -18,15 +18,24 @@
           { 'check-btn--selected': isSelected(option.value) },
         ]"
         :style="{
-          flex: `1 0 calc(${100 / options.length}% - ${
-            (4 * (options.length - 1)) / options.length
+          flex: `1 0 calc(${100 / formattedOptions.length}% - ${
+            (4 * (formattedOptions.length - 1)) / formattedOptions.length
           }px)`,
+          height: height,
         }"
         @click="toggleOption(option.value)"
       >
         <template #default>
           <div class="row items-center full-width">
-            <div class="check-btn-content">
+            <div class="check-btn-content row items-center">
+              <div class="q-mr-sm" v-if="option.icon">
+                <q-img
+                  :src="option.icon"
+                  width="24px"
+                  v-if="option.icon.includes('.png')"
+                />
+                <q-icon :name="option.icon" v-else />
+              </div>
               <div class="check-btn-label">{{ option.label }}</div>
             </div>
             <q-icon
@@ -61,8 +70,6 @@ export default defineComponent({
     options: {
       type: Array,
       required: true,
-      validator: (options) =>
-        options.every((opt) => opt.label && opt.value !== undefined),
     },
     label: {
       type: String,
@@ -75,6 +82,26 @@ export default defineComponent({
     isCollapse: {
       type: Boolean,
       default: false,
+    },
+    height: {
+      type: String,
+      default: "36px",
+    },
+  },
+  computed: {
+    formattedOptions() {
+      return this.options.map((opt) => {
+        if (typeof opt === "string") {
+          return {
+            label: opt,
+            value: opt,
+          };
+        }
+        return {
+          ...opt,
+          value: opt.value ?? opt.name,
+        };
+      });
     },
   },
   emits: ["update:model-value"],
@@ -107,10 +134,8 @@ export default defineComponent({
 .check-btn {
   min-width: fit-content !important;
   max-width: 100% !important;
-  height: auto !important;
-  min-height: 32px;
   font-size: 12px;
-  padding: 4px 8px;
+  padding: 0 8px;
   border-radius: 4px !important;
   transition: all 0.3s;
   background-color: rgba(0, 0, 0, 0.03);

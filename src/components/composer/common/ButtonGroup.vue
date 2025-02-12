@@ -7,15 +7,32 @@
   >
     <div class="button-group">
       <div
-        v-for="opt in options"
+        v-for="opt in formattedOptions"
         :key="opt.value"
         :style="{
           height: height,
+          flex: `1 0 calc(${100 / formattedOptions.length}% - ${
+            (4 * (formattedOptions.length - 1)) / formattedOptions.length
+          }px)`,
         }"
-        :class="['button-item', { active: modelValue === opt.value }]"
+        :class="[
+          'button-item',
+          {
+            active: modelValue === opt.value,
+            disabled: opt.disabled,
+          },
+        ]"
         @click="$emit('update:modelValue', opt.value)"
       >
-        {{ opt.label }}
+        <div class="q-mr-sm" v-if="opt.icon">
+          <q-img
+            :src="opt.icon"
+            width="24px"
+            v-if="opt.icon.includes('.png')"
+          />
+          <q-icon :name="opt.icon" v-else />
+        </div>
+        <div>{{ opt.label }}</div>
       </div>
     </div>
   </component>
@@ -34,10 +51,6 @@ export default defineComponent({
     modelValue: {
       required: true,
     },
-    height: {
-      type: String,
-      default: "26px",
-    },
     options: {
       type: Array,
       required: true,
@@ -54,8 +67,20 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    height: {
+      type: String,
+      default: "32px",
+    },
   },
   emits: ["update:modelValue"],
+  computed: {
+    formattedOptions() {
+      return this.options.map((opt) => ({
+        ...opt,
+        value: opt.value ?? opt.name,
+      }));
+    },
+  },
 });
 </script>
 
@@ -64,13 +89,11 @@ export default defineComponent({
   display: flex;
   width: 100%;
   flex-wrap: wrap;
-  gap: 6px;
-  border-radius: 6px;
+  gap: 4px;
 }
 
 .button-item {
-  flex: 1;
-  min-width: 80px;
+  min-width: fit-content;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -94,5 +117,12 @@ export default defineComponent({
   color: white;
   background: var(--q-primary);
   border-color: var(--q-primary);
+}
+
+.button-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(1);
 }
 </style>
