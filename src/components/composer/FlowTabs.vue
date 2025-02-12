@@ -210,6 +210,11 @@ export default defineComponent({
      * [
      *   { name: "变量名", type: "变量类型", sourceCommand: { label: "变量来源" , index?: 来源命令索引, id?: 来源命令id} }
      * ]
+     *
+     * type:
+     * 1. output: 输出变量
+     * 2. param: 函数参数
+     * 3. var: 局部变量
      */
     const getCurrentVariables = () => {
       const currentFlow = getCurrentFlow();
