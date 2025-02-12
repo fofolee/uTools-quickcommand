@@ -10,7 +10,7 @@
 <script>
 import { defineComponent } from "vue";
 import { setCssVar } from "quasar";
-import UTOOLS from "./js/utools.js";
+import { utoolsFull, dbManager } from "./js/utools.js";
 import programmings from "./js/options/programs.js";
 import defaultProfile from "./js/options/defaultProfile.js";
 import Cron from "croner";
@@ -27,7 +27,7 @@ export default defineComponent({
       isRunningCommand: false,
       profile: defaultProfile.common,
       nativeProfile: defaultProfile.native,
-      utools: UTOOLS,
+      utools: utoolsFull,
       cronJobs: {},
       enterData: {},
       subInputEvent: null,
@@ -60,11 +60,11 @@ export default defineComponent({
     startUp() {
       this.loadProfile();
       this.startUpOnce();
-      this.utools.whole.onPluginEnter((enter) => {
+      this.utools.onPluginEnter((enter) => {
         this.enterPlugin(enter);
       });
       window.isAppVersion4() &&
-        this.utools.whole.onMainPush(
+        this.utools.onMainPush(
           async ({ code, type, payload }) => {
             let result = await this.runCommand(code, payload, 5000);
             return result.map((x) => {
@@ -78,13 +78,13 @@ export default defineComponent({
             window.utools.showNotification("已复制");
           }
         );
-      this.utools.whole.onPluginOut(() => {
+      this.utools.onPluginOut(() => {
         this.outPlugin();
       });
     },
     loadProfile() {
-      let commonProfile = this.utools.getDB("cfg_profile");
-      let nativeProfile = this.utools.getDB(
+      let commonProfile = dbManager.getDB("cfg_profile");
+      let nativeProfile = dbManager.getDB(
         "cfg_" + utools.getNativeId() + "_profile"
       );
       this.profile = Object.assign(
@@ -97,8 +97,11 @@ export default defineComponent({
       );
     },
     saveProfile() {
-      this.utools.putDB(window.lodashM.cloneDeep(this.profile), "cfg_profile");
-      this.utools.putDB(
+      dbManager.putDB(
+        window.lodashM.cloneDeep(this.profile),
+        "cfg_profile"
+      );
+      dbManager.putDB(
         window.lodashM.cloneDeep(this.nativeProfile),
         "cfg_" + utools.getNativeId() + "_profile"
       );
@@ -148,7 +151,7 @@ export default defineComponent({
           setTimeout(() => {
             reslove([`超过${timeout}ms未响应`]);
           }, timeout);
-        let command = this.utools.getDB("qc_" + featureCode);
+        let command = dbManager.getDB("qc_" + featureCode);
         let commandCode = command.cmd;
         if (mainInput)
           commandCode = commandCode.replace(/\{\{input\}\}/g, mainInput);
@@ -180,39 +183,24 @@ export default defineComponent({
     runCommandSilently(featureCode) {
       this.runCommand(featureCode);
     },
-    // usageStatistics(featureCode, runTime) {
-    //   let statisticsData = this.utools.getDB("cfg_statisticsData");
-    //   let thisYear = runTime.year;
-    //   if (!statisticsData[thisYear]) statisticsData[thisYear] = [];
-    //   statisticsData[thisYear].push({
-    //     code: featureCode,
-    //     time: {
-    //       month: runTime.month,
-    //       day: runTime.day,
-    //       hour: runTime.hour,
-    //       minute: runTime.minute,
-    //     },
-    //   });
-    //   this.utools.putDB(statisticsData, "cfg_statisticsData");
-    // },
     updateExp() {
-      let exp = this.utools.getDB("cfg_exp");
+      let exp = dbManager.getDB("cfg_exp");
       if (typeof exp !== "object") {
         exp += 1;
-        this.utools.putDB(exp, "cfg_exp");
+        dbManager.putDB(exp, "cfg_exp");
         return;
       }
       try {
-        let statisticsData = this.utools.getDB("cfg_statisticsData");
+        let statisticsData = dbManager.getDB("cfg_statisticsData");
         exp = Object.values(statisticsData)
           .map((x) => x.length)
           .reduce((x, y) => x + y);
         // 有BUG可能删不掉
-        this.utools.delDB("cfg_statisticsData");
+        dbManager.delDB("cfg_statisticsData");
       } catch (error) {
         exp = 0;
       }
-      this.utools.putDB(exp, "cfg_exp");
+      dbManager.putDB(exp, "cfg_exp");
     },
     parseDate: (dateString) => {
       return {
@@ -225,25 +213,11 @@ export default defineComponent({
       };
     },
     firstRun() {
-      if (this.utools.getStorage("st_v300Inited")) return;
+      if (dbManager.getStorage("st_v300Inited")) return;
       window.showUb.help();
-      // 处理统计数据
-      // let statisticsData = this.utools.getDB("cfg_statisticsData");
-      // window.lodashM.forIn(statisticsData, (data, year) => {
-      //   statisticsData[year] = data.map((x) => {
-      //     if (!x.command) return x;
-      //     let code =
-      //       x.command.code === "options" ? "configuration" : x.command.code;
-      //     return {
-      //       code: code,
-      //       time: x.time,
-      //     };
-      //   });
-      // });
-      // this.utools.putDB(statisticsData, "cfg_statisticsData");
       // 删掉数据库内的默认命令
-      this.utools.delAll("qc_default");
-      this.utools.setStorage("st_v300Inited", true);
+      dbManager.delAll("qc_default");
+      dbManager.setStorage("st_v300Inited", true);
     },
     getOpacityColor(color, percent) {
       return (

@@ -126,6 +126,7 @@
 
 <script>
 import commandTypes from "js/options/commandTypes.js";
+import { dbManager } from "js/utools.js";
 
 export default {
   data() {
@@ -197,7 +198,7 @@ export default {
       this.installedCodes.push(code);
       let pushData = window.lodashM.cloneDeep(command);
       pushData.fromShare = true;
-      this.$root.utools.putDB(window.lodashM.cloneDeep(pushData), "qc_" + code);
+      dbManager.putDB(window.lodashM.cloneDeep(pushData), "qc_" + code);
       // 通过模拟访问页面来统计下载量
       utools.ubrowser
         .goto(`https://www.yuque.com/${this.releaseRepo}/${code}`)
@@ -256,7 +257,7 @@ export default {
     checkCommands() {
       let installed = [];
       let needUpdate = [];
-      this.$root.utools.getAll("qc_").forEach((item) => {
+      dbManager.getAll("qc_").forEach((item) => {
         if (!item.data.fromShare) return;
         let code = item._id.slice(3);
         let remote = this.remoteCommands.filter((cmd) => cmd.slug === code)[0];

@@ -62,7 +62,7 @@ const joinLink = [
   "https://www.yuque.com/g/fofolee/qcshares4/collaborator/join?token=DXb4XAVatwn2OoGK#",
   "https://www.yuque.com/g/fofolee/qcshares5/collaborator/join?token=tw1kyfD2T4jjsQHc#",
 ];
-
+import { dbManager } from "js/utools.js";
 export default {
   data() {
     return {
@@ -167,10 +167,10 @@ export default {
         });
     },
     loadYuQueInfo() {
-      return this.$root.utools.getDB("cfg_extraInfo");
+      return dbManager.getDB("cfg_extraInfo");
     },
     saveYuQueInfo() {
-      this.$root.utools.putDB(
+      dbManager.putDB(
         window.lodashM.cloneDeep(this.yuQueInfo),
         "cfg_extraInfo"
       );

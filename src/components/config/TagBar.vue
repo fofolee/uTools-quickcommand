@@ -59,6 +59,7 @@
 
 <script>
 import draggable from "vuedraggable";
+import { dbManager } from "js/utools.js";
 
 const FIXED_TAGS = ["未分类", "默认", "搜索结果"];
 const TAG_ORDER_KEY = "cfg_tagOrder";
@@ -98,7 +99,7 @@ export default {
   },
   created() {
     // 初始化时读取一次数据库
-    this.savedTagOrder = this.$root.utools.getDB(TAG_ORDER_KEY);
+    this.savedTagOrder = dbManager.getDB(TAG_ORDER_KEY);
     if (!this.savedTagOrder.length) {
       this.savedTagOrder = this.allQuickCommandTags;
     }
@@ -145,7 +146,7 @@ export default {
         // 更新内部缓存
         this.savedTagOrder = value;
         // 保存到数据库
-        this.$root.utools.putDB(value, TAG_ORDER_KEY);
+        dbManager.putDB(value, TAG_ORDER_KEY);
         // 触发标签重排序事件
         this.$emit("tags-reordered", value);
       },
@@ -158,7 +159,7 @@ export default {
         // 更新内部缓存
         this.savedTagOrder = newOrder;
         // 保存到数据库
-        this.$root.utools.putDB(newOrder, TAG_ORDER_KEY);
+        dbManager.putDB(newOrder, TAG_ORDER_KEY);
         // 触发重新加载标签
         this.$emit("tags-reordered", newOrder);
       }

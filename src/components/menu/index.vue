@@ -103,6 +103,7 @@ import UtilityFeaturesMenu from "./UtilityFeaturesMenu.vue";
 import EnvConfigMenu from "./EnvConfigMenu.vue";
 import PersonalizeMenu from "./PersonalizeMenu.vue";
 import UserData from "../popup/UserData.vue";
+import { utoolsFull } from "js/utools.js";
 
 export default {
   name: "ConfigurationMenu",
@@ -121,6 +122,7 @@ export default {
       showAbout: false,
       showPanelConf: false,
       showUserData: false,
+      utools: utoolsFull,
     };
   },
   props: {
@@ -140,7 +142,7 @@ export default {
   },
   methods: {
     unMarkTag() {
-      this.$root.utools.whole.removeFeature(
+      this.utools.removeFeature(
         `panel_${window.hexEncode(this.currentTag)}`
       );
       window.lodashM.pull(

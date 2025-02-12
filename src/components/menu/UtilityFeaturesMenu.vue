@@ -142,16 +142,22 @@
 
 <script>
 import features from "js/options/quickFeatures.js";
+import { utoolsFull } from "js/utools.js";
 
 export default {
   name: "UtilityFeaturesMenu",
+  data() {
+    return {
+      utools: utoolsFull,
+    };
+  },
   methods: {
     toggleFeature(type, enable) {
       enable
-        ? this.$root.utools.whole.setFeature(
+        ? this.utools.setFeature(
             window.lodashM.cloneDeep(features[type])
           )
-        : this.$root.utools.whole.removeFeature(features[type].code);
+        : this.utools.removeFeature(features[type].code);
     },
   },
 };

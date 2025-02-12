@@ -77,6 +77,7 @@ import ResultArea from "components/ResultArea.vue";
 import ResultMenu from "components/popup/ResultMenu.vue";
 import { generateFlowsCode } from "js/composer/generateCode";
 import { getValidCommand } from "js/commandManager";
+import { dbManager } from "js/utools.js";
 
 export default {
   components: { ResultArea, ResultMenu },
@@ -225,7 +226,7 @@ export default {
     },
     // 特殊变量赋值
     assignSpecialVars(cmd) {
-      let userData = this.$root.utools.userData.all();
+      let userData = dbManager.userData.all();
       let spVars = window.lodashM.filter(specialVars, (sp) => sp.repl);
       window.lodashM.forIn(spVars, (val, key) => {
         let label = val.label.slice(0, -2);

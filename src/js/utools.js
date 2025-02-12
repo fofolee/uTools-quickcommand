@@ -4,7 +4,7 @@
  */
 
 // 禁用危险函数
-let whole = window.utools;
+export const utoolsFull = window.utools;
 
 // 数据库前缀
 const DBPRE = {
@@ -17,40 +17,40 @@ const DBPRE = {
 
 // 数据库函数封装
 let getDB = (id) => {
-  let db = whole.db.get(id);
+  let db = utoolsFull.db.get(id);
   return db ? db.data : {};
 };
 
 let putDB = (value, id) => {
-  let db = whole.db.get(id);
+  let db = utoolsFull.db.get(id);
   return db
-    ? whole.db.put({
+    ? utoolsFull.db.put({
         _id: id,
         data: value,
         _rev: db._rev,
       })
-    : whole.db.put({
+    : utoolsFull.db.put({
         _id: id,
         data: value,
       });
 };
 
 let delDB = (id) => {
-  return whole.db.remove(id);
+  return utoolsFull.db.remove(id);
 };
 
 let getAll = (key) => {
-  return whole.db.allDocs(key);
+  return utoolsFull.db.allDocs(key);
 };
 
 let delAll = (key) => {
   return getAll(key).forEach((x) => delDB(x._id));
 };
 
-let setStorage = whole.dbStorage.setItem;
-let getStorage = whole.dbStorage.getItem;
+let setStorage = utoolsFull.dbStorage.setItem;
+let getStorage = utoolsFull.dbStorage.getItem;
 
-const nativeId = utools.getNativeId();
+const nativeId = utoolsFull.getNativeId();
 
 let userData = {
   put: function (value, id, isNative = true) {
@@ -85,8 +85,7 @@ let userData = {
   },
 };
 
-export default {
-  whole,
+export const dbManager = {
   getDB,
   putDB,
   delDB,

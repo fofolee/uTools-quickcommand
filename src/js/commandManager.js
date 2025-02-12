@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 import quickcommandParser from "js/common/quickcommandParser.js";
 import importAll from "js/common/importAll.js";
-import utoolsFull from "js/utools.js";
+import { utoolsFull, dbManager } from "js/utools.js";
 import { getUniqueId } from "js/common/uuid.js";
 import outputTypes from "js/options/outputTypes.js";
 
@@ -66,7 +66,7 @@ export const getValidCommand = (command) => {
 export function useCommandManager() {
   // 获取已启用的命令
   const getActivatedFeatures = () => {
-    let features = utoolsFull.whole.getFeatures();
+    let features = utoolsFull.getFeatures();
     let currentFts = [];
     let quickpanels = [];
     features.forEach((x) =>
@@ -79,16 +79,16 @@ export function useCommandManager() {
   };
   // 清除所有命令
   const clearAllFeatures = () => {
-    for (var feature of utoolsFull.whole.getFeatures()) {
+    for (var feature of utoolsFull.getFeatures()) {
       if (feature.code.slice(0, 8) === "feature_") continue;
-      utoolsFull.whole.removeFeature(feature.code);
+      utoolsFull.removeFeature(feature.code);
     }
     state.activatedQuickCommandFeatureCodes = [];
   };
   // 获取所有的命令
   const getAllQuickCommands = () => {
     state.allQuickCommands = window.lodashM.cloneDeep(defaultCommands);
-    utoolsFull.getAll("qc_").forEach((x) => {
+    dbManager.getAll("qc_").forEach((x) => {
       if (x.data.features.code.includes("default_")) return;
       state.allQuickCommands[x.data.features.code] = x.data;
     });
@@ -117,11 +117,11 @@ export function useCommandManager() {
       state.activatedQuickCommandFeatureCodes.push(code);
     }
 
-    utoolsFull.whole.removeFeature(code);
-    utoolsFull.whole.setFeature(command.features);
+    utoolsFull.removeFeature(code);
+    utoolsFull.setFeature(command.features);
 
     if (!isDefaultCommand(code)) {
-      utoolsFull.putDB(command, "qc_" + code);
+      dbManager.putDB(command, "qc_" + code);
     }
 
     getAllQuickCommandTags();
@@ -130,11 +130,11 @@ export function useCommandManager() {
 
   // 删除命令
   const removeCommand = (code) => {
-    utoolsFull.whole.copyText(
+    utoolsFull.copyText(
       JSON.stringify(state.allQuickCommands[code], null, 4)
     );
     delete state.allQuickCommands[code];
-    utoolsFull.delDB("qc_" + code);
+    dbManager.delDB("qc_" + code);
     removeCommandFromHistory(code);
     disableCommand(code);
     getAllQuickCommandTags();
@@ -158,7 +158,7 @@ export function useCommandManager() {
 
   // 启用命令
   const enableCommand = (code) => {
-    utoolsFull.whole.setFeature(
+    utoolsFull.setFeature(
       window.lodashM.cloneDeep(state.allQuickCommands[code].features)
     );
     state.activatedQuickCommandFeatureCodes.push(code);
@@ -166,7 +166,7 @@ export function useCommandManager() {
 
   // 禁用命令
   const disableCommand = (code) => {
-    utoolsFull.whole.removeFeature(code);
+    utoolsFull.removeFeature(code);
     state.activatedQuickCommandFeatureCodes =
       state.activatedQuickCommandFeatureCodes.filter((x) => x !== code);
   };
@@ -197,7 +197,7 @@ export function useCommandManager() {
 
     for (var code of Object.keys(dataToPushed)) {
       if (isDefaultCommand(code)) continue;
-      utoolsFull.putDB(dataToPushed[code], "qc_" + code);
+      dbManager.putDB(dataToPushed[code], "qc_" + code);
     }
 
     Object.assign(state.allQuickCommands, dataToPushed);
@@ -228,7 +228,7 @@ export function useCommandManager() {
     if (saveAsFile) {
       return window.saveFile(stringifyCommands, options);
     } else {
-      utoolsFull.whole.copyText(stringifyCommands);
+      utoolsFull.copyText(stringifyCommands);
       return true;
     }
   };
@@ -236,7 +236,7 @@ export function useCommandManager() {
   // 清空所有命令
   const clearAllCommands = () => {
     exportAllCommands(false);
-    utoolsFull.delAll("qc_");
+    dbManager.delAll("qc_");
     clearAllFeatures();
     getAllQuickCommands();
   };

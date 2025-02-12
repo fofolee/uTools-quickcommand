@@ -83,6 +83,7 @@ import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
 import CommandComposer from "components/composer/CommandComposer.vue";
 import programs from "js/options/programs.js";
+import { dbManager } from "js/utools.js";
 
 // 预加载 MonacoEditor
 const MonacoEditorPromise = import("components/editor/MonacoEditor");
@@ -169,7 +170,7 @@ export default {
     // 命令初始化
     commandInit() {
       let quickCommandInfo = this.isRunCodePage
-        ? this.$root.utools.getDB("cfg_codeHistory")
+        ? dbManager.getDB("cfg_codeHistory")
         : this.action.data;
       quickCommandInfo?.program &&
         Object.assign(
@@ -233,7 +234,7 @@ export default {
         case "apply":
           return this.replaceText(actionData);
         case "close":
-          return this.showComposer = false;
+          return (this.showComposer = false);
       }
     },
     // 保存
@@ -245,7 +246,7 @@ export default {
         window.lodashM.cloneDeep(updatedData)
       );
       let newQuickcommandInfo = window.lodashM.cloneDeep(this.quickcommandInfo);
-      this.$root.utools.putDB(
+      dbManager.putDB(
         newQuickcommandInfo,
         "qc_" + this.quickcommandInfo.features.code
       );
@@ -272,7 +273,7 @@ export default {
       if (this.action.type !== "run") return;
       let command = window.lodashM.cloneDeep(this.quickcommandInfo);
       command.cursorPosition = this.$refs.editor.getCursorPosition();
-      this.$root.utools.putDB(command, "cfg_codeHistory");
+      dbManager.putDB(command, "cfg_codeHistory");
     },
     monacoTyping(val) {
       this.quickcommandInfo.cmd = val;

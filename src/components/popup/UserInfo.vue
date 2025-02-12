@@ -130,10 +130,12 @@
 
 <script>
 import levelDetail from "js/options/levelDetail.js";
+import { dbManager, utoolsFull } from "js/utools.js";
 
 export default {
   data() {
     return {
+      utools: utoolsFull,
       userInfo: {
         exp: 0,
         level: 1,
@@ -160,8 +162,8 @@ export default {
   },
   methods: {
     async getUserInfo() {
-      Object.assign(this.userInfo, this.$root.utools.whole.getUser());
-      this.userInfo.exp = this.$root.utools.getDB("cfg_exp");
+      Object.assign(this.userInfo, this.utools.getUser());
+      this.userInfo.exp = dbManager.getDB("cfg_exp");
       this.userInfo.level = this.levelDetail
         .filter((x) => this.userInfo.exp > x.minExp)
         .pop().lv;
@@ -174,8 +176,7 @@ export default {
             ).toFixed(2)
           )
         : 1;
-      let ret = await this.$root.utools.whole.fetchUserPayments();
-      console.log("PayInfo:", ret);
+      let ret = await this.utools.fetchUserPayments();
 
       this.isPluginVIP = ret.find((x) => x.goods_id === this.goodsId);
       this.isUtoolsVIP = this.userInfo.type === "member";
@@ -189,7 +190,7 @@ export default {
       }, 3000);
     },
     payForMember() {
-      this.$root.utools.whole.openPayment({ goodsId: this.goodsId }, () => {
+      this.utools.openPayment({ goodsId: this.goodsId }, () => {
         this.isPluginVIP = true;
         this.showPayPage = false;
       });

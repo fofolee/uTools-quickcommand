@@ -6,11 +6,13 @@
 
 <script>
 import CommandRunResult from "components/CommandRunResult";
+import { utoolsFull } from "js/utools.js";
 
 export default {
   components: { CommandRunResult },
   data() {
     return {
+      utools: utoolsFull,
       action: {
         type: "input",
         data: {},
@@ -22,7 +24,7 @@ export default {
     let command =
       this.featureCode.slice(0, 8) === "default_"
         ? require(`../json/${this.featureCode}.json`)
-        : this.$root.utools.whole.db.get("qc_" + this.featureCode).data;
+        : this.utools.db.get("qc_" + this.featureCode).data;
     this.runCurrentCommand(command);
   },
   methods: {

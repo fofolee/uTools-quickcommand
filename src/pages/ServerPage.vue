@@ -16,14 +16,7 @@
       }"
     />
     <div
-      class="
-        absolute-bottom
-        flex
-        items-center
-        justify-between
-        q-px-md
-        shadow-10
-      "
+      class="absolute-bottom flex items-center justify-between q-px-md shadow-10"
       :style="{
         height: bottomHeight + 'px',
       }"
@@ -81,6 +74,7 @@
 
 <script>
 import MonacoEditor from "components/editor/MonacoEditor";
+import { dbManager } from "js/utools.js";
 
 export default {
   components: { MonacoEditor },
@@ -92,7 +86,7 @@ export default {
     };
   },
   mounted() {
-    this.cmd = this.$root.utools.getStorage("cfg_serverCode") || "";
+    this.cmd = dbManager.getStorage("cfg_serverCode") || "";
     this.$refs.editor.setEditorValue(this.cmd);
     this.$refs.editor.setEditorLanguage("javascript");
   },
@@ -132,7 +126,7 @@ export default {
     saveCode() {
       clearTimeout(this.saveCodeTimer);
       this.saveCodeTimer = setTimeout(() => {
-        this.$root.utools.setStorage("cfg_serverCode", this.cmd);
+        dbManager.setStorage("cfg_serverCode", this.cmd);
         this.saveCodeTimer = null;
       }, 1000);
     },

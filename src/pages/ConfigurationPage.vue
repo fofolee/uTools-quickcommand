@@ -58,6 +58,7 @@
 import { defineAsyncComponent } from "vue";
 import { useCommandManager } from "js/commandManager.js";
 import changeLog from "js/options/changeLog.js";
+import { utoolsFull, dbManager } from "js/utools.js";
 import pinyinMatch from "pinyin-match";
 import CommandEditor from "components/CommandEditor";
 import ComposerEditor from "components/ComposerEditor";
@@ -86,6 +87,7 @@ export default {
   },
   data() {
     return {
+      utools: utoolsFull,
       currentTag: "",
       lastTag: "",
       commandSearchKeyword: "",
@@ -367,7 +369,7 @@ export default {
     showChangeLog() {
       let lastNeedLogEvent = changeLog[changeLog.length - 1];
       let loggedVersion =
-        this.$root.utools.whole.dbStorage.getItem("cfg_loggedVersion") ||
+        this.utools.dbStorage.getItem("cfg_loggedVersion") ||
         "0.0.0";
       if (loggedVersion < lastNeedLogEvent.version) {
         quickcommand.showConfirmBox(
@@ -378,7 +380,7 @@ export default {
           true,
           700
         );
-        this.$root.utools.whole.dbStorage.setItem(
+        this.utools.dbStorage.setItem(
           "cfg_loggedVersion",
           lastNeedLogEvent.version
         );
@@ -407,7 +409,7 @@ export default {
       // 只保存被修改的命令
       Object.entries(tagCommands).forEach(([code, command]) => {
         if (!this.isDefaultCommand(code)) {
-          this.$root.utools.putDB(
+          dbManager.putDB(
             window.lodashM.cloneDeep(command),
             "qc_" + code
           );

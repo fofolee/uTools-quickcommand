@@ -51,11 +51,13 @@
 
 <script>
 import IconPicker from "components/popup/IconPicker";
+import { utoolsFull } from "js/utools.js";
 
 export default {
   components: { IconPicker },
   data() {
     return {
+      utools: utoolsFull,
       features: {
         explain: `进入${this.currentTag}的面板视图`,
         icon: "logo/quickcommand.png",
@@ -71,9 +73,7 @@ export default {
   },
   methods: {
     markTag() {
-      this.$root.utools.whole.setFeature(
-        window.lodashM.cloneDeep(this.features)
-      );
+      this.utools.setFeature(window.lodashM.cloneDeep(this.features));
       this.$root.$refs.view.activatedQuickPanels.push(this.currentTag);
       quickcommand.showMessageBox(
         `主输入框输入『${this.features.cmds.join("、")}』即可直接进入『${

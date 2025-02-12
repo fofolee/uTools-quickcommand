@@ -58,6 +58,7 @@
 </template>
 
 <script>
+import { dbManager } from "js/utools.js";
 export default {
   data() {
     return {
@@ -68,18 +69,18 @@ export default {
     showInsertBtn: Boolean,
   },
   mounted() {
-    this.allUserData = this.$root.utools.userData.all();
+    this.allUserData = dbManager.userData.all();
   },
   methods: {
     saveUserData() {
       this.allUserData.forEach((item) => {
-        this.$root.utools.userData.put(item.value, item.id, item.isNative);
+        dbManager.userData.put(item.value, item.id, item.isNative);
       });
       quickcommand.showMessageBox("更新完毕！");
     },
     delUserData(id) {
       quickcommand.showConfirmBox("删除后不可恢复").then(() => {
-        this.$root.utools.userData.del(id);
+        dbManager.userData.del(id);
         this.allUserData = this.allUserData.filter((item) => item.id !== id);
       });
     },
@@ -97,7 +98,7 @@ export default {
           value,
           isNative: true,
         });
-        this.$root.utools.userData.put(value, id, true);
+        dbManager.userData.put(value, id, true);
       });
     },
   },

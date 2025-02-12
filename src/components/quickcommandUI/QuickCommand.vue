@@ -37,6 +37,7 @@ import ConfirmBox from "components/quickcommandUI/ConfirmBox";
 import TextArea from "components/quickcommandUI/TextArea";
 import SelectList from "components/quickcommandUI/SelectList";
 import programs from "js/options/programs";
+import { dbManager } from "js/utools.js";
 
 export default {
   components: {
@@ -264,7 +265,7 @@ export default {
     Object.assign(window.quickcommand, quickcommandUI);
 
     // 获取用户数据
-    window.quickcommand.userData = this.$root.utools.userData;
+    window.quickcommand.userData = dbManager.userData;
 
     /**
      * 执行代码
