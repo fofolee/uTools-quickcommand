@@ -25,6 +25,10 @@
   font-size: 12px;
 }
 
+.command-composer .q-field--filled.q-select--with-chips .q-field__control .q-chip {
+  margin: 0 4px;
+}
+
 /* 输入框图标大小 */
 .command-composer .q-field--filled .q-field__control .q-icon {
   font-size: 18px;

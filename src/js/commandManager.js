@@ -2,6 +2,8 @@ import { reactive } from "vue";
 import quickcommandParser from "js/common/quickcommandParser.js";
 import importAll from "js/common/importAll.js";
 import utoolsFull from "js/utools.js";
+import { getUniqueId } from "js/common/uuid.js";
+import outputTypes from "js/options/outputTypes.js";
 
 // 默认命令
 const defaultCommands = importAll(
@@ -15,6 +17,50 @@ const state = reactive({
   activatedQuickCommandFeatureCodes: [],
   activatedQuickPanels: [],
 });
+
+const getCmdType = (cmds) => {
+  const firstCmdType = cmds[0].type || "key";
+  if (!cmds.find((x) => typeof x !== "string")) return "key";
+  if (!cmds.find((x) => x.type !== firstCmdType)) return firstCmdType;
+  return "professional";
+};
+
+const getFeatureCode = (cmds) => {
+  return `${getCmdType(cmds)}_${getUniqueId({ short: true })}`;
+};
+
+const getLabeledCmds = (cmds, explain) => {
+  return cmds.map((cmd) => {
+    if (typeof cmd === "string") {
+      return cmd || explain;
+    }
+    return {
+      ...cmd,
+      label: cmd.label || explain,
+    };
+  });
+};
+
+export const getValidCommand = (command) => {
+  const { cmds, explain } = command.features;
+  if (!explain) throw "名称不能为空";
+  if (!Array.isArray(cmds)) throw "匹配规则格式错误";
+
+  // 未配置label或关键字时，直接使用名称
+  command.features.cmds = getLabeledCmds(cmds, explain);
+
+  // 不需要显示输入框的输入类型，添加mainHide属性
+  if (outputTypes[command.output].outPlugin) {
+    command.features.mainHide = true;
+  }
+
+  // 生成唯一code
+  if (!command.features.code) {
+    command.features.code = getFeatureCode(cmds);
+  }
+
+  return window.lodashM.cloneDeep(command);
+};
 
 // 使用函数工厂模式，确保每个组件获取自己的状态副本
 export function useCommandManager() {
@@ -59,6 +105,11 @@ export function useCommandManager() {
 
   // 保存命令
   const saveCommand = (command) => {
+    try {
+      command = getValidCommand(command);
+    } catch (e) {
+      return quickcommand.showMessageBox(e.toString(), "error");
+    }
     const code = command.features.code;
     state.allQuickCommands[code] = command;
 
@@ -70,7 +121,7 @@ export function useCommandManager() {
     utoolsFull.whole.setFeature(command.features);
 
     if (!isDefaultCommand(code)) {
-      utoolsFull.putDB(window.lodashM.cloneDeep(command), "qc_" + code);
+      utoolsFull.putDB(command, "qc_" + code);
     }
 
     getAllQuickCommandTags();

@@ -57,9 +57,6 @@
       <q-btn dense flat icon="save" @click="$emit('action', 'save')">
         <q-tooltip>保存</q-tooltip>
       </q-btn>
-      <q-btn dense flat icon="history" @click="$emit('action', 'load')">
-        <q-tooltip>载入</q-tooltip>
-      </q-btn>
       <q-btn flat dense icon="preview" @click="isVisible = true">
         <q-tooltip>预览代码</q-tooltip>
       </q-btn>
@@ -92,15 +89,12 @@
 
 <script>
 import { defineComponent } from "vue";
+import { generateFlowsCode } from "js/composer/generateCode";
 
 export default defineComponent({
   name: "ComposerButtons",
 
   props: {
-    generateCode: {
-      type: Function,
-      required: true,
-    },
     isAllCollapsed: {
       type: Boolean,
       default: false,
@@ -108,6 +102,10 @@ export default defineComponent({
     showCloseButton: {
       type: Boolean,
       default: true,
+    },
+    flows: {
+      type: Array,
+      default: () => [],
     },
   },
 
@@ -124,7 +122,7 @@ export default defineComponent({
   watch: {
     isVisible(val) {
       if (val) {
-        this.code = this.generateCode();
+        this.code = generateFlowsCode(this.flows);
       }
     },
   },
@@ -172,16 +170,6 @@ export default defineComponent({
 
 /* 自定义滚动条 */
 .preview-code::-webkit-scrollbar {
-  width: 6px;
-}
-
-.preview-code::-webkit-scrollbar-thumb {
-  background: var(--q-primary-opacity-20);
-  border-radius: 3px;
-  transition: background 0.3s;
-}
-
-.preview-code::-webkit-scrollbar-thumb:hover {
-  background: var(--q-primary-opacity-30);
+  width: 5px;
 }
 </style>

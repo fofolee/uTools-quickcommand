@@ -59,9 +59,9 @@
       </div>
 
       <ComposerButtons
-        :generate-code="generateAllFlowCode"
         :is-all-collapsed="isAllCollapsed"
         :show-close-button="showCloseButton"
+        :flows="flows"
         @action="handleAction"
       />
     </div>
@@ -72,10 +72,15 @@
       :key="flow.id"
       v-show="activeTab === flow.id"
     >
+      <CommandConfig
+        class="command-config-panel"
+        v-if="flow.id === 'main' && commandConfig.features"
+        :model-value="commandConfig"
+        @update:model-value="updateCommandConfig"
+      />
       <ComposerFlow
         class="flow-wrapper"
         v-model="flow.commands"
-        :generate-code="() => generateFlowCode(flow)"
         :show-close-button="flows.length > 1"
         @action="(type, payload) => handleAction(type, payload)"
         ref="flowRefs"
@@ -84,7 +89,7 @@
         v-model="showVariableManager"
         :flow="flow"
         :variables="flow.customVariables"
-        @update-flow="Sub(flow)"
+        @update-flow="updateFlows(flow)"
         :is-main-flow="flow.id === 'main'"
         :output-variables="outputVariables"
         class="variable-panel"
@@ -99,10 +104,10 @@ import draggable from "vuedraggable";
 import ComposerFlow from "components/composer/ComposerFlow.vue";
 import ComposerButtons from "components/composer/flow/ComposerButtons.vue";
 import FlowManager from "components/composer/flow/FlowManager.vue";
-import { generateCode } from "js/composer/generateCode";
-import { findCommandByValue } from "js/composer/composerConfig";
+import CommandConfig from "components/editor/CommandConfig.vue";
 import { generateUniqSuffix } from "js/composer/variableManager";
 import { getUniqueId } from "js/common/uuid";
+
 export default defineComponent({
   name: "FlowTabs",
   components: {
@@ -110,23 +115,44 @@ export default defineComponent({
     ComposerButtons,
     draggable,
     FlowManager,
+    CommandConfig,
   },
+  emits: ["update:modelValue", "action"],
   props: {
     showCloseButton: {
       type: Boolean,
       default: true,
     },
+    modelValue: {
+      type: Object,
+      default: () => ({}),
+    },
   },
-  setup() {
-    const mainFlow = ref({
-      id: "main",
-      name: "main",
-      label: "主流程",
-      commands: [],
-      customVariables: [],
+  setup(props, { emit }) {
+    const updateFlows = (newFlows) => {
+      emit("update:modelValue", {
+        ...props.modelValue,
+        flows: newFlows,
+      });
+    };
+
+    const flows = computed(() => props.modelValue.flows);
+
+    const mainFlow = computed({
+      get: () => flows.value[0],
+      set: (newVal) => {
+        const newFlows = [newVal, ...flows.value.slice(1)];
+        updateFlows(newFlows);
+      },
     });
 
-    const subFlows = ref([]);
+    const subFlows = computed({
+      get: () => flows.value.slice(1),
+      set: (newVal) => {
+        const newFlows = [mainFlow.value, ...newVal];
+        updateFlows(newFlows);
+      },
+    });
 
     // 获取所有函数
     const getCurrentFunctions = () => {
@@ -139,8 +165,6 @@ export default defineComponent({
       });
     };
     provide("getCurrentFunctions", getCurrentFunctions);
-
-    const flows = computed(() => [mainFlow.value, ...subFlows.value]);
 
     const activeTab = ref("main");
 
@@ -208,6 +232,7 @@ export default defineComponent({
       subFlows,
       activeTab,
       getOutputVariables,
+      updateFlows,
     };
   },
   data() {
@@ -216,6 +241,12 @@ export default defineComponent({
       showVariableManager: false,
       outputVariables: [],
     };
+  },
+  computed: {
+    commandConfig() {
+      const { tags, output, features } = this.modelValue;
+      return { tags, output, features };
+    },
   },
   methods: {
     generateFlowName(baseName = "func_") {
@@ -249,7 +280,7 @@ export default defineComponent({
         });
       }
 
-      this.subFlows.push(newFlow);
+      this.subFlows = [...this.subFlows, newFlow];
 
       if (options.silent) {
         return;
@@ -263,7 +294,10 @@ export default defineComponent({
     removeFlow(flow) {
       const index = this.subFlows.findIndex((f) => f.id === flow.id);
       if (index > -1) {
-        this.subFlows.splice(index, 1);
+        this.subFlows = [
+          ...this.subFlows.slice(0, index),
+          ...this.subFlows.slice(index + 1),
+        ];
         this.activeTab = this.flows[0].id;
       }
     },
@@ -279,25 +313,13 @@ export default defineComponent({
       // 完全更新参数
       this.subFlows[index].customVariables = [...newParams, ...localVars];
     },
-    generateFlowCode(flow) {
-      return generateCode(flow);
-    },
-    generateAllFlowCode() {
-      // 生成所有flow的代码
-      return [...this.subFlows, this.mainFlow]
-        .map((flow) => this.generateFlowCode(flow))
-        .join("\n\n");
-    },
     handleAction(type, payload) {
       switch (type) {
         case "save":
           this.saveFlows();
           break;
-        case "load":
-          this.loadFlows();
-          break;
         case "run":
-          this.runFlows(payload);
+          this.runCommand(payload);
           break;
         case "collapseAll":
           this.collapseAll();
@@ -307,6 +329,9 @@ export default defineComponent({
           break;
         case "toggleVariableManager":
           this.toggleVariableManager();
+          break;
+        case "close":
+          this.$emit("action", "close");
           break;
         case "addFlow":
           // 处理新函数创建
@@ -319,7 +344,7 @@ export default defineComponent({
           }
           break;
         default:
-          this.$emit("action", type, this.generateAllFlowCode());
+          this.$emit("action", type, payload);
       }
     },
     toggleVariableManager() {
@@ -327,61 +352,17 @@ export default defineComponent({
       this.outputVariables = this.getOutputVariables();
     },
     saveFlows() {
-      const flowsData = this.flows.map((flow) => ({
-        ...flow,
-        commands: flow.commands.map((cmd) => {
-          const cmdCopy = { ...cmd };
-          // 移除不必要保存的属性
-          const uselessProps = [
-            "config",
-            "code",
-            "label",
-            "component",
-            "subCommands",
-            "outputs",
-            "options",
-            "defaultValue",
-            "icon",
-            "width",
-            "placeholder",
-            "summary",
-            "type",
-            "defaultOutputVariable",
-          ];
-          uselessProps.forEach((prop) => delete cmdCopy[prop]);
-          return cmdCopy;
-        }),
-      }));
-      localStorage.setItem("quickcomposer.flows", JSON.stringify(flowsData));
-      quickcommand.showMessageBox("保存成功");
+      this.$emit("action", "save", {
+        ...this.modelValue,
+        flows: this.flows,
+      });
     },
-    loadFlows() {
-      const savedFlows = localStorage.getItem("quickcomposer.flows");
-      if (!savedFlows) return;
-
-      const flowsData = JSON.parse(savedFlows);
-      const newFlows = flowsData.map((flow) => ({
-        ...flow,
-        commands: flow.commands.map((cmd) => {
-          // 恢复所有属性
-          const command = findCommandByValue(cmd.value);
-          return {
-            ...command,
-            ...cmd,
-          };
-        }),
-      }));
-      this.Sub(newFlows);
-      this.activeTab = this.mainFlow.id;
-    },
-    runFlows(flow) {
-      const code = flow
-        ? this.generateFlowCode(flow)
-        : this.generateAllFlowCode();
-      this.$emit("action", "run", code);
-      if (!code.includes("console.log")) {
-        quickcommand.showMessageBox("已运行");
-      }
+    runCommand(flows = this.flows) {
+      const command = {
+        ...this.modelValue,
+        flows,
+      };
+      this.$emit("action", "run", command);
     },
     collapseAll() {
       this.$refs.flowRefs.forEach((flow) => {
@@ -399,9 +380,12 @@ export default defineComponent({
       this.activeTab = flow.id;
       this.toggleVariableManager();
     },
-    Sub(flow) {
-      this.mainFlow = flow[0];
-      this.subFlows = flow.slice(1);
+    updateCommandConfig(newVal) {
+      const newModelValue = {
+        ...this.modelValue,
+        ...newVal,
+      };
+      this.$emit("update:modelValue", newModelValue);
     },
   },
 });
@@ -555,5 +539,9 @@ export default defineComponent({
   color: var(--q-primary);
   border-bottom: 2px solid var(--q-primary);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.command-config-panel {
+  padding: 8px;
 }
 </style>

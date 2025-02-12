@@ -3,7 +3,8 @@
  */
 
 const jsonSample = [
-  "关键词",
+  "关键词1",
+  "关键词2",
   {
     type: "img",
     label: "图片匹配",
@@ -41,12 +42,12 @@ const jsonSample = [
   },
 ];
 
-const commandTypes = {
+export default {
   key: {
     name: "key",
     label: "关键词",
     icon: "font_download",
-    color: "teal",
+    color: "blue",
     matchLabel: "关键词",
     desc: "直接在主输入框输入对应关键字，最通用的一种模式，关键字可以设置多个",
     valueType: "array",
@@ -57,7 +58,7 @@ const commandTypes = {
   },
   regex: {
     name: "regex",
-    label: "正则/划词",
+    label: "正则",
     icon: "rule",
     color: "cyan",
     matchLabel: "正则",
@@ -82,7 +83,7 @@ const commandTypes = {
   over: {
     name: "over",
     label: "所有文本",
-    matchLabel: "无需设置",
+    matchLabel: "无需配置",
     icon: "emergency",
     color: "light-green",
     desc: "匹配主输入框的所有文本，但只有在该文本未设置对应的插件或功能时才生效",
@@ -104,7 +105,7 @@ const commandTypes = {
   },
   window: {
     name: "window",
-    label: "窗口/进程",
+    label: "窗口",
     matchLabel: "进程名",
     icon: "widgets",
     color: "indigo",
@@ -154,7 +155,7 @@ const commandTypes = {
   },
   files: {
     name: "files",
-    label: "复制/选中文件",
+    label: "文件",
     matchLabel: "正则",
     icon: "description",
     color: "light-blue",
@@ -200,5 +201,3 @@ const commandTypes = {
     jsonSample: jsonSample,
   },
 };
-
-export default commandTypes;

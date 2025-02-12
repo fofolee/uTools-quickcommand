@@ -70,6 +70,12 @@ export default {
   },
   computed: {
     program() {
+      if (this.commandInfo.program === "quickcomposer") {
+        return {
+          ...this.programs.quickcommand,
+          name: "可视化编排",
+        };
+      }
       return this.programs[this.commandInfo.program];
     },
   },

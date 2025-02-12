@@ -133,3 +133,10 @@ export function generateCode(flow) {
 
   return finalCode;
 }
+
+export function generateFlowsCode(flows) {
+  const [mainFlow, ...subFlows] = flows;
+  return [...subFlows, mainFlow]
+    .map((flow) => generateCode(flow))
+    .join("\n\n");
+}

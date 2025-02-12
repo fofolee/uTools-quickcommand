@@ -4,9 +4,9 @@
     ref="sidebar"
     :canCommandSave="canCommandSave"
     :quickcommandInfo="quickcommandInfo"
+    :allQuickCommandTags="allQuickCommandTags"
     class="absolute-left shadow-1"
     :style="{
-      width: sideBarWidth + 'px',
       zIndex: 1,
       transform: isFullscreen ? 'translateX(-100%)' : 'translateX(0)',
       transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -64,7 +64,11 @@
 
   <!-- 可视化编排 -->
   <q-dialog v-model="showComposer" maximized>
-    <CommandComposer ref="composer" @use-composer="handleComposer" />
+    <CommandComposer
+      ref="composer"
+      @action="handleComposerAction"
+      :model-value="{ flows }"
+    />
   </q-dialog>
 
   <!-- 运行结果 -->
@@ -78,6 +82,7 @@ import CommandLanguageBar from "components/editor/CommandLanguageBar";
 import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
 import CommandComposer from "components/composer/CommandComposer.vue";
+import programs from "js/options/programs.js";
 
 // 预加载 MonacoEditor
 const MonacoEditorPromise = import("components/editor/MonacoEditor");
@@ -109,13 +114,22 @@ export default {
   },
   data() {
     return {
-      programLanguages: Object.keys(this.$root.programs),
+      programLanguages: Object.keys(programs),
       sideBarWidth: 200,
       languageBarHeight: 40,
       showComposer: false,
       isRunCodePage: this.action.type === "run",
       canCommandSave: this.action.type !== "run",
       showSidebar: this.action.type !== "run",
+      flows: [
+        {
+          id: "main",
+          name: "main",
+          label: "主流程",
+          commands: [],
+          customVariables: [],
+        },
+      ],
       quickcommandInfo: {
         program: "quickcommand",
         cmd: "",
@@ -141,15 +155,9 @@ export default {
       required: true,
     },
     allQuickCommandTags: Array,
-    isLeaving: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  created() {
-    this.commandInit();
   },
   mounted() {
+    this.commandInit();
     this.sidebarInit();
   },
   computed: {
@@ -196,7 +204,7 @@ export default {
     // 匹配编程语言
     matchLanguage() {
       if (!this.quickcommandInfo.customOptions.ext) return;
-      let language = Object.values(this.$root.programs).filter(
+      let language = Object.values(programs).filter(
         (program) => program.ext === this.quickcommandInfo.customOptions.ext
       );
       if (language.length) {
@@ -205,7 +213,7 @@ export default {
     },
     // 设置编程语言
     setLanguage(language) {
-      let highlight = this.$root.programs[language].highlight;
+      let highlight = programs[language].highlight;
       this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
     },
     insertText(text) {
@@ -216,14 +224,16 @@ export default {
       this.$refs.editor.setEditorValue(text);
       this.$refs.editor.formatDocument();
     },
-    handleComposer({ type, code }) {
-      switch (type) {
+    handleComposerAction(actionType, actionData) {
+      switch (actionType) {
         case "run":
-          return this.runCurrentCommand(code);
+          return this.runCurrentCommand(actionData);
         case "insert":
-          return this.insertText(code);
+          return this.insertText(actionData);
         case "apply":
-          return this.replaceText(code);
+          return this.replaceText(actionData);
+        case "close":
+          return this.showComposer = false;
       }
     },
     // 保存

@@ -197,7 +197,7 @@ export default defineComponent({
       };
       const consoleLogVars =
         this.getAvailableOutputVariableName(outputVariable);
-      const tempFlow = {
+      const tempFlows = [{
         name: "main",
         commands: [
           tempCommand,
@@ -207,9 +207,10 @@ export default defineComponent({
               console.log(${consoleLogVars})
             }`,
           },
-        ],
-      };
-      this.$emit("run", tempFlow);
+          ],
+        },
+      ];
+      this.$emit("run", tempFlows);
     },
     handleToggleCollapse() {
       if (this.localCommand.isControlFlow) {

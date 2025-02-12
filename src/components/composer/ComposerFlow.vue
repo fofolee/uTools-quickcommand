@@ -82,10 +82,6 @@ export default defineComponent({
       required: true,
       default: () => [],
     },
-    generateCode: {
-      type: Function,
-      required: true,
-    },
     showCloseButton: {
       type: Boolean,
       default: true,

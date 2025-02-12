@@ -221,9 +221,7 @@ export default {
       }
     },
     runCommand(code) {
-      this.$refs.result.runCurrentCommand(
-        window.lodashM.cloneDeep(this.allQuickCommands[code])
-      );
+      this.$refs.result.runCurrentCommand(this.allQuickCommands[code]);
     },
     // 启用命令
     enableCommand(code) {
@@ -241,13 +239,16 @@ export default {
       }
     },
     // 编辑命令
-    editCommand(command) {
+    editCommand(commandOrCode) {
       // 即可传入 code，也可直接传入 command
-      if (typeof command === "string") command = this.allQuickCommands[command];
+      const command =
+        typeof commandOrCode === "string"
+          ? this.allQuickCommands[commandOrCode]
+          : commandOrCode;
       this.commandEditorAction = {
         type: "edit",
         data: window.lodashM.cloneDeep(command),
-        component: "CommandEditor",
+        component: command.flows ? "ComposerEditor" : "CommandEditor",
       };
       this.isEditorShow = true;
     },
@@ -349,6 +350,7 @@ export default {
     saveCommand(command) {
       const code = this.commandManager.saveCommand(command);
       this.locateToCommand(command.tags, code);
+      quickcommand.showMessageBox("保存成功！");
     },
     editorEvent(event) {
       switch (event.type) {
@@ -394,7 +396,7 @@ export default {
 
       // 更新存储
       this.commandManager.state.allQuickCommands = {
-        ...this.commandManager.state.allQuickCommands,
+        ...this.allQuickCommands,
         ...tagCommands,
       };
 

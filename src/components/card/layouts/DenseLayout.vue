@@ -46,7 +46,7 @@
         width="16px"
       />
       <div>|</div>
-      <q-img :src="programs[commandInfo.program].icon" width="16px" />
+      <q-img :src="program.icon" width="16px" />
       <div class="text-subtitle2">{{ programName }}</div>
     </div>
   </q-card-section>
@@ -75,6 +75,12 @@ export default {
   },
   computed: {
     program() {
+      if (this.commandInfo.program === "quickcomposer") {
+        return {
+          ...this.programs.quickcommand,
+          shortName: "可视化",
+        };
+      }
       return this.programs[this.commandInfo.program];
     },
     programName() {

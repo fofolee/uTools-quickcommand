@@ -75,6 +75,8 @@ import specialVars from "js/options/specialVars.js";
 import commandTypes from "js/options/commandTypes.js";
 import ResultArea from "components/ResultArea.vue";
 import ResultMenu from "components/popup/ResultMenu.vue";
+import { generateFlowsCode } from "js/composer/generateCode";
+import { getValidCommand } from "js/commandManager";
 
 export default {
   components: { ResultArea, ResultMenu },
@@ -127,11 +129,20 @@ export default {
   methods: {
     // 运行命令
     async runCurrentCommand(currentCommand) {
+      let command = window.lodashM.cloneDeep(currentCommand);
+      // 如果是composer命令，则动态生成cmd
+      if (command.program === "quickcomposer") {
+        command.cmd = generateFlowsCode(command.flows);
+      }
       this.$root.isRunningCommand = true;
-      await this.getTempPayload(currentCommand);
-      if (currentCommand.cmd.includes("{{subinput"))
-        return this.setSubInput(currentCommand);
-      this.fire(currentCommand);
+      try {
+        await this.getTempPayload(command);
+      } catch (error) {
+        return quickcommand.showMessageBox(error.toString(), "error");
+      }
+      // 如果命令包含子输入框，则设置子输入框
+      if (command.cmd.includes("{{subinput")) return this.setSubInput(command);
+      this.fire(command);
     },
     async fire(currentCommand) {
       currentCommand.cmd = this.assignSpecialVars(currentCommand.cmd);
@@ -147,6 +158,7 @@ export default {
       let resultOpts = { outPlugin, action, earlyExit };
       switch (currentCommand.program) {
         case "quickcommand":
+        case "quickcomposer":
           window.runCodeInSandbox(
             currentCommand.cmd,
             (stdout, stderr) => this.handleResult(stdout, stderr, resultOpts),
@@ -278,11 +290,15 @@ export default {
     // payload 临时赋值
     async getTempPayload(currentCommand) {
       if (!this.needTempPayload) return;
-      let type =
-        currentCommand.cmdType || currentCommand.features?.cmds[0].type;
+      currentCommand = getValidCommand(currentCommand);
+      const firstCmd = currentCommand.features.cmds[0];
+      const type = firstCmd.type || "text";
       this.$root.enterData = {
-        type: type || "text",
-        payload: await commandTypes[type]?.tempPayload?.(),
+        type,
+        payload:
+          type === "text"
+            ? firstCmd
+            : (await commandTypes[type]?.tempPayload?.()) || {},
       };
     },
     handleResult(stdout, stderr, options) {

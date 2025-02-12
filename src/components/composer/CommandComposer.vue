@@ -10,8 +10,10 @@
       <!-- 右侧命令流程 -->
       <div class="col command-section">
         <FlowTabs
-          @action="handleComposer"
+          @action="handleAction"
           :show-close-button="showCloseButton"
+          :model-value="modelValue"
+          @update:model-value="$emit('update:modelValue', $event)"
         />
       </div>
     </div>
@@ -44,12 +46,16 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    modelValue: {
+      type: Object,
+      default: () => ({}),
+    },
   },
-  emits: ["use-composer"],
+  emits: ["action", "update:modelValue"],
   methods: {
-    handleComposer(type, code) {
+    handleAction(actionType, actionData) {
       // 直接转发事件和代码
-      this.$emit("use-composer", { type, code });
+      this.$emit("action", actionType, actionData);
     },
     findCommandNeedLoading(flow) {
       // 暂时只在运行单独命令时显示载入界面，因为运行整个命令流时，如果不打印输出，是无法判断什么时候运行结束的，
