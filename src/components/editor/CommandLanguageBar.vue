@@ -17,13 +17,13 @@
         >
           <template v-slot:append>
             <q-avatar size="lg" square>
-              <img :src="$root.programs[modelValue.program].icon" />
+              <img :src="programs[modelValue.program].icon" />
             </q-avatar>
           </template>
           <template v-slot:option="scope">
             <q-item v-bind="scope.itemProps">
               <q-item-section avatar>
-                <img width="32" :src="$root.programs[scope.opt].icon" />
+                <img width="32" :src="programs[scope.opt].icon" />
               </q-item-section>
               <q-item-section>
                 <q-item-label v-html="scope.opt" />
@@ -162,6 +162,7 @@
 </template>
 
 <script>
+import programs from "js/options/programs.js";
 
 export default {
   name: "CommandLanguageBar",
@@ -190,9 +191,14 @@ export default {
     "save",
     "show-composer",
   ],
+  data() {
+    return {
+      programs,
+    };
+  },
   computed: {
     programLanguages() {
-      return Object.keys(this.$root.programs);
+      return Object.keys(this.programs);
     },
   },
   methods: {
@@ -235,7 +241,7 @@ export default {
     },
     matchLanguage() {
       if (!this.modelValue.customOptions.ext) return;
-      let language = Object.values(this.$root.programs).filter(
+      let language = Object.values(this.programs).filter(
         (program) => program.ext === this.modelValue.customOptions.ext
       );
       if (language.length) {

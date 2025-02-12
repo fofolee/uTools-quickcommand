@@ -171,7 +171,7 @@ export default {
       let option =
         command.program === "custom"
           ? command.customOptions
-          : this.$root.programs[command.program];
+          : programs[command.program];
       option.scptarg = command.scptarg || "";
       option.charset = command.charset || {};
       option.envPath = this.$root.nativeProfile.envPath.trim() || "";

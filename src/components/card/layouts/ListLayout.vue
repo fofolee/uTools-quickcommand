@@ -50,6 +50,7 @@
 <script>
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
+import programs from "js/options/programs.js";
 
 export default {
   name: "ListLayout",
@@ -64,11 +65,12 @@ export default {
   data() {
     return {
       platformTypes,
+      programs,
     };
   },
   computed: {
     program() {
-      return this.$root.programs[this.commandInfo.program];
+      return this.programs[this.commandInfo.program];
     },
   },
 };

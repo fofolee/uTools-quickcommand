@@ -46,7 +46,7 @@
         width="16px"
       />
       <div>|</div>
-      <q-img :src="$root.programs[commandInfo.program].icon" width="16px" />
+      <q-img :src="programs[commandInfo.program].icon" width="16px" />
       <div class="text-subtitle2">{{ programName }}</div>
     </div>
   </q-card-section>
@@ -55,6 +55,7 @@
 <script>
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
+import programs from "js/options/programs.js";
 
 export default {
   name: "DenseLayout",
@@ -69,11 +70,12 @@ export default {
   data() {
     return {
       platformTypes,
+      programs,
     };
   },
   computed: {
     program() {
-      return this.$root.programs[this.commandInfo.program];
+      return this.programs[this.commandInfo.program];
     },
     programName() {
       return this.program.shortName ?? this.program.name;
