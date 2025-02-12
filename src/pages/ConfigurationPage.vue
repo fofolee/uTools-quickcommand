@@ -56,8 +56,7 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import quickcommandParser from "js/common/quickcommandParser.js";
-import importAll from "js/common/importAll.js";
+import { useCommandManager } from "js/commandManager.js";
 import changeLog from "js/options/changeLog.js";
 import pinyinMatch from "pinyin-match";
 import CommandEditor from "components/CommandEditor";
@@ -71,9 +70,6 @@ const CommandRunResult = defineAsyncComponent(() =>
 );
 // Performance Rendering > 300ms
 
-// 默认命令
-let defaultCommands = importAll(require.context("../json/", false, /\.json$/));
-
 export default {
   components: {
     CommandEditor,
@@ -84,14 +80,14 @@ export default {
     BackgroundLayer,
     CommandPanels,
   },
+  setup() {
+    const commandManager = useCommandManager();
+    return { commandManager };
+  },
   data() {
     return {
       currentTag: "",
       lastTag: "",
-      activatedQuickCommandFeatureCodes: [],
-      activatedQuickPanels: [],
-      allQuickCommands: {},
-      allQuickCommandTags: [],
       commandSearchKeyword: "",
       isEditorShow: false,
       commandEditorAction: {},
@@ -99,6 +95,18 @@ export default {
     };
   },
   computed: {
+    allQuickCommands() {
+      return this.commandManager.state.allQuickCommands;
+    },
+    allQuickCommandTags() {
+      return this.commandManager.state.allQuickCommandTags;
+    },
+    activatedQuickCommandFeatureCodes() {
+      return this.commandManager.state.activatedQuickCommandFeatureCodes;
+    },
+    activatedQuickPanels() {
+      return this.commandManager.state.activatedQuickPanels;
+    },
     // 当前标签下的所有快捷命令
     currentTagQuickCommands() {
       let commands = Object.values(
@@ -184,33 +192,11 @@ export default {
     },
     // 获取所有已启用的命令的 features 以及面板名称
     getActivatedFeatures() {
-      let features = utools.getFeatures();
-      let currentFts = [];
-      let quickpanels = [];
-      features.forEach((x) =>
-        x.code.slice(0, 6) == "panel_"
-          ? quickpanels.push(window.hexDecode(x.code.slice(6)))
-          : currentFts.push(x)
-      );
-      this.activatedQuickCommandFeatureCodes = currentFts.map((f) => f.code);
-      // 已启用的面板
-      this.activatedQuickPanels = quickpanels;
+      this.commandManager.getActivatedFeatures();
     },
     // 获取所有的命令（导出的格式）
     getAllQuickCommands() {
-      this.allQuickCommands = window.lodashM.cloneDeep(defaultCommands);
-      this.$root.utools.getAll("qc_").forEach((x) => {
-        if (x.data.features.code.includes("default_")) return;
-        this.allQuickCommands[x.data.features.code] = x.data;
-      });
-      this.getAllQuickCommandTags();
-    },
-    getAllQuickCommandTags() {
-      // 获取所有标签
-      this.allQuickCommandTags = window.lodashM
-        .union(...Object.values(this.allQuickCommands).map((x) => x.tags))
-        .concat(["未分类"])
-        .filter((x) => x);
+      this.commandManager.getAllQuickCommands();
     },
     // 监听命令变更事件
     commandChanged(event) {
@@ -241,40 +227,17 @@ export default {
     },
     // 启用命令
     enableCommand(code) {
-      this.$root.utools.whole.setFeature(
-        window.lodashM.cloneDeep(this.allQuickCommands[code].features)
-      );
-      this.activatedQuickCommandFeatureCodes.push(code);
+      this.commandManager.enableCommand(code);
     },
     // 禁用命令
     disableCommand(code) {
-      this.$root.utools.whole.removeFeature(code);
-      this.activatedQuickCommandFeatureCodes =
-        this.activatedQuickCommandFeatureCodes.filter((x) => x !== code);
+      this.commandManager.disableCommand(code);
     },
     // 删除命令
     removeCommand(code) {
-      utools.copyText(JSON.stringify(this.allQuickCommands[code], null, 4));
-      delete this.allQuickCommands[code];
-      this.$root.utools.delDB("qc_" + code);
-      this.removeCommandFromHistory(code);
-      this.disableCommand(code);
-      this.getAllQuickCommandTags();
-      if (!this.allQuickCommandTags.includes(this.currentTag))
+      this.commandManager.removeCommand(code);
+      if (!this.allQuickCommandTags.includes(this.currentTag)) {
         this.changeCurrentTag("默认");
-      quickcommand.showMessageBox(
-        "删除成功，为防止误操作，已将删除的命令复制到剪贴板",
-        "success",
-        1000,
-        "bottom-right"
-      );
-    },
-    removeCommandFromHistory(code) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith("editor_history_" + code)) {
-          localStorage.removeItem(key);
-        }
       }
     },
     // 编辑命令
@@ -290,32 +253,14 @@ export default {
     },
     // 是否为默认命令
     isDefaultCommand(code) {
-      return code.slice(0, 8) === "default_";
+      return this.commandManager.isDefaultCommand(code);
     },
     // 导入命令
     async importCommand(quickCommandInfo) {
-      if (!quickCommandInfo)
-        return quickcommand.showMessageBox("导入未完成！", "warning");
-      let parsedData = await quickcommandParser(quickCommandInfo);
-      if (!parsedData) return quickcommand.showMessageBox("格式错误", "error");
-      // 单个命令导入
-      let dataToPushed = {};
-      if (parsedData.single) {
-        if (this.isDefaultCommand(parsedData.qc.features.code))
-          return quickcommand.showMessageBox("默认命令不能导入！", "error");
-        dataToPushed[parsedData.qc.features.code] = parsedData.qc;
-        // 多个
-      } else {
-        dataToPushed = parsedData.qc;
+      const command = await this.commandManager.importCommand(quickCommandInfo);
+      if (command) {
+        this.locateToCommand(command.tags, command.features?.code);
       }
-      for (var code of Object.keys(dataToPushed)) {
-        if (this.isDefaultCommand(code)) continue;
-        this.$root.utools.putDB(dataToPushed[code], "qc_" + code);
-      }
-      Object.assign(this.allQuickCommands, dataToPushed);
-      this.getAllQuickCommandTags();
-      quickcommand.showMessageBox("导入成功！");
-      this.locateToCommand(parsedData.qc.tags, parsedData.qc.features?.code);
     },
     // 定位命令, 包含changeCurrentTag
     locateToCommand(tags = ["默认"], code) {
@@ -347,27 +292,8 @@ export default {
     },
     // 全部导出
     exportAllCommands(saveAsFile = true) {
-      let options = {
-        title: "选择保存位置",
-        defaultPath: "quickCommand",
-        filters: [
-          {
-            name: "json",
-            extensions: ["json"],
-          },
-        ],
-      };
-      let commandsToExport = window.lodashM.cloneDeep(this.allQuickCommands);
-      // 不导出默认命令
-      Object.keys(commandsToExport).forEach((code) => {
-        if (this.isDefaultCommand(code)) delete commandsToExport[code];
-      });
-      let stringifyCommands = JSON.stringify(commandsToExport);
-      if (saveAsFile) {
-        window.saveFile(stringifyCommands, options) &&
-          quickcommand.showMessageBox("导出成功！");
-      } else {
-        utools.copyText(stringifyCommands);
+      if (this.commandManager.exportAllCommands(saveAsFile)) {
+        quickcommand.showMessageBox("导出成功！");
       }
     },
     // 清空
@@ -375,13 +301,10 @@ export default {
       quickcommand
         .showConfirmBox("将会清空所有自定义命令，停用所有实用功能，请确认！")
         .then((isConfirmed) => {
-          if (!isConfirmed)
+          if (!isConfirmed) {
             return quickcommand.showMessageBox("取消操作", "info");
-          this.exportAllCommands(false);
-          this.$root.utools.delAll("qc_");
-          this.clearAllFeatures();
-          this.allQuickCommands = window.lodashM.cloneDeep(defaultCommands);
-          this.getAllQuickCommandTags();
+          }
+          this.commandManager.clearAllCommands();
           this.changeCurrentTag("默认");
           quickcommand.showMessageBox(
             "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复",
@@ -393,11 +316,7 @@ export default {
     },
     // 删除所有 features
     clearAllFeatures() {
-      for (var feature of utools.getFeatures()) {
-        if (feature.code.slice(0, 8) === "feature_") continue;
-        this.$root.utools.whole.removeFeature(feature.code);
-      }
-      this.activatedQuickCommandFeatureCodes = [];
+      this.commandManager.clearAllFeatures();
     },
     // 搜索方法
     updateSearch(value) {
@@ -428,15 +347,7 @@ export default {
       this.isEditorShow = true;
     },
     saveCommand(command) {
-      let code = command.features.code;
-      this.allQuickCommands[code] = command;
-      //无论禁用还是启用都启用
-      if (!this.activatedQuickCommandFeatureCodes.includes(code))
-        this.activatedQuickCommandFeatureCodes.push(code);
-      // 先删除再添加，强制刷新
-      this.$root.utools.whole.removeFeature(code);
-      this.$root.utools.whole.setFeature(command.features);
-      this.getAllQuickCommandTags();
+      const code = this.commandManager.saveCommand(command);
       this.locateToCommand(command.tags, code);
     },
     editorEvent(event) {
@@ -482,8 +393,8 @@ export default {
       });
 
       // 更新存储
-      this.allQuickCommands = {
-        ...this.allQuickCommands,
+      this.commandManager.state.allQuickCommands = {
+        ...this.commandManager.state.allQuickCommands,
         ...tagCommands,
       };
 
