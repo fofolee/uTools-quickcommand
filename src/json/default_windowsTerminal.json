@@ -21,7 +21,6 @@
     "program": "quickcommand",
     "cmd": "var currentFolder = \"{{pwd}}\"\nvar home = utools.getPath('home')\nvar wt = path.join(home, '/AppData/Local/Microsoft/WindowsApps/wt.exe')\nchild_process.exec(`start \"\" \"${wt}\" -d \"${currentFolder.replace('\\\\', '\\\\\\\\')}\"`)",
     "output": "ignore",
-    "hasSubInput": false,
     "scptarg": "",
     "charset": {
         "scriptCode": "",
