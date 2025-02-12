@@ -90,7 +90,7 @@
 </template>
 
 <script>
-import { defineComponent, inject, provide, computed } from "vue";
+import { defineComponent, provide, computed } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import MultiParams from "components/composer/MultiParams.vue";
 import CommandHead from "components/composer/card/CommandHead.vue";

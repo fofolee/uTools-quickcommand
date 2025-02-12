@@ -1,7 +1,13 @@
 <template>
   <div class="composer-buttons">
     <div class="right-buttons">
-      <q-btn icon="close" dense flat v-close-popup v-if="showCloseButton">
+      <q-btn
+        icon="close"
+        dense
+        flat
+        v-if="showCloseButton"
+        @click="$emit('action', 'close')"
+      >
         <q-tooltip>退出可视化编排</q-tooltip>
       </q-btn>
       <q-btn

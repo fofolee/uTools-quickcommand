@@ -48,11 +48,14 @@ export default defineComponent({
   justify-content: center;
   border: 2px dashed #e0e0e0;
   border-radius: 4px;
-  margin: 8px 0;
   transition: all 0.3s ease;
   flex: 1;
   user-select: none;
   transition: all 0.3s ease;
+}
+
+.drop-area:has(.add-area) {
+  margin: 8px 0;
 }
 
 .body--dark .drop-area {
@@ -94,7 +97,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  color: grey
+  color: grey;
 }
 
 .add-area {

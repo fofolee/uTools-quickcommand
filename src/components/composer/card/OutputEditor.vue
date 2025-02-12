@@ -203,12 +203,6 @@ export default defineComponent({
         (cmd) => cmd.value === this.command.value
       );
     },
-    defaultOutputVariable() {
-      return (
-        this.currentSubCommand?.defaultOutputVariable ||
-        this.command.defaultOutputVariable
-      );
-    },
     commandName() {
       return this.currentSubCommand.label || this.command.label;
     },
@@ -256,8 +250,7 @@ export default defineComponent({
     },
   },
   methods: {
-    initOutputVars(value) {
-      const outputVariable = value || this.defaultOutputVariable;
+    initOutputVars(outputVariable) {
       // 初始化完整输出变量名
       if (!outputVariable) {
         this.simpleOutputVar = "";

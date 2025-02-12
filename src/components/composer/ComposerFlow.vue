@@ -568,16 +568,11 @@ export default defineComponent({
 
 .command-flow-container {
   padding: 8px;
-  background-color: rgba(255, 255, 255, 0.8);
   border-radius: 4px;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   position: relative;
-}
-
-.body--dark .command-flow-container {
-  background-color: rgba(32, 32, 32, 0.8);
 }
 
 /* 滑动淡出动画 */

@@ -114,8 +114,8 @@ export default {
       // window类型的额外应用数量标签的宽度
       for (let i = 0; i < visibleTagCount; i++) {
         const cmd = this.cmds[i];
-        if (cmd.type === 'window' && cmd.match.app.length > 1) {
-          extraBadgesWidth += 31;  // 额外应用数量标签的宽度
+        if (cmd.type === "window" && cmd.match.app.length > 1) {
+          extraBadgesWidth += 31; // 额外应用数量标签的宽度
         }
       }
 
@@ -163,7 +163,7 @@ export default {
           width += 1;
         }
       }
-      return width * 6;  // 假设每个英文字符宽度为6px
+      return width * 6; // 假设每个英文字符宽度为6px
     },
     // 判断是否需要显示tooltip（文本是否溢出）
     needTooltip(cmd) {
@@ -182,8 +182,8 @@ export default {
       }
 
       // 计算文本是否超出可用宽度
-      const iconWidth = 20;      // 图标宽度
-      const paddingWidth = 16;   // 内边距宽度
+      const iconWidth = 20; // 图标宽度
+      const paddingWidth = 16; // 内边距宽度
       const availableWidth = this.maxTagWidth - iconWidth - paddingWidth;
 
       return this.getTextWidth(text) > availableWidth;
