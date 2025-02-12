@@ -12,6 +12,7 @@
                 :label="subOutput.label"
                 :placeholder="subOutput.placeholder"
                 :suggest-name="subOutput.suggestName"
+                :show-variable-list="true"
                 autofocus
               />
             </div>
@@ -27,6 +28,7 @@
         :label="output.label"
         :placeholder="output.placeholder"
         :suggest-name="output.suggestName"
+        :show-variable-list="true"
         autofocus
       />
     </div>

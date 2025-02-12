@@ -44,6 +44,7 @@
     dense
     emit-value
     map-options
+    options-dense
     class="output-field"
     @update:model-value="$emit('update:modelValue', $event)"
   />
@@ -94,7 +95,8 @@ export default defineComponent({
   emits: ["update:modelValue"],
   methods: {
     updateValBySelect(_type, val) {
-      this.$emit("update:modelValue", val);
+      // 如果是函数，去除参数
+      this.$emit("update:modelValue", val.replace(/\(.*?\)/g, ""));
     },
     updateSuggestName(val) {
       const existingNames = this.getExistingFuncAndParams();
