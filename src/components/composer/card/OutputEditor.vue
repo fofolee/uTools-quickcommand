@@ -200,7 +200,7 @@ export default defineComponent({
     currentSubCommand() {
       if (!this.command.subCommands) return {};
       return this.command.subCommands.find(
-        (cmd) => cmd.value === this.command.value
+        (cmd) => cmd.value === this.command.subCommand
       );
     },
     commandName() {

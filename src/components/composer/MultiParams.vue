@@ -220,7 +220,10 @@ export default defineComponent({
         code: this.generateCode(subCommand, argvs),
       };
       if (resetOutputVariable) {
-        delete newModelValue.outputVariable;
+        newModelValue.outputVariable = {
+          name: "",
+          details: {},
+        };
       }
       this.$emit("update:modelValue", newModelValue);
     },
