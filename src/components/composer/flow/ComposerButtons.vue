@@ -44,7 +44,7 @@
       >
         <q-tooltip>插入到编辑器光标处</q-tooltip>
       </q-btn> -->
-      <q-btn
+      <!-- <q-btn
         dense
         flat
         v-close-popup
@@ -53,7 +53,7 @@
         v-if="showCloseButton"
       >
         <q-tooltip>清空编辑器内容并插入</q-tooltip>
-      </q-btn>
+      </q-btn> -->
       <q-btn dense flat icon="save" @click="$emit('action', 'save')">
         <q-tooltip>保存</q-tooltip>
       </q-btn>
