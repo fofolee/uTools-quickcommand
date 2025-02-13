@@ -30,6 +30,7 @@ const getFeatureCode = (cmds) => {
 };
 
 const getLabeledCmds = (cmds, explain) => {
+  if (cmds.length === 0) return [explain];
   return cmds.map((cmd) => {
     if (typeof cmd === "string") {
       return cmd || explain;
@@ -130,9 +131,7 @@ export function useCommandManager() {
 
   // 删除命令
   const removeCommand = (code) => {
-    utoolsFull.copyText(
-      JSON.stringify(state.allQuickCommands[code], null, 4)
-    );
+    utoolsFull.copyText(JSON.stringify(state.allQuickCommands[code], null, 4));
     delete state.allQuickCommands[code];
     dbManager.delDB("qc_" + code);
     removeCommandFromHistory(code);

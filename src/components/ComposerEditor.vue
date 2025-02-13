@@ -82,7 +82,7 @@ export default {
         explain: "",
         platform: ["win32", "linux", "darwin"],
         mainPush: false,
-        cmds: [""],
+        cmds: [],
       },
       flows: [
         {

@@ -15,22 +15,66 @@
     <div v-else class="visual-editor">
       <!-- 规则类型选择按钮组 -->
       <div class="rule-type-buttons q-mb-sm q-mt-xs">
-        <div v-for="type in ruleTypeOptions" :key="type.value" class="col-auto">
-          <q-btn
-            :label="type.label"
-            :icon="type.icon"
-            :color="type.color"
-            outline
-            dense
-            class="rule-type-btn"
-            @click="addRuleByType(type.value)"
-          >
-            <q-badge
-              v-if="ruleTypeCounts[type.value]"
-              floating
-              :label="ruleTypeCounts[type.value]"
-            />
-          </q-btn>
+        <div
+          v-for="type in ruleTypeOptions"
+          :key="type.value"
+          class="col-auto rule-type-btn-wrapper"
+        >
+          <div class="btn-container">
+            <!-- 默认显示的类型按钮 -->
+            <q-btn
+              :label="type.label"
+              :icon="type.icon"
+              :color="type.color"
+              outline
+              dense
+              class="rule-type-btn"
+              :class="{ 'btn-hidden': isHovering[type.value] }"
+              @mouseenter="setHovering(type.value, true)"
+            >
+              <q-badge
+                v-if="ruleTypeCounts[type.value]"
+                floating
+                :label="ruleTypeCounts[type.value]"
+              />
+            </q-btn>
+
+            <!-- 悬浮时显示的按钮组 -->
+            <div
+              class="hover-buttons"
+              :class="{ 'buttons-visible': isHovering[type.value] }"
+              @mouseleave="setHovering(type.value, false)"
+            >
+              <q-btn-group outline>
+                <q-btn
+                  dense
+                  outline
+                  :color="type.color"
+                  icon="add"
+                  class="hover-btn"
+                  @click="addRuleByType(type.value)"
+                >
+                  <q-badge
+                    v-if="ruleTypeCounts[type.value]"
+                    floating
+                    :label="ruleTypeCounts[type.value]"
+                  />
+                </q-btn>
+                <q-btn
+                  dense
+                  outline
+                  :color="
+                    !ruleTypeCounts[type.value] || modelValue.length === 1
+                      ? 'grey'
+                      : type.color
+                  "
+                  icon="remove"
+                  class="hover-btn"
+                  @click="removeLastRuleByType(type.value)"
+                />
+              </q-btn-group>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -271,6 +315,7 @@ export default defineComponent({
           color: type.color,
         })),
       commandTypes,
+      isHovering: {},
     };
   },
 
@@ -323,7 +368,7 @@ export default defineComponent({
       const newRules = [...this.localRules];
       newRules.splice(index, 1);
       if (newRules.length == 0) {
-        return;
+        return quickcommand.showMessageBox("请至少保留一个规则", "error");
       }
       this.updateModelValue(newRules);
     },
@@ -378,6 +423,25 @@ export default defineComponent({
 
       this.updateModelValue(newRules);
     },
+
+    setHovering(type, value) {
+      this.isHovering = {
+        ...this.isHovering,
+        [type]: value,
+      };
+    },
+
+    removeLastRuleByType(type) {
+      const newRules = [...this.localRules];
+      if (newRules.length === 1) return;
+      const lastIndex = newRules.findLastIndex((rule) =>
+        type === "key" ? typeof rule === "string" : rule.type === type
+      );
+
+      if (lastIndex === -1) return;
+      newRules.splice(lastIndex, 1);
+      this.updateModelValue(newRules);
+    },
   },
 });
 </script>
@@ -389,27 +453,28 @@ export default defineComponent({
   justify-content: space-between;
 }
 
-.rule-type-buttons :deep(.q-btn) {
-  padding: 0;
+/* 合并按钮基础样式 */
+.rule-type-buttons :deep(.q-btn),
+.hover-btn {
+  padding: 2px;
   font-size: 12px;
   height: 24px;
-  min-width: 85px;
 }
 
 .body--dark .rule-type-count {
   background-color: rgba(255, 255, 255, 0.9);
 }
 
-.rules-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: -4px;
-}
-
+/* 合并容器样式 */
+.rules-container,
 .key-rules-row {
   display: flex;
   gap: 8px;
+}
+
+.rules-container {
+  flex-direction: column;
+  margin-bottom: -4px;
 }
 
 .key-input-wrapper {
@@ -417,6 +482,7 @@ export default defineComponent({
   min-width: 0;
 }
 
+/* 合并图标样式 */
 .key-input-wrapper :deep(.q-field__append) {
   padding: 0 4px;
 }
@@ -431,19 +497,69 @@ export default defineComponent({
   opacity: 1;
 }
 
-.json-editor {
-  font-family: monospace;
+/* 合并编辑器样式 */
+.json-editor,
+.json-editor :deep(.q-field__native) {
+  font-family: consolas, Monaco, monospace;
 }
 
 .json-editor :deep(.q-field__native) {
   min-height: 200px;
-  font-family: monospace;
 }
 
-/* 隐藏默认的数字输入框箭头 - Chrome, Safari, Edge, Opera */
+/* 隐藏数字输入框箭头 */
 .match-rule-editor :deep(input[type="number"]::-webkit-outer-spin-button),
 .match-rule-editor :deep(input[type="number"]::-webkit-inner-spin-button) {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* 按钮容器样式 */
+.rule-type-btn-wrapper,
+.btn-container {
+  position: relative;
+  width: 85px;
+  height: 24px;
+}
+
+.btn-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* 按钮状态样式 */
+.rule-type-btn {
+  width: 100%;
+  position: absolute;
+  transition: opacity 0.3s ease;
+}
+
+.btn-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 悬浮按钮组样式 */
+.hover-buttons {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.hover-buttons :deep(.q-btn-group) {
+  width: 100%;
+}
+
+.hover-buttons :deep(.q-btn) {
+  flex: 1;
+}
+
+.buttons-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 </style>
