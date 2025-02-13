@@ -5,8 +5,8 @@
 // 是否含有 quickcommand 键值
 let isJsonQc = (obj, strict = true) => {
   var keys = strict
-    ? ["features", "program", "cmd", "output"]
-    : ["program", "cmd"];
+    ? ["features", "program", "output"]
+    : ["program"];
   if (keys.filter((x) => typeof obj[x] == "undefined").length) return false;
   return true;
 };
