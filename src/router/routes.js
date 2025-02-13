@@ -46,11 +46,6 @@ const routes = [
     component: () => import("pages/LoadingPage.vue"),
   },
   {
-    path: "/share",
-    name: "share",
-    component: () => import("pages/ShareCenterPage.vue"),
-  },
-  {
     path: "/feature_:featuretype(\\w+)",
     name: "feature",
     component: () => import("pages/FeaturesPage.vue"),
