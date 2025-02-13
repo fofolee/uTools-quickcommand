@@ -10,9 +10,7 @@
           <q-avatar size="36px" square class="featureIco">
             <q-img
               @click.stop="showIconPicker = true"
-              :src="
-                currentCommand.features.icon
-              "
+              :src="currentCommand.features.icon"
             />
           </q-avatar>
         </div>
@@ -157,7 +155,7 @@
 </template>
 
 <script>
-import { defineComponent, inject, computed } from "vue";
+import { defineComponent, computed } from "vue";
 import iconPicker from "components/popup/IconPicker.vue";
 import outputTypes from "js/options/outputTypes.js";
 import platformTypes from "js/options/platformTypes.js";
@@ -165,6 +163,7 @@ import CheckGroup from "components/composer/common/CheckGroup.vue";
 import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import commandTypes from "js/options/commandTypes.js";
 import MatchRuleEditor from "components/editor/MatchRuleEditor.vue";
+import { useCommandManager } from "js/commandManager.js";
 
 export default defineComponent({
   name: "CommandConfig",
@@ -181,20 +180,9 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue"],
-  setup(props) {
-    const allQuickCommandTags = inject("allQuickCommandTags").filter(
-      (tag) => !["默认", "未分类", "搜索结果"].includes(tag)
-    );
-
-    const currentCommand = computed(() => props.modelValue);
-
-    return {
-      allQuickCommandTags,
-      currentCommand,
-    };
-  },
   data() {
     return {
+      commandManager: useCommandManager(),
       isExpanded: false,
       showIconPicker: false,
       showMatchRuleJson: false,
@@ -209,6 +197,14 @@ export default defineComponent({
     };
   },
   computed: {
+    allQuickCommandTags() {
+      return this.commandManager.state.allQuickCommandTags.filter(
+        (tag) => !["默认", "未分类", "搜索结果"].includes(tag)
+      );
+    },
+    currentCommand() {
+      return this.modelValue;
+    },
     commandTypesOptions() {
       const options = Object.values(this.commandTypes);
       return this.currentCommand.features.mainPush

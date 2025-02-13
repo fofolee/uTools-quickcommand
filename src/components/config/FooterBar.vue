@@ -7,7 +7,7 @@
       <!-- 搜索栏 -->
       <div class="col">
         <q-input
-          :model-value="searchKeyword"
+          :model-value="commandSearchKeyword"
           @update:model-value="updateSearch"
           debounce="200"
           filled
@@ -103,10 +103,7 @@
             icon="settings"
             :style="{ height: height }"
           >
-            <ConfigurationMenu
-              :isTagStared="isTagStared"
-              :currentTag="currentTag"
-            />
+            <ConfigurationMenu />
           </q-btn>
         </q-btn-group>
       </div>
@@ -116,6 +113,7 @@
 
 <script>
 import ConfigurationMenu from "components/menu";
+import { useCommandManager } from "js/commandManager.js";
 
 export default {
   name: "FooterBar",
@@ -131,36 +129,58 @@ export default {
       type: String,
       required: true,
     },
-    isTagStared: {
-      type: Boolean,
-      required: true,
+  },
+  emits: ["add-new"],
+  computed: {
+    commandSearchKeyword() {
+      return this.commandManager.state.commandSearchKeyword;
     },
-    currentTag: {
-      type: String,
-      required: true,
+    currentTag() {
+      return this.commandManager.state.currentTag;
     },
-    searchKeyword: {
-      type: String,
-      default: "",
+    allQuickCommandTags: {
+      get() {
+        return this.commandManager.state.allQuickCommandTags;
+      },
+      set(value) {
+        this.commandManager.state.allQuickCommandTags = value;
+      },
     },
   },
-  emits: ["update:search", "add-new"],
   data() {
     return {
+      commandManager: useCommandManager(),
       isDarkMode: this.$q.dark.isActive,
       isDev: utools.isDev(),
+      lastTag: "",
     };
   },
   methods: {
-    updateSearch(value) {
-      this.$emit("update:search", value);
-    },
     toggleDarkMode() {
       this.$q.dark.toggle();
       this.isDarkMode = this.$q.dark.isActive;
     },
     goShareCenter() {
       utools.shellOpenExternal("https://qc.qaz.ink/");
+    },
+    // 搜索方法
+    updateSearch(value) {
+      this.commandManager.state.commandSearchKeyword = value;
+      // 记录当前标签页
+      let searchTagName = "搜索结果";
+      if (this.currentTag !== searchTagName) this.lastTag = this.currentTag;
+      if (this.commandSearchKeyword?.length > 1) {
+        if (!this.allQuickCommandTags.includes(searchTagName))
+          this.allQuickCommandTags.push(searchTagName);
+        // 搜索时跳转到搜索结果标签
+        this.commandManager.changeCurrentTag(searchTagName);
+      } else {
+        // 清空搜索回跳到之前标签
+        if (this.allQuickCommandTags.slice(-1)[0] === searchTagName)
+          this.allQuickCommandTags.pop();
+        if (this.currentTag !== this.lastTag)
+          this.commandManager.changeCurrentTag(this.lastTag);
+      }
     },
   },
 };

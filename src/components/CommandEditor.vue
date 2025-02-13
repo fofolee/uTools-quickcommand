@@ -161,11 +161,6 @@ export default {
     this.commandInit();
     this.sidebarInit();
   },
-  computed: {
-    configurationPage() {
-      return this.$root.$refs.view;
-    },
-  },
   methods: {
     // 命令初始化
     commandInit() {

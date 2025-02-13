@@ -14,8 +14,7 @@
       v-model="currentTag"
       vertical
       switch-indicator
-      :key="denseTagBar"
-      :dense="denseTagBar"
+      :dense="$root.profile.denseTagBar"
     >
       <!-- 可拖拽标签 -->
       <draggable
@@ -31,7 +30,7 @@
         <template #item="{ element }">
           <q-tab
             :name="element"
-            :data-active-panel="activatedQuickPanels.includes(element)"
+            :data-active-panel="isTagStared(element)"
             class="draggable-tag"
           >
             {{ element }}
@@ -44,7 +43,7 @@
         :key="tag"
         :name="tag"
         :data-search-result="tag === '搜索结果'"
-        :data-active-panel="activatedQuickPanels.includes(tag)"
+        :data-active-panel="isTagStared(tag)"
         class="fixed-tag"
       >
         {{ tag }}
@@ -60,6 +59,7 @@
 <script>
 import draggable from "vuedraggable";
 import { dbManager } from "js/utools.js";
+import { useCommandManager } from "js/commandManager.js";
 
 const FIXED_TAGS = ["未分类", "默认", "搜索结果"];
 const TAG_ORDER_KEY = "cfg_tagOrder";
@@ -69,31 +69,15 @@ export default {
   components: {
     draggable,
   },
-  emits: ["update:modelValue", "tags-reordered"],
   props: {
     tabBarWidth: {
       type: String,
       required: true,
     },
-    allQuickCommandTags: {
-      type: Array,
-      required: true,
-    },
-    activatedQuickPanels: {
-      type: Array,
-      required: true,
-    },
-    modelValue: {
-      type: String,
-      required: true,
-    },
-    denseTagBar: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
+      commandManager: useCommandManager(),
       savedTagOrder: null, // 缓存标签顺序
     };
   },
@@ -108,11 +92,14 @@ export default {
   computed: {
     currentTag: {
       get() {
-        return this.modelValue;
+        return this.commandManager.state.currentTag;
       },
       set(value) {
-        this.$emit("update:modelValue", value);
+        this.commandManager.state.currentTag = value;
       },
+    },
+    allQuickCommandTags() {
+      return this.commandManager.state.allQuickCommandTags;
     },
     // 固定标签（不可拖拽）
     fixedTags() {
@@ -147,8 +134,6 @@ export default {
         this.savedTagOrder = value;
         // 保存到数据库
         dbManager.putDB(value, TAG_ORDER_KEY);
-        // 触发标签重排序事件
-        this.$emit("tags-reordered", value);
       },
     },
   },
@@ -160,9 +145,10 @@ export default {
         this.savedTagOrder = newOrder;
         // 保存到数据库
         dbManager.putDB(newOrder, TAG_ORDER_KEY);
-        // 触发重新加载标签
-        this.$emit("tags-reordered", newOrder);
       }
+    },
+    isTagStared(tag) {
+      return this.commandManager.state.activatedQuickPanels.includes(tag);
     },
   },
 };

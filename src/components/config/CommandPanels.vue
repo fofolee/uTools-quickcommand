@@ -25,21 +25,24 @@
         }"
       >
         <draggable
-          v-model="sortedCommands"
+          :model-value="currentTagQuickCommands"
+          @update:model-value="handleCommandsReorder"
           :component-data="{
             type: 'div',
-            class: 'row center q-pa-xs'
+            class: 'row center q-pa-xs',
           }"
           item-key="features.code"
-          @start="drag=true"
-          @end="onDragEnd"
           handle=".q-card"
           :disabled="currentTag === '默认' || currentTag === '搜索结果'"
         >
-          <template #item="{element: commandInfo}">
-            <div :key="commandInfo.features.code" :style="{
-              width: cardStyleSheet[$root.profile.commandCardStyle].width,
-            }" class="relative-position q-pa-sm command-item">
+          <template #item="{ element: commandInfo }">
+            <div
+              :key="commandInfo.features.code"
+              :style="{
+                width: cardStyleSheet[$root.profile.commandCardStyle].width,
+              }"
+              class="relative-position q-pa-sm command-item"
+            >
               <CommandCard
                 :commandInfo="commandInfo"
                 :isCommandActivated="
@@ -60,16 +63,20 @@
 
 <script>
 import CommandCard from "components/CommandCard.vue";
-import draggable from 'vuedraggable';
+import draggable from "vuedraggable";
+import pinyinMatch from "pinyin-match";
+import { useCommandManager } from "js/commandManager.js";
+import { dbManager } from "js/utools.js";
 
 export default {
   name: "CommandPanels",
   components: {
     CommandCard,
-    draggable
-  },
+    draggable,
+  },  
   data() {
     return {
+      commandManager: useCommandManager(),
       cardStyleSheet: {
         mini: {
           width: "20%",
@@ -88,8 +95,6 @@ export default {
           code: 4,
         },
       },
-      sortedCommands: [],
-      drag: false
     };
   },
   props: {
@@ -101,55 +106,110 @@ export default {
       type: String,
       required: true,
     },
-    modelValue: {
-      type: String,
-      required: true,
-    },
-    allQuickCommandTags: {
-      type: Array,
-      required: true,
-    },
-    currentTagQuickCommands: {
-      type: Array,
-      required: true,
-    },
-    activatedQuickCommandFeatureCodes: {
-      type: Array,
-      required: true,
-    },
   },
   computed: {
     currentTag: {
       get() {
-        return this.modelValue;
+        return this.commandManager.state.currentTag;
       },
       set(value) {
-        this.$emit("update:modelValue", value);
+        this.commandManager.state.currentTag = value;
       },
     },
-  },
-  watch: {
-    currentTagQuickCommands: {
-      immediate: true,
-      handler(newCommands) {
-        this.sortedCommands = [...newCommands];
+    allQuickCommandTags() {
+      return this.commandManager.state.allQuickCommandTags;
+    },
+    activatedQuickCommandFeatureCodes() {
+      return this.commandManager.state.activatedQuickCommandFeatureCodes;
+    },
+    commandSearchKeyword() {
+      return this.commandManager.state.commandSearchKeyword;
+    },
+    allQuickCommands() {
+      return this.commandManager.state.allQuickCommands;
+    },
+    // 当前标签下的所有快捷命令
+    currentTagQuickCommands() {
+      let commands = Object.values(
+        window.lodashM.cloneDeep(this.allQuickCommands)
+      );
+
+      // 根据 order 排序
+      const sortByOrder = (cmds) => {
+        return cmds.sort((a, b) => {
+          const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
+      };
+
+      switch (this.currentTag) {
+        case "未分类":
+          return sortByOrder(
+            commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0)
+          );
+        case "搜索结果":
+          if (this.commandSearchKeyword?.length < 2) return;
+          let searchResult = [];
+          commands.forEach((cmd) => {
+            // 拼音搜索
+            let explain = cmd.features.explain;
+            let matchedWordPositions = pinyinMatch.match(
+              explain,
+              this.commandSearchKeyword
+            );
+            if (!matchedWordPositions) return;
+            let matchedWords = explain.slice(
+              matchedWordPositions[0],
+              matchedWordPositions[1] + 1
+            );
+            // 高亮
+            cmd.features.explain = explain.replace(
+              matchedWords,
+              `<strong style="color:#ed6237">${matchedWords}</strong>`
+            );
+            searchResult.push(cmd);
+          });
+          return searchResult;
+        case "默认":
+          return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
+        default:
+          return sortByOrder(
+            commands.filter((cmd) => cmd.tags?.includes(this.currentTag))
+          );
       }
-    }
+    },
   },
   methods: {
-    onDragEnd() {
-      this.drag = false;
-      this.$emit('commands-reordered', {
-        tag: this.currentTag,
-        commands: this.sortedCommands
+    handleCommandsReorder(commands) {
+      // 更新当前tag下的命令顺序
+      const tagCommands = {};
+      commands.forEach((command, index) => {
+        tagCommands[command.features.code] = {
+          ...command,
+          order: index, // 添加排序信息
+        };
       });
-    }
+
+      // 更新存储
+      this.commandManager.state.allQuickCommands = {
+        ...this.allQuickCommands,
+        ...tagCommands,
+      };
+
+      // 只保存被修改的命令
+      this.saveCurrentTagOrderedCommand(tagCommands);
+    },
+    saveCurrentTagOrderedCommand(tagCommands) {
+      // 只保存被修改的命令
+      Object.entries(tagCommands).forEach(([code, command]) => {
+        if (!this.commandManager.isDefaultCommand(code)) {
+          dbManager.putDB(window.lodashM.cloneDeep(command), "qc_" + code);
+        }
+      });
+    },
   },
-  emits: [
-    "update:modelValue",
-    "command-changed",
-    "commands-reordered"
-  ],
+  emits: ["command-changed"],
 };
 </script>
 

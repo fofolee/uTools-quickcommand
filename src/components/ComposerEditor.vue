@@ -15,13 +15,11 @@ import CommandComposer from "components/composer/CommandComposer.vue";
 import CommandRunResult from "components/CommandRunResult";
 import { findCommandByValue } from "js/composer/composerConfig";
 import programs from "js/options/programs.js";
-import { provide, ref } from "vue";
+import { ref } from "vue";
 
 export default {
   components: { CommandComposer, CommandRunResult },
   setup(props) {
-    provide("allQuickCommandTags", props.allQuickCommandTags);
-
     const retoreToFullCommand = (command) => {
       const { flows } = command;
       if (!flows) return command;
@@ -100,9 +98,13 @@ export default {
       ...defaultCommand,
       ...retoreToFullCommand(savedCommand),
     });
+
+    const isRunComposePage = ref(props.action.type === "composer");
+
     return {
       quickcommandInfo,
       getLitedComposerCommand,
+      isRunComposePage,
     };
   },
   emits: ["editorEvent"],
@@ -111,15 +113,6 @@ export default {
       type: Object,
       required: true,
     },
-    allQuickCommandTags: {
-      type: Array,
-      default: () => [],
-    },
-  },
-  data() {
-    return {
-      isRunComposePage: this.action.type === "composer",
-    };
   },
   methods: {
     handleComposerAction(actionType, command) {

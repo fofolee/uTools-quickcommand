@@ -55,6 +55,7 @@ import { utoolsFull } from "js/utools.js";
 
 export default {
   components: { IconPicker },
+  emits: ["update-activated-quick-panels"],
   data() {
     return {
       utools: utoolsFull,
@@ -74,7 +75,7 @@ export default {
   methods: {
     markTag() {
       this.utools.setFeature(window.lodashM.cloneDeep(this.features));
-      this.$root.$refs.view.activatedQuickPanels.push(this.currentTag);
+      this.$emit("update-activated-quick-panels", this.currentTag);
       quickcommand.showMessageBox(
         `主输入框输入『${this.features.cmds.join("、")}』即可直接进入『${
           this.currentTag

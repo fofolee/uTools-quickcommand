@@ -4,33 +4,16 @@
     <div class="main-content">
       <BackgroundLayer />
       <!-- 标签栏 -->
-      <TagBar
-        v-model="currentTag"
-        :tab-bar-width="tabBarWidth"
-        :all-quick-command-tags="allQuickCommandTags"
-        :activated-quick-panels="activatedQuickPanels"
-        :dense-tag-bar="$root.profile.denseTagBar"
-      />
+      <TagBar :tab-bar-width="tabBarWidth" />
       <CommandPanels
-        v-model="currentTag"
         :footer-bar-height="footerBarHeight"
         :tab-bar-width="tabBarWidth"
-        :all-quick-command-tags="allQuickCommandTags"
-        :current-tag-quick-commands="currentTagQuickCommands"
-        :activated-quick-command-feature-codes="
-          activatedQuickCommandFeatureCodes
-        "
         @command-changed="commandChanged"
-        @commands-reordered="handleCommandsReorder"
       />
       <!-- 底栏 -->
       <FooterBar
         :height="footerBarHeight"
         :left="tabBarWidth"
-        :is-tag-stared="activatedQuickPanels.includes(currentTag)"
-        :current-tag="currentTag"
-        :search-keyword="commandSearchKeyword"
-        @update:search="updateSearch"
         @add-new="addNewCommand"
       />
     </div>
@@ -42,7 +25,6 @@
           :is="commandEditorAction.component"
           :action="commandEditorAction"
           @editorEvent="editorEvent"
-          :allQuickCommandTags="allQuickCommandTags"
         />
       </div>
     </transition>
@@ -59,7 +41,6 @@ import { defineAsyncComponent } from "vue";
 import { useCommandManager } from "js/commandManager.js";
 import changeLog from "js/options/changeLog.js";
 import { utoolsFull, dbManager } from "js/utools.js";
-import pinyinMatch from "pinyin-match";
 import CommandEditor from "components/CommandEditor";
 import ComposerEditor from "components/ComposerEditor";
 import FooterBar from "src/components/config/FooterBar.vue";
@@ -81,16 +62,10 @@ export default {
     BackgroundLayer,
     CommandPanels,
   },
-  setup() {
-    const commandManager = useCommandManager();
-    return { commandManager };
-  },
   data() {
     return {
+      commandManager: useCommandManager(),
       utools: utoolsFull,
-      currentTag: "",
-      lastTag: "",
-      commandSearchKeyword: "",
       isEditorShow: false,
       commandEditorAction: {},
       footerBarHeight: "40px",
@@ -103,62 +78,13 @@ export default {
     allQuickCommandTags() {
       return this.commandManager.state.allQuickCommandTags;
     },
-    activatedQuickCommandFeatureCodes() {
-      return this.commandManager.state.activatedQuickCommandFeatureCodes;
-    },
-    activatedQuickPanels() {
-      return this.commandManager.state.activatedQuickPanels;
-    },
-    // 当前标签下的所有快捷命令
-    currentTagQuickCommands() {
-      let commands = Object.values(
-        window.lodashM.cloneDeep(this.allQuickCommands)
-      );
-
-      // 根据 order 排序
-      const sortByOrder = (cmds) => {
-        return cmds.sort((a, b) => {
-          const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
-          const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
-          return orderA - orderB;
-        });
-      };
-
-      switch (this.currentTag) {
-        case "未分类":
-          return sortByOrder(
-            commands.filter((cmd) => !cmd.tags || cmd.tags.length === 0)
-          );
-        case "搜索结果":
-          if (this.commandSearchKeyword?.length < 2) return;
-          let searchResult = [];
-          commands.forEach((cmd) => {
-            // 拼音搜索
-            let explain = cmd.features.explain;
-            let matchedWordPositions = pinyinMatch.match(
-              explain,
-              this.commandSearchKeyword
-            );
-            if (!matchedWordPositions) return;
-            let matchedWords = explain.slice(
-              matchedWordPositions[0],
-              matchedWordPositions[1] + 1
-            );
-            // 高亮
-            cmd.features.explain = explain.replace(
-              matchedWords,
-              `<strong style="color:#ed6237">${matchedWords}</strong>`
-            );
-            searchResult.push(cmd);
-          });
-          return searchResult;
-        case "默认":
-          return commands.filter((cmd) => cmd.tags?.includes(this.currentTag));
-        default:
-          return sortByOrder(
-            commands.filter((cmd) => cmd.tags?.includes(this.currentTag))
-          );
-      }
+    currentTag: {
+      get() {
+        return this.commandManager.state.currentTag;
+      },
+      set(value) {
+        this.commandManager.state.currentTag = value;
+      },
     },
     // 标签栏宽度
     tabBarWidth() {
@@ -189,16 +115,10 @@ export default {
       }
       this.showChangeLog();
       // 异步读取
-      setTimeout(this.getActivatedFeatures, 0);
-      setTimeout(this.getAllQuickCommands, 0);
-    },
-    // 获取所有已启用的命令的 features 以及面板名称
-    getActivatedFeatures() {
-      this.commandManager.getActivatedFeatures();
-    },
-    // 获取所有的命令（导出的格式）
-    getAllQuickCommands() {
-      this.commandManager.getAllQuickCommands();
+      // 获取所有已启用的命令的 features 以及面板名称
+      setTimeout(this.commandManager.getActivatedFeatures(), 0);
+      // 获取所有的命令（导出的格式）
+      setTimeout(this.commandManager.getAllQuickCommands(), 0);
     },
     // 监听命令变更事件
     commandChanged(event) {
@@ -221,6 +141,9 @@ export default {
         default:
           return;
       }
+    },
+    changeCurrentTag(tagName) {
+      this.commandManager.changeCurrentTag(tagName);
     },
     runCommand(code) {
       this.$refs.result.runCurrentCommand(this.allQuickCommands[code]);
@@ -254,10 +177,6 @@ export default {
       };
       this.isEditorShow = true;
     },
-    // 是否为默认命令
-    isDefaultCommand(code) {
-      return this.commandManager.isDefaultCommand(code);
-    },
     // 导入命令
     async importCommand(quickCommandInfo) {
       const command = await this.commandManager.importCommand(quickCommandInfo);
@@ -283,62 +202,6 @@ export default {
           .querySelector(".q-tab--active")
           .scrollIntoView({ behavior: "smooth" });
       });
-    },
-    // 修改并定位当前标签事件
-    changeCurrentTag(tagName) {
-      this.currentTag = tagName;
-      this.$nextTick(() => {
-        document
-          .querySelector(".q-tab--active")
-          .scrollIntoView({ behavior: "smooth" });
-      });
-    },
-    // 全部导出
-    exportAllCommands(saveAsFile = true) {
-      if (this.commandManager.exportAllCommands(saveAsFile)) {
-        quickcommand.showMessageBox("导出成功！");
-      }
-    },
-    // 清空
-    clearAllCommands() {
-      quickcommand
-        .showConfirmBox("将会清空所有自定义命令，停用所有实用功能，请确认！")
-        .then((isConfirmed) => {
-          if (!isConfirmed) {
-            return quickcommand.showMessageBox("取消操作", "info");
-          }
-          this.commandManager.clearAllCommands();
-          this.changeCurrentTag("默认");
-          quickcommand.showMessageBox(
-            "清空完毕，为防止误操作，已将所有命令复制到剪贴板，可通过导入命令恢复",
-            "success",
-            2000,
-            "bottom-right"
-          );
-        });
-    },
-    // 删除所有 features
-    clearAllFeatures() {
-      this.commandManager.clearAllFeatures();
-    },
-    // 搜索方法
-    updateSearch(value) {
-      this.commandSearchKeyword = value;
-      // 记录当前标签页
-      let searchTagName = "搜索结果";
-      if (this.currentTag !== searchTagName) this.lastTag = this.currentTag;
-      if (this.commandSearchKeyword?.length > 1) {
-        if (!this.allQuickCommandTags.includes(searchTagName))
-          this.allQuickCommandTags.push(searchTagName);
-        // 搜索时跳转到搜索结果标签
-        this.changeCurrentTag(searchTagName);
-      } else {
-        // 清空搜索回跳到之前标签
-        if (this.allQuickCommandTags.slice(-1)[0] === searchTagName)
-          this.allQuickCommandTags.pop();
-        if (this.currentTag !== this.lastTag)
-          this.changeCurrentTag(this.lastTag);
-      }
     },
     // 新建命令
     addNewCommand(component = "CommandEditor") {
@@ -369,8 +232,7 @@ export default {
     showChangeLog() {
       let lastNeedLogEvent = changeLog[changeLog.length - 1];
       let loggedVersion =
-        this.utools.dbStorage.getItem("cfg_loggedVersion") ||
-        "0.0.0";
+        this.utools.dbStorage.getItem("cfg_loggedVersion") || "0.0.0";
       if (loggedVersion < lastNeedLogEvent.version) {
         quickcommand.showConfirmBox(
           '<pre style="white-space: pre-wrap;word-wrap: break-word;">' +
@@ -385,36 +247,6 @@ export default {
           lastNeedLogEvent.version
         );
       }
-    },
-    handleCommandsReorder({ tag, commands }) {
-      // 更新当前tag下的命令顺序
-      const tagCommands = {};
-      commands.forEach((command, index) => {
-        tagCommands[command.features.code] = {
-          ...command,
-          order: index, // 添加排序信息
-        };
-      });
-
-      // 更新存储
-      this.commandManager.state.allQuickCommands = {
-        ...this.allQuickCommands,
-        ...tagCommands,
-      };
-
-      // 只保存被修改的命令
-      this.saveCurrentTagOrderedCommand(tagCommands);
-    },
-    saveCurrentTagOrderedCommand(tagCommands) {
-      // 只保存被修改的命令
-      Object.entries(tagCommands).forEach(([code, command]) => {
-        if (!this.isDefaultCommand(code)) {
-          dbManager.putDB(
-            window.lodashM.cloneDeep(command),
-            "qc_" + code
-          );
-        }
-      });
     },
   },
 };

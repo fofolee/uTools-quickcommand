@@ -250,27 +250,6 @@ const lodashMini = {
   },
 
   /**
-   * 移除数组中所有给定值
-   * @param {Array} array - 要修改的数组
-   * @param {...*} values - 要移除的值
-   * @returns {Array} 返回数组本身
-   * @example
-   * pull([1, 2, 3, 1, 2, 3], 2, 3) => [1, 1]
-   */
-  pull: function (array, ...values) {
-    if (!array || !array.length || !values.length) return array;
-    let i = 0;
-    while (i < array.length) {
-      if (values.includes(array[i])) {
-        array.splice(i, 1);
-      } else {
-        i++;
-      }
-    }
-    return array;
-  },
-
-  /**
    * 截断字符串
    * @param {string} [string=''] - 要截断的字符串
    * @param {Object} [options={}] - 选项对象

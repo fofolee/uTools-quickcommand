@@ -52,7 +52,12 @@
         </q-item>
 
         <!-- 收藏 -->
-        <q-item v-if="isTagStared" clickable v-close-popup @click="unMarkTag">
+        <q-item
+          v-if="activatedQuickPanels.includes(currentTag)"
+          clickable
+          v-close-popup
+          @click="unMarkTag"
+        >
           <q-item-section side>
             <q-icon name="star_border" />
           </q-item-section>
@@ -86,7 +91,10 @@
       <AboutThis />
     </q-dialog>
     <q-dialog v-model="showPanelConf">
-      <PanelSetting :isTagStared="isTagStared" :currentTag="currentTag" />
+      <PanelSetting
+        :currentTag="currentTag"
+        @update-activated-quick-panels="activatedQuickPanels = $event"
+      />
     </q-dialog>
     <q-dialog v-model="showUserData">
       <UserData :showInsertBtn="false" />
@@ -104,6 +112,7 @@ import EnvConfigMenu from "./EnvConfigMenu.vue";
 import PersonalizeMenu from "./PersonalizeMenu.vue";
 import UserData from "../popup/UserData.vue";
 import { utoolsFull } from "js/utools.js";
+import { useCommandManager } from "src/js/commandManager";
 
 export default {
   name: "ConfigurationMenu",
@@ -119,35 +128,38 @@ export default {
   },
   data() {
     return {
+      commandManager: useCommandManager(),
       showAbout: false,
       showPanelConf: false,
       showUserData: false,
       utools: utoolsFull,
     };
   },
-  props: {
-    isTagStared: Boolean,
-    currentTag: String,
-  },
   computed: {
-    configurationPage() {
-      return this.$root.$refs.view;
+    activatedQuickPanels: {
+      get() {
+        return this.commandManager.state.activatedQuickPanels;
+      },
+      set(value) {
+        this.commandManager.state.activatedQuickPanels = value;
+      },
+    },
+    currentTag() {
+      return this.commandManager.state.currentTag;
     },
     allQuickCommandsLength() {
-      return Object.keys(this.configurationPage.allQuickCommands).length;
+      return Object.keys(this.commandManager.state.allQuickCommands).length;
     },
     allFeaturesLength() {
-      return this.configurationPage.activatedQuickCommandFeatureCodes.length;
+      return this.commandManager.state.activatedQuickCommandFeatureCodes.length;
     },
   },
   methods: {
     unMarkTag() {
-      this.utools.removeFeature(
-        `panel_${window.hexEncode(this.currentTag)}`
-      );
-      window.lodashM.pull(
-        this.$root.$refs.view.activatedQuickPanels,
-        this.currentTag
+      this.utools.removeFeature(`panel_${window.hexEncode(this.currentTag)}`);
+      const newPanels = [...this.activatedQuickPanels];
+      this.activatedQuickPanels = newPanels.filter(
+        (panel) => panel !== this.currentTag
       );
       quickcommand.showMessageBox("取消收藏成功");
     },

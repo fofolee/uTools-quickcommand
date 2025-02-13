@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+import { reactive, nextTick } from "vue";
 import quickcommandParser from "js/common/quickcommandParser.js";
 import importAll from "js/common/importAll.js";
 import { utoolsFull, dbManager } from "js/utools.js";
@@ -16,6 +16,8 @@ const state = reactive({
   allQuickCommandTags: [],
   activatedQuickCommandFeatureCodes: [],
   activatedQuickPanels: [],
+  currentTag: "",
+  commandSearchKeyword: "",
 });
 
 const getCmdType = (cmds) => {
@@ -238,6 +240,17 @@ export function useCommandManager() {
     dbManager.delAll("qc_");
     clearAllFeatures();
     getAllQuickCommands();
+    state.currentTag = "默认";
+  };
+
+  // 修改并定位当前标签事件
+  const changeCurrentTag = (tagName) => {
+    state.currentTag = tagName;
+    nextTick(() => {
+      document.querySelector(".q-tab--active").scrollIntoView({
+        behavior: "smooth",
+      });
+    });
   };
 
   return {
@@ -254,5 +267,6 @@ export function useCommandManager() {
     getActivatedFeatures,
     clearAllFeatures,
     clearAllCommands,
+    changeCurrentTag,
   };
 }
