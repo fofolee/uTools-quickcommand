@@ -372,6 +372,7 @@ export default defineComponent({
         editor.updateOptions({ wordWrap: revWordWrap });
       });
     },
+    // 替换选中的文本，供外部调用
     repacleEditorSelection(text) {
       var selection = editor.getSelection();
       var range = new monaco.Range(
@@ -388,6 +389,10 @@ export default defineComponent({
         forceMoveMarkers: true,
       };
       editor.executeEdits("my-source", [op]);
+    },
+    // 格式化文档，供外部调用
+    formatDocument() {
+      editor.getAction("editor.action.formatDocument").run();
     },
   },
   computed: {

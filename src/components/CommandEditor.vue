@@ -81,7 +81,7 @@ const CodeEditor = defineAsyncComponent({
   timeout: 3000,
 });
 
-// TODO: 对称加密声明，保存命令不需要设置
+// TODO: 对称加密声明，运行命令不需要设置，commandTypes调整
 export default {
   components: {
     CodeEditor,
@@ -179,9 +179,9 @@ export default {
           break;
         case "apply":
           // actionData 命令的cmd
-          console.log(actionData);
           this.showComposer = false;
           this.quickcommandInfo.cmd = actionData;
+          this.$refs.editor.formatDocument();
           break;
         case "close":
           this.showComposer = false;
