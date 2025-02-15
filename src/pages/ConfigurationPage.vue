@@ -24,7 +24,7 @@
         <component
           :is="commandEditorAction.component"
           :action="commandEditorAction"
-          @editorEvent="editorEvent"
+          @editorEvent="handleEditorEvent"
         />
       </div>
     </transition>
@@ -40,7 +40,7 @@
 import { defineAsyncComponent } from "vue";
 import { useCommandManager } from "js/commandManager.js";
 import changeLog from "js/options/changeLog.js";
-import { utoolsFull, dbManager } from "js/utools.js";
+import { utoolsFull } from "js/utools.js";
 import CommandEditor from "components/CommandEditor";
 import ComposerEditor from "components/ComposerEditor";
 import FooterBar from "src/components/config/FooterBar.vue";
@@ -214,13 +214,14 @@ export default {
     },
     saveCommand(command) {
       const code = this.commandManager.saveCommand(command);
+      if (!code) return;
       this.locateToCommand(command.tags, code);
       quickcommand.showMessageBox("保存成功！");
     },
-    editorEvent(event) {
-      switch (event.type) {
+    handleEditorEvent(event, data) {
+      switch (event) {
         case "save":
-          this.saveCommand(event.data);
+          this.saveCommand(data);
           break;
         case "back":
           this.isEditorShow = false;
@@ -265,20 +266,12 @@ export default {
 }
 
 .editor-container {
-  color: var(--utools-bright-font-color);
+  color: var(--utools-font-color);
   overflow: hidden;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 5000;
-  background: var(--utools-bright-bg);
-}
-
-.body--dark .editor-container {
-  color: var(--utools-dark-font-color);
-  background: var(--utools-dark-bg);
+  background: var(--utools-bg-color);
 }
 
 /* 编辑器容器动画 */

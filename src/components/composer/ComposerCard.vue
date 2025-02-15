@@ -197,16 +197,17 @@ export default defineComponent({
       };
       const consoleLogVars =
         this.getAvailableOutputVariableName(outputVariable);
-      const tempFlows = [{
-        name: "main",
-        commands: [
-          tempCommand,
-          {
-            //没有输出，则不打印
-            code: `if(${consoleLogVars}!==undefined){
+      const tempFlows = [
+        {
+          name: "main",
+          commands: [
+            tempCommand,
+            {
+              //没有输出，则不打印
+              code: `if(${consoleLogVars}!==undefined){
               console.log(${consoleLogVars})
             }`,
-          },
+            },
           ],
         },
       ];
@@ -312,6 +313,14 @@ export default defineComponent({
   transform: translateY(0) scale(1);
   border-radius: inherit;
   position: relative;
+}
+
+.composer-card .q-card {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.body--dark .composer-card .q-card {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* 控制流程组件样式 */

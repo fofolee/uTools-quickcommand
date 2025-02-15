@@ -5,7 +5,6 @@
 const programs = {
   quickcommand: {
     name: "quickcommand",
-    highlight: "javascript",
     bin: "",
     argv: "",
     ext: "",
@@ -40,7 +39,6 @@ const programs = {
   },
   cmd: {
     name: "cmd",
-    highlight: "bat",
     bin: "",
     argv: "",
     ext: "bat",

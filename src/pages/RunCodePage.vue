@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <CommandEditor ref="commandEditor" :action="action"></CommandEditor>
-  </div>
+  <CommandEditor ref="commandEditor" :action="action" />
 </template>
 
 <script>

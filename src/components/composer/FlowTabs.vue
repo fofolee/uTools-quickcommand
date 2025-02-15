@@ -60,7 +60,7 @@
 
       <ComposerButtons
         :is-all-collapsed="isAllCollapsed"
-        :show-close-button="showCloseButton"
+        :disabled-buttons="disabledControlButtons"
         :flows="flows"
         @action="handleAction"
       />
@@ -86,7 +86,7 @@
         ref="flowRefs"
       />
       <FlowManager
-        v-model="showVariableManager"
+        v-model="showFlowManager"
         :flow="flow"
         :variables="flow.customVariables"
         @update-flow="updateFlows(flow)"
@@ -119,9 +119,9 @@ export default defineComponent({
   },
   emits: ["update:modelValue", "action"],
   props: {
-    showCloseButton: {
-      type: Boolean,
-      default: true,
+    disabledControlButtons: {
+      type: Array,
+      default: () => [],
     },
     modelValue: {
       type: Object,
@@ -136,7 +136,26 @@ export default defineComponent({
       });
     };
 
-    const flows = computed(() => props.modelValue.flows);
+    const defaultFlow = [
+      {
+        id: "main",
+        name: "main",
+        label: "主流程",
+        commands: [],
+        customVariables: [],
+      },
+    ];
+
+    if (!props.modelValue.flows || props.modelValue.flows.length === 0) {
+      updateFlows(defaultFlow);
+    }
+
+    const flows = computed(() => props.modelValue.flows || []);
+
+    const commandConfig = computed(() => {
+      const { tags, output, features, program } = props.modelValue;
+      return { tags, output, features, program };
+    });
 
     const mainFlow = computed({
       get: () => flows.value[0],
@@ -235,6 +254,7 @@ export default defineComponent({
       flows,
       mainFlow,
       subFlows,
+      commandConfig,
       activeTab,
       getOutputVariables,
       updateFlows,
@@ -243,15 +263,9 @@ export default defineComponent({
   data() {
     return {
       isAllCollapsed: false,
-      showVariableManager: false,
+      showFlowManager: false,
       outputVariables: [],
     };
-  },
-  computed: {
-    commandConfig() {
-      const { tags, output, features } = this.modelValue;
-      return { tags, output, features };
-    },
   },
   methods: {
     generateFlowName(baseName = "func_") {
@@ -293,7 +307,7 @@ export default defineComponent({
 
       this.activeTab = id;
       this.$nextTick(() => {
-        this.toggleVariableManager();
+        this.toggleFlowManager();
       });
     },
     removeFlow(flow) {
@@ -332,11 +346,14 @@ export default defineComponent({
         case "expandAll":
           this.expandAll();
           break;
-        case "toggleVariableManager":
-          this.toggleVariableManager();
+        case "toggleFlowManager":
+          this.toggleFlowManager();
           break;
         case "close":
           this.$emit("action", "close");
+          break;
+        case "apply":
+          this.$emit("action", "apply", payload);
           break;
         case "addFlow":
           // 处理新函数创建
@@ -352,8 +369,8 @@ export default defineComponent({
           this.$emit("action", type, payload);
       }
     },
-    toggleVariableManager() {
-      this.showVariableManager = !this.showVariableManager;
+    toggleFlowManager() {
+      this.showFlowManager = !this.showFlowManager;
       this.outputVariables = this.getOutputVariables();
     },
     saveFlows() {
@@ -383,7 +400,7 @@ export default defineComponent({
     },
     editFunction(flow) {
       this.activeTab = flow.id;
-      this.toggleVariableManager();
+      this.toggleFlowManager();
     },
     updateCommandConfig(newVal) {
       const newModelValue = {

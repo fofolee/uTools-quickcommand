@@ -45,34 +45,32 @@
               :class="{ 'buttons-visible': isHovering[type.value] }"
               @mouseleave="setHovering(type.value, false)"
             >
-              <q-btn-group outline>
-                <q-btn
-                  dense
-                  outline
-                  :color="type.color"
-                  icon="add"
-                  class="hover-btn"
-                  @click="addRuleByType(type.value)"
-                >
-                  <q-badge
-                    v-if="ruleTypeCounts[type.value]"
-                    floating
-                    :label="ruleTypeCounts[type.value]"
-                  />
-                </q-btn>
-                <q-btn
-                  dense
-                  outline
-                  :color="
-                    !ruleTypeCounts[type.value] || modelValue.length === 1
-                      ? 'grey'
-                      : type.color
-                  "
-                  icon="remove"
-                  class="hover-btn"
-                  @click="removeLastRuleByType(type.value)"
+              <q-btn
+                dense
+                outline
+                :color="type.color"
+                icon="add"
+                class="hover-btn"
+                @click="addRuleByType(type.value)"
+              >
+                <q-badge
+                  v-if="ruleTypeCounts[type.value]"
+                  floating
+                  :label="ruleTypeCounts[type.value]"
                 />
-              </q-btn-group>
+              </q-btn>
+              <q-btn
+                dense
+                outline
+                :color="
+                  !ruleTypeCounts[type.value] || modelValue.length === 1
+                    ? 'grey'
+                    : type.color
+                "
+                icon="remove"
+                class="hover-btn"
+                @click="removeLastRuleByType(type.value)"
+              />
             </div>
           </div>
         </div>
@@ -140,7 +138,7 @@
                   label="匹配文本正则表达式"
                   placeholder="例：/xxx/，任意匹配的正则会被 uTools 忽略"
                   class="col"
-                  @blur="validateRegex(rule)"
+                  @blur="validateRegex('match', rule)"
                 />
                 <q-input
                   v-model.number="rule.minLength"
@@ -173,7 +171,7 @@
                   label="匹配文件(夹)名正则表达式"
                   placeholder="可选，例：/xxx/"
                   class="col"
-                  @blur="validateRegex(rule)"
+                  @blur="validateRegex('match', rule)"
                 />
                 <q-select
                   :model-value="rule.fileType || 'file'"
@@ -232,7 +230,7 @@
                   label="匹配窗口标题正则表达式"
                   placeholder="可选，例：/xxx/"
                   class="col-5"
-                  @blur="validateRegex({ match: rule.match.title })"
+                  @blur="validateRegex('match.title', rule)"
                 />
               </div>
             </template>
@@ -256,7 +254,7 @@
                   label="排除的正则表达式字符串"
                   placeholder="可选，例：/xxx/"
                   class="col"
-                  @blur="validateRegex({ match: rule.exclude })"
+                  @blur="validateRegex('exclude', rule)"
                 />
                 <q-input
                   v-model.number="rule.minLength"
@@ -350,17 +348,21 @@ export default defineComponent({
   },
 
   methods: {
-    validateRegex(rule) {
-      const matchValue = rule.match;
+    validateRegex(keyPath, rule) {
+      const keys = keyPath.split(".");
+      const lastKey = keys.pop();
+      const target = keys.reduce((obj, key) => obj[key], rule);
+
+      const matchValue = target[lastKey];
       if (!matchValue) return;
 
       try {
         if (!matchValue.startsWith("/")) {
-          rule.match = `/${matchValue}/`;
+          target[lastKey] = `/${matchValue}/`;
         }
         new RegExp(matchValue.replace(/^\/|\/[gimuy]*$/g, ""));
       } catch (e) {
-        rule.match = "/./";
+        target[lastKey] = "/./";
       }
     },
 
@@ -450,7 +452,6 @@ export default defineComponent({
 .rule-type-buttons {
   display: flex;
   gap: 8px;
-  justify-content: space-between;
 }
 
 /* 合并按钮基础样式 */
@@ -490,7 +491,7 @@ export default defineComponent({
 .key-input-wrapper :deep(.q-icon) {
   font-size: 16px;
   opacity: 0.7;
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
 }
 
 .key-input-wrapper :deep(.q-icon:hover) {
@@ -518,8 +519,8 @@ export default defineComponent({
 .rule-type-btn-wrapper,
 .btn-container {
   position: relative;
-  width: 85px;
   height: 24px;
+  flex: 1;
 }
 
 .btn-container {
@@ -531,7 +532,7 @@ export default defineComponent({
 .rule-type-btn {
   width: 100%;
   position: absolute;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .btn-hidden {
@@ -544,9 +545,9 @@ export default defineComponent({
   position: absolute;
   inset: 0;
   display: flex;
+  gap: 4px;
   justify-content: center;
   opacity: 0;
-  transition: all 0.5s ease;
   pointer-events: none;
 }
 

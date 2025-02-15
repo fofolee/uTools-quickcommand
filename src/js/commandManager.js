@@ -59,7 +59,7 @@ export const getValidCommand = (command) => {
 
   // 生成唯一code
   if (!command.features.code) {
-    command.features.code = getFeatureCode(cmds);
+    command.features.code = getFeatureCode(command.features.cmds);
   }
 
   return window.lodashM.cloneDeep(command);

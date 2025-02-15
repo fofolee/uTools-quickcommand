@@ -1,7 +1,7 @@
 <template>
   <div class="code-editor" :style="{ height: height }">
     <div ref="editorContainer" class="editor-container" />
-    <div class="placeholder-wrapper" v-show="!value && placeholder">
+    <div class="placeholder-wrapper" v-show="showPlaceholder">
       <div class="placeholder">
         {{ placeholder }}
       </div>
@@ -11,7 +11,6 @@
 
 <script>
 import * as monaco from "monaco-editor";
-import { toRaw } from "vue";
 import importAll from "js/common/importAll.js";
 import { defineComponent } from "vue";
 
@@ -21,6 +20,7 @@ let languageCompletions = importAll(
 );
 
 let monacoCompletionProviders = {};
+let editor = null;
 
 // 声明文件映射
 const typeDefinitions = {
@@ -70,12 +70,15 @@ export default defineComponent({
       type: String,
       default: "请输入...",
     },
+    // 光标位置
+    cursorPosition: {
+      type: Object,
+      default: () => ({}),
+    },
   },
-  emits: ["update:modelValue", "change"],
+  emits: ["update:modelValue", "update:cursorPosition"],
   data() {
     return {
-      editor: null,
-      value: null,
       resizeTimeout: null,
       defaultOptions: {
         value: "",
@@ -138,12 +141,19 @@ export default defineComponent({
     modelValue: {
       immediate: true,
       handler(newValue) {
-        if (this.value !== newValue) {
-          this.value = newValue;
-          if (this.editor && this.editor.getValue() !== newValue) {
-            this.editor.setValue(newValue || "");
-          }
-        }
+        if (!editor || editor.getValue() === newValue) return;
+        editor.setValue(newValue || "");
+      },
+    },
+    cursorPosition: {
+      immediate: true,
+      handler(newValue) {
+        if (!editor) return;
+        const { lineNumber, column } = newValue;
+        if (!lineNumber || !column) return;
+        const pos = editor.getPosition();
+        if (pos.lineNumber === lineNumber && pos.column === column) return;
+        editor.setPosition(newValue);
       },
     },
     "$q.dark.isActive": {
@@ -155,11 +165,10 @@ export default defineComponent({
     language: {
       immediate: true,
       handler(newValue) {
-        if (this.editor) {
-          const language = this.getHighlighter(newValue);
-          monaco.editor.setModelLanguage(this.rawEditor().getModel(), language);
-          this.loadTypes();
-        }
+        if (!editor) return;
+        const language = this.getHighlighter(newValue);
+        monaco.editor.setModelLanguage(editor.getModel(), language);
+        this.loadTypes();
       },
     },
   },
@@ -180,16 +189,17 @@ export default defineComponent({
       const options = {
         ...this.defaultOptions,
         ...this.options,
-        value: this.value || "",
+        value: this.modelValue || "",
         language,
         theme: this.theme,
       };
 
-      this.editor = monaco.editor.create(this.$refs.editorContainer, options);
+      editor = monaco.editor.create(this.$refs.editorContainer, options);
       this.listenEditorValue();
       this.loadTypes();
       this.registerLanguage();
-
+      this.bindKeys();
+      this.setCursorPosition(this.cursorPosition);
       // 初始化完成后立即触发一次布局更新
       this.$nextTick(() => {
         this.resizeEditor();
@@ -197,11 +207,14 @@ export default defineComponent({
     },
     // 监听编辑器值变化
     listenEditorValue() {
-      this.rawEditor().focus();
-      this.rawEditor().onDidChangeModelContent(() => {
-        this.value = this.getEditorValue();
-        this.$emit("update:modelValue", this.value);
-        this.$emit("change", this.value);
+      editor.focus();
+      editor.onDidChangeModelContent(() => {
+        this.$emit("update:modelValue", editor.getValue());
+      });
+
+      // 监听光标位置变化
+      editor.onDidChangeCursorPosition((e) => {
+        this.$emit("update:cursorPosition", e.position);
       });
     },
     // 处理窗口大小变化
@@ -210,50 +223,24 @@ export default defineComponent({
         clearTimeout(this.resizeTimeout);
       }
       this.resizeTimeout = setTimeout(() => {
-        this.rawEditor().layout();
+        editor.layout();
       }, 50);
     },
     // 销毁编辑器
     destroyEditor() {
-      if (this.editor) {
-        window.removeEventListener("resize", this.resizeEditor);
-        this.rawEditor().dispose();
-        this.editor = null;
-      }
-    },
-    // 获取原始编辑器实例
-    rawEditor() {
-      return toRaw(this.editor);
-    },
-    // 获取编辑器实例
-    getEditor() {
-      return this.editor;
-    },
-    // 设置编辑器内容
-    setValue(value) {
-      if (this.editor) {
-        this.editor.setValue(value || "");
-      }
-    },
-    // 获取编辑器内容
-    getValue() {
-      return this.editor ? this.editor.getValue() : "";
-    },
-    // 获取编辑器内容
-    getEditorValue() {
-      return this.rawEditor().getValue();
+      window.removeEventListener("resize", this.resizeEditor);
+      if (!editor) return;
+      editor.dispose();
+      editor = null;
     },
     // 聚焦编辑器
     focus() {
-      if (this.editor) {
-        this.editor.focus();
-      }
+      editor && editor.focus();
     },
     registerLanguage() {
-      let that = this;
       const identifierPattern = "([a-zA-Z_]\\w*)";
       let getTokens = (code) => {
-        let identifier = new RegExp(identifierPattern, "g");
+        const identifier = new RegExp(identifierPattern, "g");
         let tokens = [];
         let array1;
         while ((array1 = identifier.exec(code)) !== null) {
@@ -264,7 +251,7 @@ export default defineComponent({
       let createDependencyProposals = (range, keyWords, editor, curWord) => {
         let keys = [];
         // fix getValue of undefined
-        let tokens = getTokens(toRaw(editor).getModel()?.getValue());
+        const tokens = getTokens(editor.getModel()?.getValue());
         // 自定义变量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
@@ -312,7 +299,7 @@ export default defineComponent({
               suggestions: createDependencyProposals(
                 range,
                 languageCompletions[language].default,
-                toRaw(that.editor),
+                editor,
                 word
               ),
             };
@@ -366,11 +353,7 @@ export default defineComponent({
       }
     },
     getHighlighter(language) {
-      if (
-        ["quickcommand", "javascript", "webjavascript"].includes(
-          language
-        )
-      ) {
+      if (["quickcommand", "javascript", "webjavascript"].includes(language)) {
         return "javascript";
       }
       if (language === "cmd") {
@@ -378,10 +361,38 @@ export default defineComponent({
       }
       return language;
     },
+    setCursorPosition(position) {
+      if (!position.lineNumber || !position.column) return;
+      editor.setPosition(position);
+    },
+    bindKeys() {
+      // alt + z 换行
+      const revWordWrap = this.wordWrap === "on" ? "off" : "on";
+      editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
+        editor.updateOptions({ wordWrap: revWordWrap });
+      });
+    },
+    repacleEditorSelection(text) {
+      var selection = editor.getSelection();
+      var range = new monaco.Range(
+        selection.startLineNumber,
+        selection.startColumn,
+        selection.endLineNumber,
+        selection.endColumn
+      );
+      var id = { major: 1, minor: 1 };
+      var op = {
+        identifier: id,
+        range: range,
+        text: text,
+        forceMoveMarkers: true,
+      };
+      editor.executeEdits("my-source", [op]);
+    },
   },
   computed: {
     showPlaceholder() {
-      return this.placeholder && (!this.value || this.value.trim() === "");
+      return this.placeholder && !this.modelValue;
     },
   },
 });
@@ -390,10 +401,9 @@ export default defineComponent({
 <style scoped>
 .code-editor {
   width: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
   overflow: hidden;
   position: relative;
+  border-radius: 4px;
 }
 
 .editor-container {
@@ -406,7 +416,7 @@ export default defineComponent({
   top: 0;
   left: 0;
   right: 0;
-  padding-left: 45px;
+  padding-left: 40px;
   pointer-events: none;
 }
 
@@ -414,12 +424,6 @@ export default defineComponent({
   font-size: 14px;
   font-family: sans-serif;
   user-select: none;
-  font-style: italic;
-  opacity: 0;
-  transition: opacity 0.1s ease-in-out;
-}
-
-.code-editor:focus-within .placeholder {
-  opacity: 0.3;
+  opacity: 0.4;
 }
 </style>

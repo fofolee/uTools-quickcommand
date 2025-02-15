@@ -127,7 +127,7 @@
 <script>
 import { defineComponent } from "vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
-import CodeEditor from "components/composer/common/CodeEditor.vue";
+import CodeEditor from "components/editor/CodeEditor.vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
 import BorderLabel from "components/composer/common/BorderLabel.vue";

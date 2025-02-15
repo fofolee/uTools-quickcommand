@@ -5,8 +5,8 @@
         icon="close"
         dense
         flat
-        v-if="showCloseButton"
         @click="$emit('action', 'close')"
+        v-if="!disabledButtons.includes('close')"
       >
         <q-tooltip>退出可视化编排</q-tooltip>
       </q-btn>
@@ -15,6 +15,7 @@
         dense
         flat
         @click="$emit('action', isAllCollapsed ? 'expandAll' : 'collapseAll')"
+        v-if="!disabledButtons.includes('expand')"
       >
         <q-tooltip>{{ isAllCollapsed ? "展开所有" : "折叠所有" }}</q-tooltip>
       </q-btn>
@@ -22,7 +23,8 @@
         icon="settings"
         dense
         flat
-        @click="$emit('action', 'toggleVariableManager')"
+        @click="$emit('action', 'toggleFlowManager')"
+        v-if="!disabledButtons.includes('manager')"
       >
         <q-tooltip>流程管理</q-tooltip>
       </q-btn>
@@ -34,33 +36,40 @@
         v-if="isDev"
       >
       </q-btn>
-      <!-- <q-btn
-        dense
-        icon="read_more"
-        flat
-        v-close-popup
-        @click="$emit('action', 'insert')"
-        v-if="showCloseButton"
-      >
-        <q-tooltip>插入到编辑器光标处</q-tooltip>
-      </q-btn> -->
-      <!-- <q-btn
+      <q-btn
         dense
         flat
-        v-close-popup
         icon="done_all"
-        @click="$emit('action', 'apply')"
-        v-if="showCloseButton"
+        @click="handleApply"
+        v-if="!disabledButtons.includes('apply')"
       >
         <q-tooltip>清空编辑器内容并插入</q-tooltip>
-      </q-btn> -->
-      <q-btn dense flat icon="save" @click="$emit('action', 'save')">
+      </q-btn>
+      <q-btn
+        dense
+        flat
+        icon="save"
+        @click="$emit('action', 'save')"
+        v-if="!disabledButtons.includes('save')"
+      >
         <q-tooltip>保存</q-tooltip>
       </q-btn>
-      <q-btn flat dense icon="preview" @click="isVisible = true">
+      <q-btn
+        flat
+        dense
+        icon="preview"
+        @click="handlePreviewCode"
+        v-if="!disabledButtons.includes('preview')"
+      >
         <q-tooltip>预览代码</q-tooltip>
       </q-btn>
-      <q-btn dense flat icon="play_circle" @click="$emit('action', 'run')">
+      <q-btn
+        dense
+        flat
+        icon="play_circle"
+        @click="$emit('action', 'run')"
+        v-if="!disabledButtons.includes('run')"
+      >
         <q-tooltip>运行</q-tooltip>
       </q-btn>
     </div>
@@ -99,9 +108,9 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    showCloseButton: {
-      type: Boolean,
-      default: true,
+    disabledButtons: {
+      type: Array,
+      default: () => [],
     },
     flows: {
       type: Array,
@@ -119,11 +128,15 @@ export default defineComponent({
     };
   },
 
-  watch: {
-    isVisible(val) {
-      if (val) {
-        this.code = generateFlowsCode(this.flows);
-      }
+  methods: {
+    handlePreviewCode() {
+      this.code = generateFlowsCode(this.flows);
+      this.isVisible = true;
+    },
+    // 清空编辑器内容并插入
+    handleApply() {
+      const code = generateFlowsCode(this.flows);
+      this.$emit("action", "apply", code);
     },
   },
 });

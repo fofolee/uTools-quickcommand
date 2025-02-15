@@ -1,73 +1,50 @@
 <template>
-  <!-- 命令设置栏 -->
-  <CommandSideBar
-    ref="sidebar"
-    :canCommandSave="canCommandSave"
-    :quickcommandInfo="quickcommandInfo"
-    :allQuickCommandTags="allQuickCommandTags"
-    class="absolute-left shadow-1"
-    :style="{
-      zIndex: 1,
-      transform: isFullscreen ? 'translateX(-100%)' : 'translateX(0)',
-      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    }"
-    :sideBarWidth="sideBarWidth"
-    v-if="showSidebar"
-    @back="handleBack"
-  ></CommandSideBar>
+  <div class="command-editor">
+    <!-- 编程语言栏 -->
+    <CommandLanguageBar
+      v-model="quickcommandInfo"
+      :canCommandSave="canCommandSave"
+      :isRunCodePage="isRunCodePage"
+      @action="handleAction"
+    />
 
-  <!-- 编程语言栏 -->
-  <CommandLanguageBar
-    class="absolute-top"
-    :style="{
-      left: showSidebar ? sideBarWidth + 'px' : 65,
-      zIndex: 1,
-      transform: isFullscreen ? 'translateY(-100%)' : 'translateY(0)',
-      opacity: isFullscreen ? 0 : 1,
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    }"
-    v-model="quickcommandInfo"
-    :height="languageBarHeight"
-    :canCommandSave="canCommandSave"
-    :isRunCodePage="isRunCodePage"
-    @program-changed="programChanged"
-    @run="runCurrentCommand"
-    @save="saveCurrentCommand"
-    @show-composer="showComposer = true"
-  />
+    <!-- 命令设置栏 -->
+    <CommandConfig
+      v-if="!isRunCodePage"
+      :model-value="commandConfig"
+      @update:is-expanded="isConfigExpanded = $event"
+      :expand-on-focus="true"
+      class="command-config"
+      @update:model-value="updateCommandConfig"
+    />
 
-  <!-- 编辑器 -->
-  <MonacoEditor
-    class="editor-transition"
-    :placeholder="true"
-    ref="editor"
-    @loaded="monacoInit"
-    @typing="(val) => monacoTyping(val)"
-    @keyStroke="monacoKeyStroke"
-    :style="{
-      position: 'absolute',
-      top: isFullscreen ? 0 : languageBarHeight + 'px',
-      left: isFullscreen ? 0 : action.type === 'run' ? 0 : sideBarWidth + 'px',
-      right: 0,
-      bottom: 0,
-    }"
-  />
+    <!-- 编辑器 -->
+    <CodeEditor
+      v-model="quickcommandInfo.cmd"
+      :language="getLanguage()"
+      :cursor-position="quickcommandInfo.cursorPosition"
+      @update:cursor-position="quickcommandInfo.cursorPosition = $event"
+      placeholder="请输入代码"
+      class="codeEditor"
+      ref="editor"
+    />
+  </div>
 
   <!-- 编辑器工具按钮组 -->
   <EditorTools
     ref="editorTools"
+    v-show="!isConfigExpanded"
     :commandCode="quickcommandInfo?.features?.code || 'temp'"
-    :isFullscreen="isFullscreen"
     @restore="restoreHistory"
-    @toggle-fullscreen="toggleFullscreen"
   />
 
   <!-- 可视化编排 -->
   <q-dialog v-model="showComposer" maximized>
     <CommandComposer
       ref="composer"
+      v-model="composerInfo"
       @action="handleComposerAction"
-      :model-value="{ flows }"
+      :disabled-control-buttons="['save']"
     />
   </q-dialog>
 
@@ -76,8 +53,8 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from "vue";
-import CommandSideBar from "components/editor/CommandSideBar";
+import { defineAsyncComponent, ref, computed } from "vue";
+import CommandConfig from "./editor/CommandConfig.vue";
 import CommandLanguageBar from "components/editor/CommandLanguageBar";
 import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
@@ -86,68 +63,44 @@ import programs from "js/options/programs.js";
 import { dbManager } from "js/utools.js";
 
 // 预加载 MonacoEditor
-const MonacoEditorPromise = import("components/editor/MonacoEditor");
+const CodeEditorPromise = import("components/editor/CodeEditor.vue");
 // 在空闲时预加载
 if (window.requestIdleCallback) {
   window.requestIdleCallback(() => {
-    MonacoEditorPromise;
+    CodeEditorPromise;
   });
 } else {
   setTimeout(() => {
-    MonacoEditorPromise;
+    CodeEditorPromise;
   }, 0);
 }
 
 // Performance Scripting > 500ms
-const MonacoEditor = defineAsyncComponent({
-  loader: () => MonacoEditorPromise,
+const CodeEditor = defineAsyncComponent({
+  loader: () => CodeEditorPromise,
   timeout: 3000,
 });
 
+// TODO: 对称加密声明，保存命令不需要设置
 export default {
   components: {
-    MonacoEditor,
-    CommandSideBar,
+    CodeEditor,
+    CommandConfig,
     CommandRunResult,
     CommandLanguageBar,
     CommandComposer,
     EditorTools,
   },
+  emits: ["editorEvent"],
   data() {
     return {
       programLanguages: Object.keys(programs),
-      sideBarWidth: 200,
-      languageBarHeight: 40,
       showComposer: false,
-      isRunCodePage: this.action.type === "run",
-      canCommandSave: this.action.type !== "run",
-      showSidebar: this.action.type !== "run",
-      flows: [
-        {
-          id: "main",
-          name: "main",
-          label: "主流程",
-          commands: [],
-          customVariables: [],
-        },
-      ],
-      quickcommandInfo: {
-        program: "quickcommand",
-        cmd: "",
-        scptarg: "",
-        charset: {
-          scriptCode: "",
-          outputCode: "",
-        },
-        customOptions: {
-          bin: "",
-          argv: "",
-          ext: "",
-        },
-      },
-      resultMaxLength: 10000,
       listener: null,
-      isFullscreen: false,
+      isConfigExpanded: false,
+      composerInfo: {
+        program: "quickcomposer",
+      },
     };
   },
   props: {
@@ -155,125 +108,105 @@ export default {
       type: Object,
       required: true,
     },
-    allQuickCommandTags: Array,
+  },
+  setup(props) {
+    const isRunCodePage = ref(props.action.type === "run");
+    const canCommandSave = ref(!isRunCodePage.value);
+
+    const commandAction = window.lodashM.cloneDeep(props.action);
+    const savedCommand = isRunCodePage.value
+      ? dbManager.getDB("cfg_codeHistory")
+      : commandAction.data || {};
+
+    const defaultCommand = {
+      program: "quickcommand",
+      features: {
+        icon: programs.quickcommand.icon,
+        explain: "",
+        platform: ["win32", "linux", "darwin"],
+        mainPush: false,
+        cmds: [],
+      },
+      output: "text",
+      tags: [],
+      cmd: "",
+      scptarg: "",
+      charset: {
+        scriptCode: "",
+        outputCode: "",
+      },
+      customOptions: {
+        bin: "",
+        argv: "",
+        ext: "",
+      },
+    };
+    const quickcommandInfo = ref({
+      ...defaultCommand,
+      ...savedCommand,
+    });
+
+    // 默认命令不可编辑
+    if (quickcommandInfo.value.tags?.includes("默认") && !utools.isDev()) {
+      canCommandSave.value = false;
+    }
+
+    const commandConfig = computed(() => {
+      const { tags, output, features, program } = quickcommandInfo.value;
+      return { tags, output, features, program };
+    });
+
+    return {
+      quickcommandInfo,
+      isRunCodePage,
+      canCommandSave,
+      commandConfig,
+    };
   },
   mounted() {
-    this.commandInit();
-    this.sidebarInit();
+    this.saveToHistory();
+    document.addEventListener("keydown", this.handleKeydown);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleKeydown);
   },
   methods: {
-    // 命令初始化
-    commandInit() {
-      let quickCommandInfo = this.isRunCodePage
-        ? dbManager.getDB("cfg_codeHistory")
-        : this.action.data;
-      quickCommandInfo?.program &&
-        Object.assign(
-          this.quickcommandInfo,
-          window.lodashM.cloneDeep(quickCommandInfo)
-        );
-      // 默认命令不可编辑
-      if (this.quickcommandInfo.tags?.includes("默认") && !utools.isDev()) {
-        this.canCommandSave = false;
-      }
-    },
-    // 侧边栏初始化
-    sidebarInit() {
-      this.$refs.sidebar?.init();
-    },
-    // Monaco编辑器初始化，Monaco异步加载完执行
-    monacoInit() {
-      this.$refs.editor.setEditorValue(this.quickcommandInfo.cmd);
-      this.setLanguage(this.quickcommandInfo.program);
-      this.$refs.editor.setCursorPosition(this.quickcommandInfo.cursorPosition);
-
-      // 等待编辑器内容加载完成后再保存
-      setTimeout(() => {
-        this.saveToHistory();
-      }, 1000); // 给予足够的时间让编辑器加载完成
-    },
-    programChanged(value) {
-      this.setLanguage(value);
-      if (value === "custom") this.$refs.settings.show();
-      this.$refs.sidebar?.setIcon(value);
-    },
-    // 匹配编程语言
-    matchLanguage() {
-      if (!this.quickcommandInfo.customOptions.ext) return;
-      let language = Object.values(programs).filter(
-        (program) => program.ext === this.quickcommandInfo.customOptions.ext
-      );
-      if (language.length) {
-        this.setLanguage(language[0].name);
-      }
-    },
-    // 设置编程语言
-    setLanguage(language) {
-      let highlight = programs[language].highlight;
-      this.$refs.editor.setEditorLanguage(highlight ? highlight : language);
-    },
-    insertText(text) {
-      this.$refs.editor.repacleEditorSelection(text);
-      this.$refs.editor.formatDocument();
-    },
-    replaceText(text) {
-      this.$refs.editor.setEditorValue(text);
-      this.$refs.editor.formatDocument();
-    },
     handleComposerAction(actionType, actionData) {
       switch (actionType) {
         case "run":
-          return this.runCurrentCommand(actionData);
-        case "insert":
-          return this.insertText(actionData);
+          // actionData 完整命令
+          this.runCurrentCommand(actionData);
+          break;
         case "apply":
-          return this.replaceText(actionData);
+          // actionData 命令的cmd
+          console.log(actionData);
+          this.showComposer = false;
+          this.quickcommandInfo.cmd = actionData;
+          break;
         case "close":
-          return (this.showComposer = false);
+          this.showComposer = false;
+          break;
       }
     },
     // 保存
-    saveCurrentCommand(message = "保存成功") {
-      let updatedData = this.$refs.sidebar?.SaveMenuData();
-      if (!updatedData) return;
-      Object.assign(
-        this.quickcommandInfo,
-        window.lodashM.cloneDeep(updatedData)
-      );
-      let newQuickcommandInfo = window.lodashM.cloneDeep(this.quickcommandInfo);
-      dbManager.putDB(
-        newQuickcommandInfo,
-        "qc_" + this.quickcommandInfo.features.code
-      );
-      this.$emit("editorEvent", {
-        type: "save",
-        data: newQuickcommandInfo,
-      });
+    saveCurrentCommand() {
+      this.$emit("editorEvent", "save", this.quickcommandInfo);
       this.saveToHistory(); // 保存时记录历史
-      if (!message) return;
-      quickcommand.showMessageBox(message, "success", 1000, "bottom-right");
     },
     // 运行
-    runCurrentCommand(cmd) {
-      this.saveToHistory(); // 运行时不保存但记录历史
-      let command = window.lodashM.cloneDeep(this.quickcommandInfo);
-      if (cmd) command.cmd = cmd;
-      command.output =
-        this.$refs.sidebar?.currentCommand.output ||
-        (command.program === "html" ? "html" : "text");
-      command.cmdType = this.$refs.sidebar?.cmdType.name;
+    runCurrentCommand(command) {
+      if (!command) {
+        this.saveToHistory(); // 运行时不保存但记录历史
+        command = { ...this.quickcommandInfo };
+      }
       this.$refs.result.runCurrentCommand(command);
     },
     saveCodeHistory() {
-      if (this.action.type !== "run") return;
+      if (!this.isRunCodePage) return;
       let command = window.lodashM.cloneDeep(this.quickcommandInfo);
-      command.cursorPosition = this.$refs.editor.getCursorPosition();
       dbManager.putDB(command, "cfg_codeHistory");
     },
-    monacoTyping(val) {
-      this.quickcommandInfo.cmd = val;
-    },
-    monacoKeyStroke(event, data) {
+    handleAction(event, data) {
       switch (event) {
         case "run":
           this.runCurrentCommand();
@@ -281,28 +214,22 @@ export default {
         case "save":
           this.saveCurrentCommand();
           break;
-        case "log":
-          if (this.quickcommandInfo.program !== "quickcommand") return;
-          this.runCurrentCommand(`console.log(${data})`);
+        case "back":
+          this.$emit("editorEvent", "back");
           break;
-        case "fullscreen":
-          this.toggleFullscreen();
+        case "show-composer":
+          this.showComposer = true;
+          break;
+        case "insert-text":
+          this.$refs.editor.repacleEditorSelection(data);
           break;
         default:
           break;
       }
     },
-    toggleFullscreen() {
-      this.isFullscreen = !this.isFullscreen;
-
-      // 重新布局编辑器
-      setTimeout(() => {
-        this.$refs.editor.resizeEditor();
-      }, 300);
-    },
     saveToHistory() {
       this.$refs.editorTools.tryToSave(
-        this.$refs.editor.getEditorValue(),
+        this.quickcommandInfo.cmd,
         this.quickcommandInfo.program
       );
     },
@@ -311,27 +238,72 @@ export default {
       this.saveToHistory();
 
       // 恢复历史内容
-      this.$refs.editor.setEditorValue(item.content);
+      this.quickcommandInfo.cmd = item.content;
+      this.quickcommandInfo.program = item.program;
     },
-    handleBack() {
-      // 触发返回事件
-      this.$emit("editorEvent", { type: "back" });
+    updateCommandConfig(value) {
+      this.quickcommandInfo = {
+        ...this.quickcommandInfo,
+        ...value,
+      };
+    },
+    getLanguage() {
+      if (this.quickcommandInfo.program !== "custom") {
+        return this.quickcommandInfo.program;
+      }
+      if (!this.quickcommandInfo.customOptions.ext) return;
+      let language = Object.values(programs).find(
+        (program) => program.ext === this.quickcommandInfo.customOptions.ext
+      );
+      if (!language) return;
+      return language.name;
+    },
+    // 添加快捷键处理
+    handleKeydown(e) {
+      // 检查是否按下 Ctrl 键 (Windows) 或 Command 键 (Mac)
+      const isCmdOrCtrl = window.utools.isMacOS() ? e.metaKey : e.ctrlKey;
+      if (!isCmdOrCtrl) return;
+
+      switch (e.key.toLowerCase()) {
+        case "s":
+          e.preventDefault();
+          if (!this.canCommandSave) return;
+          this.saveCurrentCommand();
+          break;
+        case "b":
+          e.preventDefault();
+          this.runCurrentCommand();
+          break;
+      }
     },
   },
 };
 </script>
 
 <style scoped>
-/* 统一过渡效果 */
-.sidebar-transition,
-.language-bar-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, left, top, opacity;
+.command-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fffffe;
+  position: fixed;
+  inset: 0;
 }
 
-/* 编辑器动画不一致，可以产生一个回弹效果 */
-.editor-transition {
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  will-change: transform, left, top, opacity;
+.body--dark .command-editor {
+  background-color: #1e1e1e;
+}
+
+.codeEditor {
+  flex: 1;
+  min-height: 0;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+
+.command-config {
+  padding: 4px 10px;
 }
 </style>

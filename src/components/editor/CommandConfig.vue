@@ -1,33 +1,29 @@
 <template>
   <q-expansion-item
     v-model="isExpanded"
-    class="command-config"
-    @dragover="isExpanded = false"
+    @update:model-value="$emit('update:is-expanded', $event)"
+    class="command-composer command-config"
   >
     <template v-slot:header>
-      <div class="row q-col-gutter-sm basic-config">
-        <div class="col-auto">
-          <q-avatar size="36px" square class="featureIco">
-            <q-img
-              @click.stop="showIconPicker = true"
-              :src="currentCommand.features.icon"
-            />
-          </q-avatar>
-        </div>
-        <div class="col">
-          <q-input
-            :model-value="currentCommand.features.explain"
-            filled
-            dense
-            @update:model-value="updateCommand('features.explain', $event)"
-            placeholder="名称"
-            @click.stop
-          >
-            <template v-slot:append>
-              <q-icon name="drive_file_rename_outline" />
-            </template>
-          </q-input>
-        </div>
+      <div class="row basic-config">
+        <q-avatar size="36px" square class="featureIco">
+          <q-img
+            @click.stop="showIconPicker = true"
+            :src="currentCommand.features.icon"
+          />
+        </q-avatar>
+        <q-input
+          ref="explainInput"
+          :model-value="currentCommand.features.explain"
+          borderless
+          dense
+          @update:model-value="updateModelValue('features.explain', $event)"
+          @click.stop
+          placeholder="请输入名称"
+          @focus="expandOnFocus && updateExpanded(true)"
+          class="col"
+        >
+        </q-input>
       </div>
     </template>
 
@@ -59,7 +55,7 @@
         <MatchRuleEditor
           :showJson="showMatchRuleJson"
           :model-value="currentCommand.features.cmds"
-          @update:model-value="updateCommand('features.cmds', $event)"
+          @update:model-value="updateModelValue('features.cmds', $event)"
         />
       </div>
 
@@ -71,7 +67,7 @@
         </div>
         <q-select
           :model-value="currentCommand.tags"
-          @update:model-value="updateCommand('tags', $event)"
+          @update:model-value="updateModelValue('tags', $event)"
           :options="allQuickCommandTags"
           dense
           options-dense
@@ -81,6 +77,7 @@
           multiple
           hide-dropdown-icon
           new-value-mode="add-unique"
+          popup-content-class="command-tag-popup"
           placeholder="回车添加，最多3个"
           max-values="3"
           @new-value="tagVerify"
@@ -101,7 +98,7 @@
             <ButtonGroup
               :model-value="currentCommand.output"
               :options="outputTypesOptionsDy"
-              @update:model-value="updateCommand('output', $event)"
+              @update:model-value="updateModelValue('output', $event)"
               height="26px"
             />
           </div>
@@ -138,7 +135,7 @@
         <CheckGroup
           :model-value="currentCommand.features.platform"
           :options="Object.values(platformTypes)"
-          @update:model-value="updateCommand('features.platform', $event)"
+          @update:model-value="handlePlatformChange"
           height="30px"
         />
       </div>
@@ -147,7 +144,7 @@
     <!-- 图标选择对话框 -->
     <q-dialog v-model="showIconPicker" position="left">
       <iconPicker
-        @iconChanged="(dataUrl) => updateCommand('features.icon', dataUrl)"
+        @iconChanged="(dataUrl) => updateModelValue('features.icon', dataUrl)"
         ref="icon"
       />
     </q-dialog>
@@ -155,7 +152,7 @@
 </template>
 
 <script>
-import { defineComponent, computed } from "vue";
+import { defineComponent } from "vue";
 import iconPicker from "components/popup/IconPicker.vue";
 import outputTypes from "js/options/outputTypes.js";
 import platformTypes from "js/options/platformTypes.js";
@@ -178,8 +175,12 @@ export default defineComponent({
       type: Object,
       required: true,
     },
+    expandOnFocus: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", "update:is-expanded"],
   data() {
     return {
       commandManager: useCommandManager(),
@@ -205,29 +206,42 @@ export default defineComponent({
     currentCommand() {
       return this.modelValue;
     },
-    commandTypesOptions() {
-      const options = Object.values(this.commandTypes);
-      return this.currentCommand.features.mainPush
-        ? options.map((cmdType) =>
-            ["regex", "over", "key"].includes(cmdType.name)
-              ? cmdType
-              : { ...cmdType, disabled: true }
-          )
-        : options;
-    },
     outputTypesOptionsDy() {
       const options = Object.values(this.outputTypes);
-      return this.currentCommand.features.mainPush
-        ? options.map((outputType) =>
-            outputType.name !== "text"
-              ? { ...outputType, disabled: true }
-              : outputType
-          )
-        : options;
+      if (this.currentCommand.features.mainPush) {
+        return this.setOutputOptionDisabled(options, "text", false);
+      }
+      if (this.currentCommand.program === "html") {
+        return this.setOutputOptionDisabled(options, "html", false);
+      }
+      if (
+        ["quickcommand", "quickcomposer"].includes(this.currentCommand.program)
+      ) {
+        return this.setOutputOptionDisabled(options, "terminal", true);
+      }
+      return options;
     },
   },
+  mounted() {
+    if (!this.modelValue.features.explain) {
+      setTimeout(this.$refs.explainInput.focus);
+    }
+    // 添加全局点击事件监听器
+    document.addEventListener("click", this.handleOutsideClick);
+  },
+  beforeUnmount() {
+    // 组件销毁前移除监听器
+    document.removeEventListener("click", this.handleOutsideClick);
+  },
   methods: {
-    updateCommand(path, value) {
+    setOutputOptionDisabled(options, option, disabled = true) {
+      return options.map((opt) =>
+        opt.name === option
+          ? { ...opt, disabled }
+          : { ...opt, disabled: !disabled }
+      );
+    },
+    updateModelValue(path, value) {
       const newCommand = { ...this.currentCommand };
       const keys = path.split(".");
       const lastKey = keys.pop();
@@ -246,12 +260,6 @@ export default defineComponent({
       if (!inputValue) return;
       ref.add(inputValue, true);
     },
-    handleMainPushChange(val) {
-      this.updateCommand("features.mainPush", val);
-      if (val) {
-        this.updateCommand("output", "text");
-      }
-    },
     showMainPushHelp() {
       window.showUb.help("#u0e9f1430");
     },
@@ -261,6 +269,33 @@ export default defineComponent({
           "https://www.u-tools.cn/docs/developer/information/plugin-json.html#%E5%8A%9F%E8%83%BD%E6%8C%87%E4%BB%A4"
         )
         .run();
+    },
+    handleOutsideClick(event) {
+      // 如果面板已经折叠，不需要处理
+      if (!this.isExpanded) return;
+
+      // 检查点击是否在标签选择框的弹出菜单内
+      const tagPopup = document.querySelector(".command-tag-popup");
+      if (tagPopup?.contains(event.target)) return;
+
+      // 检查点击是否在组件内部
+      const componentEl = this.$el;
+      if (componentEl.contains(event.target)) return;
+      this.updateExpanded(false);
+    },
+    handleMainPushChange(newMainPush) {
+      this.updateModelValue("features.mainPush", newMainPush);
+      if (newMainPush) {
+        this.updateModelValue("output", "text");
+      }
+    },
+    handlePlatformChange(newPlatform) {
+      if (newPlatform.length === 0) return;
+      this.updateModelValue("features.platform", newPlatform);
+    },
+    updateExpanded(value) {
+      this.isExpanded = value;
+      this.$emit("update:is-expanded", value);
     },
   },
 });
@@ -278,6 +313,11 @@ export default defineComponent({
 
 .basic-config {
   width: 100%;
+}
+
+.basic-config :deep(.q-field__native),
+.basic-config :deep(.q-field__control) {
+  height: 36px;
 }
 
 .command-config :deep(.q-item) {
@@ -314,6 +354,7 @@ export default defineComponent({
 .featureIco {
   cursor: pointer;
   transition: 0.2s;
+  margin-right: 10px;
 }
 
 .featureIco:hover {

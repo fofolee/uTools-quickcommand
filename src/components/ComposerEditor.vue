@@ -3,7 +3,7 @@
     ref="composer"
     @action="handleComposerAction"
     v-model="quickcommandInfo"
-    :show-close-button="!isRunComposePage"
+    :disabled-control-buttons="disabledControlButtons"
     class="fixed-full"
   />
   <!-- 运行结果 -->
@@ -15,7 +15,7 @@ import CommandComposer from "components/composer/CommandComposer.vue";
 import CommandRunResult from "components/CommandRunResult";
 import { findCommandByValue } from "js/composer/composerConfig";
 import programs from "js/options/programs.js";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 export default {
   components: { CommandComposer, CommandRunResult },
@@ -82,15 +82,7 @@ export default {
         mainPush: false,
         cmds: [],
       },
-      flows: [
-        {
-          id: "main",
-          name: "main",
-          label: "主流程",
-          commands: [],
-          customVariables: [],
-        },
-      ],
+      flows: [],
       output: "text",
       tags: [],
     };
@@ -99,12 +91,18 @@ export default {
       ...retoreToFullCommand(savedCommand),
     });
 
-    const isRunComposePage = ref(props.action.type === "composer");
+    const isRunComposePage = computed(() => {
+      return props.action.type === "composer";
+    });
+
+    const disabledControlButtons = computed(() => {
+      return isRunComposePage.value ? ["close", "save", "apply"] : ["apply"];
+    });
 
     return {
       quickcommandInfo,
       getLitedComposerCommand,
-      isRunComposePage,
+      disabledControlButtons,
     };
   },
   emits: ["editorEvent"],
@@ -120,14 +118,13 @@ export default {
         case "run":
           return this.runCurrentCommand(command);
         case "close":
-          return this.$emit("editorEvent", {
-            type: "back",
-          });
+          return this.$emit("editorEvent", "back");
         case "save":
-          return this.$emit("editorEvent", {
-            type: "save",
-            data: this.getLitedComposerCommand(command),
-          });
+          return this.$emit(
+            "editorEvent",
+            "save",
+            this.getLitedComposerCommand(command)
+          );
       }
     },
     runCurrentCommand(command) {

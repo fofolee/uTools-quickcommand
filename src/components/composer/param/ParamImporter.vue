@@ -26,7 +26,7 @@ import TimeInput from "components/composer/common/TimeInput.vue";
 import FunctionInput from "components/composer/common/FunctionInput.vue";
 import { QInput, QSelect, QToggle, QCheckbox } from "quasar";
 const CodeEditor = defineAsyncComponent(() =>
-  import("components/composer/common/CodeEditor.vue")
+  import("components/editor/CodeEditor.vue")
 );
 
 export default defineComponent({

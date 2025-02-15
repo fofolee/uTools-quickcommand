@@ -78,6 +78,7 @@ import ResultMenu from "components/popup/ResultMenu.vue";
 import { generateFlowsCode } from "js/composer/generateCode";
 import { getValidCommand } from "js/commandManager";
 import { dbManager } from "js/utools.js";
+import programs from "js/options/programs.js";
 
 export default {
   components: { ResultArea, ResultMenu },

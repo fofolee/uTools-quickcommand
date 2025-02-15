@@ -1,26 +1,12 @@
 <template>
-  <div>
-    <MonacoEditor
-      :placeholder="false"
-      class="absolute-top"
-      ref="editor"
-      @typing="
-        (val) => {
-          if (cmd === val) return;
-          cmd = val;
-          saveCode();
-        }
-      "
-      :style="{
-        bottom: bottomHeight + 'px',
-      }"
+  <div class="server-page">
+    <CodeEditor
+      v-model="cmd"
+      @update:modelValue="saveCode"
+      language="quickcommand"
+      style="flex: 1"
     />
-    <div
-      class="absolute-bottom flex items-center justify-between q-px-md shadow-10"
-      :style="{
-        height: bottomHeight + 'px',
-      }"
-    >
+    <div class="flex items-center justify-between q-px-md shadow-10">
       <div class="q-gutter-xs flex items-center full-height content-center">
         <q-badge color="primary" dense square>POST</q-badge
         ><q-badge color="primary" dense square>GET</q-badge>
@@ -73,22 +59,16 @@
 </template>
 
 <script>
-import MonacoEditor from "components/editor/MonacoEditor";
+import CodeEditor from "components/editor/CodeEditor.vue";
 import { dbManager } from "js/utools.js";
+import { ref } from "vue";
 
 export default {
-  components: { MonacoEditor },
-  data() {
-    return {
-      bottomHeight: 40,
-      saveCodeTimer: null,
-      cmd: null,
-    };
-  },
-  mounted() {
-    this.cmd = dbManager.getStorage("cfg_serverCode") || "";
-    this.$refs.editor.setEditorValue(this.cmd);
-    this.$refs.editor.setEditorLanguage("javascript");
+  components: { CodeEditor },
+  setup() {
+    const cmd = ref(dbManager.getStorage("cfg_serverCode") || "");
+    const saveCodeTimer = ref(null);
+    return { cmd, saveCodeTimer };
   },
   methods: {
     enableServer() {
@@ -136,3 +116,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.server-page {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+}
+</style>

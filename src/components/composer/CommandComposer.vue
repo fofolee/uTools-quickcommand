@@ -11,7 +11,7 @@
       <div class="col command-section">
         <FlowTabs
           @action="handleAction"
-          :show-close-button="showCloseButton"
+          :disabled-control-buttons="disabledControlButtons"
           :model-value="modelValue"
           @update:model-value="$emit('update:modelValue', $event)"
         />
@@ -42,9 +42,9 @@ export default defineComponent({
     };
   },
   props: {
-    showCloseButton: {
-      type: Boolean,
-      default: true,
+    disabledControlButtons: {
+      type: Array,
+      default: () => [],
     },
     modelValue: {
       type: Object,

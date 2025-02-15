@@ -1,12 +1,17 @@
 <template>
   <div class="monaco-container">
     <div id="monacoEditor" class="monaco-editor-instance"></div>
-    <div class="absolute-center flex" v-show="!value && placeholder">
-      <div class="placeholder text-center q-gutter-md">
-        <div v-for="shortCut in shortCuts" :key="shortCut">
-          <span>{{ shortCut[0] }}</span
-          ><span class="shortcut-key">{{ shortCut[1] }}</span
-          ><span class="shortcut-key">{{ shortCut[2] }}</span>
+    <div class="placeholder-container" v-show="showPlaceholder">
+      {{ placeholder }}
+    </div>
+    <div class="shortcut-container" v-show="showPlaceholder">
+      <div class="shortcut text-center row q-gutter-md items-center">
+        <div
+          v-for="shortCut in shortCuts"
+          :key="shortCut"
+          class="row q-gutter-xs"
+        >
+          <q-badge v-for="item in shortCut" :key="item">{{ item }}</q-badge>
         </div>
       </div>
     </div>
@@ -31,7 +36,6 @@ let languageCompletions = importAll(
 let monacoCompletionProviders = {};
 
 let cmdCtrlKey = utools.isMacOs() ? "⌘" : "Ctrl";
-let optAltKey = utools.isMacOs() ? "⌥" : "Alt";
 
 export default {
   data() {
@@ -42,9 +46,13 @@ export default {
       shortCuts: [
         ["保存", cmdCtrlKey, "S"],
         ["运行", cmdCtrlKey, "B"],
-        ["换行", optAltKey, "Z"],
       ],
     };
+  },
+  computed: {
+    showPlaceholder() {
+      return !this.value && !!this.placeholder;
+    },
   },
   mounted() {
     this.initEditor();
@@ -53,7 +61,7 @@ export default {
     this.$emit("loaded");
   },
   props: {
-    placeholder: Boolean,
+    placeholder: String,
   },
   methods: {
     initEditor() {
@@ -256,14 +264,7 @@ export default {
       });
     },
     bindKeys() {
-      let that = this;
-      // ctrl + b 运行
-      this.rawEditor().addCommand(
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
-        () => {
-          that.$emit("keyStroke", "run");
-        }
-      );
+      const that = this;
       // alt + z 换行
       this.rawEditor().addCommand(
         monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
@@ -272,24 +273,6 @@ export default {
           that.rawEditor().updateOptions({ wordWrap: that.wordWrap });
         }
       );
-      // ctrl + s 保存
-      this.rawEditor().addCommand(
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-        () => {
-          that.$emit("keyStroke", "save");
-        }
-      );
-      // ctrl + e 快速 console.log
-      this.rawEditor().addCommand(
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE,
-        () => {
-          that.$emit("keyStroke", "log", that.getSelectionOrLineContent());
-        }
-      );
-      // F11 全屏
-      this.rawEditor().addCommand(monaco.KeyCode.F11, () => {
-        this.$emit("keyStroke", "fullscreen");
-      });
     },
     getSelectionOrLineContent() {
       let selection = this.rawEditor().getSelection();
@@ -318,11 +301,7 @@ export default {
 
 <style scoped>
 .monaco-container {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  position: relative;
 }
 
 .monaco-editor-instance {
@@ -330,22 +309,32 @@ export default {
   height: 100%;
 }
 
-.placeholder {
-  font-size: 14px;
-  font-family: sans-serif;
-  color: #535353;
+.placeholder-container {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  font-style: italic;
+  color: grey;
+}
+
+.shortcut-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.shortcut .q-badge {
   user-select: none;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.6);
 }
 
-.shortcut-key {
-  background-color: #f3f4f6;
-  border-radius: 0.25rem;
-  margin-left: 0.5rem;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-}
-
-.body--dark .shortcut-key {
-  background-color: #262626;
+.body--dark .shortcut .q-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
 }
 </style>
