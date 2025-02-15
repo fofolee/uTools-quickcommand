@@ -89,12 +89,6 @@
   margin: 4px 0px;
 }
 
-/* 暗黑模式下的标签栏背景颜色 */
-.body--dark .command-composer .q-tab,
-.body--dark .command-composer .q-tab-panel {
-  background-color: #303133;
-}
-
 .body--dark .command-composer .q-tab--inactive {
   opacity: 2;
 }

@@ -92,26 +92,6 @@ export default {
 </script>
 
 <style scoped>
-.q-card.command {
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.3) !important;
-  backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
-  -webkit-backdrop-filter: blur(
-    calc(var(--glass-effect-strength) * 1px)
-  ) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.07);
-}
-
-.body--dark .q-card.command {
-  background: rgba(57, 57, 57, 0.09) !important;
-  border: 1px solid rgb(59 58 58 / 5%);
-  box-shadow: 0 1px 5px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%),
-    0 3px 1px -2px rgb(69 67 67 / 12%);
-}
-
 .card-wrapper {
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, width;

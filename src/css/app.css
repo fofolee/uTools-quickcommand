@@ -1,20 +1,25 @@
 /* app global css */
 :root {
-  --utools-bright-bg: #f4f4f4;
-  --utools-bright-font-color: #333;
-  --utools-dark-bg: #303133;
-  --utools-dark-font-color: #fff;
+  --utools-bg-color: #f4f4f4;
+  --utools-font-color: #333;
+  --transparent-bg-color: rgba(0, 0, 0, 0.02);
   --q-dark: #464646;
-  --q-dark-page: var(--utools-dark-bg);
+  --q-dark-page: #303133;
+}
+
+:root:has(.body--dark) {
+  --utools-bg-color: #303133;
+  --utools-font-color: #fff;
+  --transparent-bg-color: rgba(255, 255, 255, 0.05);
 }
 
 .q-card--dark {
-  background: var(--utools-dark-bg);
+  background: var(--q-dark-page);
 }
 
 body {
-  background: var(--utools-bright-bg);
-  color: var(--utools-bright-font-color);
+  background: var(--utools-bg-color);
+  color: var(--utools-font-color);
 }
 
 /* Monaco Editor 调整行号栏样式 */
@@ -32,7 +37,7 @@ body {
 /* Monaco Editor 当前行高亮样式 */
 .monaco-editor .current-line {
   border: none !important;
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: transparent !important;
 }
 
 .monaco-editor .line-numbers {
@@ -45,10 +50,6 @@ body {
 
 .monaco-editor .current-line~.line-numbers {
   color: var(--q-primary) !important;
-}
-
-.body--dark .monaco-editor .current-line {
-  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .monaco-editor .margin-view-overlays .current-line {
@@ -188,14 +189,14 @@ body.body--dark.glass-effect-menu .q-card.command {
 }
 
 /* 标签栏毛玻璃效果 */
-body.glass-effect-menu .q-tabs {
+body.glass-effect-menu .tag-bar .q-tabs {
   background: rgba(255, 255, 255, calc(0.15 + var(--glass-effect-strength) * 0.01)) !important;
   backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
   -webkit-backdrop-filter: blur(calc(var(--glass-effect-strength) * 1px)) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-body.body--dark.glass-effect-menu .q-tabs {
+body.body--dark.glass-effect-menu .tag-bar .q-tabs {
   background: rgba(0, 0, 0, calc(0.2 + var(--glass-effect-strength) * 0.02)) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -304,4 +305,45 @@ body.body--dark.glass-effect-menu .q-menu {
   align-items: center;
   justify-content: flex-end;
   font-size: 12px;
+}
+
+/* 左右抖动 */
+@keyframes leftRight {
+  0% {
+    transform: translateX(-2px);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: translateX(2px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-2px);
+    opacity: 0.7;
+  }
+}
+
+/* 上下抖动 */
+@keyframes upDown {
+  0% {
+    transform: translateY(-1px);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateY(1px);
+    opacity: 0.6;
+  }
+
+  75% {
+    transform: translateY(0.5px);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateY(-1px);
+    opacity: 1;
+  }
 }

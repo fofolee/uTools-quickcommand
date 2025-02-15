@@ -315,14 +315,6 @@ export default defineComponent({
   position: relative;
 }
 
-.composer-card .q-card {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.body--dark .composer-card .q-card {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
 /* 控制流程组件样式 */
 .control-component {
   flex: 1;
@@ -340,6 +332,7 @@ export default defineComponent({
 
 .command-item {
   transition: all 0.3s ease;
+  background-color: var(--transparent-bg-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: inherit;
@@ -351,14 +344,6 @@ export default defineComponent({
 /* 暗色模式适配 */
 .body--dark .command-item {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.body--dark .composer-card.drag-handle:hover::before {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.body--dark .composer-card.drag-handle:active::before {
-  background: rgba(255, 255, 255, 0.15);
 }
 
 /* 收起状态样式 */

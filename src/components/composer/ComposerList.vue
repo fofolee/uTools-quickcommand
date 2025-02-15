@@ -294,7 +294,7 @@ export default defineComponent({
   margin: 4px 8px;
   padding: 0 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--transparent-bg-color);
   cursor: grab;
   font-size: 12px;
   min-height: 40px;
@@ -315,24 +315,13 @@ export default defineComponent({
 }
 
 .command-item.q-item-type:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  transform: translateX(4px);
+  transform: translateX(3px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .command-item.dragging {
   opacity: 0.5;
   transform: scale(0.95);
-}
-
-/* 暗色模式适配 */
-.body--dark .command-item.q-item-type {
-  border-color: rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.body--dark .command-item.q-item-type:hover {
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .body--dark .section-header {

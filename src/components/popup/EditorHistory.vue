@@ -339,6 +339,7 @@ export default {
   height: 100vh;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
   border-radius: 10px;
+  background-color: var(--utools-bg-color);
 }
 
 .history-layout {
@@ -361,7 +362,6 @@ export default {
 .header-section {
   padding: 16px 16px 8px;
   position: relative;
-  background: #f4f4f4;
 }
 
 .preview-container {
@@ -371,7 +371,6 @@ export default {
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
-  background: #f4f4f4;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -386,7 +385,6 @@ export default {
 .history-list {
   flex: 1;
   padding: 0;
-  background: #f4f4f4;
   overflow-y: auto;
   overflow-x: hidden;
   height: calc(100vh - 64px); /* Subtract header height */
@@ -497,15 +495,6 @@ export default {
 .history-list::-webkit-scrollbar-thumb:hover {
   background: var(--q-primary);
   opacity: 0.3;
-}
-
-/* 暗色模式适配 */
-.body--dark .history-card,
-.body--dark .history-list-container,
-.body--dark .header-section,
-.body--dark .history-list,
-.body--dark .preview-container {
-  background: #303133;
 }
 
 .history-btn {

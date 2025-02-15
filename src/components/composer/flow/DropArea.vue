@@ -64,14 +64,7 @@ export default defineComponent({
 
 .drop-area:hover,
 .drop-area-dragging {
-  border-color: #bdbdbd;
-  background-color: #f9f9f9;
-}
-
-.body--dark .drop-area:hover,
-.body--dark .drop-area-dragging {
-  border: 2px dashed #676666;
-  background-color: #303132;
+  background-color: var(--utools-bg-color);
 }
 
 .drop-area-dragging {

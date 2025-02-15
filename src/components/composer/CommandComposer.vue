@@ -76,11 +76,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #f4f4f4;
-}
-
-.body--dark .command-composer {
-  background-color: #303132;
+  background-color: var(--utools-bg-color);
 }
 
 .composer-body {
