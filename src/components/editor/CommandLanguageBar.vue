@@ -194,7 +194,7 @@
         flat
         color="primary"
         icon="play_arrow"
-        label="运行"
+        :label="`运行(${ctrlKey}B)`"
         @click="$emit('action', 'run')"
       ></q-btn>
       <q-btn
@@ -205,7 +205,7 @@
         flat
         dense
         icon="save"
-        label="保存"
+        :label="`保存(${ctrlKey}S)`"
         @click="$emit('action', 'save')"
       ></q-btn>
     </q-btn-group>
@@ -254,6 +254,7 @@ export default {
       commandTypes,
       isSettingsVisible: false,
       showUserData: false,
+      ctrlKey: utools.isMacOs ? "⌘" : "⌃",
     };
   },
   computed: {
