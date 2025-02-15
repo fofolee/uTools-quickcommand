@@ -993,41 +993,77 @@ interface quickcomposerApi {
      * 对称加密
      * @param config 加密配置
      * @param config.text 要加密的文本
-     * @param config.key 密钥
-     * @param config.algorithm 加密算法：aes-128-cbc, aes-192-cbc, aes-256-cbc, des-cbc, des3-cbc
-     * @param config.mode 操作模式：encrypt-加密，decrypt-解密
-     * @param config.encoding 输出编码：base64, hex
+     * @param config.algorithm 加密算法：AES, SM4
+     * @param config.mode 操作模式：CBC, ECB, GCM (GCM仅AES支持)
+     * @param config.padding AES填充方式：Pkcs7, NoPadding, Iso97971, AnsiX923, Iso10126, ZeroPadding
+     *                      SM4填充方式：Pkcs#7, None
+     * @param config.key 密钥配置
+     * @param config.key.value 密钥值
+     * @param config.key.codec 密钥编码：Utf8, Base64, Hex
+     * @param config.keyLength 密钥长度：128, 192, 256 (仅AES支持192/256)
+     * @param config.operation 操作类型：encrypt-加密，decrypt-解密
+     * @param config.format 输出格式：Base64, Hex
+     * @param config.iv IV配置(ECB模式不需要)
+     * @param config.iv.value IV值
+     * @param config.iv.codec IV编码：Utf8, Base64, Hex
      */
     symmetricCrypto(config: {
       text: string;
-      key: string;
-      algorithm:
-        | "aes-128-cbc"
-        | "aes-192-cbc"
-        | "aes-256-cbc"
-        | "des-cbc"
-        | "des3-cbc";
-      mode: "encrypt" | "decrypt";
-      encoding?: "base64" | "hex";
-    }): string;
+      algorithm: "AES" | "SM4";
+      mode?: "CBC" | "ECB" | "GCM";
+      padding?:
+        | "Pkcs7"
+        | "NoPadding"
+        | "Iso97971"
+        | "AnsiX923"
+        | "Iso10126"
+        | "ZeroPadding"
+        | "Pkcs#7"
+        | "None";
+      key: {
+        value: string;
+        codec: "Utf8" | "Base64" | "Hex";
+      };
+      keyLength?: 128 | 192 | 256;
+      operation?: "encrypt" | "decrypt";
+      format?: "Base64" | "Hex";
+      iv?: {
+        value: string;
+        codec: "Utf8" | "Base64" | "Hex";
+      };
+    }): string | { enc: string; tag: string }; // GCM模式返回包含tag的对象
 
     /**
      * 非对称加密
      * @param config 加密配置
-     * @param config.text 要加密的文本
-     * @param config.key 密钥(公钥或私钥)
-     * @param config.algorithm 加密算法：rsa, sm2
-     * @param config.mode 操作模式：encrypt-加密，decrypt-解密，sign-签名，verify-验签
-     * @param config.encoding 输出编码：base64, hex
-     * @param config.padding 填充方式：pkcs1, pkcs1_oaep
+     * @param config.text 要加密/解密的文本
+     * @param config.algorithm 加密算法：SM2, RSA
+     * @param config.operation 操作类型：encrypt-加密，decrypt-解密
+     * @param config.format 输出格式：Base64, Hex
+     * @param config.publicKey 公钥配置(加密时必需)
+     * @param config.publicKey.key 公钥值
+     * @param config.publicKey.codec 公钥编码：Pem, Hex (SM2仅支持Hex，RSA仅支持Pem)
+     * @param config.privateKey 私钥配置(解密时必需)
+     * @param config.privateKey.key 私钥值
+     * @param config.privateKey.codec 私钥编码：Pem, Hex (SM2仅支持Hex，RSA仅支持Pem)
+     * @param config.padding RSA填充方式：RSAES-PKCS1-V1_5 (仅RSA支持)
+     * @param config.cipherMode SM2加密模式：0-C1C2C3, 1-C1C3C2 (仅SM2支持，默认1)
      */
     asymmetricCrypto(config: {
       text: string;
-      key: string;
-      algorithm: "rsa" | "sm2";
-      mode: "encrypt" | "decrypt" | "sign" | "verify";
-      encoding?: "base64" | "hex";
-      padding?: "pkcs1" | "pkcs1_oaep";
+      algorithm: "SM2" | "RSA";
+      operation: "encrypt" | "decrypt";
+      format?: "Base64" | "Hex";
+      publicKey?: {
+        key: string;
+        codec: "Pem" | "Hex";
+      };
+      privateKey?: {
+        key: string;
+        codec: "Pem" | "Hex";
+      };
+      padding?: "RSAES-PKCS1-V1_5";
+      cipherMode?: 0 | 1;
     }): string;
 
     /**

@@ -54,7 +54,7 @@
 
 <script>
 import { defineAsyncComponent, ref, computed } from "vue";
-import CommandConfig from "./editor/CommandConfig.vue";
+import CommandConfig from "components/editor/CommandConfig.vue";
 import CommandLanguageBar from "components/editor/CommandLanguageBar";
 import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
@@ -81,7 +81,6 @@ const CodeEditor = defineAsyncComponent({
   timeout: 3000,
 });
 
-// TODO: 对称加密声明
 export default {
   components: {
     CodeEditor,
