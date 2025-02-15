@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CommandRunResult :action="action" ref="result"></CommandRunResult>
+    <CommandRunResult ref="result"></CommandRunResult>
   </div>
 </template>
 
@@ -13,10 +13,6 @@ export default {
   data() {
     return {
       utools: utoolsFull,
-      action: {
-        type: "input",
-        data: {},
-      },
       featureCode: this.$route.path.slice(1),
     };
   },

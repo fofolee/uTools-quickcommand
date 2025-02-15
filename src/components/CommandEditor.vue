@@ -2,28 +2,27 @@
   <div class="command-editor">
     <!-- 编程语言栏 -->
     <CommandLanguageBar
-      v-model="quickcommandInfo"
+      v-model="commandManager.state.currentCommand"
       :canCommandSave="canCommandSave"
-      :isRunCodePage="isRunCodePage"
       @action="handleAction"
     />
 
     <!-- 命令设置栏 -->
     <CommandConfig
       v-if="!isRunCodePage"
-      :model-value="commandConfig"
+      v-model="commandManager.state.currentCommand"
       @update:is-expanded="isConfigExpanded = $event"
       :expand-on-focus="true"
       class="command-config"
-      @update:model-value="updateCommandConfig"
     />
 
     <!-- 编辑器 -->
     <CodeEditor
-      v-model="quickcommandInfo.cmd"
+      v-model="commandManager.state.currentCommand.cmd"
+      v-model:cursor-position="
+        commandManager.state.currentCommand.cursorPosition
+      "
       :language="getLanguage()"
-      :cursor-position="quickcommandInfo.cursorPosition"
-      @update:cursor-position="quickcommandInfo.cursorPosition = $event"
       placeholder="请输入代码"
       class="codeEditor"
       ref="editor"
@@ -34,7 +33,7 @@
   <EditorTools
     ref="editorTools"
     v-show="!isConfigExpanded"
-    :commandCode="quickcommandInfo?.features?.code || 'temp'"
+    :commandCode="currentCommand.features?.code || 'temp'"
     @restore="restoreHistory"
   />
 
@@ -49,7 +48,7 @@
   </q-dialog>
 
   <!-- 运行结果 -->
-  <CommandRunResult :action="action" ref="result"></CommandRunResult>
+  <CommandRunResult ref="result"></CommandRunResult>
 </template>
 
 <script>
@@ -61,6 +60,7 @@ import CommandRunResult from "components/CommandRunResult";
 import CommandComposer from "components/composer/CommandComposer.vue";
 import programs from "js/options/programs.js";
 import { dbManager } from "js/utools.js";
+import { useCommandManager } from "js/commandManager.js";
 
 // 预加载 MonacoEditor
 const CodeEditorPromise = import("components/editor/CodeEditor.vue");
@@ -102,64 +102,23 @@ export default {
       },
     };
   },
-  props: {
-    action: {
-      type: Object,
-      required: true,
-    },
-  },
-  setup(props) {
-    const isRunCodePage = ref(props.action.type === "run");
-    const canCommandSave = ref(!isRunCodePage.value);
+  setup() {
+    const commandManager = useCommandManager();
 
-    const commandAction = window.lodashM.cloneDeep(props.action);
-    const savedCommand = isRunCodePage.value
-      ? dbManager.getDB("cfg_codeHistory")
-      : commandAction.data || {};
+    const defaultCommand = commandManager.getDefaultCommand("quickcommand");
 
-    const defaultCommand = {
-      program: "quickcommand",
-      features: {
-        icon: programs.quickcommand.icon,
-        explain: "",
-        platform: ["win32", "linux", "darwin"],
-        mainPush: false,
-        cmds: [],
-      },
-      output: "text",
-      tags: [],
-      cmd: "",
-      scptarg: "",
-      charset: {
-        scriptCode: "",
-        outputCode: "",
-      },
-      customOptions: {
-        bin: "",
-        argv: "",
-        ext: "",
-      },
-    };
-    const quickcommandInfo = ref({
+    commandManager.state.currentCommand = {
       ...defaultCommand,
-      ...savedCommand,
-    });
+      ...commandManager.state.currentCommand,
+    };
 
-    // 默认命令不可编辑
-    if (quickcommandInfo.value.tags?.includes("默认") && !utools.isDev()) {
-      canCommandSave.value = false;
-    }
-
-    const commandConfig = computed(() => {
-      const { tags, output, features, program } = quickcommandInfo.value;
-      return { tags, output, features, program };
+    const currentCommand = computed(() => {
+      return commandManager.state.currentCommand;
     });
 
     return {
-      quickcommandInfo,
-      isRunCodePage,
-      canCommandSave,
-      commandConfig,
+      commandManager,
+      currentCommand,
     };
   },
   mounted() {
@@ -168,6 +127,17 @@ export default {
   },
   beforeUnmount() {
     document.removeEventListener("keydown", this.handleKeydown);
+  },
+  computed: {
+    isRunCodePage() {
+      return this.$route.name === "code";
+    },
+    canCommandSave() {
+      if (this.isRunCodePage) return false;
+      if (window.utools.isDev()) return true;
+      if (this.currentCommand.tags?.includes("默认")) return false;
+      return true;
+    },
   },
   methods: {
     handleComposerAction(actionType, actionData) {
@@ -179,7 +149,7 @@ export default {
         case "apply":
           // actionData 命令的cmd
           this.showComposer = false;
-          this.quickcommandInfo.cmd = actionData;
+          this.commandManager.state.currentCommand.cmd = actionData;
           this.$refs.editor.formatDocument();
           break;
         case "close":
@@ -189,21 +159,16 @@ export default {
     },
     // 保存
     saveCurrentCommand() {
-      this.$emit("editorEvent", "save", this.quickcommandInfo);
+      this.$emit("editorEvent", "save", this.currentCommand);
       this.saveToHistory(); // 保存时记录历史
     },
     // 运行
     runCurrentCommand(command) {
       if (!command) {
         this.saveToHistory(); // 运行时不保存但记录历史
-        command = { ...this.quickcommandInfo };
+        command = { ...this.currentCommand };
       }
       this.$refs.result.runCurrentCommand(command);
-    },
-    saveCodeHistory() {
-      if (!this.isRunCodePage) return;
-      let command = window.lodashM.cloneDeep(this.quickcommandInfo);
-      dbManager.putDB(command, "cfg_codeHistory");
     },
     handleAction(event, data) {
       switch (event) {
@@ -228,8 +193,8 @@ export default {
     },
     saveToHistory() {
       this.$refs.editorTools.tryToSave(
-        this.quickcommandInfo.cmd,
-        this.quickcommandInfo.program
+        this.currentCommand.cmd,
+        this.currentCommand.program
       );
     },
     restoreHistory(item) {
@@ -237,22 +202,16 @@ export default {
       this.saveToHistory();
 
       // 恢复历史内容
-      this.quickcommandInfo.cmd = item.content;
-      this.quickcommandInfo.program = item.program;
-    },
-    updateCommandConfig(value) {
-      this.quickcommandInfo = {
-        ...this.quickcommandInfo,
-        ...value,
-      };
+      this.currentCommand.cmd = item.content;
+      this.currentCommand.program = item.program;
     },
     getLanguage() {
-      if (this.quickcommandInfo.program !== "custom") {
-        return this.quickcommandInfo.program;
+      if (this.currentCommand.program !== "custom") {
+        return this.currentCommand.program;
       }
-      if (!this.quickcommandInfo.customOptions.ext) return;
+      if (!this.currentCommand.customOptions.ext) return;
       let language = Object.values(programs).find(
-        (program) => program.ext === this.quickcommandInfo.customOptions.ext
+        (program) => program.ext === this.currentCommand.customOptions.ext
       );
       if (!language) return;
       return language.name;

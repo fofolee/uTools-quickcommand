@@ -11,6 +11,7 @@
 import { defineComponent } from "vue";
 import { setCssVar } from "quasar";
 import { utoolsFull, dbManager } from "./js/utools.js";
+import { useCommandManager } from "./js/commandManager.js";
 import programmings from "./js/options/programs.js";
 import defaultProfile from "./js/options/defaultProfile.js";
 import Cron from "croner";
@@ -22,6 +23,7 @@ export default defineComponent({
   name: "App",
   data() {
     return {
+      commandManager: useCommandManager(),
       setCssVar: setCssVar,
       programs: programmings,
       isRunningCommand: false,
@@ -65,7 +67,7 @@ export default defineComponent({
       });
       window.isAppVersion4() &&
         this.utools.onMainPush(
-          async ({ code, type, payload }) => {
+          async ({ code, payload }) => {
             let result = await this.runCommand(code, payload, 5000);
             return result.map((x) => {
               return {
@@ -73,7 +75,7 @@ export default defineComponent({
               };
             });
           },
-          ({ code, type, payload, option }) => {
+          ({ option }) => {
             window.quickcommand.writeClipboard(option.text);
             window.utools.showNotification("已复制");
           }
@@ -97,10 +99,7 @@ export default defineComponent({
       );
     },
     saveProfile() {
-      dbManager.putDB(
-        window.lodashM.cloneDeep(this.profile),
-        "cfg_profile"
-      );
+      dbManager.putDB(window.lodashM.cloneDeep(this.profile), "cfg_profile");
       dbManager.putDB(
         window.lodashM.cloneDeep(this.nativeProfile),
         "cfg_" + utools.getNativeId() + "_profile"
@@ -124,19 +123,21 @@ export default defineComponent({
       }
     },
     enterPlugin(enter) {
-      // 使用情况统计
-      // this.usageStatistics(enter.code, this.parseDate(new Date()));
       this.updateExp();
       this.$q.dark.set(utools.isDarkColors());
       this.enterData = enter;
-      // 自动分离目前还没有好的方案
-      // if (this.$root.profile.autoDetachFeatures?.includes(enter.code)) {
-      // autoDetach.autoDetach();
-      // }
       this.$router.push(enter.code);
     },
     outPlugin() {
-      this.$refs.view.$refs?.commandEditor?.saveCodeHistory();
+      // 退出时保存RunCode和RunComposer的命令
+      if (!["code", "composer"].includes(this.$route.name)) return;
+
+      const currentCommand = window.lodashM.cloneDeep(
+        this.commandManager.state.currentCommand
+      );
+
+      dbManager.putDB(currentCommand, `cfg_${this.$route.name}History`);
+
       this.$router.push("/");
       this.saveProfile();
     },

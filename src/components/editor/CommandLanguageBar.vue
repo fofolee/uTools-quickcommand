@@ -238,10 +238,6 @@ export default {
       type: Boolean,
       default: true,
     },
-    isRunCodePage: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: ["update:modelValue", "action"],
   components: {
@@ -260,6 +256,9 @@ export default {
   computed: {
     currentCommand() {
       return this.modelValue;
+    },
+    isRunCodePage() {
+      return this.$route.name === "code";
     },
   },
   methods: {

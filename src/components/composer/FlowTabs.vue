@@ -74,7 +74,7 @@
     >
       <CommandConfig
         class="command-config-panel"
-        v-if="flow.id === 'main' && commandConfig.features"
+        v-if="flow.id === 'main' && showCommandConfig"
         :model-value="commandConfig"
         @update:model-value="updateCommandConfig"
       />
@@ -266,6 +266,14 @@ export default defineComponent({
       showFlowManager: false,
       outputVariables: [],
     };
+  },
+  computed: {
+    isRunComposerPage() {
+      return this.$route.name === "composer";
+    },
+    showCommandConfig() {
+      return !this.isRunComposerPage && this.commandConfig.features;
+    },
   },
   methods: {
     generateFlowName(baseName = "func_") {

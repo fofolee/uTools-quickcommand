@@ -21,18 +21,11 @@
     <!-- 命令编辑界面 -->
     <transition name="slide">
       <div v-if="isEditorShow" class="editor-container">
-        <component
-          :is="commandEditorAction.component"
-          :action="commandEditorAction"
-          @editorEvent="handleEditorEvent"
-        />
+        <component :is="editorComponent" @editorEvent="handleEditorEvent" />
       </div>
     </transition>
 
-    <CommandRunResult
-      :action="{ type: 'config' }"
-      ref="result"
-    ></CommandRunResult>
+    <CommandRunResult ref="result"></CommandRunResult>
   </div>
 </template>
 
@@ -69,6 +62,7 @@ export default {
       isEditorShow: false,
       commandEditorAction: {},
       footerBarHeight: "40px",
+      editorComponent: "CommandEditor",
     };
   },
   computed: {
@@ -170,18 +164,19 @@ export default {
         typeof commandOrCode === "string"
           ? this.allQuickCommands[commandOrCode]
           : commandOrCode;
-      this.commandEditorAction = {
-        type: "edit",
-        data: window.lodashM.cloneDeep(command),
-        component: command.flows ? "ComposerEditor" : "CommandEditor",
-      };
+      this.editorComponent =
+        command.program === "quickcomposer"
+          ? "ComposerEditor"
+          : "CommandEditor";
+      this.commandManager.state.currentCommand =
+        window.lodashM.cloneDeep(command);
       this.isEditorShow = true;
     },
     // 导入命令
-    async importCommand(quickCommandInfo) {
-      const command = await this.commandManager.importCommand(quickCommandInfo);
-      if (command) {
-        this.locateToCommand(command.tags, command.features?.code);
+    async importCommand(command) {
+      const result = await this.commandManager.importCommand(command);
+      if (result) {
+        this.locateToCommand(result.tags, result.features?.code);
       }
     },
     // 定位命令, 包含changeCurrentTag
@@ -204,12 +199,11 @@ export default {
       });
     },
     // 新建命令
-    addNewCommand(component = "CommandEditor") {
-      this.commandEditorAction = {
-        type: "new",
-        data: {},
-        component,
-      };
+    addNewCommand(program = "quickcommand") {
+      this.editorComponent =
+        program === "quickcomposer" ? "ComposerEditor" : "CommandEditor";
+      this.commandManager.state.currentCommand =
+        this.commandManager.getDefaultCommand(program);
       this.isEditorShow = true;
     },
     saveCommand(command) {

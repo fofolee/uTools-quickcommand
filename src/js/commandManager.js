@@ -3,6 +3,7 @@ import quickcommandParser from "js/common/quickcommandParser.js";
 import importAll from "js/common/importAll.js";
 import { utoolsFull, dbManager } from "js/utools.js";
 import { getUniqueId } from "js/common/uuid.js";
+import programs from "js/options/programs.js";
 import outputTypes from "js/options/outputTypes.js";
 
 // 默认命令
@@ -18,6 +19,7 @@ const state = reactive({
   activatedQuickPanels: [],
   currentTag: "",
   commandSearchKeyword: "",
+  currentCommand: {},
 });
 
 const getCmdType = (cmds) => {
@@ -253,6 +255,38 @@ export function useCommandManager() {
     });
   };
 
+  const getDefaultCommand = (program = "quickcommand") => {
+    const quickcomposerCommand = {
+      program,
+      features: {
+        icon: programs.quickcommand.icon,
+        explain: "",
+        platform: ["win32", "linux", "darwin"],
+        mainPush: false,
+        cmds: [],
+      },
+      output: "text",
+      tags: [],
+    };
+    const quickcommandCommand = {
+      ...quickcomposerCommand,
+      cmd: "",
+      scptarg: "",
+      charset: {
+        scriptCode: "",
+        outputCode: "",
+      },
+      customOptions: {
+        bin: "",
+        argv: "",
+        ext: "",
+      },
+    };
+    return program === "quickcomposer"
+      ? quickcomposerCommand
+      : quickcommandCommand;
+  };
+
   return {
     state,
     getAllQuickCommands,
@@ -268,5 +302,6 @@ export function useCommandManager() {
     clearAllFeatures,
     clearAllCommands,
     changeCurrentTag,
+    getDefaultCommand,
   };
 }

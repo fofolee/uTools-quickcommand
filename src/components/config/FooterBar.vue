@@ -77,7 +77,7 @@
           <q-btn
             split
             flat
-            @click="$emit('add-new', 'CommandEditor')"
+            @click="$emit('add-new', 'quickcommand')"
             color="primary"
             class="new-btn"
           >
@@ -87,7 +87,7 @@
           <q-btn
             split
             flat
-            @click="$emit('add-new', 'ComposerEditor')"
+            @click="$emit('add-new', 'quickcomposer')"
             color="primary"
             class="new-btn"
           >

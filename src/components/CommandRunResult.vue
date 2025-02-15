@@ -100,22 +100,12 @@ export default {
         /^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/,
     };
   },
-  props: {
-    /**
-     * run：    「RunCode界面」 无侧栏，运行结果弹窗显示，保存命令历史
-     * edit：   「编辑命令界面』 有侧栏，运行结果弹窗显示，需要对payload临时赋值
-     * new：    『新建命令界面」 有侧栏，运行结果弹窗显示，需要对payload临时赋值
-     * config： 「配置界面』    运行结果弹窗显示，需要对payload临时赋值
-     * input：  『主输入框进入」 运行结果直接展示，动态调整窗体高度
-     */
-    action: Object,
-  },
   computed: {
     fromUtools() {
-      return this.action.type === "input";
+      return this.$route.name === "command";
     },
     needTempPayload() {
-      return ["edit", "new", "config"].includes(this.action.type);
+      return !["command", "code", "composer"].includes(this.$route.name);
     },
     maxHeight() {
       return this.fromUtools ? 600 : 400;

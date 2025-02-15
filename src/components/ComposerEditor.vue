@@ -2,27 +2,29 @@
   <CommandComposer
     ref="composer"
     @action="handleComposerAction"
-    v-model="quickcommandInfo"
+    v-model="commandManager.state.currentCommand"
     :disabled-control-buttons="disabledControlButtons"
     class="fixed-full"
   />
   <!-- 运行结果 -->
-  <CommandRunResult :action="action" ref="result"></CommandRunResult>
+  <CommandRunResult ref="result"></CommandRunResult>
 </template>
 
 <script>
 import CommandComposer from "components/composer/CommandComposer.vue";
 import CommandRunResult from "components/CommandRunResult";
 import { findCommandByValue } from "js/composer/composerConfig";
-import programs from "js/options/programs.js";
-import { ref, computed } from "vue";
+import { useCommandManager } from "js/commandManager.js";
 
 export default {
   components: { CommandComposer, CommandRunResult },
-  setup(props) {
+  setup() {
+    const commandManager = useCommandManager();
+
     const retoreToFullCommand = (command) => {
-      const { flows } = command;
-      if (!flows) return command;
+      const newCommand = window.lodashM.cloneDeep(command);
+      const { flows } = newCommand;
+      if (!flows) return newCommand;
       const newFlows = flows.map((flow) => ({
         ...flow,
         commands: flow.commands.map((cmd) => {
@@ -71,45 +73,25 @@ export default {
       };
     };
 
-    const commandAction = window.lodashM.cloneDeep(props.action);
-    const savedCommand = commandAction.data || {};
-    const defaultCommand = {
-      program: "quickcomposer",
-      features: {
-        icon: programs.quickcommand.icon,
-        explain: "",
-        platform: ["win32", "linux", "darwin"],
-        mainPush: false,
-        cmds: [],
-      },
-      flows: [],
-      output: "text",
-      tags: [],
-    };
-    const quickcommandInfo = ref({
+    const defaultCommand = commandManager.getDefaultCommand("quickcomposer");
+
+    commandManager.state.currentCommand = {
       ...defaultCommand,
-      ...retoreToFullCommand(savedCommand),
-    });
-
-    const isRunComposePage = computed(() => {
-      return props.action.type === "composer";
-    });
-
-    const disabledControlButtons = computed(() => {
-      return isRunComposePage.value ? ["close", "save", "apply"] : ["apply"];
-    });
+      ...retoreToFullCommand(commandManager.state.currentCommand),
+    };
 
     return {
-      quickcommandInfo,
+      commandManager,
       getLitedComposerCommand,
-      disabledControlButtons,
     };
   },
   emits: ["editorEvent"],
-  props: {
-    action: {
-      type: Object,
-      required: true,
+  computed: {
+    isRunComposerPage() {
+      return this.$route.name === "composer";
+    },
+    disabledControlButtons() {
+      return this.isRunComposerPage ? ["close", "save", "apply"] : ["apply"];
     },
   },
   methods: {
