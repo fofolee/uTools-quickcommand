@@ -3,6 +3,7 @@ import quickcommandParser from "js/common/quickcommandParser.js";
 import importAll from "js/common/importAll.js";
 import { utoolsFull, dbManager } from "js/utools.js";
 import { getUniqueId } from "js/common/uuid.js";
+import { findCommandByValue } from "js/composer/composerConfig";
 import programs from "js/options/programs.js";
 import outputTypes from "js/options/outputTypes.js";
 
@@ -287,6 +288,58 @@ export function useCommandManager() {
       : quickcommandCommand;
   };
 
+  const getFullComposerCommand = (command) => {
+    const newCommand = window.lodashM.cloneDeep(command);
+    const { flows } = newCommand;
+    if (!flows) return newCommand;
+    const newFlows = flows.map((flow) => ({
+      ...flow,
+      commands: flow.commands.map((cmd) => {
+        // 恢复所有属性
+        const command = findCommandByValue(cmd.value);
+        return {
+          ...command,
+          ...cmd,
+        };
+      }),
+    }));
+    return {
+      ...command,
+      flows: newFlows,
+    };
+  };
+
+  const getLitedComposerCommand = (command) => {
+    const { flows } = command;
+    if (!flows) return command;
+    const newFlows = flows.map((flow) => ({
+      ...flow,
+      commands: flow.commands.map((cmd) => {
+        const cmdCopy = { ...cmd };
+        // 移除不必要保存的属性
+        const uselessProps = [
+          "config",
+          "label",
+          "component",
+          "subCommands",
+          "outputs",
+          "options",
+          "icon",
+          "width",
+          "placeholder",
+          "summary",
+          "type",
+        ];
+        uselessProps.forEach((prop) => delete cmdCopy[prop]);
+        return cmdCopy;
+      }),
+    }));
+    return {
+      ...command,
+      flows: newFlows,
+    };
+  };
+
   return {
     state,
     getAllQuickCommands,
@@ -303,5 +356,7 @@ export function useCommandManager() {
     clearAllCommands,
     changeCurrentTag,
     getDefaultCommand,
+    getFullComposerCommand,
+    getLitedComposerCommand,
   };
 }
