@@ -59,7 +59,7 @@ export function generateCode(flow) {
             cmdCode = `${cmdCode}.then(${cmd.callbackFunc})`;
           } else {
             // 如果输出变量有详细变量，则需要为每个变量赋值
-            const promiseName = name || "result";
+            const promiseName = name || "__result";
 
             const extractVarCode = Object.entries(details)
               .map(
@@ -82,7 +82,7 @@ export function generateCode(flow) {
         code.push(indent + cmdCode);
       } else if (cmd.asyncMode === "await") {
         // 使用 await 模式
-        const promiseName = name || "result";
+        const promiseName = name || "__result";
         cmdCode = getVarAssignCode(promiseName, `await ${cmdCode}`);
         code.push(indent + cmdCode);
         // 处理详细变量
@@ -98,7 +98,7 @@ export function generateCode(flow) {
         }
       } else {
         // 非Async命令
-        const resultVarName = name || "result";
+        const resultVarName = name || "__result";
         cmdCode = getVarAssignCode(resultVarName, `${cmdCode}`);
         code.push(indent + cmdCode);
         // 处理详细变量
