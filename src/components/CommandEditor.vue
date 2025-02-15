@@ -81,7 +81,7 @@ const CodeEditor = defineAsyncComponent({
   timeout: 3000,
 });
 
-// TODO: 对称加密声明，运行命令不需要设置，commandTypes调整
+// TODO: 对称加密声明
 export default {
   components: {
     CodeEditor,

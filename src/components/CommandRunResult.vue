@@ -76,7 +76,6 @@ import commandTypes from "js/options/commandTypes.js";
 import ResultArea from "components/ResultArea.vue";
 import ResultMenu from "components/popup/ResultMenu.vue";
 import { generateFlowsCode } from "js/composer/generateCode";
-import { getValidCommand } from "js/commandManager";
 import { dbManager } from "js/utools.js";
 import programs from "js/options/programs.js";
 
@@ -132,16 +131,13 @@ export default {
     // 运行命令
     async runCurrentCommand(currentCommand) {
       let command = window.lodashM.cloneDeep(currentCommand);
+      if (!command.output) command.output = "text";
       // 如果是composer命令，则动态生成cmd
       if (command.program === "quickcomposer") {
         command.cmd = generateFlowsCode(command.flows);
       }
       this.$root.isRunningCommand = true;
-      try {
-        await this.getTempPayload(command);
-      } catch (error) {
-        return quickcommand.showMessageBox(error.toString(), "error");
-      }
+      this.needTempPayload && (await this.getTempPayload(command));
       // 如果命令包含子输入框，则设置子输入框
       if (command.cmd.includes("{{subinput")) return this.setSubInput(command);
       this.fire(command);
@@ -291,16 +287,18 @@ export default {
     },
     // payload 临时赋值
     async getTempPayload(currentCommand) {
-      if (!this.needTempPayload) return;
-      currentCommand = getValidCommand(currentCommand);
-      const firstCmd = currentCommand.features.cmds[0];
+      const firstCmd = currentCommand.features?.cmds?.[0];
+      if (!firstCmd) return;
       const type = firstCmd.type || "text";
+      const getPayload = async () => {
+        if (type === "text") return firstCmd;
+        const cmdType = commandTypes[type];
+        if (!cmdType.tempPayload) return {};
+        return await cmdType.tempPayload();
+      };
       this.$root.enterData = {
         type,
-        payload:
-          type === "text"
-            ? firstCmd
-            : (await commandTypes[type]?.tempPayload?.()) || {},
+        payload: await getPayload(),
       };
     },
     handleResult(stdout, stderr, options) {

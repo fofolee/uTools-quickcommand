@@ -44,7 +44,7 @@ const getLabeledCmds = (cmds, explain) => {
   });
 };
 
-export const getValidCommand = (command) => {
+const getValidCommand = (command) => {
   const { cmds, explain } = command.features;
   if (!explain) throw "名称不能为空";
   if (!Array.isArray(cmds)) throw "匹配规则格式错误";

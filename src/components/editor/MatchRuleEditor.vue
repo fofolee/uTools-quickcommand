@@ -305,7 +305,6 @@ export default defineComponent({
   data() {
     return {
       ruleTypeOptions: Object.values(commandTypes)
-        .filter((type) => type.name !== "professional")
         .map((type) => ({
           label: type.label,
           value: type.name,
