@@ -307,7 +307,11 @@ body.body--dark.glass-effect-menu .q-menu {
   font-size: 12px;
 }
 
-/* 左右抖动 */
+.body--dark .q-tab-panels {
+  background-color: transparent;
+}
+
+/* 左右移动 */
 @keyframes leftRight {
   0% {
     transform: translateX(-2px);
@@ -325,7 +329,7 @@ body.body--dark.glass-effect-menu .q-menu {
   }
 }
 
-/* 上下抖动 */
+/* 上下移动 */
 @keyframes upDown {
   0% {
     transform: translateY(-1px);
@@ -345,5 +349,22 @@ body.body--dark.glass-effect-menu .q-menu {
   100% {
     transform: translateY(-1px);
     opacity: 1;
+  }
+}
+
+/* 左右抖动 */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-10deg);
+  }
+
+  75% {
+    transform: rotate(10deg);
   }
 }

@@ -125,7 +125,6 @@ export default {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: var(--q-card-background);
 }
 
 .ubrowser-panels {
@@ -151,7 +150,6 @@ export default {
 .ubrowser-editor :deep(.q-tabs) {
   min-height: 36px;
   padding: 0 8px;
-  background-color: var(--q-card-background);
 }
 
 .ubrowser-editor :deep(.q-tab--active) {
@@ -169,14 +167,5 @@ export default {
 
 .ubrowser-editor :deep(.q-tab__label) {
   font-size: 13px;
-}
-
-/* 暗色模式适配 */
-.body--dark .ubrowser-editor {
-  background-color: var(--q-dark);
-}
-
-.body--dark .ubrowser-editor :deep(.q-tabs) {
-  background-color: var(--q-dark);
 }
 </style>

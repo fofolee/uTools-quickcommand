@@ -239,22 +239,8 @@ export default {
   background: rgba(var(--q-primary-rgb), 0.1) !important;
 }
 
-/* 搜索框动画 */
-@keyframes searchIconShake {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-10deg);
-  }
-  75% {
-    transform: rotate(10deg);
-  }
-}
-
 .q-field--focused .q-field__prepend .q-icon {
-  animation: searchIconShake 0.8s ease;
+  animation: shake 0.8s ease;
   color: var(--q-primary);
 }
 

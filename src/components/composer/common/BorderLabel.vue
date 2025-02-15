@@ -79,7 +79,7 @@ export default {
   position: absolute;
   top: -9px;
   left: 16px;
-  background: #fff;
+  background-color: #fafafa;
   color: rgba(0, 0, 0, 0.6);
   font-size: 12px;
   line-height: 16px;
@@ -153,8 +153,8 @@ export default {
 }
 
 .body--dark .label-header {
-  background: #303133;
   color: rgba(255, 255, 255, 0.7);
+  background-color: #2e2e2e;
 }
 
 /* 动画优化 */

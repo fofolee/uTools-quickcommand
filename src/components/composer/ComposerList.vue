@@ -342,4 +342,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
 }
+
+.section-header .q-field--focused .q-field__prepend .q-icon {
+  animation: shake 0.8s ease;
+  color: var(--q-primary);
+}
 </style>
