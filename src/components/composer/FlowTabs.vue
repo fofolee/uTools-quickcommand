@@ -146,6 +146,11 @@ export default defineComponent({
       },
     ];
 
+    const clearFlows = () => {
+      updateFlows(defaultFlow);
+      activeTab.value = "main";
+    };
+
     if (!props.modelValue.flows || props.modelValue.flows.length === 0) {
       updateFlows(defaultFlow);
     }
@@ -258,6 +263,7 @@ export default defineComponent({
       activeTab,
       getOutputVariables,
       updateFlows,
+      clearFlows,
     };
   },
   data() {
@@ -372,6 +378,9 @@ export default defineComponent({
           } else {
             this.addFlow(payload);
           }
+          break;
+        case "clear":
+          this.clearFlows();
           break;
         default:
           this.$emit("action", type, payload);

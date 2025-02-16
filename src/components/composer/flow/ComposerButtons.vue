@@ -55,6 +55,15 @@
         <q-tooltip>保存</q-tooltip>
       </q-btn>
       <q-btn
+        dense
+        flat
+        icon="delete_sweep"
+        @click="handleClear"
+        v-if="!disabledButtons.includes('clear')"
+      >
+        <q-tooltip>清空所有流程</q-tooltip>
+      </q-btn>
+      <q-btn
         flat
         dense
         icon="preview"
@@ -137,6 +146,14 @@ export default defineComponent({
     handleApply() {
       const code = generateFlowsCode(this.flows);
       this.$emit("action", "apply", code);
+    },
+    handleClear() {
+      quickcommand
+        .showConfirmBox("确定要清空所有流程吗？", "FBI WARNING")
+        .then((isConfirm) => {
+          if (!isConfirm) return;
+          this.$emit("action", "clear");
+        });
     },
   },
 });
