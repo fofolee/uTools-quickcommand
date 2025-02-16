@@ -12,10 +12,15 @@ export default defineComponent({
   emits: ["emitValue"],
   methods: {
     async inspectElement() {
-      window.utools.hideMainWindow();
-      const selectElement = await quickcomposer.browser.getSelector();
-      window.utools.showMainWindow();
-      this.$emit("emitValue", "str", selectElement || "");
+      try {
+        const tab = await quickcomposer.browser.getCurrentTab();
+        window.utools.hideMainWindow();
+        const selectElement = await quickcomposer.browser.getSelector(tab);
+        window.utools.showMainWindow();
+        this.$emit("emitValue", "str", selectElement || "");
+      } catch (error) {
+        quickcommand.showMessageBox(error.toString(), "error");
+      }
     },
   },
 });
