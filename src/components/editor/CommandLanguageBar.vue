@@ -269,7 +269,11 @@ export default {
         this.isSettingsVisible = true;
       }
       if (newProgram === "html") {
+        // 如果是html命令，则设置output为html
         newCommand.output = "html";
+      } else if (this.isRunCodePage) {
+        // 否则，运行代码页面，恢复output为text
+        newCommand.output = "text";
       }
       const featuresIcon = this.currentCommand.features.icon || "";
       if (featuresIcon.slice(0, 10) !== "data:image") {

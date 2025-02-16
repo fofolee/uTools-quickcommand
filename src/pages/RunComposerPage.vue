@@ -19,6 +19,7 @@ export default {
       ...defaultCommand,
       ...savedCommand,
       program: "quickcomposer",
+      output: "text",
     };
   },
 };
