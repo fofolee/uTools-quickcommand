@@ -15,7 +15,10 @@ export default defineComponent({
       try {
         const tab = await quickcomposer.browser.getCurrentTab();
         window.utools.hideMainWindow();
-        const selectElement = await quickcomposer.browser.getSelector(tab);
+        const selectElement = await quickcomposer.browser.getSelector({
+          by: "id",
+          searchValue: tab.id,
+        });
         window.utools.showMainWindow();
         this.$emit("emitValue", "str", selectElement || "");
       } catch (error) {

@@ -1,5 +1,35 @@
-const { initCDP, cleanupCDP } = require("./cdp");
 const { searchTarget } = require("./tabs");
+const { getCurrentClientPort } = require("./client");
+const CDP = require("chrome-remote-interface");
+
+// 不从cdp.js导入initCDP，单独启用一个Fetch域的CDP
+const initCDP = async (targetId) => {
+  try {
+    const port = await getCurrentClientPort();
+    const client = await CDP({
+      target: targetId,
+      port,
+    });
+
+    const { Fetch } = client;
+    await Promise.all([Fetch.enable()]);
+
+    return { Fetch };
+  } catch (err) {
+    throw new Error(`连接到浏览器失败: ${err.message}`);
+  }
+};
+
+const cleanupCDP = async (targetId) => {
+  try {
+    // 直接关闭传入的 client
+    if (targetId?.client) {
+      await targetId.client.close();
+    }
+  } catch (error) {
+    console.log("关闭CDP连接失败:", error);
+  }
+};
 
 // 使用正则替换内容
 const replaceWithRegex = (content, pattern, replacement) => {
