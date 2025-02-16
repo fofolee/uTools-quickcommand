@@ -110,11 +110,9 @@
           </template>
           <q-tooltip>
             通过本地监听
-            {{
-              $root.nativeProfile.serverPort
-            }}
+            {{ $root.nativeProfile.serverPort }}
             端口的形式，接收用户传送过来的参数，然后根据参数执行不同的操作
-            <br />需要配置插件跟随 utools 启动和保留后台<br />也可在主输入框通过关键字「快捷命令服务配置」进入
+            <br />需要配置插件跟随 utools 启动和保留后台<br />可在主输入框通过关键字「快捷命令服务配置」进入
           </q-tooltip>
         </q-field>
       </q-item>
@@ -132,7 +130,26 @@
             <q-btn flat @click="$router.push('code')" icon="open_in_new" />
           </template>
           <q-tooltip>
-            一个可以直接运行代码的代码编辑器<br />也可在主输入框输入关键字「RunCode」进入
+            一个可以直接运行代码的代码编辑器<br />可在主输入框输入关键字「RunCode」进入
+          </q-tooltip>
+        </q-field>
+      </q-item>
+      <q-item>
+        <q-item-section side>
+          <q-icon name="view_timeline" />
+        </q-item-section>
+        <q-field dense outlined style="width: 280px">
+          <template v-slot:control>
+            <div class="self-center full-width no-outline" tabindex="0">
+              可视化编排
+            </div>
+          </template>
+          <template v-slot:append>
+            <q-btn flat @click="$router.push('composer')" icon="open_in_new" />
+          </template>
+          <q-tooltip>
+            一个可视化编排工具，包含可以直接运行的超过一百种实用工具，也可以组合功能创建自动化流程
+            <br />可在主输入框输入关键字「RunComposer」进入
           </q-tooltip>
         </q-field>
       </q-item>
@@ -154,9 +171,7 @@ export default {
   methods: {
     toggleFeature(type, enable) {
       enable
-        ? this.utools.setFeature(
-            window.lodashM.cloneDeep(features[type])
-          )
+        ? this.utools.setFeature(window.lodashM.cloneDeep(features[type]))
         : this.utools.removeFeature(features[type].code);
     },
   },
