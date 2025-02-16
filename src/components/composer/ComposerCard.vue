@@ -258,8 +258,11 @@ export default defineComponent({
       }
     },
     getAvailableOutputVariable() {
-      let outputVariable = this.localCommand.outputVariable || {};
-      if (!outputVariable.name && !outputVariable.details) {
+      let outputVariable = { ...this.localCommand.outputVariable };
+      if (
+        window.lodashM.isEmpty(outputVariable.name) &&
+        window.lodashM.isEmpty(outputVariable.details)
+      ) {
         outputVariable.name = `temp_${Date.now()}`;
       }
       return outputVariable;
@@ -279,7 +282,10 @@ export default defineComponent({
     handleAddPrint() {
       // 创建一个打印命令
       const outputVariable = this.getAvailableOutputVariable();
-      this.localCommand.outputVariable = outputVariable;
+      this.localCommand = {
+        ...this.localCommand,
+        outputVariable,
+      };
       const consoleLogVars =
         this.getAvailableOutputVariableName(outputVariable);
 

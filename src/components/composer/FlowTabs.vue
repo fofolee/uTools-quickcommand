@@ -147,12 +147,12 @@ export default defineComponent({
     ];
 
     const clearFlows = () => {
-      updateFlows(defaultFlow);
+      updateFlows(window.lodashM.cloneDeep(defaultFlow));
       activeTab.value = "main";
     };
 
     if (!props.modelValue.flows || props.modelValue.flows.length === 0) {
-      updateFlows(defaultFlow);
+      updateFlows(window.lodashM.cloneDeep(defaultFlow));
     }
 
     const flows = computed(() => props.modelValue.flows || []);
