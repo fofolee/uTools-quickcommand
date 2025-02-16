@@ -95,7 +95,7 @@
               <template v-slot:append>
                 <q-icon
                   name="cancel"
-                  @click="removeRule(index)"
+                  @click.stop="removeRule(index)"
                   size="12px"
                   class="cursor-pointer text-grey"
                 />
@@ -120,7 +120,7 @@
                   </div>
                   <q-icon
                     name="cancel"
-                    @click="removeRule(index + keyRules.length)"
+                    @click.stop="removeRule(index + keyRules.length)"
                     size="12px"
                     class="cursor-pointer text-grey"
                   />
