@@ -3,9 +3,10 @@
     v-model="isExpanded"
     @update:model-value="$emit('update:is-expanded', $event)"
     class="command-composer command-config"
+    expand-icon-toggle
   >
     <template v-slot:header>
-      <div class="row basic-config">
+      <div class="row basic-config q-col-gutter-sm">
         <q-avatar size="36px" square class="featureIco">
           <q-img
             @click.stop="showIconPicker = true"
@@ -15,7 +16,7 @@
         <q-input
           ref="explainInput"
           :model-value="currentCommand.features.explain"
-          borderless
+          filled
           dense
           @update:model-value="updateModelValue('features.explain', $event)"
           @click.stop
@@ -24,6 +25,28 @@
           class="col"
         >
         </q-input>
+        <q-select
+          class="col-6 tag-select"
+          :model-value="currentCommand.tags"
+          @update:model-value="updateModelValue('tags', $event)"
+          :options="allQuickCommandTags"
+          @focus="expandOnFocus && updateExpanded(true)"
+          dense
+          options-dense
+          filled
+          use-input
+          use-chips
+          multiple
+          hide-dropdown-icon
+          new-value-mode="add-unique"
+          popup-content-class="command-tag-popup"
+          placeholder="标签，回车添加，最多3个"
+          max-values="3"
+          @new-value="tagVerify"
+          input-debounce="0"
+          ref="commandTagRef"
+          @blur="(e) => autoAddInputVal(e, $refs.commandTagRef)"
+        />
       </div>
     </template>
 
@@ -59,42 +82,19 @@
         />
       </div>
 
-      <!-- 标签 -->
+      <!-- 输出和搜索面板推送 -->
       <div class="config-section">
-        <div class="section-title">
-          <q-icon name="label" size="16px" />
-          <span class="q-ml-sm">标签</span>
-        </div>
-        <q-select
-          :model-value="currentCommand.tags"
-          @update:model-value="updateModelValue('tags', $event)"
-          :options="allQuickCommandTags"
-          dense
-          options-dense
-          filled
-          use-input
-          use-chips
-          multiple
-          hide-dropdown-icon
-          new-value-mode="add-unique"
-          popup-content-class="command-tag-popup"
-          placeholder="回车添加，最多3个"
-          max-values="3"
-          @new-value="tagVerify"
-          input-debounce="0"
-          ref="commandTagRef"
-          @blur="(e) => autoAddInputVal(e, $refs.commandTagRef)"
-        />
-      </div>
-
-      <!-- 输出 -->
-      <div class="config-section">
-        <div class="section-title">
-          <q-icon name="output" size="16px" />
-          <span class="q-ml-sm">输出</span>
-        </div>
         <div class="row q-col-gutter-sm">
-          <div class="col-12">
+          <div
+            :class="{
+              'col-12': from === 'quickcomposer',
+              'col-8': from === 'quickcommand',
+            }"
+          >
+            <div class="section-title">
+              <q-icon name="output" size="16px" />
+              <span class="q-ml-sm">输出</span>
+            </div>
             <ButtonGroup
               :model-value="currentCommand.output"
               :options="outputTypesOptionsDy"
@@ -102,25 +102,29 @@
               height="26px"
             />
           </div>
-          <div class="col-12">
+          <div
+            :class="{
+              'col-12': from === 'quickcomposer',
+              'col-4': from === 'quickcommand',
+            }"
+            :style="{
+              'margin-top': from === 'quickcomposer' ? '-4px' : '0',
+            }"
+          >
             <div class="section-title">
               <q-icon name="search" size="16px" />
-              <span class="q-ml-sm"
-                >搜索面板推送
-                <q-btn
-                  flat
-                  round
-                  size="xs"
-                  icon="help"
-                  @click="showMainPushHelp"
-                />
-              </span>
+              <span class="q-ml-sm q-mr-xs"> 搜索面板推送 </span>
+              <q-icon
+                name="help"
+                class="cursor-pointer"
+                @click.stop="showMainPushHelp"
+              />
             </div>
             <ButtonGroup
               :model-value="currentCommand.features.mainPush"
               :options="searchPushOptions"
               @update:model-value="handleMainPushChange"
-              height="30px"
+              height="26px"
             />
           </div>
         </div>
@@ -178,6 +182,10 @@ export default defineComponent({
     expandOnFocus: {
       type: Boolean,
       default: false,
+    },
+    from: {
+      type: String,
+      default: "quickcommand",
     },
   },
   emits: ["update:modelValue", "update:is-expanded"],
@@ -315,9 +323,19 @@ export default defineComponent({
   width: 100%;
 }
 
-.basic-config :deep(.q-field__native),
-.basic-config :deep(.q-field__control) {
-  height: 36px;
+.tag-select :deep(.q-field__control) {
+  overflow-x: auto;
+}
+
+.tag-select :deep(.q-field__native) {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tag-select :deep(.q-field__native::-webkit-scrollbar) {
+  height: 1px;
 }
 
 .command-config :deep(.q-item) {
@@ -327,7 +345,12 @@ export default defineComponent({
 }
 
 .command-config :deep(.q-item__section--side) {
-  padding: 0;
+  padding-left: 8px;
+  padding-right: 0;
+}
+
+.command-config :deep(.q-item__section--side .q-icon) {
+  top: 13px;
 }
 
 .command-config :deep(.q-item:hover) {

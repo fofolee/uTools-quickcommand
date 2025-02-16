@@ -76,6 +76,7 @@
         class="command-config-panel"
         v-if="flow.id === 'main' && showCommandConfig"
         :model-value="commandConfig"
+        from="quickcomposer"
         @update:model-value="updateCommandConfig"
       />
       <ComposerFlow
