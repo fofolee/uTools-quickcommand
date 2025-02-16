@@ -1,10 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
-const _ = require("lodash");
 
 const pluginInfo = () => {
-  return JSON.parse(fs.readFileSync(path.join(__dirname, "plugin.json")));
+  return JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, "..", "plugin.json"))
+  );
 };
 
 const getUtoolsPlugins = () => {

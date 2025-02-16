@@ -103,16 +103,16 @@
 </template>
 
 <script>
-import AboutThis from "../popup/AboutThis";
-import PanelSetting from "../popup/PanelSetting";
-import UserInfo from "../popup/UserInfo";
-import CommandManageMenu from "./CommandManageMenu.vue";
-import UtilityFeaturesMenu from "./UtilityFeaturesMenu.vue";
-import EnvConfigMenu from "./EnvConfigMenu.vue";
-import PersonalizeMenu from "./PersonalizeMenu.vue";
-import UserData from "../popup/UserData.vue";
+import AboutThis from "components/popup/AboutThis";
+import PanelSetting from "components/popup/PanelSetting";
+import UserInfo from "components/popup/UserInfo";
+import CommandManageMenu from "components/menu/CommandManageMenu.vue";
+import UtilityFeaturesMenu from "components/menu/UtilityFeaturesMenu.vue";
+import EnvConfigMenu from "components/menu/EnvConfigMenu.vue";
+import PersonalizeMenu from "components/menu/PersonalizeMenu.vue";
+import UserData from "components/popup/UserData.vue";
 import { utoolsFull } from "js/utools.js";
-import { useCommandManager } from "src/js/commandManager";
+import { useCommandManager } from "js/commandManager";
 
 export default {
   name: "ConfigurationMenu",
