@@ -10,10 +10,7 @@
         <q-icon
           name="output"
           v-if="!command.neverHasOutput"
-          :class="[
-            'output-btn',
-            command.outputVariable ? 'output-btn-active' : '',
-          ]"
+          :class="['output-btn', outputLength > 0 ? 'output-btn-active' : '']"
           @click="showOutputEditor = true"
         >
           <q-tooltip>
