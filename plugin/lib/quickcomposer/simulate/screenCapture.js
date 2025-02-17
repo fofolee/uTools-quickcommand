@@ -13,12 +13,7 @@ const unlinkAsync = promisify(fs.unlink);
 async function captureWindowsScreen() {
   const tmpFile = path.join(os.tmpdir(), `screen-${Date.now()}.png`);
   try {
-    await runCsharpFeature("utils", [
-      "-type",
-      "screenshot",
-      "-path",
-      tmpFile,
-    ]);
+    await runCsharpFeature("utils", ["-type", "screenshot", "-path", tmpFile]);
     const imageBuffer = await readFileAsync(tmpFile);
     return `data:image/png;base64,${imageBuffer.toString("base64")}`;
   } catch (error) {
@@ -64,7 +59,9 @@ async function captureLinuxScreen() {
           await execFileAsync("which", ["import"]);
           tool = "import";
         } catch {
-          console.error("未找到可用的Linux截图工具");
+          quickcommand.showSystemMessageBox(
+            "请先安装截图工具，命令：sudo apt install scrot"
+          );
           return null;
         }
       }
@@ -86,8 +83,7 @@ async function captureLinuxScreen() {
     const imageBuffer = await readFileAsync(tmpFile);
     return `data:image/png;base64,${imageBuffer.toString("base64")}`;
   } catch (error) {
-    console.error("Linux截图失败:", error);
-    return null;
+    throw error;
   } finally {
     await unlinkAsync(tmpFile).catch(() => {});
   }
@@ -95,18 +91,13 @@ async function captureLinuxScreen() {
 
 // 统一的截图接口
 async function captureFullScreen() {
-  try {
-    if (process.platform === "darwin") {
-      return await captureMacScreen();
-    } else if (process.platform === "win32") {
-      return await captureWindowsScreen();
-    } else if (process.platform === "linux") {
-      return await captureLinuxScreen();
-    }
-  } catch (error) {
-    console.error("截图失败:", error);
+  if (process.platform === "darwin") {
+    return await captureMacScreen();
+  } else if (process.platform === "win32") {
+    return await captureWindowsScreen();
+  } else if (process.platform === "linux") {
+    return await captureLinuxScreen();
   }
-  return null;
 }
 
 function captureAreaScreen() {
