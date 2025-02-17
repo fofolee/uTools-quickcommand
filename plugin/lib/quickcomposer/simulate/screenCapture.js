@@ -115,15 +115,15 @@ async function captureScreen(range = "fullscreen") {
 }
 
 async function captureScreenToFile(range = "fullscreen", path = null) {
-  if (!path) return null;
+  if (!path) return;
   const result = await captureScreen(range);
-  if (!result) return null;
+  if (!result) return;
   fs.writeFileSync(
     path,
     result.replace("data:image/png;base64,", ""),
     "base64"
   );
-  return result;
+  return;
 }
 
 async function captureScreenToClipboard(range = "fullscreen") {

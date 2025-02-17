@@ -26,9 +26,7 @@
           <template v-else>
             <div class="upload-placeholder">
               <q-icon name="add_photo_alternate" size="48px" color="grey-6" />
-              <div class="text-grey-6 q-mt-sm">
-                点击上传或粘贴图片<br />支持从剪贴板读取
-              </div>
+              <div class="text-grey-6 q-mt-sm">点击上传或粘贴图片</div>
             </div>
           </template>
         </div>
@@ -37,16 +35,16 @@
       <!-- 配置区域 -->
       <div class="col-12 col-sm-4">
         <div class="row">
-          <!-- 从剪贴板读取按钮 -->
+          <!-- 截图按钮 -->
           <div class="col-12">
             <q-btn
               outline
               color="primary"
               class="full-width"
-              @click="pasteFromClipboard"
+              @click="getImgByCaptureScreen"
             >
-              <q-icon name="content_paste" class="q-mr-sm" />
-              从剪贴板读取
+              <q-icon name="crop" class="q-mr-sm" />
+              截图查找
             </q-btn>
           </div>
 
@@ -157,7 +155,6 @@ export default defineComponent({
         try {
           const reader = new FileReader();
           reader.onload = (e) => {
-            this.argvs.imagePreview = e.target.result;
             this.updateArgvs("imagePreview", e.target.result);
           };
           reader.readAsDataURL(file);
@@ -176,7 +173,6 @@ export default defineComponent({
           const blob = item.getAsFile();
           const reader = new FileReader();
           reader.onload = (e) => {
-            this.argvs.imagePreview = e.target.result;
             this.updateArgvs("imagePreview", e.target.result);
           };
           reader.readAsDataURL(blob);
@@ -186,17 +182,16 @@ export default defineComponent({
     },
 
     // 从剪贴板读取
-    async pasteFromClipboard() {
-      const clipboardImage = quickcommand.readClipboardImage();
-      if (!clipboardImage)
-        return quickcommand.showMessageBox("剪贴板中没有图片", "warning");
-      this.argvs.imagePreview = clipboardImage;
-      this.updateArgvs("imagePreview", clipboardImage);
+    async getImgByCaptureScreen() {
+      const img = await quickcomposer.simulate.captureScreenToClipboard({
+        type: "area",
+      });
+      if (!img) return;
+      this.updateArgvs("imagePreview", img);
     },
 
     // 清除图片
     clearImage() {
-      this.argvs.imagePreview = "";
       this.updateArgvs("imagePreview", "");
     },
 
