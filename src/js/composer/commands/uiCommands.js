@@ -444,21 +444,17 @@ export const uiCommands = {
               label: "标题",
               component: "VariableInput",
               width: 6,
-              defaultValue: newVarInputVal("str", "进度"),
             },
             text: {
               label: "文本",
               component: "VariableInput",
               width: 6,
-              defaultValue: newVarInputVal("str", "处理中..."),
             },
             value: {
               label: "初始进度值",
-              component: "NumberInput",
+              component: "VariableInput",
+              disableToggleType: true,
               width: 3,
-              min: 0,
-              max: 100,
-              defaultValue: 0,
             },
             position: {
               label: "位置",
@@ -470,7 +466,6 @@ export const uiCommands = {
                 { label: "屏幕左下角", value: "bottom-left" },
                 { label: "屏幕右下角", value: "bottom-right" },
               ],
-              defaultValue: "bottom-right",
             },
             onClose: {
               label: "关闭按钮回调函数",
@@ -496,7 +491,7 @@ export const uiCommands = {
           defaultValue: {
             title: newVarInputVal("str", "进度"),
             text: newVarInputVal("str", "处理中..."),
-            value: 0,
+            value: newVarInputVal("var", "0"),
             position: "bottom-right",
             onClose: newVarInputVal("var"),
             onPause: newVarInputVal("var"),
@@ -515,11 +510,9 @@ export const uiCommands = {
           options: {
             value: {
               label: "进度值",
-              component: "NumberInput",
+              component: "VariableInput",
               width: 4,
-              min: 0,
-              max: 100,
-              defaultValue: 0,
+              disableToggleType: true,
             },
             text: {
               label: "文本",
@@ -534,7 +527,7 @@ export const uiCommands = {
             },
           },
           defaultValue: {
-            value: 0,
+            value: newVarInputVal("var", "0"),
             text: newVarInputVal("str"),
             complete: false,
           },

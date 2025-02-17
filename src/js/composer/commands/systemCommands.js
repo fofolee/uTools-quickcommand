@@ -549,9 +549,8 @@ export const systemCommands = {
       config: [
         {
           label: "进程ID",
-          component: "NumberInput",
-          min: 0,
-          step: 100,
+          component: "VariableInput",
+          disableToggleType: true,
           icon: "developer_board",
           width: 7,
         },

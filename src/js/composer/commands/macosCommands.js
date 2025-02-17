@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 const windowOutputStructure = {
   name: { label: "应用名称", suggestName: "appName" },
   displayedName: {
@@ -432,10 +434,10 @@ export const macosCommands = {
           config: [
             {
               label: "窗口索引",
-              component: "NumberInput",
+              component: "VariableInput",
               icon: "window",
-              min: 1,
-              defaultValue: 1,
+              disableToggleType: true,
+              defaultValue: newVarInputVal("var", "1"),
               width: 12,
             },
           ],

@@ -1,3 +1,5 @@
+import { newVarInputVal } from "js/composer/varInputValManager";
+
 export const utoolsCommands = {
   label: "uTools功能",
   icon: "insights",
@@ -49,9 +51,9 @@ export const utoolsCommands = {
       config: [
         {
           label: "高度",
-          component: "NumberInput",
-          min: 0,
-          step: 100,
+          component: "VariableInput",
+          disableToggleType: true,
+          defaultValue: newVarInputVal("var", "100"),
           icon: "straighten",
           width: 12,
         },
