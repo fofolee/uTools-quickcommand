@@ -126,7 +126,6 @@ export default {
       if (command.program === "quickcomposer") {
         command.cmd = generateFlowsCode(command.flows);
       }
-      this.$root.isRunningCommand = true;
       this.needTempPayload && (await this.getTempPayload(command));
       // 如果命令包含子输入框，则设置子输入框
       if (command.cmd.includes("{{subinput")) return this.setSubInput(command);
@@ -292,7 +291,6 @@ export default {
       };
     },
     handleResult(stdout, stderr, options) {
-      this.$root.isRunningCommand = false;
       if (stderr) {
         return options.earlyExit
           ? alert(stderr)
@@ -302,7 +300,6 @@ export default {
     },
     // 显示运行结果
     async showRunResult(content, isSuccess) {
-      this.$root.isRunningCommand = false;
       content = await this.handleContent(content);
       this.runResultStatus = isSuccess;
       this.runResult = this.runResult.concat(content);

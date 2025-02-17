@@ -724,7 +724,6 @@ interface quickcommandApi {
   /**
    * 显示一个带有暂停、恢复、关闭回调功能的进度条，支持动态更新进度
    * @param {object} options - 配置选项
-   * @param {string} [options.title="进度"] - 对话框标题
    * @param {string} [options.text="处理中..."] - 进度条上方的文本
    * @param {number} [options.value=0] - 初始进度值(0-100)
    * @param {string} [options.position="bottom-right"] - 进度条位置，可选值：top-left, top-right, bottom-left, bottom-right
@@ -736,7 +735,6 @@ interface quickcommandApi {
    * ```js
    * // 基本使用
    * const processBar = await quickcommand.showProcessBar({
-   *   title: "下载进度",
    *   text: "正在下载文件...",
    *   value: 0,
    *   position: "bottom-right"
@@ -745,7 +743,6 @@ interface quickcommandApi {
    * // 带暂停/恢复，关闭回调功能
    * let isPaused = false;
    * const processBar = await quickcommand.showProcessBar({
-   *   title: "下载进度",
    *   text: "正在下载文件...",
    *   value: 0,
    *   onPause: () => {
@@ -839,6 +836,58 @@ interface quickcommandApi {
       close: () => void;
     }
   ): void;
+
+  /**
+   * 显示一个循环动画的加载条
+   * @param {object} options - 配置选项
+   * @param {string} [options.text="加载中..."] - 加载条上方的文本
+   * @param {string} [options.position="bottom-right"] - 加载条位置，可选值：top-left, top-right, bottom-left, bottom-right
+   * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
+   * @returns {Promise<{id: number, close: Function}>} 返回加载条对象
+   *
+   * ```js
+   * // 基本使用
+   * const loadingBar = await quickcommand.showLoadingBar({
+   *   text: "正在加载...",
+   *   position: "bottom-right"
+   * });
+   *
+   * // 带关闭回调
+   * const loadingBar = await quickcommand.showLoadingBar({
+   *   text: "正在加载...",
+   *   onClose: () => {
+   *     console.log("用户关闭了加载条");
+   *   }
+   * });
+   *
+   * // 手动关闭
+   * loadingBar.close();
+   * // 或者
+   * quickcommand.closeLoadingBar();
+   * ```
+   */
+  showLoadingBar(options?: {
+    text?: string;
+    position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+    onClose?: () => void;
+  }): Promise<{
+    id: number;
+    close: () => void;
+  }>;
+
+  /**
+   * 关闭加载条
+   * @param {{id: number, close: Function}|undefined} loadingBar - 加载条对象，如果不传入则关闭上一次创建的加载条
+   *
+   * ```js
+   * // 关闭最近创建的加载条
+   * quickcommand.closeLoadingBar();
+   *
+   * // 关闭指定的加载条
+   * quickcommand.closeLoadingBar(loadingBar);
+   * ```
+   */
+  closeLoadingBar(loadingBar?: { id: number; close: () => void }): void;
 }
 
 declare var quickcommand: quickcommandApi;

@@ -105,8 +105,27 @@ async function chat(apiConfig, content) {
       throw new Error("不支持的模型类型");
     }
 
+    const loadingBar = await quickcommand.showLoadingBar({
+      text: "AI思考中...",
+      onClose: () => {
+        // 取消请求
+        if (source) {
+          source.cancel("操作已取消");
+        }
+      },
+    });
+
+    // 创建取消令牌
+    const CancelToken = axios.CancelToken;
+    const source = CancelToken.source();
+
     // 发送请求
-    const response = await axios.post(url, requestData, config);
+    const response = await axios.post(url, requestData, {
+      ...config,
+      cancelToken: source.token,
+    });
+
+    loadingBar.close();
 
     // 解析不同模型的响应
     let result;
@@ -129,6 +148,14 @@ async function chat(apiConfig, content) {
       result,
     };
   } catch (error) {
+    // 如果是用户取消的请求，返回特定的错误信息
+    if (axios.isCancel(error)) {
+      return {
+        success: false,
+        error: "请求已取消",
+        cancelled: true,
+      };
+    }
     return {
       success: false,
       error: error.response?.data?.error?.message || error.message,

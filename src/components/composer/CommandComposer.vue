@@ -17,9 +17,6 @@
         />
       </div>
     </div>
-    <q-inner-loading :showing="hasCommandNeedLoading && $root.isRunningCommand">
-      <q-spinner-cube size="50px" color="primary" />
-    </q-inner-loading>
   </div>
 </template>
 
@@ -38,7 +35,6 @@ export default defineComponent({
   data() {
     return {
       availableCommands,
-      hasCommandNeedLoading: false,
     };
   },
   props: {
@@ -56,16 +52,6 @@ export default defineComponent({
     handleAction(actionType, actionData) {
       // 直接转发事件和代码
       this.$emit("action", actionType, actionData);
-    },
-    findCommandNeedLoading(flow) {
-      // 暂时只在运行单独命令时显示载入界面，因为运行整个命令流时，如果不打印输出，是无法判断什么时候运行结束的，
-      // 运行单独命令时，添加了打印流程，且showLoading参数可控
-      if (!flow) return;
-      return flow.some(
-        (cmd) =>
-          cmd.showLoading ||
-          cmd.subCommands?.find((c) => c.value === cmd.value)?.showLoading
-      );
     },
   },
 });

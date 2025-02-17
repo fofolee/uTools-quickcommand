@@ -18,7 +18,6 @@ async function runFFmpeg(args, options = {}) {
     return;
   }
   const {
-    title = "FFmpeg处理",
     text = "处理中...",
     position = "bottom-right",
     onPause,
@@ -31,7 +30,6 @@ async function runFFmpeg(args, options = {}) {
   // 显示进度条
   const processBar = isShowProcessBar
     ? await quickcommand.showProcessBar({
-        title,
         text,
         value: 0,
         position,

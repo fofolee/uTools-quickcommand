@@ -933,7 +933,6 @@ export const windowsCommands = {
       label: "剪贴板/文件监控",
       icon: "monitor_heart",
       asyncMode: "await",
-      showLoading: true,
       subCommands: [
         {
           value: "quickcomposer.windows.monitor.watchClipboard",

@@ -11,7 +11,6 @@ export const aiCommands = {
       desc: "获取API支持的模型列表",
       asyncMode: "await",
       icon: "list",
-      showLoading: true,
       config: [
         {
           label: "API配置",
@@ -74,7 +73,6 @@ export const aiCommands = {
       desc: "与AI助手进行对话",
       asyncMode: "await",
       icon: "chat",
-      showLoading: true,
       config: [
         {
           label: "API配置",

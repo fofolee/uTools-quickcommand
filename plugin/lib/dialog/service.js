@@ -1,6 +1,25 @@
 const { ipcRenderer } = require("electron");
 const os = require("os");
 const { createBrowserWindow } = utools;
+
+const dialogPath = "lib/dialog/view.html";
+const preloadPath = "lib/dialog/controller.js";
+
+const commonBrowserWindowOptions = {
+  resizable: false,
+  minimizable: false,
+  maximizable: false,
+  fullscreenable: false,
+  skipTaskbar: true,
+  alwaysOnTop: true,
+  frame: false,
+  movable: true,
+  webPreferences: {
+    preload: preloadPath,
+    devTools: utools.isDev(),
+  },
+};
+
 /**
  * 创建对话框窗口
  * @param {object} config - 对话框配置
@@ -9,9 +28,6 @@ const { createBrowserWindow } = utools;
  */
 const createDialog = (config, customDialogOptions = {}) => {
   return new Promise((resolve) => {
-    const dialogPath = "lib/dialog/view.html";
-    const preloadPath = "lib/dialog/controller.js";
-
     // linux 和 win32 都使用 win32 的样式
     const platform = os.platform() === "darwin" ? "darwin" : "win32";
 
@@ -26,18 +42,8 @@ const createDialog = (config, customDialogOptions = {}) => {
       title: config.title || "对话框",
       width: dialogWidth,
       height: 80,
-      resizable: false,
-      minimizable: false,
-      maximizable: false,
-      fullscreenable: false,
-      skipTaskbar: true,
-      alwaysOnTop: true,
-      frame: false,
       opacity: 0,
-      webPreferences: {
-        preload: preloadPath,
-        devTools: utools.isDev(),
-      },
+      ...commonBrowserWindowOptions,
       ...customDialogOptions, // 合并自定义选项
     };
 
@@ -309,7 +315,6 @@ let lastProcessBar = null;
  */
 const showProcessBar = async (options = {}) => {
   const {
-    title = "进度",
     text = "处理中...",
     value = 0,
     position = "bottom-right",
@@ -335,26 +340,15 @@ const showProcessBar = async (options = {}) => {
 
   return new Promise((resolve) => {
     const UBrowser = createBrowserWindow(
-      "lib/dialog/view.html",
+      dialogPath,
       {
-        title,
         width: windowWidth,
         height: windowHeight,
         x,
         y,
-        resizable: false,
-        minimizable: false,
-        maximizable: false,
-        fullscreenable: false,
-        skipTaskbar: true,
-        alwaysOnTop: true,
-        frame: false,
         opacity: 0,
-        movable: true,
-        webPreferences: {
-          preload: "lib/dialog/controller.js",
-          devTools: utools.isDev(),
-        },
+        focusable: false,
+        ...commonBrowserWindowOptions,
       },
       () => {
         const windowId = UBrowser.webContents.id;
@@ -362,7 +356,6 @@ const showProcessBar = async (options = {}) => {
         // 发送配置到子窗口
         ipcRenderer.sendTo(windowId, "dialog-config", {
           type: "process",
-          title,
           text,
           value,
           isDark: utools.isDarkColors(),
@@ -443,8 +436,101 @@ const updateProcessBar = (options = {}, processBar = null) => {
   ipcRenderer.sendTo(processBar.id, "update-process", { value, text });
 
   if (complete) {
-    processBar.close();
+    setTimeout(() => {
+      processBar.close();
+    }, 600);
   }
+};
+
+let lastLoadingBar = null;
+
+/**
+ * 显示一个加载条对话框
+ * @param {object} options - 配置选项
+ * @param {string} [options.text="加载中..."] - 加载条上方的文本
+ * @param {string} [options.position="bottom-right"] - 加载条位置，可选值：top-left, top-right, bottom-left, bottom-right
+ * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
+ * @returns {Promise<{id: number, close: Function}>} 返回加载条窗口ID和关闭函数
+ */
+const showLoadingBar = async (options = {}) => {
+  const { text = "加载中...", position = "bottom-right", onClose } = options;
+
+  const windowWidth = 250;
+  const windowHeight = 60;
+
+  // 计算窗口位置
+  const { x, y } = calculateWindowPosition({
+    position,
+    width: windowWidth,
+    height: windowHeight,
+  });
+
+  return new Promise((resolve) => {
+    const UBrowser = createBrowserWindow(
+      dialogPath,
+      {
+        width: windowWidth,
+        height: windowHeight,
+        x,
+        y,
+        opacity: 0,
+        focusable: false,
+        ...commonBrowserWindowOptions,
+      },
+      () => {
+        const windowId = UBrowser.webContents.id;
+
+        // 发送配置到子窗口
+        ipcRenderer.sendTo(windowId, "dialog-config", {
+          type: "process",
+          text,
+          value: 0,
+          isDark: utools.isDarkColors(),
+          platform: process.platform,
+          isLoading: true, // 标记为加载条模式
+        });
+
+        // 监听窗口准备就绪
+        ipcRenderer.once("dialog-ready", () => {
+          UBrowser.setOpacity(1);
+        });
+
+        // 监听对话框结果
+        ipcRenderer.once("dialog-result", (event, result) => {
+          if (result === "close" && typeof onClose === "function") {
+            onClose();
+          }
+          UBrowser.destroy();
+        });
+
+        const loadingBar = {
+          id: windowId,
+          close: () => {
+            if (typeof onClose === "function") {
+              onClose();
+            }
+            lastLoadingBar = null;
+            UBrowser.destroy();
+          },
+        };
+
+        lastLoadingBar = loadingBar;
+
+        // 返回窗口ID和关闭函数
+        resolve(loadingBar);
+      }
+    );
+  });
+};
+
+const closeLoadingBar = (loadingBar) => {
+  if (!loadingBar) {
+    if (!lastLoadingBar) {
+      throw new Error("没有找到已创建的加载条");
+    }
+    loadingBar = lastLoadingBar;
+  }
+  loadingBar.close();
 };
 
 module.exports = {
@@ -457,4 +543,6 @@ module.exports = {
   showSystemWaitButton,
   showProcessBar,
   updateProcessBar,
+  showLoadingBar,
+  closeLoadingBar,
 };

@@ -614,6 +614,7 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   overflow: hidden;
+  position: relative;
 }
 
 .process-bar-inner {
@@ -622,6 +623,25 @@ textarea:focus {
   background: white;
   border-radius: 2px;
   transition: width 0.3s ease;
+}
+
+@keyframes loading-bar-animation {
+  0% {
+    left: -80px;
+  }
+
+  100% {
+    left: calc(100% + 80px);
+  }
+}
+
+.process-bar-loading {
+  position: absolute;
+  width: 80px;
+  height: 100%;
+  background: white;
+  border-radius: 2px;
+  animation: loading-bar-animation 3s infinite linear;
 }
 
 /* 进度条按钮容器 */

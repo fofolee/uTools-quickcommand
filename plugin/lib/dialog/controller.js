@@ -361,12 +361,19 @@ document.addEventListener("DOMContentLoaded", () => {
       case "process":
         document.getElementById("process").style.display = "block";
         document.body.classList.add("dialog-process");
+        // 创建进度条
+        const processBarInner = document.getElementById("process-bar-inner");
+        if (config.isLoading) {
+          // 如果是加载条模式，使用动画效果
+          processBarInner.className = "process-bar-loading";
+        } else {
+          // 如果是进度条模式，设置初始进度
+          processBarInner.className = "process-bar-inner";
+          processBarInner.style.width = `${config.value}%`;
+        }
 
-        // 设置初始文本和进度
+        // 设置初始文本
         document.getElementById("process-text").textContent = config.text;
-        document.getElementById(
-          "process-bar-inner"
-        ).style.width = `${config.value}%`;
 
         // 如果需要显示暂停按钮
         if (config.showPause) {
@@ -393,8 +400,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 监听进度条更新事件
   ipcRenderer.on("update-process", (event, data) => {
     const { value, text } = data;
-    if (typeof value === "number") {
-      document.getElementById("process-bar-inner").style.width = `${value}%`;
+    const processBarInner = document.getElementById("process-bar-inner");
+    if (
+      processBarInner &&
+      processBarInner.className === "process-bar-inner" &&
+      typeof value === "number"
+    ) {
+      processBarInner.style.width = `${value}%`;
     }
     if (text) {
       document.getElementById("process-text").textContent = text;

@@ -1,13 +1,29 @@
 const { runCsharpFeature } = require("../../csharp");
+const child_process = require("child_process");
+
+const stopMonitor = () => {
+  child_process.exec("taskkill /f /im monitor.exe");
+};
 
 // 监控剪贴板变化
 const watchClipboard = async function () {
   const args = ["-type", "clipboard", "-once"];
-  const result = await runCsharpFeature("monitor", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
+  const loadingBar = await quickcommand.showLoadingBar({
+    text: "等待剪贴板变化...",
+    onClose: () => {
+      stopMonitor();
+    },
+  });
+  try {
+    const result = await runCsharpFeature("monitor", args);
+    loadingBar.close();
+    if (result && result.startsWith("Error:")) {
+      throw new Error(result.substring(7));
+    }
+    return JSON.parse(result);
+  } catch (error) {
+    return {};
   }
-  return JSON.parse(result);
 };
 
 // 监控文件系统变化
@@ -28,11 +44,23 @@ const watchFileSystem = async function (watchPath, options = {}) {
     args.push("-recursive", "false");
   }
 
-  const result = await runCsharpFeature("monitor", args);
-  if (result && result.startsWith("Error:")) {
-    throw new Error(result.substring(7));
+  const loadingBar = await quickcommand.showLoadingBar({
+    text: "等待文件变化...",
+    onClose: () => {
+      stopMonitor();
+    },
+  });
+
+  try {
+    const result = await runCsharpFeature("monitor", args);
+    loadingBar.close();
+    if (result && result.startsWith("Error:")) {
+      throw new Error(result.substring(7));
+    }
+    return JSON.parse(result);
+  } catch (error) {
+    return {};
   }
-  return JSON.parse(result);
 };
 
 module.exports = {
