@@ -13,6 +13,7 @@ const quickcomposer = {
   status: require("./quickcomposer/status"),
   browser: require("./quickcomposer/browser"),
   video: require("./quickcomposer/video"),
+  ai: require("./quickcomposer/ai"),
 };
 
 module.exports = quickcomposer;

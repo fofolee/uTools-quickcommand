@@ -20,6 +20,7 @@ import { macosCommands } from "./macosCommands";
 import { scriptCommands } from "./scriptCommands";
 import { browserCommands } from "./browserCommands";
 import { videoCommands } from "./videoCommands";
+import { aiCommands } from "./aiCommands";
 
 export const commandCategories = [
   fileCommands,
@@ -38,6 +39,7 @@ export const commandCategories = [
   scriptCommands,
   uiCommands,
   simulateCommands,
+  aiCommands,
   statusCommands,
   mathCommands,
   userdataCommands,

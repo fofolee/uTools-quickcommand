@@ -1,5 +1,3 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
-
 // 系统音效选项
 const SYSTEM_SOUNDS = [
   { label: "提示音", value: "beep" },
