@@ -36,7 +36,7 @@
 
       <!-- 配置区域 -->
       <div class="col-12 col-sm-4">
-        <div class="row q-col-gutter-sm">
+        <div class="row">
           <!-- 从剪贴板读取按钮 -->
           <div class="col-12">
             <q-btn
@@ -53,8 +53,13 @@
           <!-- 匹配阈值设置 -->
           <div class="col-12">
             <NumberInput
-              v-model="argvs.threshold"
+              v-if="false"
+              :model-value="argvs.threshold"
+              @update:model-value="updateArgvs('threshold', $event)"
               label="匹配阈值"
+              :min="0"
+              :max="1"
+              :step="0.1"
               class="border-primary"
               :command="{
                 icon: 'tune',
@@ -64,20 +69,15 @@
 
           <!-- 鼠标动作选择 -->
           <div class="col-12">
-            <q-select
-              v-model="argvs.mouseAction"
+            <ButtonGroup
+              :is-collapse="false"
+              :model-value="argvs.mouseAction"
+              @update:model-value="updateArgvs('mouseAction', $event)"
               :options="mouseActionOptions"
               label="找到后"
               class="border-primary"
-              dense
-              filled
-              emit-value
-              map-options
             >
-              <template v-slot:prepend>
-                <q-icon name="mouse" />
-              </template>
-            </q-select>
+            </ButtonGroup>
           </div>
         </div>
       </div>
@@ -97,11 +97,13 @@
 <script>
 import { defineComponent } from "vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
+import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 
 export default defineComponent({
   name: "ImageSearchEditor",
   components: {
     NumberInput,
+    ButtonGroup,
   },
 
   props: {
@@ -123,7 +125,7 @@ export default defineComponent({
       ],
       defaultArgvs: {
         imagePreview: "",
-        threshold: 0.9,
+        threshold: 1,
         mouseAction: "none",
       },
     };
@@ -266,8 +268,8 @@ export default defineComponent({
   border: 2px dashed var(--q-primary);
   border-radius: 8px;
   display: flex;
-  max-height: 128px;
-  min-height: 128px;
+  max-height: 138px;
+  min-height: 138px;
   justify-content: center;
   align-items: center;
   position: relative;
