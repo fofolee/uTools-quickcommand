@@ -11,6 +11,12 @@
  * @returns {Promise} 返回Promise
  */
 async function runFFmpeg(args, options = {}) {
+  if (!utools.runFFmpeg) {
+    quickcommand.showSystemMessageBox(
+      "请先升级uTools到6.1.0及以上版本"
+    );
+    return;
+  }
   const {
     title = "FFmpeg处理",
     text = "处理中...",

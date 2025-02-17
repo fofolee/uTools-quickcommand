@@ -21,21 +21,16 @@ import { scriptCommands } from "./scriptCommands";
 import { browserCommands } from "./browserCommands";
 import { videoCommands } from "./videoCommands";
 
-const platformCommands = {
-  win32: [windowsCommands],
-  darwin: [macosCommands],
-  linux: [],
-};
-
 export const commandCategories = [
   fileCommands,
   networkCommands,
   systemCommands,
   audioCommands,
   imageCommands,
-  ...(utools.runFFmpeg ? [videoCommands] : []),
+  videoCommands,
   utoolsCommands,
-  ...platformCommands[window.processPlatform],
+  windowsCommands,
+  macosCommands,
   browserCommands,
   dataCommands,
   codingCommands,
