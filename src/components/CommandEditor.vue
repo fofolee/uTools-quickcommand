@@ -60,7 +60,6 @@ import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
 import CommandComposer from "components/composer/CommandComposer.vue";
 import programs from "js/options/programs.js";
-import { dbManager } from "js/utools.js";
 import { useCommandManager } from "js/commandManager.js";
 
 // 预加载 MonacoEditor

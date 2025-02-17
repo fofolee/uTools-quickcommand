@@ -250,7 +250,7 @@ export default {
       commandTypes,
       isSettingsVisible: false,
       showUserData: false,
-      ctrlKey: utools.isMacOs ? "⌘" : "⌃",
+      ctrlKey: window.utools.isMacOS() ? "⌘" : "⌃",
     };
   },
   computed: {
