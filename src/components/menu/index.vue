@@ -51,6 +51,14 @@
           <PersonalizeMenu />
         </q-item>
 
+        <!-- AI配置 -->
+        <q-item clickable v-close-popup @click="showAIConfig = true">
+          <q-item-section side>
+            <q-icon name="keyboard_arrow_left" />
+          </q-item-section>
+          <q-item-section>AI配置</q-item-section>
+        </q-item>
+
         <!-- 收藏 -->
         <q-item
           v-if="activatedQuickPanels.includes(currentTag)"
@@ -99,6 +107,10 @@
     <q-dialog v-model="showUserData">
       <UserData :showInsertBtn="false" />
     </q-dialog>
+
+    <q-dialog v-model="showAIConfig">
+      <AIConfig />
+    </q-dialog>
   </div>
 </template>
 
@@ -110,6 +122,7 @@ import CommandManageMenu from "components/menu/CommandManageMenu.vue";
 import UtilityFeaturesMenu from "components/menu/UtilityFeaturesMenu.vue";
 import EnvConfigMenu from "components/menu/EnvConfigMenu.vue";
 import PersonalizeMenu from "components/menu/PersonalizeMenu.vue";
+import AIConfig from "components/popup/AIConfig.vue";
 import UserData from "components/popup/UserData.vue";
 import { utoolsFull } from "js/utools.js";
 import { useCommandManager } from "js/commandManager";
@@ -125,6 +138,7 @@ export default {
     EnvConfigMenu,
     PersonalizeMenu,
     UserData,
+    AIConfig,
   },
   data() {
     return {
@@ -132,6 +146,7 @@ export default {
       showAbout: false,
       showPanelConf: false,
       showUserData: false,
+      showAIConfig: false,
       utools: utoolsFull,
     };
   },

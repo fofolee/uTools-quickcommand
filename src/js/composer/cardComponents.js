@@ -59,3 +59,8 @@ export const ReturnEditor = defineAsyncComponent(() =>
 export const ScriptEditor = defineAsyncComponent(() =>
   import("components/composer/script/ScriptEditor.vue")
 );
+
+// AI组件
+export const AskAIEditor = defineAsyncComponent(() =>
+  import("src/components/composer/ai/AskAIEditor.vue")
+);

@@ -5,6 +5,9 @@ const kill = require("tree-kill");
 const iconv = require("iconv-lite");
 const path = require("path");
 const axios = require("axios");
+const { chat, getModels } = require("./ai");
+
+window.getModelsFromAiApi = getModels;
 
 const systemDialog = require("./dialog/service");
 
@@ -184,6 +187,11 @@ const quickcommand = {
     }
     return null;
   },
+
+  askAI: async function (content, apiConfig) {
+    return await chat(content, apiConfig);
+  },
+
   ...systemDialog,
 };
 

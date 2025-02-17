@@ -51,7 +51,7 @@ const PRESET_PROMPTS = {
  * @param {string} content.presetPrompt - 预设提示词类型
  * @returns {Promise<Object>} 对话响应
  */
-async function chat(apiConfig, content) {
+async function chat(content, apiConfig) {
   try {
     const { modelType, apiUrl, apiToken, model } = apiConfig;
     const { prompt, presetPrompt } = content;

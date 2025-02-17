@@ -129,18 +129,18 @@ export default defineComponent({
     },
     outPlugin() {
       // 退出时保存RunCode和RunComposer的命令
-      if (!["code", "composer"].includes(this.$route.name)) return;
+      if (["code", "composer"].includes(this.$route.name)) {
+        let currentCommand = window.lodashM.cloneDeep(
+          this.commandManager.state.currentCommand
+        );
 
-      let currentCommand = window.lodashM.cloneDeep(
-        this.commandManager.state.currentCommand
-      );
+        if (this.$route.name === "composer") {
+          currentCommand =
+            this.commandManager.getLitedComposerCommand(currentCommand);
+        }
 
-      if (this.$route.name === "composer") {
-        currentCommand =
-          this.commandManager.getLitedComposerCommand(currentCommand);
+        dbManager.putDB(currentCommand, `cfg_${this.$route.name}History`);
       }
-
-      dbManager.putDB(currentCommand, `cfg_${this.$route.name}History`);
 
       this.$router.push("/");
       this.saveProfile();

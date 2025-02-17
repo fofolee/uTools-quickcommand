@@ -888,6 +888,64 @@ interface quickcommandApi {
    * ```
    */
   closeLoadingBar(loadingBar?: { id: number; close: () => void }): void;
+
+  /**
+   * 与 AI 进行问答
+   * @param content 对话内容
+   * @param apiConfig API配置
+   * @example
+   * // OpenAI 示例
+   * const response = await quickcommand.askAI(
+   *   {
+   *     prompt: "你好",
+   *     presetPrompt: ""  // 使用预设提示词：translate/shell/summarize
+   *   },
+   *   {
+   *     modelType: "openai",
+   *     apiUrl: "https://api.openai.com/v1/chat/completions",
+   *     apiToken: "your-api-token",
+   *     model: "gpt-3.5-turbo"
+   *   }
+   * );
+   *
+   * // Ollama 示例
+   * const response = await quickcommand.askAI(
+   *   {
+   *     prompt: "查找进程名为chrome的进程并关闭",
+   *     presetPrompt: "shell"
+   *   },
+   *   {
+   *     modelType: "ollama",
+   *     apiUrl: "http://localhost:11434/api/generate",
+   *     model: "qwen2.5:32b"
+   *   }
+   * );
+   */
+  askAI(
+    content: {
+      /** 提示词 */
+      prompt: string;
+      /** 预设提示词类型 */
+      presetPrompt?: "" | "translate" | "shell" | "summarize";
+    },
+    apiConfig: {
+      /** 模型类型：openai/ollama */
+      modelType: "openai" | "ollama";
+      /** API地址 */
+      apiUrl: string;
+      /** API令牌（仅 OpenAI 需要） */
+      apiToken?: string;
+      /** 模型名称 */
+      model: string;
+    }
+  ): Promise<{
+    /** 是否成功 */
+    success: boolean;
+    /** AI 响应内容 */
+    result?: string;
+    /** 错误信息 */
+    error?: string;
+  }>;
 }
 
 declare var quickcommand: quickcommandApi;
