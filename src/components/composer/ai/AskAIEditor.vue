@@ -1,47 +1,28 @@
 <template>
   <div>
-    <div class="q-my-md">
-      <BorderLabel label="API配置">
-        <ButtonGroup
-          :model-value="argvs.apiConfig.modelType"
-          @update:modelValue="updateArgvs('apiConfig.modelType', $event)"
-          :options="modelTypeOptions"
-          height="26px"
-          class="q-mb-sm"
-        />
-        <VariableInput
-          :model-value="argvs.apiConfig.apiUrl"
-          label="API地址"
-          :placeholder="
-            argvs.apiConfig.modelType === 'openai'
-              ? '例：https://api.openai.com/v1'
-              : '例：http://localhost:11434'
-          "
-          @update:modelValue="updateArgvs('apiConfig.apiUrl', $event)"
-          class="q-mb-sm"
-        />
-        <div class="row q-gutter-sm">
-          <VariableInput
-            class="col"
-            v-if="argvs.apiConfig.modelType === 'openai'"
-            :model-value="argvs.apiConfig.apiToken"
-            @update:modelValue="updateArgvs('apiConfig.apiToken', $event)"
-            label="API密钥"
-          />
-          <VariableInput
-            class="col"
-            :model-value="argvs.apiConfig.model"
-            @update:modelValue="updateArgvs('apiConfig.model', $event)"
-            label="模型"
-            :placeholder="
-              argvs.apiConfig.modelType === 'openai'
-                ? '例：gpt-4o'
-                : '例：qwen2.5:32b'
-            "
-          />
+    <q-select
+      v-if="apiOptions.length > 0"
+      :model-value="argvs.apiConfig"
+      @update:model-value="updateArgvs('apiConfig', $event)"
+      :options="apiOptions"
+      map-options
+      emit-value
+      dense
+      options-dense
+      filled
+      label="API模型"
+      class="q-mb-sm"
+    />
+    <q-field filled dense v-else class="q-mb-sm">
+      <template #control>
+        <div class="flex items-center justify-center full-width text-warning">
+          <q-icon name="warning" class="q-mr-sm" />
+          <div>
+            未配置API模型，配置方法：命令配置界面-右下角菜单按钮-API配置
+          </div>
         </div>
-      </BorderLabel>
-    </div>
+      </template>
+    </q-field>
     <ButtonGroup
       :model-value="argvs.content.presetPrompt"
       @update:modelValue="updateArgvs('content.presetPrompt', $event)"
@@ -61,11 +42,11 @@
 
 <script>
 import { defineComponent } from "vue";
-import BorderLabel from "components/composer/common/BorderLabel.vue";
 import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
+import { dbManager } from "js/utools.js";
 
 export default defineComponent({
   name: "AskAIEditor",
@@ -74,7 +55,6 @@ export default defineComponent({
   },
   components: {
     VariableInput,
-    BorderLabel,
     ButtonGroup,
   },
   emits: ["update:modelValue"],
@@ -87,6 +67,7 @@ export default defineComponent({
         },
         apiConfig: {},
       },
+      apiOptions: [],
       presetPromptOptions: [
         { label: "自由问答", value: "" },
         { label: "翻译", value: "translate" },
@@ -111,17 +92,9 @@ export default defineComponent({
       const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
       if (!code) return argvs;
       try {
-        const variableFormatPaths = [
-          "arg0.prompt",
-          "arg1.apiUrl",
-          "arg1.apiToken",
-          "arg1.model",
-        ];
+        const variableFormatPaths = ["arg0.prompt"];
         const params = parseFunction(code, { variableFormatPaths });
-        return {
-          content: params.argvs[0],
-          apiConfig: params.argvs[1],
-        };
+        return params;
       } catch (e) {
         console.error("解析参数失败:", e);
       }
@@ -130,7 +103,7 @@ export default defineComponent({
     generateCode(argvs = this.argvs) {
       return `${this.modelValue.value}(${stringifyArgv(
         argvs.content
-      )}, ${stringifyArgv(argvs.apiConfig)})`;
+      )}, ${JSON.stringify(argvs.apiConfig)})`;
     },
     getSummary(argvs) {
       return "问AI：" + argvs.content.prompt;
@@ -153,14 +126,16 @@ export default defineComponent({
     },
   },
   mounted() {
-    const aiConfig = this.$root.profile.aiConfig || {};
-    console.log("aiConfig", aiConfig);
-    this.defaultArgvs.apiConfig = {
-      modelType: aiConfig.modelType || "openai",
-      apiUrl: newVarInputVal("str", aiConfig.apiUrl || ""),
-      apiToken: newVarInputVal("str", aiConfig.apiToken || ""),
-      model: newVarInputVal("str", aiConfig.model || ""),
-    };
+    const apiConfigs = dbManager.getStorage("cfg_aiConfigs");
+    this.apiOptions = apiConfigs
+      ? apiConfigs.map((config) => {
+          return {
+            label: config.name,
+            value: config,
+          };
+        })
+      : [];
+    this.defaultArgvs.apiConfig = apiConfigs?.[0] || {};
 
     const argvs = this.modelValue.argvs || this.defaultArgvs;
     if (!this.modelValue.code) {

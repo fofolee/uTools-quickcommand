@@ -2,7 +2,7 @@
   <q-expansion-item
     v-model="isExpanded"
     @update:model-value="$emit('update:is-expanded', $event)"
-    class="command-composer command-config"
+    class="command-config"
     expand-icon-toggle
   >
     <template v-slot:header>
