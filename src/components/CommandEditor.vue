@@ -1,11 +1,20 @@
 <template>
   <div class="command-editor">
-    <!-- 编程语言栏 -->
-    <CommandLanguageBar
-      v-model="commandManager.state.currentCommand"
-      :canCommandSave="canCommandSave"
-      @action="handleAction"
-    />
+    <div class="command-editor-header">
+      <!-- 语言选择器及相关配置 -->
+      <CommandLanguage
+        v-model="commandManager.state.currentCommand"
+        @action="handleAction"
+      />
+
+      <!-- 操作按钮 -->
+      <CommandActions
+        ref="editorActions"
+        :command-code="currentCommand.features?.code || 'temp'"
+        :can-command-save="canCommandSave"
+        @action="handleAction"
+      />
+    </div>
 
     <!-- 命令设置栏 -->
     <CommandConfig
@@ -30,14 +39,6 @@
     />
   </div>
 
-  <!-- 编辑器工具按钮组 -->
-  <EditorTools
-    ref="editorTools"
-    v-show="!isConfigExpanded"
-    :commandCode="currentCommand.features?.code || 'temp'"
-    @restore="restoreHistory"
-  />
-
   <!-- 可视化编排 -->
   <q-dialog v-model="showComposer" maximized>
     <CommandComposer
@@ -53,12 +54,12 @@
 </template>
 
 <script>
-import { defineAsyncComponent, ref, computed } from "vue";
+import { defineAsyncComponent, computed } from "vue";
 import CommandConfig from "components/editor/CommandConfig.vue";
-import CommandLanguageBar from "components/editor/CommandLanguageBar";
-import EditorTools from "components/editor/EditorTools";
 import CommandRunResult from "components/CommandRunResult";
 import CommandComposer from "components/composer/CommandComposer.vue";
+import CommandLanguage from "components/editor/CommandLanguage";
+import CommandActions from "components/editor/CommandActions";
 import programs from "js/options/programs.js";
 import { useCommandManager } from "js/commandManager.js";
 
@@ -86,9 +87,9 @@ export default {
     CodeEditor,
     CommandConfig,
     CommandRunResult,
-    CommandLanguageBar,
+    CommandLanguage,
+    CommandActions,
     CommandComposer,
-    EditorTools,
   },
   emits: ["editorEvent"],
   data() {
@@ -187,12 +188,15 @@ export default {
         case "insert-text":
           this.$refs.editor.repacleEditorSelection(data);
           break;
+        case "restore":
+          this.restoreHistory(data);
+          break;
         default:
           break;
       }
     },
     saveToHistory() {
-      this.$refs.editorTools.tryToSave(
+      this.$refs.editorActions.tryToSave(
         this.currentCommand.cmd,
         this.currentCommand.program
       );
@@ -252,6 +256,34 @@ export default {
 
 .body--dark .command-editor {
   background-color: #1e1e1e;
+}
+
+.command-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+}
+
+.command-editor-header :deep(.q-btn) {
+  padding: 0 5px;
+}
+
+.command-editor-header :deep(.q-btn__content) {
+  font-size: 12px;
+}
+
+.command-editor-header :deep(.q-btn-dropdown__arrow) {
+  margin-left: 0;
+}
+
+.command-editor-header :deep(.q-focus-helper) {
+  display: none;
+}
+
+.command-editor-header :deep(.q-btn:hover) {
+  filter: brightness(1.2);
+  transition: all 0.2s ease;
 }
 
 .codeEditor {

@@ -1,20 +1,5 @@
 <template>
   <div class="editor-history-container">
-    <!-- 渲染默认插槽内容(历史按钮) -->
-    <q-btn
-      round
-      dense
-      class="history-btn"
-      :class="{ saving: isSaving }"
-      icon="history"
-      @click="showHistory"
-    >
-      <div class="save-overlay">
-        <q-icon name="check" />
-      </div>
-      <q-tooltip>历史记录</q-tooltip>
-    </q-btn>
-
     <q-dialog
       v-model="show"
       position="right"
@@ -36,7 +21,11 @@
               enter-active-class="fade-in"
               leave-active-class="fade-out"
             >
-              <div v-if="selectedIndex !== null" class="preview-content" :key="selectedIndex">
+              <div
+                v-if="selectedIndex !== null"
+                class="preview-content"
+                :key="selectedIndex"
+              >
                 <pre>{{ historyList[selectedIndex]?.content || "" }}</pre>
               </div>
               <div v-else class="preview-placeholder" key="placeholder">
@@ -142,8 +131,6 @@ export default {
       historyList: [],
       maxHistoryItems: 50,
       storagePrefix: "editor_history_",
-      isSaving: false,
-      saveTimer: null,
       selectedIndex: null,
       showClearConfirm: false,
     };
@@ -175,21 +162,7 @@ export default {
         return false;
       }
 
-      const saved = this.saveHistory(content, program);
-      if (saved) {
-        this.showSaveAnimation();
-      }
-      return true;
-    },
-
-    showSaveAnimation() {
-      if (this.saveTimer) {
-        clearTimeout(this.saveTimer);
-      }
-      this.isSaving = true;
-      this.saveTimer = setTimeout(() => {
-        this.isSaving = false;
-      }, 1500);
+      return this.saveHistory(content, program);
     },
 
     showHistory() {
@@ -495,56 +468,6 @@ export default {
 .history-list::-webkit-scrollbar-thumb:hover {
   background: var(--q-primary);
   opacity: 0.3;
-}
-
-.history-btn {
-  color: #666;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 3px 3px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.history-btn:hover {
-  transform: translateY(-1px);
-}
-
-.save-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--q-positive);
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.save-overlay i {
-  color: white;
-  font-size: 1.2em;
-}
-
-.history-btn.saving {
-  pointer-events: none;
-}
-
-.history-btn.saving .save-overlay {
-  transform: translateY(0);
-}
-
-/* 暗色模式适配 */
-.body--dark .history-btn {
-  color: #bbb;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.body--dark .history-btn:hover {
-  background: #505050;
 }
 
 /* 确认对话框样式 */

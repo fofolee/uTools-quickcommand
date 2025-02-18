@@ -1,5 +1,5 @@
 <template>
-  <div class="command-language-bar">
+  <div class="command-language">
     <q-select
       class="q-pl-xs"
       dense
@@ -39,46 +39,10 @@
         </q-item>
       </template>
     </q-select>
-    <q-btn-group unelevated class="button-group">
-      <q-btn-dropdown
-        class="special-var-btn"
-        dense
-        flat
-        label="变量"
-        color="primary"
-        icon="data_object"
-      >
-        <q-list>
-          <q-item
-            v-for="(item, index) in Object.values(specialVars)"
-            :key="index"
-            clickable
-            v-close-popup
-            @click="handleSpecialVarClick(item)"
-          >
-            <q-item-section>
-              <q-item-label class="row items-center justify-between">
-                <div v-text="item.label" />
-                <div v-if="item.onlyCmdTypes" class="row">
-                  <q-badge color="grey-9" class="q-ml-xs"> 仅 </q-badge>
-                  <q-badge
-                    v-for="type in item.onlyCmdTypes"
-                    :key="type"
-                    class="q-ml-xs"
-                    v-text="commandTypes[type].label"
-                    color="grey-9"
-                  />
-                </div>
-              </q-item-label>
-              <q-tooltip v-if="item.tooltip">
-                {{ item.tooltip }}
-              </q-tooltip>
-              <q-item-label caption>{{ item.desc }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
 
+    <q-space />
+
+    <q-btn-group unelevated class="button-group">
       <template v-if="currentCommand.program === 'quickcommand'">
         <q-btn
           v-for="(item, index) in ['help_center', 'view_timeline']"
@@ -177,80 +141,26 @@
           </q-item>
         </q-list>
       </q-btn-dropdown>
-      <q-separator vertical inset />
-      <q-btn
-        v-if="!isRunCodePage"
-        class="action-btn run-btn"
-        dense
-        flat
-        color="primary"
-        icon="arrow_back"
-        label="退出"
-        @click="$emit('action', 'back')"
-      ></q-btn>
-      <q-btn
-        class="action-btn run-btn"
-        dense
-        flat
-        color="primary"
-        icon="play_arrow"
-        :label="`运行(${ctrlKey}B)`"
-        @click="$emit('action', 'run')"
-      ></q-btn>
-      <q-btn
-        v-if="!isRunCodePage"
-        :disable="!canCommandSave"
-        :color="canCommandSave ? 'primary' : 'grey'"
-        class="action-btn save-btn"
-        flat
-        dense
-        icon="save"
-        :label="`保存(${ctrlKey}S)`"
-        @click="$emit('action', 'save')"
-      ></q-btn>
     </q-btn-group>
-    <q-dialog v-model="showUserData">
-      <UserData
-        @insertText="
-          insertSpecialVar($event);
-          showUserData = false;
-        "
-        :showInsertBtn="true"
-      />
-    </q-dialog>
   </div>
 </template>
 
 <script>
 import programs from "js/options/programs.js";
-import specialVars from "js/options/specialVars.js";
-import commandTypes from "js/options/commandTypes.js";
-import UserData from "components/popup/UserData.vue";
 
 export default {
-  name: "CommandLanguageBar",
+  name: "CommandLanguage",
   props: {
     modelValue: {
       type: Object,
       required: true,
     },
-    canCommandSave: {
-      type: Boolean,
-      default: true,
-    },
   },
   emits: ["update:modelValue", "action"],
-  components: {
-    UserData,
-  },
   data() {
     return {
       programs,
-      specialVars,
-      commandTypes,
       isSettingsVisible: false,
-      showUserData: false,
-      ctrlKey: window.utools.isMacOS() ? "⌘" : "⌃",
     };
   },
   computed: {
@@ -269,10 +179,8 @@ export default {
         this.isSettingsVisible = true;
       }
       if (newProgram === "html") {
-        // 如果是html命令，则设置output为html
         newCommand.output = "html";
       } else if (this.isRunCodePage) {
-        // 否则，运行代码页面，恢复output为text
         newCommand.output = "text";
       }
       const featuresIcon = this.currentCommand.features.icon || "";
@@ -299,69 +207,24 @@ export default {
     showHelp() {
       window.showUb.docs();
     },
-    handleSpecialVarClick(item) {
-      if (item.label === "{{usr:}}") this.showUserData = true;
-      else this.insertSpecialVar(item.label);
-    },
-    insertSpecialVar(text) {
-      if (!text) return;
-      this.$emit("action", "insert-text", `"${text}"`);
-    },
   },
 };
 </script>
 
 <style scoped>
-.button-group {
-  padding: 0 5px;
+.command-language {
+  flex: 1;
 }
 
-.button-group :deep(.q-focus-helper) {
-  display: none;
-}
-
-.button-group :deep(.q-btn__content) {
-  font-size: 12px;
-}
-
-.button-group :deep(.q-btn-dropdown__arrow) {
-  margin-left: 0;
-}
-
-.button-group .q-btn:hover {
-  filter: brightness(1.2);
-  transition: all 0.2s ease;
-}
-
-/* 运行按钮动画 */
-.run-btn:hover :deep(.q-icon) {
-  display: inline-block;
-  animation: leftRight 1.5s infinite;
-}
-
-/* 保存按钮动画 */
-.save-btn:not([disabled]):hover :deep(.q-icon) {
-  display: inline-block;
-  animation: upDown 1.2s infinite;
-}
-
-.command-language-bar {
-  background-color: #fffffe;
-  height: 30px;
-  margin-bottom: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.body--dark .command-language-bar {
-  background-color: #1e1e1e;
-}
-
-.command-language-bar :deep(.q-field__control),
-.command-language-bar :deep(.q-field__control > *),
-.command-language-bar :deep(.q-field__native) {
+.command-language :deep(.q-field__control),
+.command-language :deep(.q-field__control > *),
+.command-language :deep(.q-field__native) {
   max-height: 30px;
   min-height: 30px;
+}
+
+.command-language {
+  display: flex;
+  align-items: center;
 }
 </style>
