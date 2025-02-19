@@ -21,7 +21,6 @@
       v-if="!isRunCodePage"
       v-model="commandManager.state.currentCommand"
       from="quickcommand"
-      @update:is-expanded="isConfigExpanded = $event"
       :expand-on-focus="true"
       class="command-config"
     />
@@ -97,7 +96,6 @@ export default {
       programLanguages: Object.keys(programs),
       showComposer: false,
       listener: null,
-      isConfigExpanded: false,
       composerInfo: {
         program: "quickcomposer",
       },

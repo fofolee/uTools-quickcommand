@@ -1,7 +1,6 @@
 <template>
   <q-expansion-item
     v-model="isExpanded"
-    @update:model-value="$emit('update:is-expanded', $event)"
     class="command-config"
     expand-icon-toggle
   >
@@ -188,7 +187,7 @@ export default defineComponent({
       default: "quickcommand",
     },
   },
-  emits: ["update:modelValue", "update:is-expanded"],
+  emits: ["update:modelValue"],
   data() {
     return {
       commandManager: useCommandManager(),
@@ -303,7 +302,6 @@ export default defineComponent({
     },
     updateExpanded(value) {
       this.isExpanded = value;
-      this.$emit("update:is-expanded", value);
     },
   },
 });

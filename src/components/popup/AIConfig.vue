@@ -4,7 +4,7 @@
     <div>
       <div class="flex q-mb-md q-px-sm" style="height: 26px">
         <ButtonGroup
-          v-model="modelToAdd"
+          v-model="apiToAdd"
           class="col"
           :options="[
             { label: 'OPENAI', value: 'openai' },
@@ -27,93 +27,122 @@
           width: '2px',
         }"
       >
-        <div class="config-list">
-          <div
-            v-for="(aiConfig, index) in aiConfigs"
-            :key="index"
-            class="config-item"
-          >
-            <div class="row q-col-gutter-sm">
-              <q-input
-                filled
-                dense
-                v-model="aiConfig.name"
-                class="col"
-                placeholder="请输入名称"
-              >
-                <template v-slot:prepend>
-                  <q-badge
-                    color="primary"
-                    text-color="black"
-                    label="名称"
-                    class="q-pa-xs"
-                  />
-                </template>
-                <template v-slot:append>
-                  <q-icon
-                    color="grey"
-                    name="remove_circle"
-                    @click="deleteModel(index)"
-                    size="16px"
-                    class="cursor-pointer"
-                  />
-                </template>
-              </q-input>
-              <q-input
-                filled
-                dense
-                v-model="aiConfig.apiUrl"
-                class="col-8"
-                :placeholder="`${aiConfig.modelType} API地址`"
-              >
-                <template v-slot:prepend>
-                  <q-badge
-                    color="primary"
-                    text-color="black"
-                    label="接口"
-                    class="q-pa-xs"
-                  />
-                </template>
-              </q-input>
+        <draggable
+          v-model="aiConfigs"
+          item-key="name"
+          handle=".drag-handle"
+          :animation="200"
+          class="config-list"
+        >
+          <template #item="{ element: aiConfig, index }">
+            <div class="config-item">
+              <div class="config-item-side-bar">
+                <q-icon
+                  name="drag_indicator"
+                  class="drag-handle cursor-move"
+                  size="20px"
+                />
+              </div>
+              <div class="config-item-content">
+                <div class="row q-col-gutter-sm">
+                  <q-input
+                    filled
+                    dense
+                    v-model="aiConfig.name"
+                    class="col"
+                    placeholder="请输入名称"
+                  >
+                    <template v-slot:prepend>
+                      <q-badge
+                        color="primary"
+                        text-color="white"
+                        label="名称"
+                        class="q-pa-xs"
+                      />
+                    </template>
+                    <template v-slot:append>
+                      <q-icon
+                        color="grey"
+                        name="remove_circle"
+                        @click="deleteModel(index)"
+                        size="16px"
+                        class="cursor-pointer"
+                      />
+                    </template>
+                  </q-input>
+                  <q-input
+                    filled
+                    dense
+                    v-model="aiConfig.apiUrl"
+                    class="col-7"
+                    :placeholder="`${aiConfig.apiType} API地址`"
+                  >
+                    <template v-slot:prepend>
+                      <q-badge
+                        color="primary"
+                        text-color="white"
+                        label="接口"
+                        class="q-pa-xs"
+                      />
+                    </template>
+                  </q-input>
+                </div>
+                <div class="row q-col-gutter-sm">
+                  <q-input filled dense v-model="aiConfig.model" class="col">
+                    <template v-slot:prepend>
+                      <q-badge
+                        color="primary"
+                        text-color="white"
+                        label="模型"
+                        class="q-pa-xs"
+                      />
+                    </template>
+                    <template v-slot:append>
+                      <q-btn-dropdown
+                        flat
+                        @click="getModels(aiConfig)"
+                        dense
+                        dropdown-icon="refresh"
+                      >
+                        <q-list>
+                          <q-item
+                            v-for="model in models"
+                            :key="model"
+                            clickable
+                            v-close-popup
+                            @click="aiConfig.model = model"
+                          >
+                            <q-item-section>
+                              {{ model }}
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-btn-dropdown>
+                      <q-tooltip>获取模型</q-tooltip>
+                    </template>
+                  </q-input>
+                  <q-input
+                    filled
+                    dense
+                    v-model="aiConfig.apiToken"
+                    v-if="aiConfig.apiType === 'openai'"
+                    type="password"
+                    class="col-7"
+                  >
+                    <template v-slot:prepend>
+                      <q-badge
+                        color="primary"
+                        text-color="white"
+                        label="令牌"
+                        class="q-pa-xs"
+                      />
+                    </template>
+                  </q-input>
+                </div>
+              </div>
             </div>
-            <div class="row q-col-gutter-sm">
-              <q-select
-                filled
-                dense
-                v-model="aiConfig.model"
-                :options="models"
-                @focus="getModels(aiConfig)"
-                class="col"
-              >
-                <template v-slot:prepend>
-                  <q-badge
-                    color="primary"
-                    text-color="black"
-                    label="模型"
-                    class="q-pa-xs"
-                  />
-                </template>
-              </q-select>
-              <q-input
-                filled
-                dense
-                v-model="aiConfig.apiToken"
-                v-if="aiConfig.modelType === 'openai'"
-                type="password"
-                class="col-8"
-              >
-                <template v-slot:prepend>
-                  <q-badge
-                    color="primary"
-                    text-color="black"
-                    label="令牌"
-                    class="q-pa-xs"
-                  />
-                </template>
-              </q-input>
-            </div>
-          </div>
-        </div>
+          </template>
+        </draggable>
       </q-scroll-area>
     </div>
     <div class="flex justify-end q-gutter-sm q-px-sm">
@@ -133,19 +162,23 @@
 import { defineComponent } from "vue";
 import { dbManager } from "js/utools.js";
 import ButtonGroup from "components/composer/common/ButtonGroup.vue";
+import draggable from "vuedraggable";
+import { getUniqueId } from "js/common/uuid.js";
 
 export default defineComponent({
   name: "AIConfig",
   components: {
     ButtonGroup,
+    draggable,
   },
   data() {
     return {
-      modelToAdd: "openai",
+      apiToAdd: "openai",
       aiConfigs: [],
       models: [],
     };
   },
+  emits: ["save"],
   methods: {
     async getModels(aiConfig) {
       const { success, result, error } = await window.getModelsFromAiApi(
@@ -153,6 +186,7 @@ export default defineComponent({
       );
       if (!success) {
         quickcommand.showMessageBox(error, "error");
+        this.models = [];
         return;
       }
       this.models = result;
@@ -162,17 +196,19 @@ export default defineComponent({
         "cfg_aiConfigs",
         window.lodashM.cloneDeep(this.aiConfigs)
       );
+      this.$emit("save");
     },
     deleteModel(index) {
       this.aiConfigs.splice(index, 1);
     },
     addModel() {
       this.aiConfigs.push({
-        modelType: this.modelToAdd,
+        apiType: this.apiToAdd,
         apiUrl: "",
         apiToken: "",
         model: "",
         name: "",
+        id: getUniqueId(),
       });
     },
     getConfigListHeight() {
@@ -188,7 +224,7 @@ export default defineComponent({
 
 <style scoped>
 .config-list,
-.config-item {
+.config-item-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -198,5 +234,21 @@ export default defineComponent({
   border: 1px solid var(--q-primary);
   border-radius: 4px;
   padding: 8px;
+  display: flex;
+}
+
+.config-item-side-bar {
+  width: 20px;
+  padding-top: 8px;
+}
+
+.config-item-content {
+  flex: 1;
+}
+
+.drag-handle {
+  cursor: move;
+  color: var(--q-primary);
+  margin-right: 4px;
 }
 </style>

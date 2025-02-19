@@ -9,6 +9,8 @@
   border-radius: 6px;
   overflow-x: auto;
   margin: 2px 0;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .markdown code {
@@ -73,4 +75,13 @@
 .body--dark .markdown blockquote {
   border-left-color: #444;
   color: #999;
+}
+
+.markdown code ::-webkit-scrollbar {
+  height: 5px;
+}
+
+.markdown a {
+  color: #007bff;
+  text-decoration: none;
 }

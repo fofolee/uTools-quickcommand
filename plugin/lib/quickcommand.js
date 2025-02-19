@@ -188,8 +188,8 @@ const quickcommand = {
     return null;
   },
 
-  askAI: async function (content, apiConfig) {
-    return await chat(content, apiConfig);
+  askAI: async function (content, apiConfig, options) {
+    return await chat(content, apiConfig, options);
   },
 
   ...systemDialog,

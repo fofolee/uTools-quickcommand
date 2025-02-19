@@ -1,5 +1,3 @@
-import { newVarInputVal } from "js/composer/varInputValManager";
-
 export const aiCommands = {
   label: "AI操作",
   icon: "smart_toy",

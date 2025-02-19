@@ -892,16 +892,23 @@ interface quickcommandApi {
   /**
    * 与 AI 进行问答
    * @param content 对话内容
+   * @param content.prompt 提示词
+   * @param content.role 预设角色
    * @param apiConfig API配置
+   * @param apiConfig.apiType 模型类型：openai/ollama
+   * @param apiConfig.apiUrl API地址
+   * @param apiConfig.apiToken API令牌（仅 OpenAI 需要）
+   * @param apiConfig.model 模型名称
+   * @param options 其他选项
+   * @param options.showLoadingBar 是否显示加载条
    * @example
    * // OpenAI 示例
    * const response = await quickcommand.askAI(
    *   {
    *     prompt: "你好",
-   *     presetPrompt: ""  // 使用预设提示词：translate/shell/summarize
    *   },
    *   {
-   *     modelType: "openai",
+   *     apiType: "openai",
    *     apiUrl: "https://api.openai.com/v1/chat/completions",
    *     apiToken: "your-api-token",
    *     model: "gpt-3.5-turbo"
@@ -912,10 +919,10 @@ interface quickcommandApi {
    * const response = await quickcommand.askAI(
    *   {
    *     prompt: "查找进程名为chrome的进程并关闭",
-   *     presetPrompt: "shell"
+   *     role: "shell"
    *   },
    *   {
-   *     modelType: "ollama",
+   *     apiType: "ollama",
    *     apiUrl: "http://localhost:11434/api/generate",
    *     model: "qwen2.5:32b"
    *   }
@@ -925,18 +932,22 @@ interface quickcommandApi {
     content: {
       /** 提示词 */
       prompt: string;
-      /** 预设提示词类型 */
-      presetPrompt?: "" | "translate" | "shell" | "summarize";
+      /** 预设角色 */
+      role?: "translate" | "shell" | "summarize";
     },
     apiConfig: {
       /** 模型类型：openai/ollama */
-      modelType: "openai" | "ollama";
+      apiType: "openai" | "ollama";
       /** API地址 */
       apiUrl: string;
       /** API令牌（仅 OpenAI 需要） */
       apiToken?: string;
       /** 模型名称 */
       model: string;
+    },
+    options?: {
+      /** 是否显示加载条, 默认 true */
+      showLoadingBar?: boolean;
     }
   ): Promise<{
     /** 是否成功 */

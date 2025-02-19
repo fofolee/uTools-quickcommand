@@ -6,6 +6,26 @@
         {{ placeholder }}
       </div>
     </div>
+    <!-- AI助手按钮 -->
+    <div class="ai-button-wrapper">
+      <q-btn
+        round
+        dense
+        color="primary"
+        icon="smart_toy"
+        @click="showAIDialog = true"
+      >
+        <q-tooltip>AI 助手</q-tooltip>
+      </q-btn>
+    </div>
+    <!-- AI对话框 -->
+    <q-dialog v-model="showAIDialog" position="right" seamless>
+      <AIAssistantDialog
+        :code="modelValue"
+        :language="language"
+        @update-code="setEditorValue"
+      />
+    </q-dialog>
   </div>
 </template>
 
@@ -13,6 +33,7 @@
 import * as monaco from "monaco-editor";
 import importAll from "js/common/importAll.js";
 import { defineComponent } from "vue";
+import AIAssistantDialog from "./AIAssistantDialog.vue";
 
 // 批量导入关键字补全
 let languageCompletions = importAll(
@@ -39,6 +60,9 @@ const typeDefinitions = {
 
 export default defineComponent({
   name: "CodeEditor",
+  components: {
+    AIAssistantDialog,
+  },
   props: {
     // v-model 绑定值
     modelValue: {
@@ -134,6 +158,7 @@ export default defineComponent({
         // 光标样式
         cursorStyle: "line",
       },
+      showAIDialog: false,
     };
   },
   watch: {
@@ -394,6 +419,9 @@ export default defineComponent({
     formatDocument() {
       editor.getAction("editor.action.formatDocument").run();
     },
+    setEditorValue(value) {
+      editor.setValue(value);
+    },
   },
   computed: {
     showPlaceholder() {
@@ -430,5 +458,12 @@ export default defineComponent({
   font-family: sans-serif;
   user-select: none;
   opacity: 0.4;
+}
+
+.ai-button-wrapper {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  z-index: 500;
 }
 </style>
