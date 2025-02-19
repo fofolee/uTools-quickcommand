@@ -1,0 +1,67 @@
+/* q-field--filled 布局更加紧凑 */
+/* 输入框高度及字体 */
+.q-field--filled:not(.q-textarea) .q-field__control,
+.q-field--filled:not(.q-textarea) .q-field__control>*,
+.q-field--filled:not(.q-field--labeled):not(.q-textarea) .q-field__native {
+  max-height: 36px !important;
+  min-height: 36px !important;
+}
+
+.q-field--filled .q-field__control,
+.q-field--filled .q-field__control>*,
+.q-field--filled .q-field__native {
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.q-field--filled.q-select--with-chips .q-field__control .q-chip {
+  margin: 0 4px;
+}
+
+/* 输入框图标大小 */
+.q-field--filled .q-field__control .q-icon {
+  font-size: 18px;
+}
+
+/* 输入框标签字体大小，占位时的位置 */
+.q-field--filled .q-field__label {
+  font-size: 11px;
+  top: 11px;
+}
+
+/* 输入框标签悬浮的位置 */
+.q-field--filled.q-field--dense.q-field--float .q-field__label {
+  transform: translateY(-50%) scale(0.75);
+}
+
+/* 去除filled输入框边框 */
+.q-field--filled .q-field__control:before {
+  border: none;
+}
+
+/* 去除filled输入框下划线 */
+.q-field--filled .q-field__control:after {
+  height: 0;
+  border-bottom: none;
+}
+
+/* 输入框背景颜色及内边距 */
+.q-field--filled .q-field__control {
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0 8px;
+}
+
+/* 输入框聚焦时的背景颜色 */
+.q-field--filled.q-field--highlighted .q-field__control {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* 暗黑模式下的输入框背景颜色 */
+.body--dark .q-field--filled .q-field__control {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* 暗黑模式下输入框聚焦时的背景颜色 */
+.body--dark .q-field--filled.q-field--highlighted .q-field__control {
+  background: rgba(255, 255, 255, 0.08);
+}

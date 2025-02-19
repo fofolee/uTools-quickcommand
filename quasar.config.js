@@ -29,7 +29,13 @@ module.exports = configure(function (ctx) {
     boot: [],
 
     // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-css
-    css: ["app.css", "composer.css"],
+    css: [
+      "app.css",
+      "composer.css",
+      "markdown.css",
+      "monaco.css",
+      "qinput.css",
+    ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [

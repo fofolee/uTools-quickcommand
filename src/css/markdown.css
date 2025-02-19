@@ -1,0 +1,76 @@
+/* Markdown 样式支持 */
+.markdown p {
+  margin: 0;
+}
+
+.markdown pre {
+  background-color: #f6f8fa;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 2px 0;
+}
+
+.markdown code {
+  font-family: monospace;
+  padding: 0 4px;
+  background-color: #f6f8fa;
+  border-radius: 3px;
+}
+
+.markdown pre code {
+  padding: 0;
+  background-color: transparent;
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 2px 0;
+  padding-left: 1.5em;
+}
+
+.markdown blockquote {
+  color: #8b8b8b;
+  display: block;
+  border-left: 4px solid #8b8b8b;
+  padding-left: 10px;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  margin: 2px 0;
+  font-weight: 600;
+}
+
+.markdown h1 {
+  font-size: 18px;
+}
+
+.markdown h2 {
+  font-size: 16px;
+}
+
+.markdown h3 {
+  font-size: 15px;
+}
+
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  font-size: 14px;
+}
+
+/* 暗色模式适配 */
+.body--dark .markdown pre,
+.body--dark .markdown code {
+  background-color: #1a1a1a;
+}
+
+.body--dark .markdown blockquote {
+  border-left-color: #444;
+  color: #999;
+}
