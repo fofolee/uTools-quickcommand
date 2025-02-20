@@ -78,16 +78,20 @@ export default {
   data() {
     return {
       commandManager: useCommandManager(),
-      savedTagOrder: null, // 缓存标签顺序
+      savedTagOrder: [], // 缓存标签顺序
     };
   },
-  created() {
-    // 初始化时读取一次数据库
-    this.savedTagOrder = dbManager.getDB(TAG_ORDER_KEY);
-    if (!this.savedTagOrder.length) {
-      this.savedTagOrder = this.allQuickCommandTags;
-    }
-    this.currentTag = this.savedTagOrder[0];
+  mounted() {
+    this.$nextTick(() => {
+      // 初始化时读取一次数据库
+      const savedTagOrder = dbManager.getDB(TAG_ORDER_KEY);
+      if (savedTagOrder.length) {
+        this.savedTagOrder = savedTagOrder;
+        this.commandManager.changeCurrentTag(this.savedTagOrder[0]);
+      } else {
+        this.commandManager.changeCurrentTag(this.allQuickCommandTags[0]);
+      }
+    });
   },
   computed: {
     currentTag: {
