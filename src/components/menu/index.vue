@@ -122,7 +122,7 @@ import CommandManageMenu from "components/menu/CommandManageMenu.vue";
 import UtilityFeaturesMenu from "components/menu/UtilityFeaturesMenu.vue";
 import EnvConfigMenu from "components/menu/EnvConfigMenu.vue";
 import PersonalizeMenu from "components/menu/PersonalizeMenu.vue";
-import AIConfig from "components/popup/AIConfig.vue";
+import AIConfig from "components/ai/AIConfig.vue";
 import UserData from "components/popup/UserData.vue";
 import { utoolsFull } from "js/utools.js";
 import { useCommandManager } from "js/commandManager";

@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import AIConfig from "components/popup/AIConfig.vue";
+import AIConfig from "components/ai/AIConfig.vue";
 import { dbManager } from "js/utools.js";
 import { defineComponent } from "vue";
 

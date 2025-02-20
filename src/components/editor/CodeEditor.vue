@@ -33,7 +33,7 @@
 import * as monaco from "monaco-editor";
 import importAll from "js/common/importAll.js";
 import { defineComponent } from "vue";
-import AIAssistantDialog from "./AIAssistantDialog.vue";
+import AIAssistantDialog from "components/ai/AIAssistantDialog.vue";
 
 // 批量导入关键字补全
 let languageCompletions = importAll(
