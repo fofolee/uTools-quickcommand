@@ -36,7 +36,6 @@
 
 <script>
 import { defineComponent } from "vue";
-import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 export default defineComponent({
@@ -74,7 +73,7 @@ export default defineComponent({
     },
 
     getAssistantMsg(content) {
-      const markedContent = marked(content.trim());
+      const markedContent = quickcommand.markdownParse(content.trim());
       const processedContent = markedContent
         .replace("<p><think>", "<think><p>")
         .replace("</think></p>", "</p></think>")

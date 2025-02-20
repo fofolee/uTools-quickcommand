@@ -813,14 +813,14 @@ export const dataCommands = {
           width: 12,
         },
         {
-          label: "CSS选择器",
+          label: "CSS选择器（可选）",
           component: "VariableInput",
           icon: "css",
           placeholder: "例如：.class",
           width: 7,
         },
         {
-          label: "属性",
+          label: "属性（可选）",
           component: "VariableInput",
           icon: "colorize",
           options: {
@@ -834,6 +834,25 @@ export const dataCommands = {
           },
           defaultValue: newVarInputVal("str"),
           width: 5,
+        },
+      ],
+    },
+    {
+      value: "quickcommand.markdownParse",
+      label: "Markdown解析",
+      icon: "file_download",
+      config: [
+        {
+          label: "要解析的Markdown",
+          component: "VariableInput",
+          icon: "file_download",
+          width: 12,
+        },
+      ],
+      outputs: [
+        {
+          label: "解析后的HTML",
+          suggestName: "parsedHtml",
         },
       ],
     },

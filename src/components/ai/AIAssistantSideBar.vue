@@ -83,8 +83,6 @@
 import { defineComponent } from "vue";
 import AISelector from "components/ai/AISelector.vue";
 import AIChatHistory from "components/ai/AIChatHistory.vue";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
 
 const quickcommandApi =
   require(`!raw-loader!plugins/monaco/types/quickcommand.api.d.ts`)
@@ -228,19 +226,6 @@ export default defineComponent({
     toggleAutoUpdate() {
       this.autoUpdateCode = !this.autoUpdateCode;
       localStorage.setItem("ai_auto_update", this.autoUpdateCode);
-    },
-    getTrimContent(content) {
-      const markedContent = marked(content.trim());
-      // 解决think标签被错误地包裹在<p>标签中
-      const processedContent = markedContent
-        .replace("<p><think>", "<think><p>")
-        .replace("</think></p>", "</p></think>")
-        // 去除空的think标签
-        .replace("<think>\n\n</think>", "");
-      const purifiedContent = DOMPurify.sanitize(processedContent, {
-        ADD_TAGS: ["think"],
-      });
-      return purifiedContent;
     },
     getRolePrompt(language) {
       const languageMap = {

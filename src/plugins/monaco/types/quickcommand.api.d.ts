@@ -261,6 +261,18 @@ interface quickcommandApi {
   htmlParse(html: string): object;
 
   /**
+   * 将给定的markdown字符串解析为html字符串
+   *
+   * @param markdown 需要解析的markdown文本
+   * ```js
+   * quickcommand.markdownParse("# 这是一个标题").then(html => {
+   *   console.log(html)
+   * })
+   * ```
+   */
+  markdownParse(markdown: string): string;
+
+  /**
    * 下载文件，并返回文件的 Buffer，可选直接下载到指定路径，或者弹出对话框选择下载路径
    *
    * ```js

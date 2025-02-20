@@ -5,6 +5,7 @@ const kill = require("tree-kill");
 const iconv = require("iconv-lite");
 const path = require("path");
 const axios = require("axios");
+const marked = require("marked");
 const { chat, getModels } = require("./ai");
 
 window.getModelsFromAiApi = getModels;
@@ -82,6 +83,11 @@ const quickcommand = {
   // dom 解析
   htmlParse: function (html) {
     return new DOMParser().parseFromString(html, "text/html");
+  },
+
+  // markdown 解析
+  markdownParse: function (markdown) {
+    return marked.parse(markdown);
   },
 
   // 下载文件
