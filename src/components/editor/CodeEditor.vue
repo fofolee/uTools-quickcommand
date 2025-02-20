@@ -121,6 +121,7 @@ export default defineComponent({
     return {
       resizeTimeout: null,
       showAIAssistant: false,
+      wordWrap: "off",
     };
   },
   watch: {
@@ -179,6 +180,7 @@ export default defineComponent({
         value: this.modelValue || "",
         language,
         theme: this.theme,
+        wordWrap: this.wordWrap,
       };
 
       editor = monaco.editor.create(this.$refs.editorContainer, options);
@@ -354,9 +356,11 @@ export default defineComponent({
     },
     bindKeys() {
       // alt + z 换行
-      const revWordWrap = this.wordWrap === "on" ? "off" : "on";
       editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
-        editor.updateOptions({ wordWrap: revWordWrap });
+        this.wordWrap = this.wordWrap === "on" ? "off" : "on";
+        editor.updateOptions({
+          wordWrap: this.wordWrap,
+        });
       });
     },
     // 替换选中的文本，供外部调用
