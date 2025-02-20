@@ -196,7 +196,7 @@ export default {
       });
     },
     showHelp() {
-      window.showUb.help("#yiSRi");
+      window.showUb.help("#W8cuz");
     },
   },
 };
