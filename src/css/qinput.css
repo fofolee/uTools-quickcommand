@@ -3,8 +3,8 @@
 .q-field--filled:not(.q-textarea) .q-field__control,
 .q-field--filled:not(.q-textarea) .q-field__control>*,
 .q-field--filled:not(.q-field--labeled):not(.q-textarea) .q-field__native {
-  max-height: 36px !important;
-  min-height: 36px !important;
+  max-height: 36px;
+  min-height: 36px;
 }
 
 .q-field--filled .q-field__control,

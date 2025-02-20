@@ -7,7 +7,6 @@
   background-color: #f6f8fa;
   padding: 1em;
   border-radius: 6px;
-  overflow-x: auto;
   margin: 2px 0;
   overflow-x: auto;
   max-width: 100%;
@@ -46,6 +45,7 @@
 .markdown h6 {
   margin: 2px 0;
   font-weight: 600;
+  line-height: 1.5rem;
 }
 
 .markdown h1 {
@@ -77,8 +77,8 @@
   color: #999;
 }
 
-.markdown code ::-webkit-scrollbar {
-  height: 5px;
+.markdown pre::-webkit-scrollbar {
+  height: 3px;
 }
 
 .markdown a {

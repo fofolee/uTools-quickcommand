@@ -1,11 +1,29 @@
 <template>
   <div class="code-editor" :style="{ height: height }">
-    <div ref="editorContainer" class="editor-container" />
-    <div class="placeholder-wrapper" v-show="showPlaceholder">
-      <div class="placeholder">
-        {{ placeholder }}
+    <div
+      class="editor-container"
+      :class="{ 'with-assistant': showAIAssistant }"
+    >
+      <div ref="editorContainer" class="monaco-container" />
+      <div class="placeholder-wrapper" v-show="showPlaceholder">
+        <div class="placeholder">
+          {{ placeholder }}
+        </div>
       </div>
     </div>
+
+    <!-- AI助手侧边栏 -->
+    <Transition name="slide">
+      <AIAssistantSideBar
+        v-if="showAIAssistant"
+        class="ai-assistant-panel"
+        :code="modelValue"
+        :language="language"
+        @close="toggleAIAssistant(false)"
+        @update-code="updateEditorValue"
+      />
+    </Transition>
+
     <!-- AI助手按钮 -->
     <div class="ai-button-wrapper">
       <q-btn
@@ -13,19 +31,11 @@
         dense
         color="primary"
         icon="smart_toy"
-        @click="showAIDialog = true"
+        @click="toggleAIAssistant(true)"
+        v-if="!showAIAssistant"
       >
-        <q-tooltip>AI 助手</q-tooltip>
       </q-btn>
     </div>
-    <!-- AI对话框 -->
-    <q-dialog v-model="showAIDialog" position="right" seamless>
-      <AIAssistantDialog
-        :code="modelValue"
-        :language="language"
-        @update-code="setEditorValue"
-      />
-    </q-dialog>
   </div>
 </template>
 
@@ -33,7 +43,8 @@
 import * as monaco from "monaco-editor";
 import importAll from "js/common/importAll.js";
 import { defineComponent } from "vue";
-import AIAssistantDialog from "components/ai/AIAssistantDialog.vue";
+import AIAssistantSideBar from "components/ai/AIAssistantSideBar.vue";
+import editorOptions from "js/options/editorOptions.js";
 
 // 批量导入关键字补全
 let languageCompletions = importAll(
@@ -61,7 +72,7 @@ const typeDefinitions = {
 export default defineComponent({
   name: "CodeEditor",
   components: {
-    AIAssistantDialog,
+    AIAssistantSideBar,
   },
   props: {
     // v-model 绑定值
@@ -100,65 +111,16 @@ export default defineComponent({
       default: () => ({}),
     },
   },
-  emits: ["update:modelValue", "update:cursorPosition"],
+  emits: [
+    "update:modelValue",
+    "update:cursorPosition",
+    "saveHistory",
+    "requestFullScreen",
+  ],
   data() {
     return {
       resizeTimeout: null,
-      defaultOptions: {
-        value: "",
-        // 自动布局
-        automaticLayout: true,
-        // 折叠策略
-        foldingStrategy: "indentation",
-        // 自动关闭括号
-        autoClosingBrackets: true,
-        // 制表符大小
-        tabSize: 2,
-        // 最小化
-        minimap: {
-          enabled: false,
-        },
-        // 自动格式化
-        formatOnType: true,
-        // 自动格式化
-        formatOnPaste: true,
-        // 自动缩进
-        autoIndent: "full",
-        // 滚动超出最后一行
-        scrollBeyondLastLine: false,
-        // 字体大小
-        fontSize: 14,
-        // 行号
-        lineNumbers: "on",
-        // 行号最小字符数
-        lineNumbersMinChars: 3,
-        // 行号
-        renderLineNumbers: "on",
-        // 行装饰宽度
-        lineDecorationsWidth: 0,
-        // 圆角
-        roundedSelection: false,
-        // 行高亮
-        renderLineHighlight: "all",
-        // 仅在聚焦时高亮行
-        renderLineHighlightOnlyWhenFocus: true,
-        // 隐藏光标
-        hideCursorInOverviewRuler: true,
-        // 隐藏概览边框
-        overviewRulerBorder: false,
-        // 隐藏概览线
-        overviewRulerLanes: 0,
-        // 滚动条
-        scrollBars: {
-          vertical: "visible",
-          horizontal: "visible",
-        },
-        // 只读
-        readOnly: false,
-        // 光标样式
-        cursorStyle: "line",
-      },
-      showAIDialog: false,
+      showAIAssistant: false,
     };
   },
   watch: {
@@ -212,7 +174,7 @@ export default defineComponent({
       const language = this.getHighlighter(this.language);
 
       const options = {
-        ...this.defaultOptions,
+        ...editorOptions,
         ...this.options,
         value: this.modelValue || "",
         language,
@@ -419,8 +381,17 @@ export default defineComponent({
     formatDocument() {
       editor.getAction("editor.action.formatDocument").run();
     },
-    setEditorValue(value) {
-      editor.setValue(value);
+    updateEditorValue(type, value) {
+      if (type === "replace") {
+        editor.setValue(value);
+      } else if (type === "insert") {
+        this.repacleEditorSelection(value);
+      }
+      this.$emit("saveHistory", value);
+    },
+    toggleAIAssistant(value) {
+      this.showAIAssistant = value;
+      this.$emit("requestFullScreen", value);
     },
   },
   computed: {
@@ -437,11 +408,45 @@ export default defineComponent({
   overflow: hidden;
   position: relative;
   border-radius: 4px;
+  display: flex;
 }
 
 .editor-container {
+  flex: 1;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.editor-container.with-assistant {
+  width: 55%;
+}
+
+.monaco-container {
   width: 100%;
   height: 100%;
+}
+
+.ai-assistant-panel {
+  width: 45%;
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
+}
+
+.ai-button-wrapper {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  z-index: 500;
 }
 
 .placeholder-wrapper {
@@ -458,12 +463,5 @@ export default defineComponent({
   font-family: sans-serif;
   user-select: none;
   opacity: 0.4;
-}
-
-.ai-button-wrapper {
-  position: absolute;
-  right: 30px;
-  bottom: 30px;
-  z-index: 500;
 }
 </style>

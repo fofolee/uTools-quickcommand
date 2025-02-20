@@ -29,7 +29,7 @@
       >
         <draggable
           v-model="aiConfigs"
-          item-key="name"
+          item-key="id"
           handle=".drag-handle"
           :animation="200"
           class="config-list"
@@ -104,7 +104,7 @@
                         dense
                         dropdown-icon="refresh"
                       >
-                        <q-list>
+                        <q-list dense>
                           <q-item
                             v-for="model in models"
                             :key="model"
@@ -203,12 +203,12 @@ export default defineComponent({
     },
     addModel() {
       this.aiConfigs.push({
+        id: getUniqueId(),
         apiType: this.apiToAdd,
         apiUrl: "",
         apiToken: "",
         model: "",
         name: "",
-        id: getUniqueId(),
       });
     },
     getConfigListHeight() {
@@ -217,7 +217,12 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.aiConfigs = dbManager.getStorage("cfg_aiConfigs") || [];
+    this.aiConfigs = (dbManager.getStorage("cfg_aiConfigs") || []).map(
+      (config) => ({
+        ...config,
+        id: config.id || getUniqueId(),
+      })
+    );
   },
 });
 </script>

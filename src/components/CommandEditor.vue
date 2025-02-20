@@ -18,7 +18,7 @@
 
     <!-- 命令设置栏 -->
     <CommandConfig
-      v-if="!isRunCodePage"
+      v-if="!isRunCodePage && showCommandConfig"
       v-model="commandManager.state.currentCommand"
       from="quickcommand"
       :expand-on-focus="true"
@@ -32,6 +32,8 @@
         commandManager.state.currentCommand.cursorPosition
       "
       :language="getLanguage()"
+      @saveHistory="saveToHistory"
+      @request-full-screen="requestFullScreen"
       placeholder="请输入代码"
       class="codeEditor"
       ref="editor"
@@ -95,6 +97,7 @@ export default {
     return {
       programLanguages: Object.keys(programs),
       showComposer: false,
+      showCommandConfig: true,
       listener: null,
       composerInfo: {
         program: "quickcomposer",
@@ -235,6 +238,9 @@ export default {
           this.runCurrentCommand();
           break;
       }
+    },
+    requestFullScreen(value) {
+      this.showCommandConfig = !value;
     },
   },
 };
