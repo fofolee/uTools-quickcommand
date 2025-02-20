@@ -42,7 +42,6 @@ const quickcommand = {
 
   // setTimout 不能在 vm2 中使用，同时在 electron 中有 bug
   sleep: function (ms) {
-    var start = new Date().getTime();
     try {
       // node 16.13.1
       child_process.execSync(getSleepCodeByShell(ms), {
@@ -50,23 +49,26 @@ const quickcommand = {
         windowsHide: true,
       });
     } catch (ex) {}
-    var end = new Date().getTime();
-    return end - start;
+    return;
   },
 
   // 重写 setTimeout
   setTimeout: function (callback, ms) {
-    var start = new Date().getTime();
-    child_process.exec(
+    const child = child_process.exec(
       getSleepCodeByShell(ms),
       {
         timeout: ms,
       },
       () => {
-        var end = new Date().getTime();
-        callback(end - start);
+        if (child.signalCode === "SIGKILL") return;
+        callback();
       }
     );
+    return child.pid;
+  },
+
+  clearTimeout: function (pid) {
+    kill(pid, "SIGKILL");
   },
 
   asyncSleep: async function (ms) {

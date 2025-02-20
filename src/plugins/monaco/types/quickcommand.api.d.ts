@@ -236,6 +236,19 @@ interface quickcommandApi {
   setTimeout(callback: () => void, ms);
 
   /**
+   * 清除异步等待
+   *
+   * @param timeoutId 等待的timeoutId
+   * ```js
+   * const timeoutId = quickcommand.setTimeout(()=>{
+   *   console.log('这条内容不会被打印')
+   * }, 2000)
+   * quickcommand.clearTimeout(timeoutId)
+   * ```
+   */
+  clearTimeout(timeoutId: number): void;
+
+  /**
    * async 等待
    *
    * @param ms 等待的毫秒数

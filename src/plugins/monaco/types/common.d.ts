@@ -88,3 +88,6 @@ declare var console: {
   log(message?: any): void,
   error(message?: any): void
 }
+
+declare var setTimeout: (callback: () => void, ms: number) => number;
+declare var clearTimeout: (timeoutId: number) => void;

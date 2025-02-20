@@ -137,6 +137,9 @@ let getSandboxFuns = () => {
     os,
     child_process,
     quickcomposer,
+    // timeout
+    setTimeout: quickcommand.setTimeout,
+    clearTimeout: quickcommand.clearTimeout,
   };
   Object.keys(shortCodes).forEach((f) => {
     sandbox[f] = shortCodes[f];
