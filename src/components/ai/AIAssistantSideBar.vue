@@ -1,6 +1,6 @@
 <template>
   <q-card class="ai-assistant">
-    <div class="row items-center justify-between q-pa-xs no-wrap">
+    <div class="header">
       <div class="row items-center q-gutter-x-xs no-wrap">
         <q-icon name="smart_toy" size="20px" />
         <div class="text-subtitle1">AI 助手</div>
@@ -12,7 +12,7 @@
     <!-- 聊天记录区域 -->
     <AIChatHistory
       :messages="chatHistory"
-      @update-code="$emit('update-code', ...$event)"
+      @update-code="(...event) => $emit('update-code', ...event)"
     />
 
     <!-- 输入区域 -->
@@ -25,14 +25,14 @@
           dense
           autogrow
           autofocus
-          placeholder="请描述需求，Enter 发送，Shift+Enter 换行"
+          :placeholder="`请描述需求，AI 将生成 ${language} 代码`"
           @keydown.enter.exact.prevent="handleSubmit"
           @keydown.shift.enter.prevent="prompt += '\n'"
         />
       </div>
       <div class="row items-center justify-between q-gutter-x-xs">
         <div class="row items-center q-gutter-x-xs">
-          <q-btn flat dense size="sm" icon="delete_sweep" @click="clearHistory">
+          <q-btn flat dense size="sm" icon="clear_all" @click="clearHistory">
             <q-tooltip>清空对话</q-tooltip>
           </q-btn>
           <q-btn
@@ -44,11 +44,8 @@
             @click="sendCode = !sendCode"
           >
             <q-tooltip>
-              {{
-                sendCode
-                  ? "将当前代码提交给AI(已开启)"
-                  : "将当前代码提交给AI(已关闭)"
-              }}
+              将当前代码提交给AI<br />
+              状态：{{ sendCode ? "已开启" : "已关闭" }}
             </q-tooltip>
           </q-btn>
           <q-btn
@@ -60,9 +57,27 @@
             @click="toggleAutoUpdate"
           >
             <q-tooltip>
-              {{
-                autoUpdateCode ? "自动更新代码(已开启)" : "自动更新代码(已关闭)"
-              }}
+              自动更新代码<br />
+              状态：{{ autoUpdateCode ? "已开启" : "已关闭" }}
+            </q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="language === 'quickcommand'"
+            flat
+            dense
+            size="sm"
+            icon="receipt_long"
+            :color="submitDocs ? 'primary' : 'grey'"
+            @click="submitDocs = !submitDocs"
+          >
+            <q-tooltip>
+              让AI学习uTools和QuickCommand的文档<br />
+              状态：{{ submitDocs ? "已开启" : "已关闭" }}<br />
+              <span style="font-weight: bolder">注意：</span><br />
+              1. 开启后，AI会生成功能更贴切的代码<br />
+              2. 但会大幅提升上下文长度，增加代码生成时间<br />
+              3. 能力较低的模型，可能无法正确处理<br />
+              4. 计费的接口，会消耗 更多token<br />
             </q-tooltip>
           </q-btn>
         </div>
@@ -70,10 +85,14 @@
           flat
           dense
           size="sm"
+          :label="streamingResponse ? '停止' : '发送'"
+          :disable="!streamingResponse && !prompt"
           :color="streamingResponse ? 'negative' : 'primary'"
           :icon="streamingResponse ? 'stop' : 'send'"
           @click="handleSubmit"
-        />
+        >
+          <q-tooltip> Enter 发送，Shift+Enter 换行 </q-tooltip>
+        </q-btn>
       </div>
     </div>
   </q-card>
@@ -107,6 +126,7 @@ export default defineComponent({
       currentRequest: null,
       autoUpdateCode: localStorage.getItem("ai_auto_update") !== "false",
       sendCode: false,
+      submitDocs: true,
     };
   },
   props: {
@@ -122,23 +142,22 @@ export default defineComponent({
   emits: ["update-code", "close"],
   methods: {
     async handleSubmit() {
-      const sendCode = this.sendCode;
-      this.sendCode = false;
-
       if (this.streamingResponse) {
         this.stopStreaming();
         return;
       }
 
+      this.prompt = this.prompt.trim();
+
+      if (!this.prompt || !this.selectedApi) return;
+
       const code = this.code
         ? `这是当前代码：\n-----代码开始-----\n${this.code}\n-----代码结束-----\n`
         : "";
 
-      const promptText = sendCode
-        ? code + this.prompt.trim()
-        : this.prompt.trim();
+      const promptText = this.sendCode ? code + this.prompt : this.prompt;
 
-      if (!promptText || !this.selectedApi) return;
+      this.sendCode = false;
 
       this.chatHistory.push(
         {
@@ -154,12 +173,13 @@ export default defineComponent({
       this.streamingResponse = true;
       this.prompt = "";
 
+      const presetContext = this.getPresetContext();
+
       try {
         const response = await window.quickcommand.askAI(
           {
             prompt: promptText,
-            role: this.getRolePrompt(this.language),
-            context: this.chatHistory.slice(0, -2),
+            context: [...presetContext, ...this.chatHistory.slice(0, -2)],
           },
           this.selectedApi,
           {
@@ -227,19 +247,18 @@ export default defineComponent({
       this.autoUpdateCode = !this.autoUpdateCode;
       localStorage.setItem("ai_auto_update", this.autoUpdateCode);
     },
-    getRolePrompt(language) {
+    getLanguagePrompt(language) {
       const languageMap = {
         quickcommand: "NodeJS",
         javascript: "NodeJS",
         cmd: "bat",
       };
-      const commonInstructions = `请作为一名专业的开发专家，根据我的需求编写${languageMap[language]}代码，并请遵循以下原则：
+      const commonInstructions = `请根据我的需求编写${languageMap[language]}代码，并请遵循以下原则：
    - 编写简洁、可读性强的代码
    - 遵循${language}最佳实践和设计模式
    - 使用恰当的命名规范和代码组织
    - 添加必要的错误处理和边界检查
    - 保持中文注释的准确性和专业性
-   - 提供必要的使用说明
    `;
 
       // 针对不同语言的特殊提示
@@ -248,18 +267,74 @@ export default defineComponent({
    - 使用NodeJS原生API和模块`,
         python: `- 遵循PEP8规范`,
       };
-      languageSpecific.quickcommand = `${languageSpecific.javascript}
-    - 支持使用以下uTools接口： ${uToolsApi}
-    - 支持使用以下quickcommand接口： ${quickcommandApi}`;
+
+      languageSpecific.quickcommand = languageSpecific.javascript;
 
       // 获取语言特定的提示，如果没有则使用空字符串
       const specificInstructions =
         languageSpecific[language.toLowerCase()] || "";
 
       const lastInstructions =
-        "\n请直接生成代码，任何情况下都不需要做解释和说明";
+        "\n请直接给我代码，任何情况下都不需要做解释和说明";
 
       return commonInstructions + specificInstructions + lastInstructions;
+    },
+    getLanguageDocs(language) {
+      if (language !== "quickcommand") return [];
+      return [
+        {
+          name: "uTools",
+          api: uToolsApi,
+        },
+        {
+          name: "quickcommand",
+          api: quickcommandApi,
+        },
+      ];
+    },
+    getPresetContext() {
+      const languagePrompt = this.getLanguagePrompt(this.language);
+
+      let presetContext = [
+        {
+          role: "user",
+          content: languagePrompt,
+        },
+        {
+          role: "assistant",
+          content: "好的，我会严格按照你的要求编写代码。",
+        },
+      ];
+
+      if (this.submitDocs) {
+        const docs = this.getLanguageDocs(this.language);
+
+        presetContext.push(
+          {
+            role: "user",
+            content: `你现在使用的是一种特殊的环境，支持uTools和quickcommand两种特殊的接口，请优先使用uTools和quickcommand接口解决需求`,
+          },
+          {
+            role: "assistant",
+            content: "好的，我会注意。",
+          }
+        );
+
+        docs.forEach((doc) => {
+          presetContext.push(
+            {
+              role: "user",
+              content: `这是${doc.name}的API文档：\n${doc.api}`,
+            },
+            {
+              role: "assistant",
+              content: "好的，我会认真学习并记住这些接口。",
+            }
+          );
+        });
+      }
+
+      return presetContext;
     },
   },
   mounted() {
@@ -279,10 +354,27 @@ export default defineComponent({
   padding: 5px;
 }
 
-.input-container {
+.body--dark .ai-assistant {
+  background-color: #1e1e1e;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.ai-assistant .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.body--dark .ai-assistant .header {
+  border-bottom: 1px solid #333;
+}
+
+.ai-assistant .input-container {
   flex-shrink: 0;
   background: var(--utools-bg-color);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .prompt-input {

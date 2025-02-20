@@ -93,7 +93,7 @@ export default defineComponent({
     },
 
     setupMessageActions() {
-      const codeBlocks = document.querySelectorAll(".message-content pre");
+      const codeBlocks = document.querySelectorAll(".message-content pre code");
       codeBlocks.forEach((codeBlock) => {
         if (codeBlock.querySelector(".code-actions")) return;
 
@@ -125,7 +125,7 @@ export default defineComponent({
         actionGroup.appendChild(copyBtn);
         actionGroup.appendChild(insertBtn);
         actionGroup.appendChild(applyBtn);
-        codeBlock.appendChild(actionGroup);
+        codeBlock.parentNode.appendChild(actionGroup);
       });
 
       const links = document.querySelectorAll(".message-content a");
@@ -219,7 +219,7 @@ export default defineComponent({
 }
 
 .message-content :deep(pre::-webkit-scrollbar) {
-  height: 3px;  /* 与 markdown.css 保持一致 */
+  height: 3px; /* 与 markdown.css 保持一致 */
 }
 
 .message-content :deep(code) {
@@ -276,5 +276,15 @@ export default defineComponent({
 
 .message-content :deep(a:hover) {
   text-decoration: underline;
+}
+
+.message-content :deep(think) {
+  display: block;
+  color: #8b8b8b;
+  display: block;
+  border-left: 4px solid #8b8b8b;
+  padding-left: 10px;
+  font-size: 12px;
+  margin-bottom: 5px;
 }
 </style>

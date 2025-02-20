@@ -934,7 +934,7 @@ interface quickcommandApi {
    *   },
    *   {
    *     apiType: "openai",
-   *     apiUrl: "https://api.openai.com/v1/chat/completions",
+   *     apiUrl: "https://api.openai.com",
    *     apiToken: "your-api-token",
    *     model: "gpt-3.5-turbo"
    *   }
@@ -948,7 +948,7 @@ interface quickcommandApi {
    *   },
    *   {
    *     apiType: "ollama",
-   *     apiUrl: "http://localhost:11434/api/generate",
+   *     apiUrl: "http://localhost:11434",
    *     model: "qwen2.5:32b"
    *   }
    * );
