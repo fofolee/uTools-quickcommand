@@ -196,7 +196,7 @@ Shell脚本执行、Python脚本执行、Node.js脚本执行、PowerShell脚本�
 ![5mbyoa.png](https://files.catbox.moe/5mbyoa.png)
 
 >浏览器自动化
-![cgibo6.png](https://files.catbox.moe/cgibo6.png)
+![nq4q0c.png](https://files.catbox.moe/nq4q0c.png)
 
 >后台服务
 ![iiv1jv.png](https://files.catbox.moe/iiv1jv.png)
