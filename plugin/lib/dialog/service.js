@@ -52,7 +52,6 @@ const createDialog = (config, customDialogOptions = {}) => {
       const dialogResultHandler = (event, result) => {
         resolve(result);
         // 移除监听器
-        ipcRenderer.removeListener("dialog-result", dialogResultHandler);
         UBrowser.destroy();
       };
 
@@ -71,15 +70,14 @@ const createDialog = (config, customDialogOptions = {}) => {
         // 设置新的位置和大小
         UBrowser.setBounds(newBounds);
         UBrowser.setOpacity(1);
-        ipcRenderer.removeListener("dialog-ready", dialogReadyHandler);
       };
 
       // 监听子窗口返回的计算高度, 等待按钮有自己的计算逻辑
       config.type !== "wait-button" &&
-        ipcRenderer.on("dialog-ready", dialogReadyHandler);
+        ipcRenderer.once("dialog-ready", dialogReadyHandler);
 
       // 监听子窗口返回的返回值
-      ipcRenderer.on("dialog-result", dialogResultHandler);
+      ipcRenderer.once("dialog-result", dialogResultHandler);
 
       // 发送配置到子窗口
       ipcRenderer.sendTo(UBrowser.webContents.id, "dialog-config", {
@@ -331,7 +329,6 @@ const showProcessBar = async (options = {}) => {
   const windowWidth = 350;
   const windowHeight = 60;
 
-  // 计算窗口位置
   const { x, y } = calculateWindowPosition({
     position,
     width: windowWidth,
@@ -352,6 +349,54 @@ const showProcessBar = async (options = {}) => {
       },
       () => {
         const windowId = UBrowser.webContents.id;
+        let dialogReadyHandler;
+        let processPauseHandler;
+
+        // 创建事件处理器
+        dialogReadyHandler = (event, height) => {
+          if (event.senderId !== windowId) return;
+          const bounds = UBrowser.getBounds();
+          const y = Math.round(bounds.y - (height - bounds.height));
+          const newBounds = {
+            x: Math.round(bounds.x),
+            y: Math.max(0, y),
+            width: windowWidth,
+            height: Math.round(height),
+          };
+          UBrowser.setBounds(newBounds);
+          UBrowser.setOpacity(1);
+        };
+
+        // 监听暂停/恢复事件
+        if (onPause && onResume) {
+          processPauseHandler = (event, isPaused) => {
+            if (event.senderId !== windowId) return;
+            if (isPaused) {
+              onPause();
+            } else {
+              onResume();
+            }
+          };
+          ipcRenderer.on("process-pause", processPauseHandler);
+        }
+
+        // 监听子窗口返回的计算高度
+        ipcRenderer.on("dialog-ready", dialogReadyHandler);
+
+        // 监听对话框结果
+        ipcRenderer.once("dialog-result", (event, result) => {
+          if (event.senderId !== windowId) return;
+          if (result === "close" && typeof onClose === "function") {
+            onClose();
+          }
+          // 清理所有事件监听器
+          ipcRenderer.removeListener("dialog-ready", dialogReadyHandler);
+          if (processPauseHandler) {
+            ipcRenderer.removeListener("process-pause", processPauseHandler);
+          }
+          lastProcessBar = null;
+          UBrowser.destroy();
+        });
 
         // 发送配置到子窗口
         ipcRenderer.sendTo(windowId, "dialog-config", {
@@ -361,47 +406,8 @@ const showProcessBar = async (options = {}) => {
           isDark: utools.isDarkColors(),
           platform: process.platform,
           showPause: Boolean(onPause && onResume),
-          isLoading: value === undefined, // 当不传value时显示加载动画
+          isLoading: value === undefined,
         });
-
-        const dialogReadyHandler = (event, height) => {
-          // 获取当前窗口位置
-          const bounds = UBrowser.getBounds();
-          // 调整y坐标，保持窗口底部不变
-          const y = Math.round(bounds.y - (height - bounds.height));
-          // 确保坐标和尺寸都是有效的整数
-          const newBounds = {
-            x: Math.round(bounds.x),
-            y: Math.max(0, y), // 确保不会超出屏幕顶部
-            width: windowWidth,
-            height: Math.round(height),
-          };
-          // 设置新的位置和大小
-          UBrowser.setBounds(newBounds);
-          UBrowser.setOpacity(1);
-        };
-
-        // 监听子窗口返回的计算高度
-        ipcRenderer.on("dialog-ready", dialogReadyHandler);
-
-        // 监听对话框结果
-        ipcRenderer.once("dialog-result", (event, result) => {
-          if (result === "close" && typeof onClose === "function") {
-            onClose();
-          }
-          UBrowser.destroy();
-        });
-
-        // 监听暂停/恢复事件
-        if (onPause && onResume) {
-          ipcRenderer.on("process-pause", (event, isPaused) => {
-            if (isPaused) {
-              onPause();
-            } else {
-              onResume();
-            }
-          });
-        }
 
         const processBar = {
           id: windowId,
@@ -409,15 +415,17 @@ const showProcessBar = async (options = {}) => {
             if (typeof onClose === "function") {
               onClose();
             }
-            lastProcessBar = null;
+            // 清理所有事件监听器
             ipcRenderer.removeListener("dialog-ready", dialogReadyHandler);
+            if (processPauseHandler) {
+              ipcRenderer.removeListener("process-pause", processPauseHandler);
+            }
+            lastProcessBar = null;
             UBrowser.destroy();
           },
         };
 
         lastProcessBar = processBar;
-
-        // 返回窗口ID和关闭函数
         resolve(processBar);
       }
     );
