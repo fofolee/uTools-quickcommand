@@ -877,7 +877,7 @@ interface quickcommandApi {
    * 与 AI 进行问答
    * @param content 对话内容
    * @param content.prompt 提示词
-   * @param content.role 预设角色
+   * @param content.role 预设角色: translate|shell|summarize|polish|expand
    * @param apiConfig API配置，不传或传入null则使用用户配置的第一个API配置
    * @param apiConfig.apiType 模型类型：openai/ollama
    * @param apiConfig.apiUrl API地址
@@ -939,8 +939,8 @@ interface quickcommandApi {
     content: {
       /** 提示词 */
       prompt: string;
-      /** 预设角色 */
-      role?: "translate" | "shell" | "summarize";
+      /** 预设角色: 翻译、shell命令生成、总结、润色、扩写 */
+      role?: "translate" | "shell" | "summarize" | "polish" | "expand";
     },
     /** API配置，不传或传入null则使用用户配置的第一个API配置 */
     apiConfig?: {

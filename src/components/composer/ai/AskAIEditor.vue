@@ -56,6 +56,8 @@ export default defineComponent({
         { label: "无", value: "" },
         { label: "翻译", value: "translate" },
         { label: "总结", value: "summarize" },
+        { label: "润色", value: "polish" },
+        { label: "扩写", value: "expand" },
         { label: "生成shell命令", value: "shell" },
       ],
       apiTypeOptions: [
