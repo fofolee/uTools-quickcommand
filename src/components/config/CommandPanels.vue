@@ -63,7 +63,6 @@
 <script>
 import CommandCard from "components/CommandCard.vue";
 import draggable from "vuedraggable";
-import pinyinMatch from "pinyin-match";
 import { useCommandManager } from "js/commandManager.js";
 import { dbManager } from "js/utools.js";
 
@@ -153,7 +152,7 @@ export default {
           commands.forEach((cmd) => {
             // 拼音搜索
             let explain = cmd.features.explain;
-            let matchedWordPositions = pinyinMatch.match(
+            let matchedWordPositions = window.pinyinMatch.match(
               explain,
               this.commandSearchKeyword
             );

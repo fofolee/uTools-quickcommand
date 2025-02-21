@@ -86,8 +86,6 @@
 </template>
 
 <script>
-import pinyinMatch from "pinyin-match";
-
 export default {
   data() {
     return {
@@ -116,12 +114,12 @@ export default {
 
       return this.items.filter((x) => {
         if (this.is.json) {
-          const titleMatch = pinyinMatch.match(x.title, this.searchWords);
+          const titleMatch = window.pinyinMatch.match(x.title, this.searchWords);
           const descMatch =
-            x.description && pinyinMatch.match(x.description, this.searchWords);
+            x.description && window.pinyinMatch.match(x.description, this.searchWords);
           return titleMatch || descMatch;
         } else {
-          return pinyinMatch.match(x, this.searchWords);
+          return window.pinyinMatch.match(x, this.searchWords);
         }
       });
     },
@@ -237,7 +235,7 @@ export default {
     highlightText(text) {
       if (!text || !this.searchWords) return text;
 
-      const matchInfo = pinyinMatch.match(text, this.searchWords);
+      const matchInfo = window.pinyinMatch.match(text, this.searchWords);
       if (!matchInfo) return text;
 
       let result = text;

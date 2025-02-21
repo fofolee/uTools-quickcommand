@@ -18,6 +18,7 @@ const md5 = (input) => {
 };
 
 window.lodashM = require("./lib/lodashMini");
+window.pinyinMatch = require("pinyin-match");
 
 const createTerminalCommand = require("./lib/createTerminalCommand");
 const shortCodes = require("./lib/shortCodes");

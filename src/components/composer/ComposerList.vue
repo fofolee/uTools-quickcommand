@@ -72,7 +72,6 @@
 <script>
 import { defineComponent } from "vue";
 import { commandCategories } from "js/composer/composerConfig";
-import pinyinMatch from "pinyin-match";
 
 export default defineComponent({
   name: "ComposerList",
@@ -107,8 +106,8 @@ export default defineComponent({
           commands: this.commands
             .filter(
               (cmd) =>
-                (cmd.label && pinyinMatch.match(cmd.label, query)) ||
-                (cmd.value && pinyinMatch.match(cmd.value, query))
+                (cmd.label && window.pinyinMatch.match(cmd.label, query)) ||
+                (cmd.value && window.pinyinMatch.match(cmd.value, query))
             )
             .filter((cmd) => cmd.type === category.label),
         }))
@@ -151,7 +150,7 @@ export default defineComponent({
     highlightText(text) {
       if (!this.searchQuery) return text;
 
-      const matches = pinyinMatch.match(text, this.searchQuery);
+      const matches = window.pinyinMatch.match(text, this.searchQuery);
       if (!matches) return text;
 
       const [start, end] = matches;
