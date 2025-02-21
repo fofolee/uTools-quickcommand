@@ -56,9 +56,7 @@ const getValidCommand = (command) => {
   command.features.cmds = getLabeledCmds(cmds, explain);
 
   // 不需要显示输入框的输入类型，添加mainHide属性
-  if (outputTypes[command.output].outPlugin) {
-    command.features.mainHide = true;
-  }
+  command.features.mainHide = outputTypes[command.output].outPlugin || false;
 
   // 生成唯一code
   if (!command.features.code) {
