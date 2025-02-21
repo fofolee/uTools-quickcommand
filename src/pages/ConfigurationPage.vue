@@ -132,6 +132,9 @@ export default {
         case "run":
           this.runCommand(event.data);
           return;
+        case "createCopy":
+          this.createCommandCopy(event.data);
+          return;
         default:
           return;
       }
@@ -156,6 +159,10 @@ export default {
       if (!this.allQuickCommandTags.includes(this.currentTag)) {
         this.changeCurrentTag("默认");
       }
+    },
+    // 创建命令副本
+    createCommandCopy(code) {
+      this.commandManager.createCommandCopy(code);
     },
     // 编辑命令
     editCommand(commandOrCode) {

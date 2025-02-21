@@ -210,6 +210,13 @@ export function useCommandManager() {
     return parsedData.qc;
   };
 
+  // 创建命令副本
+  const createCommandCopy = (code) => {
+    const command = window.lodashM.cloneDeep(state.allQuickCommands[code]);
+    command.features.code = getFeatureCode(command.features.cmds);
+    saveCommand(command);
+  };
+
   // 是否为默认命令
   const isDefaultCommand = (code) => {
     return code.slice(0, 8) === "default_";
@@ -349,6 +356,7 @@ export function useCommandManager() {
     enableCommand,
     disableCommand,
     importCommand,
+    createCommandCopy,
     isDefaultCommand,
     exportAllCommands,
     getActivatedFeatures,

@@ -59,6 +59,13 @@
               <q-item-section>复制到剪贴板</q-item-section>
             </q-item>
 
+            <q-item clickable v-close-popup @click="createCommandCopy">
+              <q-item-section side>
+                <q-icon name="file_copy" />
+              </q-item-section>
+              <q-item-section>创建命令副本</q-item-section>
+            </q-item>
+
             <q-item clickable @click="shareCommand" v-close-popup>
               <q-item-section side>
                 <q-icon name="share" />
@@ -188,6 +195,13 @@ export default {
         utools.showNotification(
           `「${this.commandInfo.features.explain}」已复制到剪贴板`
         );
+    },
+    // 创建命令副本
+    createCommandCopy() {
+      this.$emit("commandChanged", {
+        type: "createCopy",
+        data: this.featureCode,
+      });
     },
     // 导出到文件
     exportCommandFile() {
