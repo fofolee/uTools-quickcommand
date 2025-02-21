@@ -7,8 +7,7 @@
       left: tabBarWidth,
     }"
     v-model="currentTag"
-    transition-prev="jump-down"
-    transition-next="jump-up"
+    transition-duration="0"
   >
     <q-tab-panel
       style="padding: 0"
@@ -73,7 +72,7 @@ export default {
   components: {
     CommandCard,
     draggable,
-  },  
+  },
   data() {
     return {
       commandManager: useCommandManager(),
