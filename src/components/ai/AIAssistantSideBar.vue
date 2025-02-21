@@ -105,13 +105,22 @@ import { defineComponent } from "vue";
 import AISelector from "components/ai/AISelector.vue";
 import AIChatHistory from "components/ai/AIChatHistory.vue";
 
-const quickcommandApi =
-  require(`!raw-loader!plugins/monaco/types/quickcommand.api.d.ts`)
-    .default.replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/\n/g, "");
-const uToolsApi = require(`!raw-loader!plugins/monaco/types/utools.api.d.ts`)
-  .default.replace(/\/\*[\s\S]*?\*\//g, "")
-  .replace(/\n/g, "");
+const compressApi = (api) => {
+  return api
+    .replace(/\/\*[\s\S]*?\*\//g, (match) => {
+      // 只替换包含2个以上换行符的注释
+      return match.split("\n").length > 2 ? "" : match;
+    })
+    .replace(/\n/g, "")
+    .replace(/\s+/g, " ");
+};
+
+const quickcommandApi = compressApi(
+  require(`!raw-loader!plugins/monaco/types/quickcommand.api.d.ts`).default
+);
+const uToolsApi = compressApi(
+  require(`!raw-loader!plugins/monaco/types/utools.api.d.ts`).default
+);
 
 export default defineComponent({
   name: "AIAssistantSideBar",

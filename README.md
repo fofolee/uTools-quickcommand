@@ -190,7 +190,7 @@ Shell脚本执行、Python脚本执行、Node.js脚本执行、PowerShell脚本�
 ![xb2g30.png](https://files.catbox.moe/xb2g30.png)
 
 >AI代码生成
-![ax8yzo.png](https://files.catbox.moe/ax8yzo.png)
+![4kcqh9.png](https://files.catbox.moe/4kcqh9.png)
 
 >可视化编排界面
 ![5mbyoa.png](https://files.catbox.moe/5mbyoa.png)
