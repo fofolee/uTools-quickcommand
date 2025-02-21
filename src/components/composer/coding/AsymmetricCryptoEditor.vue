@@ -49,6 +49,7 @@
         label="加密算法"
         dense
         filled
+        options-dense
         class="col-grow"
         emit-value
         map-options
@@ -63,6 +64,7 @@
         dense
         filled
         class="col-grow"
+        options-dense
         emit-value
         map-options
       />
@@ -81,6 +83,7 @@
         class="col-grow"
         emit-value
         map-options
+        options-dense
       />
       <!-- 格式选择 -->
       <q-select
@@ -93,6 +96,7 @@
         class="col-grow"
         emit-value
         map-options
+        options-dense
       />
     </div>
 

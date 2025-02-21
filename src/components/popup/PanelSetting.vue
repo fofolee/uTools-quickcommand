@@ -19,6 +19,7 @@
             placeholder="键入后回车"
             use-input
             use-chips
+            options-dense
             multiple
             new-value-mode="add-unique"
             input-debounce="0"

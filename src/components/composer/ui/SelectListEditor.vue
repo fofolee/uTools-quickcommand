@@ -42,6 +42,7 @@
             filled
             emit-value
             map-options
+            options-dense
             option-value="value"
             option-label="label"
           >

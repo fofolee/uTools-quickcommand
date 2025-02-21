@@ -105,6 +105,7 @@
                   filled
                   emit-value
                   map-options
+                  options-dense
                 >
                   <template v-slot:prepend>
                     <q-icon name="code" />

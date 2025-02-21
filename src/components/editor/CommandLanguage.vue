@@ -68,7 +68,7 @@
         color="primary"
         icon="settings"
       >
-        <q-list>
+        <q-list dense>
           <!-- 自定义解释器 -->
           <q-item
             v-for="(item, index) in Object.keys(currentCommand.customOptions)"
@@ -79,7 +79,7 @@
               stack-label
               autofocus
               dense
-              outlined
+              filled
               class="full-width"
               :label="
                 [
@@ -103,7 +103,7 @@
             <q-input
               dense
               stack-label
-              outlined
+              filled
               label="脚本参数"
               class="full-width"
               :model-value="currentCommand.scptarg"
@@ -122,8 +122,9 @@
           >
             <q-select
               dense
-              outlined
+              filled
               stack-label
+              options-dense
               clearable
               class="full-width"
               :label="['脚本编码', '输出编码'][index]"

@@ -44,6 +44,7 @@
         :options="argvs.operation === 'encrypt' ? outputFormats : inputFormats"
         :label="argvs.operation === 'encrypt' ? '输出格式' : '输入格式'"
         dense
+        options-dense
         filled
         class="col-4"
         emit-value
@@ -60,6 +61,7 @@
         label="加密算法"
         dense
         filled
+        options-dense
         class="col-select"
         emit-value
         map-options
@@ -80,6 +82,7 @@
         class="col-select"
         emit-value
         map-options
+        options-dense
       />
       <!-- 模式选择 -->
       <q-select
@@ -92,6 +95,7 @@
         class="col-select"
         emit-value
         map-options
+        options-dense
       />
       <!-- Padding选择 -->
       <q-select
@@ -104,6 +108,7 @@
         class="col-select"
         emit-value
         map-options
+        options-dense
       />
     </div>
 

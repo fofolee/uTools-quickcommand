@@ -12,6 +12,7 @@
             filled
             emit-value
             map-options
+            options-dense
             @update:model-value="updateArgvs('method', $event)"
           >
             <template v-slot:prepend>

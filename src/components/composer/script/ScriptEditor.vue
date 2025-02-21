@@ -15,6 +15,7 @@
         label="编程语言"
         filled
         dense
+        options-dense
         class="col"
       >
         <template v-slot:append>

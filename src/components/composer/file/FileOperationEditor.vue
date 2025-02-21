@@ -81,6 +81,7 @@
           :options="encodingOptions"
           label="编码"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -92,6 +93,7 @@
           :options="readModeOptions"
           label="读取模式"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -103,6 +105,7 @@
           :options="readFlagOptions"
           label="读取标志"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -136,6 +139,7 @@
           :options="encodingOptions"
           label="编码"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -147,6 +151,7 @@
           :options="writeModeOptions"
           label="写入模式"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -158,6 +163,7 @@
           :options="writeFlagOptions"
           label="文件权限"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -194,6 +200,7 @@
           label="目标类型"
           dense
           filled
+          options-dense
           class="col-grow"
           emit-value
           map-options
@@ -225,6 +232,7 @@
           :options="targetTypeOptions"
           label="目标类型"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -236,6 +244,7 @@
           :options="manageOperationOptions"
           label="管理操作"
           dense
+          options-dense
           filled
           class="col-grow"
           emit-value
@@ -265,6 +274,7 @@
             :options="writeFlagOptions"
             label="文件权限"
             dense
+            options-dense
             filled
             class="col-grow"
             emit-value
@@ -349,6 +359,7 @@
           label="目标类型"
           dense
           filled
+          options-dense
           class="col-grow"
           emit-value
           map-options
@@ -360,6 +371,7 @@
           label="检查类型"
           dense
           filled
+          options-dense
           class="col-grow"
           emit-value
           map-options
