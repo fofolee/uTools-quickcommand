@@ -49,8 +49,9 @@ export function generateCode(flow) {
 
     let cmdCode = cmd.code;
     // 处理输出变量
-    if (cmd.outputVariable) {
-      const { name, details } = cmd.outputVariable;
+    const outputVariable = cmd.outputVariable || {};
+    const { name, details } = outputVariable;
+    if (name || !window.lodashM.isEmpty(details)) {
       if (cmd.asyncMode === "then") {
         // 使用回调函数模式
         if (cmd.callbackFunc) {
@@ -136,7 +137,5 @@ export function generateCode(flow) {
 
 export function generateFlowsCode(flows) {
   const [mainFlow, ...subFlows] = flows;
-  return [...subFlows, mainFlow]
-    .map((flow) => generateCode(flow))
-    .join("\n\n");
+  return [...subFlows, mainFlow].map((flow) => generateCode(flow)).join("\n\n");
 }
