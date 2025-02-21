@@ -8,6 +8,8 @@ const axios = require("axios");
 const marked = require("marked");
 const { chat, getModels } = require("./ai");
 
+const { dbStorage } = utools;
+
 window.getModelsFromAiApi = getModels;
 
 const systemDialog = require("./dialog/service");
@@ -197,6 +199,9 @@ const quickcommand = {
   },
 
   askAI: async function (content, apiConfig, options) {
+    if (window.lodashM.isEmpty(apiConfig)) {
+      apiConfig = dbStorage.getItem("cfg_aiConfigs")?.[0] || {};
+    }
     return await chat(content, apiConfig, options);
   },
 

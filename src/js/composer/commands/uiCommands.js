@@ -446,8 +446,9 @@ export const uiCommands = {
               width: 4,
             },
             value: {
-              label: "初始进度值",
+              label: "初始进度值(0-100)",
               component: "VariableInput",
+              placeholder: "留空则显示加载动画",
               disableToggleType: true,
               width: 4,
             },
@@ -486,7 +487,7 @@ export const uiCommands = {
           defaultValue: {
             title: newVarInputVal("str", "进度"),
             text: newVarInputVal("str", "处理中..."),
-            value: newVarInputVal("var", "0"),
+            value: newVarInputVal("var"),
             position: "bottom-right",
             onClose: newVarInputVal("var"),
             onPause: newVarInputVal("var"),
@@ -504,8 +505,9 @@ export const uiCommands = {
           component: "OptionEditor",
           options: {
             value: {
-              label: "进度值",
+              label: "进度值(0-100)",
               component: "VariableInput",
+              placeholder: "留空则显示加载动画",
               width: 4,
               disableToggleType: true,
             },
@@ -522,7 +524,7 @@ export const uiCommands = {
             },
           },
           defaultValue: {
-            value: newVarInputVal("var", "0"),
+            value: newVarInputVal("var", "100"),
             text: newVarInputVal("str"),
             complete: false,
           },
@@ -532,65 +534,6 @@ export const uiCommands = {
           component: "VariableInput",
           width: 12,
           placeholder: "不传则更新最近的进度条",
-          defaultValue: newVarInputVal("var"),
-          disableToggleType: true,
-        },
-      ],
-    },
-    {
-      value: "quickcommand.showLoadingBar",
-      label: "显示载入界面",
-      neverHasOutput: true,
-      asyncMode: "await",
-      config: [
-        {
-          component: "OptionEditor",
-          options: {
-            text: {
-              label: "文本",
-              component: "VariableInput",
-              width: 4,
-            },
-            position: {
-              label: "位置",
-              component: "QSelect",
-              width: 4,
-              options: [
-                { label: "屏幕左上角", value: "top-left" },
-                { label: "屏幕右上角", value: "top-right" },
-                { label: "屏幕左下角", value: "bottom-left" },
-                { label: "屏幕右下角", value: "bottom-right" },
-              ],
-            },
-            onClose: {
-              label: "关闭按钮回调函数",
-              component: "VariableInput",
-              disableToggleType: true,
-              width: 4,
-            },
-          },
-          defaultValue: {
-            text: newVarInputVal("str", "加载中..."),
-            position: "bottom-right",
-            onClose: newVarInputVal("var"),
-          },
-        },
-      ],
-      outputs: {
-        label: "载入条对象",
-        suggestName: "loadingBar",
-      },
-    },
-    {
-      value: "quickcommand.closeLoadingBar",
-      label: "关闭载入界面",
-      neverHasOutput: true,
-      config: [
-        {
-          label: "载入条对象",
-          component: "VariableInput",
-          placeholder: "不传则关闭最近的载入条",
-          width: 12,
           defaultValue: newVarInputVal("var"),
           disableToggleType: true,
         },

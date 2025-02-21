@@ -305,7 +305,7 @@ let lastProcessBar = null;
  * @param {object} options - 配置选项
  * @param {string} [options.title="进度"] - 对话框标题
  * @param {string} [options.text="处理中..."] - 进度条上方的文本
- * @param {number} [options.value=0] - 初始进度值(0-100)
+ * @param {number} [options.value] - 初始进度值(0-100)，不传则显示加载动画
  * @param {string} [options.position="bottom-right"] - 进度条位置，可选值：top-left, top-right, bottom-left, bottom-right
  * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
  * @param {Function} [options.onPause] - 暂停按钮点击时的回调函数
@@ -316,7 +316,7 @@ let lastProcessBar = null;
 const showProcessBar = async (options = {}) => {
   const {
     text = "处理中...",
-    value = 0,
+    value,
     position = "bottom-right",
     onClose,
     onPause,
@@ -328,7 +328,7 @@ const showProcessBar = async (options = {}) => {
     throw new Error("onPause 和 onResume 必须同时配置");
   }
 
-  const windowWidth = 350;
+  const windowWidth = 250;
   const windowHeight = 60;
 
   // 计算窗口位置
@@ -357,10 +357,11 @@ const showProcessBar = async (options = {}) => {
         ipcRenderer.sendTo(windowId, "dialog-config", {
           type: "process",
           text,
-          value,
+          value: value === undefined ? 0 : value,
           isDark: utools.isDarkColors(),
           platform: process.platform,
           showPause: Boolean(onPause && onResume),
+          isLoading: value === undefined, // 当不传value时显示加载动画
         });
 
         // 监听窗口准备就绪
@@ -410,7 +411,7 @@ const showProcessBar = async (options = {}) => {
 /**
  * 更新进度条的进度
  * @param {object} options - 配置选项
- * @param {number} options.value - 新的进度值(0-100)
+ * @param {number} [options.value] - 新的进度值(0-100)，不传则显示加载动画
  * @param {string} [options.text] - 新的进度文本
  * @param {boolean} [options.complete] - 是否完成并关闭进度条
  * @param {{id: number, close: Function}|undefined} processBar - 进度条对象, 如果不传入则使用上一次创建的进度条
@@ -433,104 +434,17 @@ const updateProcessBar = (options = {}, processBar = null) => {
   }
 
   const { value, text, complete } = options;
-  ipcRenderer.sendTo(processBar.id, "update-process", { value, text });
+  ipcRenderer.sendTo(processBar.id, "update-process", {
+    value,
+    text,
+    isLoading: value === undefined,
+  });
 
   if (complete) {
     setTimeout(() => {
       processBar.close();
     }, 600);
   }
-};
-
-let lastLoadingBar = null;
-
-/**
- * 显示一个加载条对话框
- * @param {object} options - 配置选项
- * @param {string} [options.text="加载中..."] - 加载条上方的文本
- * @param {string} [options.position="bottom-right"] - 加载条位置，可选值：top-left, top-right, bottom-left, bottom-right
- * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
- * @returns {Promise<{id: number, close: Function}>} 返回加载条窗口ID和关闭函数
- */
-const showLoadingBar = async (options = {}) => {
-  const { text = "加载中...", position = "bottom-right", onClose } = options;
-
-  const windowWidth = 250;
-  const windowHeight = 60;
-
-  // 计算窗口位置
-  const { x, y } = calculateWindowPosition({
-    position,
-    width: windowWidth,
-    height: windowHeight,
-  });
-
-  return new Promise((resolve) => {
-    const UBrowser = createBrowserWindow(
-      dialogPath,
-      {
-        width: windowWidth,
-        height: windowHeight,
-        x,
-        y,
-        opacity: 0,
-        focusable: false,
-        ...commonBrowserWindowOptions,
-      },
-      () => {
-        const windowId = UBrowser.webContents.id;
-
-        // 发送配置到子窗口
-        ipcRenderer.sendTo(windowId, "dialog-config", {
-          type: "process",
-          text,
-          value: 0,
-          isDark: utools.isDarkColors(),
-          platform: process.platform,
-          isLoading: true, // 标记为加载条模式
-        });
-
-        // 监听窗口准备就绪
-        ipcRenderer.once("dialog-ready", () => {
-          UBrowser.setOpacity(1);
-        });
-
-        // 监听对话框结果
-        ipcRenderer.once("dialog-result", (event, result) => {
-          if (result === "close" && typeof onClose === "function") {
-            onClose();
-          }
-          UBrowser.destroy();
-        });
-
-        const loadingBar = {
-          id: windowId,
-          close: () => {
-            if (typeof onClose === "function") {
-              onClose();
-            }
-            lastLoadingBar = null;
-            UBrowser.destroy();
-          },
-        };
-
-        lastLoadingBar = loadingBar;
-
-        // 返回窗口ID和关闭函数
-        resolve(loadingBar);
-      }
-    );
-  });
-};
-
-const closeLoadingBar = (loadingBar) => {
-  if (!loadingBar) {
-    if (!lastLoadingBar) {
-      throw new Error("没有找到已创建的加载条");
-    }
-    loadingBar = lastLoadingBar;
-  }
-  loadingBar.close();
 };
 
 module.exports = {
@@ -543,6 +457,4 @@ module.exports = {
   showSystemWaitButton,
   showProcessBar,
   updateProcessBar,
-  showLoadingBar,
-  closeLoadingBar,
 };

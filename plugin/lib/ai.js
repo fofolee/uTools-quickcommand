@@ -72,7 +72,7 @@ function buildRequestConfig(apiConfig) {
 }
 
 // 构建请求数据
-function buildRequestData(content, apiConfig, stream = false) {
+function buildRequestData(content, apiConfig) {
   const { model } = apiConfig;
   const { prompt, role, context = [] } = content;
   const rolePrompt = ROLE_PROMPTS[role] || role;
@@ -105,7 +105,7 @@ function buildRequestData(content, apiConfig, stream = false) {
   return {
     model,
     messages,
-    stream,
+    stream: true,
   };
 }
 
@@ -222,7 +222,7 @@ async function handleStreamResponse(response, apiConfig, controller, onStream) {
     reader.releaseLock();
   }
 
-  return { success: true, result: "流式请求完成" };
+  return { success: true };
 }
 
 /**
@@ -234,15 +234,11 @@ async function handleStreamResponse(response, apiConfig, controller, onStream) {
  */
 async function chat(content, apiConfig, options = {}) {
   try {
-    const { showLoadingBar = true, stream = false, onStream } = options;
+    const { showProcessBar = true, onStream = () => {} } = options;
 
     // 验证必要参数
     if (!apiConfig.apiUrl || !content.prompt || !apiConfig.model) {
       throw new Error("API地址、模型名称和提示词不能为空");
-    }
-
-    if (stream && !onStream) {
-      throw new Error("使用流式请求时必须提供onStream回调函数");
     }
 
     // 构建请求URL和配置
@@ -250,12 +246,12 @@ async function chat(content, apiConfig, options = {}) {
       apiConfig.apiUrl,
       API_ENDPOINTS[apiConfig.apiType].chat
     );
-    const config = buildRequestConfig(apiConfig, stream);
-    const requestData = buildRequestData(content, apiConfig, stream);
+    const config = buildRequestConfig(apiConfig);
+    const requestData = buildRequestData(content, apiConfig);
 
-    // 显示加载条
-    const loadingBar = showLoadingBar
-      ? await quickcommand.showLoadingBar({
+    // 显示进度条
+    const processBar = showProcessBar
+      ? await quickcommand.showProcessBar({
           text: "AI思考中...",
           onClose: () => {
             if (controller) {
@@ -264,6 +260,26 @@ async function chat(content, apiConfig, options = {}) {
           },
         })
       : null;
+
+    // 用于收集完整响应
+    let fullResponse = "";
+
+    // 包装 onStream 回调以收集完整响应并更新进度条
+    const streamHandler = (chunk, controller, isDone) => {
+      if (!isDone) {
+        fullResponse += chunk;
+        // 更新进度条显示最新的响应内容
+        if (processBar) {
+          quickcommand.updateProcessBar(
+            {
+              text: fullResponse, // 只显示最后100个字符，避免内容过长
+            },
+            processBar
+          );
+        }
+      }
+      onStream(chunk, controller, isDone);
+    };
 
     // 统一使用 fetch 处理请求
     const controller = new AbortController();
@@ -278,24 +294,35 @@ async function chat(content, apiConfig, options = {}) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    let result;
-    if (stream) {
-      result = await handleStreamResponse(
-        response,
-        apiConfig,
-        controller,
-        onStream
-      );
-    } else {
-      const responseData = await response.json();
-      result = {
-        success: true,
-        result: parseResponse({ data: responseData }, apiConfig.apiType),
-      };
+    const result = await handleStreamResponse(
+      response,
+      apiConfig,
+      controller,
+      streamHandler
+    );
+
+    // 如果请求被取消，返回取消状态
+    if (!result.success) {
+      processBar?.close();
+      return result;
     }
 
-    loadingBar?.close();
-    return result;
+    // 完成时更新进度条并关闭
+    if (processBar) {
+      quickcommand.updateProcessBar(
+        {
+          text: "AI响应完成",
+          complete: true,
+        },
+        processBar
+      );
+    }
+
+    // 返回完整的响应内容
+    return {
+      success: true,
+      result: fullResponse,
+    };
   } catch (error) {
     if (error.name === "AbortError") {
       return {

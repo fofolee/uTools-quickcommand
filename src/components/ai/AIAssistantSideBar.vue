@@ -91,7 +91,9 @@
           :icon="streamingResponse ? 'stop' : 'send'"
           @click="handleSubmit"
         >
-          <q-tooltip> Enter 发送，Shift+Enter 换行 </q-tooltip>
+          <q-tooltip v-if="!streamingResponse">
+            Enter 发送，Shift+Enter 换行
+          </q-tooltip>
         </q-btn>
       </div>
     </div>
@@ -183,8 +185,7 @@ export default defineComponent({
           },
           this.selectedApi,
           {
-            showLoadingBar: false,
-            stream: true,
+            showProcessBar: false,
             onStream: (text, controller, done) => {
               this.currentRequest = controller;
               if (text) {
@@ -251,7 +252,8 @@ export default defineComponent({
       const languageMap = {
         quickcommand: "NodeJS",
         javascript: "NodeJS",
-        cmd: "bat",
+        cmd: "windows 批处理脚本",
+        shell: "liunx shell脚本",
       };
       const commonInstructions = `请根据我的需求编写${languageMap[language]}代码，并请遵循以下原则：
    - 编写简洁、可读性强的代码
@@ -275,7 +277,7 @@ export default defineComponent({
         languageSpecific[language.toLowerCase()] || "";
 
       const lastInstructions =
-        "\n请直接给我代码，任何情况下都不需要做解释和说明";
+        "\n请直接给我MARKDOWN格式的代码，任何情况下都不需要做解释和说明";
 
       return commonInstructions + specificInstructions + lastInstructions;
     },
@@ -306,13 +308,13 @@ export default defineComponent({
         },
       ];
 
-      if (this.submitDocs) {
+      if (this.submitDocs && this.language === "quickcommand") {
         const docs = this.getLanguageDocs(this.language);
 
         presetContext.push(
           {
             role: "user",
-            content: `你现在使用的是一种特殊的环境，支持uTools和quickcommand两种特殊的接口，请优先使用uTools和quickcommand接口解决需求`,
+            content: `你现在使用的是一种特殊的环境，支持uTools和quickcommand两种特殊的接口，请优先使用uTools和quickcommand接口解决需求，然后再使用当前语言通用的解决方案`,
           },
           {
             role: "assistant",

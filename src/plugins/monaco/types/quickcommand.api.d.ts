@@ -750,7 +750,7 @@ interface quickcommandApi {
    * 显示一个带有暂停、恢复、关闭回调功能的进度条，支持动态更新进度
    * @param {object} options - 配置选项
    * @param {string} [options.text="处理中..."] - 进度条上方的文本
-   * @param {number} [options.value=0] - 初始进度值(0-100)
+   * @param {number} [options.value] - 初始进度值(0-100)，不传则显示加载动画
    * @param {string} [options.position="bottom-right"] - 进度条位置，可选值：top-left, top-right, bottom-left, bottom-right
    * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
    * @param {Function} [options.onPause] - 暂停按钮点击时的回调函数，必须和onResume一起配置
@@ -758,10 +758,16 @@ interface quickcommandApi {
    * @returns {Promise<{id: number, close: Function}>} 返回进度条对象
    *
    * ```js
-   * // 基本使用
+   * // 显示进度条
    * const processBar = await quickcommand.showProcessBar({
    *   text: "正在下载文件...",
    *   value: 0,
+   *   position: "bottom-right"
+   * });
+   *
+   * // 显示加载动画
+   * const processBar = await quickcommand.showProcessBar({
+   *   text: "正在加载...",
    *   position: "bottom-right"
    * });
    *
@@ -824,16 +830,21 @@ interface quickcommandApi {
   /**
    * 更新进度条的进度
    * @param {object} options - 配置选项
-   * @param {number} options.value - 新的进度值(0-100)
+   * @param {number} [options.value] - 新的进度值(0-100)，不传则显示加载动画
    * @param {string} [options.text] - 新的进度文本
    * @param {boolean} [options.complete] - 是否完成并关闭进度条
    * @param {{id: number, close: Function}|undefined} processBar - 进度条对象，如果不传入则使用上一次创建的进度条
    *
    * ```js
-   * // 使用最近创建的进度条
+   * // 更新进度
    * quickcommand.updateProcessBar({
    *   value: 50,
    *   text: "已完成50%"
+   * });
+   *
+   * // 切换为加载动画
+   * quickcommand.updateProcessBar({
+   *   text: "正在加载..."
    * });
    *
    * // 使用指定的进度条
@@ -852,7 +863,7 @@ interface quickcommandApi {
    */
   updateProcessBar(
     options: {
-      value: number;
+      value?: number;
       text?: string;
       complete?: boolean;
     },
@@ -863,70 +874,28 @@ interface quickcommandApi {
   ): void;
 
   /**
-   * 显示一个循环动画的加载条
-   * @param {object} options - 配置选项
-   * @param {string} [options.text="加载中..."] - 加载条上方的文本
-   * @param {string} [options.position="bottom-right"] - 加载条位置，可选值：top-left, top-right, bottom-left, bottom-right
-   * @param {Function} [options.onClose] - 关闭按钮点击时的回调函数
-   * @returns {Promise<{id: number, close: Function}>} 返回加载条对象
-   *
-   * ```js
-   * // 基本使用
-   * const loadingBar = await quickcommand.showLoadingBar({
-   *   text: "正在加载...",
-   *   position: "bottom-right"
-   * });
-   *
-   * // 带关闭回调
-   * const loadingBar = await quickcommand.showLoadingBar({
-   *   text: "正在加载...",
-   *   onClose: () => {
-   *     console.log("用户关闭了加载条");
-   *   }
-   * });
-   *
-   * // 手动关闭
-   * loadingBar.close();
-   * // 或者
-   * quickcommand.closeLoadingBar();
-   * ```
-   */
-  showLoadingBar(options?: {
-    text?: string;
-    position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-    onClose?: () => void;
-  }): Promise<{
-    id: number;
-    close: () => void;
-  }>;
-
-  /**
-   * 关闭加载条
-   * @param {{id: number, close: Function}|undefined} loadingBar - 加载条对象，如果不传入则关闭上一次创建的加载条
-   *
-   * ```js
-   * // 关闭最近创建的加载条
-   * quickcommand.closeLoadingBar();
-   *
-   * // 关闭指定的加载条
-   * quickcommand.closeLoadingBar(loadingBar);
-   * ```
-   */
-  closeLoadingBar(loadingBar?: { id: number; close: () => void }): void;
-
-  /**
    * 与 AI 进行问答
    * @param content 对话内容
    * @param content.prompt 提示词
    * @param content.role 预设角色
-   * @param apiConfig API配置
+   * @param apiConfig API配置，不传或传入null则使用用户配置的第一个API配置
    * @param apiConfig.apiType 模型类型：openai/ollama
    * @param apiConfig.apiUrl API地址
    * @param apiConfig.apiToken API令牌（仅 OpenAI 需要）
    * @param apiConfig.model 模型名称
    * @param options 其他选项
-   * @param options.showLoadingBar 是否显示加载条
-   * @example
+   * @param options.showProcessBar 是否显示进度条
+   * @param options.onStream 流式请求回调
+   *
+   *
+   * ```js
+   * // 不传apiConfig时，需在配置页面-右下角菜单-AI配置中进行配置
+   * const response = await quickcommand.askAI(
+   *   {
+   *     prompt: "你好",
+   *   }
+   * );
+   *
    * // OpenAI 示例
    * const response = await quickcommand.askAI(
    *   {
@@ -939,9 +908,10 @@ interface quickcommandApi {
    *     model: "gpt-3.5-turbo"
    *   }
    * );
+   * console.log(response);
    *
-   * // Ollama 示例
-   * const response = await quickcommand.askAI(
+   * // Ollama 示例 (流式回调)
+   * await quickcommand.askAI(
    *   {
    *     prompt: "查找进程名为chrome的进程并关闭",
    *     role: "shell"
@@ -950,8 +920,20 @@ interface quickcommandApi {
    *     apiType: "ollama",
    *     apiUrl: "http://localhost:11434",
    *     model: "qwen2.5:32b"
+   *   },
+   *   {
+   *     onStream: (chunk, controller, isDone) => {
+   *       console.log(chunk);
+   *       if (某个特定条件，中断请求) {
+   *         controller.abort();
+   *       }
+   *       if (isDone) {
+   *         console.log("流式请求完成");
+   *       }
+   *     }
    *   }
    * );
+   * ```
    */
   askAI(
     content: {
@@ -960,7 +942,8 @@ interface quickcommandApi {
       /** 预设角色 */
       role?: "translate" | "shell" | "summarize";
     },
-    apiConfig: {
+    /** API配置，不传或传入null则使用用户配置的第一个API配置 */
+    apiConfig?: {
       /** 模型类型：openai/ollama */
       apiType: "openai" | "ollama";
       /** API地址 */
@@ -971,8 +954,14 @@ interface quickcommandApi {
       model: string;
     },
     options?: {
-      /** 是否显示加载条, 默认 true */
-      showLoadingBar?: boolean;
+      /** 是否显示进度条, 默认 true */
+      showProcessBar?: boolean;
+      /** 流式请求回调 */
+      onStream?: (
+        chunk: string,
+        controller: AbortController,
+        isDone: boolean
+      ) => void;
     }
   ): Promise<{
     /** 是否成功 */

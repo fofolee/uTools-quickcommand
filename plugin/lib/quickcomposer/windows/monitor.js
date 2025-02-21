@@ -8,7 +8,7 @@ const stopMonitor = () => {
 // 监控剪贴板变化
 const watchClipboard = async function () {
   const args = ["-type", "clipboard", "-once"];
-  const loadingBar = await quickcommand.showLoadingBar({
+  const loadingBar = await quickcommand.showProcessBar({
     text: "等待剪贴板变化...",
     onClose: () => {
       stopMonitor();
@@ -44,7 +44,7 @@ const watchFileSystem = async function (watchPath, options = {}) {
     args.push("-recursive", "false");
   }
 
-  const loadingBar = await quickcommand.showLoadingBar({
+  const loadingBar = await quickcommand.showProcessBar({
     text: "等待文件变化...",
     onClose: () => {
       stopMonitor();
