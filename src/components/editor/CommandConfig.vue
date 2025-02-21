@@ -29,7 +29,6 @@
           :model-value="currentCommand.tags"
           @update:model-value="updateModelValue('tags', $event)"
           :options="allQuickCommandTags"
-          @focus="expandOnFocus && updateExpanded(true)"
           dense
           options-dense
           filled
@@ -281,9 +280,9 @@ export default defineComponent({
       // 如果面板已经折叠，不需要处理
       if (!this.isExpanded) return;
 
-      // 检查点击是否在标签选择框的弹出菜单内
-      const tagPopup = document.querySelector(".command-tag-popup");
-      if (tagPopup?.contains(event.target)) return;
+      // 检查点击是否在标签选择框或文件类型选择框的弹出菜单内
+      const popupMenu = document.querySelector(".command-tag-popup,.file-type-popup");
+      if (popupMenu?.contains(event.target)) return;
 
       // 检查点击是否在组件内部
       const componentEl = this.$el;

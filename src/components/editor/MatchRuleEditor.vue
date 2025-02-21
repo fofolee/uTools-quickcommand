@@ -187,6 +187,7 @@
                   emit-value
                   map-options
                   class="col-2"
+                  popup-content-class="file-type-popup"
                 />
                 <q-input
                   v-model.number="rule.minLength"
@@ -304,13 +305,12 @@ export default defineComponent({
 
   data() {
     return {
-      ruleTypeOptions: Object.values(commandTypes)
-        .map((type) => ({
-          label: type.label,
-          value: type.name,
-          icon: type.icon,
-          color: type.color,
-        })),
+      ruleTypeOptions: Object.values(commandTypes).map((type) => ({
+        label: type.label,
+        value: type.name,
+        icon: type.icon,
+        color: type.color,
+      })),
       commandTypes,
       isHovering: {},
     };
