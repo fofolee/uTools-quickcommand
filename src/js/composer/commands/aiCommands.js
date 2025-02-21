@@ -10,7 +10,7 @@ export const aiCommands = {
       icon: "chat",
       component: "AskAIEditor",
       outputs: {
-        label: "AI响应",
+        label: "结果对象",
         suggestName: "aiResponse",
         structure: {
           success: {
