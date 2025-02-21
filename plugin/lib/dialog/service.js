@@ -328,7 +328,7 @@ const showProcessBar = async (options = {}) => {
     throw new Error("onPause 和 onResume 必须同时配置");
   }
 
-  const windowWidth = 250;
+  const windowWidth = 350;
   const windowHeight = 60;
 
   // 计算窗口位置
@@ -364,10 +364,25 @@ const showProcessBar = async (options = {}) => {
           isLoading: value === undefined, // 当不传value时显示加载动画
         });
 
-        // 监听窗口准备就绪
-        ipcRenderer.once("dialog-ready", () => {
+        const dialogReadyHandler = (event, height) => {
+          // 获取当前窗口位置
+          const bounds = UBrowser.getBounds();
+          // 调整y坐标，保持窗口底部不变
+          const y = Math.round(bounds.y - (height - bounds.height));
+          // 确保坐标和尺寸都是有效的整数
+          const newBounds = {
+            x: Math.round(bounds.x),
+            y: Math.max(0, y), // 确保不会超出屏幕顶部
+            width: windowWidth,
+            height: Math.round(height),
+          };
+          // 设置新的位置和大小
+          UBrowser.setBounds(newBounds);
           UBrowser.setOpacity(1);
-        });
+        };
+
+        // 监听子窗口返回的计算高度
+        ipcRenderer.on("dialog-ready", dialogReadyHandler);
 
         // 监听对话框结果
         ipcRenderer.once("dialog-result", (event, result) => {
@@ -395,6 +410,7 @@ const showProcessBar = async (options = {}) => {
               onClose();
             }
             lastProcessBar = null;
+            ipcRenderer.removeListener("dialog-ready", dialogReadyHandler);
             UBrowser.destroy();
           },
         };

@@ -78,6 +78,7 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   transition: background-color 0.3s;
+  border-radius: 6px;
 }
 
 /* 悬浮时显示滚动条 */
@@ -584,6 +585,9 @@ textarea:focus {
   padding: 0;
   background: var(--button-bg);
   color: white;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
 }
 
 #process {
@@ -596,16 +600,14 @@ textarea:focus {
 .process-text {
   font-size: 13px;
   margin-bottom: 8px;
-  white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  width: calc(100% - 30px);
+  white-space: pre-wrap;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  width: calc(100% - 15px);
   box-sizing: border-box;
-}
-
-.process-text::-webkit-scrollbar {
-  display: none;
+  max-height: 250px;
+  -webkit-app-region: no-drag;
 }
 
 .process-bar {
@@ -653,20 +655,6 @@ textarea:focus {
   gap: 8px;
   -webkit-app-region: no-drag;
   z-index: 1;
-}
-
-/* 添加按钮区域的渐变遮罩 */
-.process-buttons::before {
-  content: "";
-  position: absolute;
-  right: -8px;
-  /* 对应#process的padding-right */
-  top: -6px;
-  /* 对应#process的padding-top */
-  width: 80px;
-  height: 30px;
-  background: linear-gradient(to right, transparent, var(--button-bg) 60%);
-  pointer-events: none;
 }
 
 /* 进度条关闭按钮 */

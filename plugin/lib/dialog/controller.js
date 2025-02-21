@@ -409,7 +409,10 @@ document.addEventListener("DOMContentLoaded", () => {
       processBarInner.style.width = `${value}%`;
     }
     if (text) {
-      document.getElementById("process-text").textContent = text;
+      const processText = document.getElementById("process-text");
+      processText.innerHTML = text;
+      processText.scrollTop = processText.scrollHeight;
+      ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());
     }
   });
 
@@ -425,9 +428,11 @@ document.addEventListener("DOMContentLoaded", () => {
       (buttonBar.style.display !== "none" ? buttonBar.offsetHeight : 0);
 
     const maxHeight = dialogType === "select" ? 620 : 520;
+    // 进度条的最大高度通过.process-text的max-height限制
+    const minHeight = dialogType === "process" ? 60 : 100;
 
     // 确保高度在最小值和最大值之间
-    return Math.min(Math.max(totalHeight, 100), maxHeight);
+    return Math.min(Math.max(totalHeight, minHeight), maxHeight);
   };
 
   // 确定按钮点击事件

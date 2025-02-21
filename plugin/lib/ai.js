@@ -272,7 +272,7 @@ async function chat(content, apiConfig, options = {}) {
         if (processBar) {
           quickcommand.updateProcessBar(
             {
-              text: fullResponse, // 只显示最后100个字符，避免内容过长
+              text: fullResponse,
             },
             processBar
           );
