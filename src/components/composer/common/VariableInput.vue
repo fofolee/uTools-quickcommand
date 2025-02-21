@@ -51,6 +51,7 @@
         @emit-value="updateValBySelect"
         :show-variable-list="true"
         :show-function-list="true"
+        :show-global-variables="true"
         class="prepend-btn variable-list-btn"
       />
     </template>

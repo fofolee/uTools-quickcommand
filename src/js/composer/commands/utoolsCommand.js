@@ -5,29 +5,6 @@ export const utoolsCommands = {
   icon: "insights",
   commands: [
     {
-      value: "quickcommand.enterData.valueOf",
-      label: "获取匹配数据",
-      icon: "visibility_off",
-      outputs: {
-        label: "匹配数据",
-        suggestName: "enterData",
-        placeholder: "返回 {code, type, payload, from}",
-        structure: {
-          type: {
-            label: "匹配类型",
-            suggestName: "enterType",
-            placeholder:
-              '返回 "text" | "img" | "file" | "regex" | "over" | "window"',
-          },
-          payload: {
-            label: "匹配的数据",
-            suggestName: "enterPayload",
-            placeholder: "返回 string | MatchFile[] | MatchWindow",
-          },
-        },
-      },
-    },
-    {
       value: "utools.hideMainWindow",
       label: "隐藏主窗口",
       icon: "visibility_off",

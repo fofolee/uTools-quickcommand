@@ -31,6 +31,7 @@
       <VariableList
         :show-variable-list="showVariableList"
         :show-function-list="showFunctionList"
+        :show-global-variables="false"
         @emit-value="updateValBySelect"
         class="variable-list-btn"
       />

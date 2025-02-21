@@ -93,6 +93,7 @@
         @update-flow="updateFlows(flow)"
         :is-main-flow="flow.id === 'main'"
         :output-variables="outputVariables"
+        :global-variables="pluginGlobalVariables"
         class="variable-panel"
       />
     </div>
@@ -101,6 +102,7 @@
 
 <script>
 import { defineComponent, provide, ref, computed } from "vue";
+import { useRoute } from "vue-router";
 import draggable from "vuedraggable";
 import ComposerFlow from "components/composer/ComposerFlow.vue";
 import ComposerButtons from "components/composer/flow/ComposerButtons.vue";
@@ -197,6 +199,49 @@ export default defineComponent({
       return flows.value.find((flow) => flow.id === activeTab.value);
     };
 
+    const route = useRoute();
+
+    const isRunComposerPage = computed(() => {
+      return route.name === "composer";
+    });
+
+    const pluginGlobalVariables = computed(() => {
+      if (isRunComposerPage.value) return [];
+      return [
+        {
+          name: "quickcommand.enterData.type",
+          sourceCommand: {
+            label: "匹配模式",
+          },
+          description:
+            "以什么模式进入插件，可能的值：\n" +
+            "关键字：text\n" +
+            "正则匹配：regex\n" +
+            "所有文本：over\n" +
+            "图片匹配：img\n" +
+            "文件匹配：files\n" +
+            "窗口匹配：window",
+          type: "global",
+        },
+
+        {
+          name: "quickcommand.enterData.payload",
+          sourceCommand: {
+            label: "匹配内容",
+          },
+          description:
+            "根据不同的匹配模式，返回不同的内容：\n" +
+            "关键字(text)：返回进入插件的关键字\n" +
+            "正则(regex)：返回匹配的文本\n" +
+            "所有文本(over)：返回匹配的文本\n" +
+            "窗口(window)：返回匹配的窗口信息(对象)\n" +
+            "文件(files)：返回匹配的文件信息(数组)\n" +
+            "图片(img)：返回匹配的图片信息(dataURL)",
+          type: "global",
+        },
+      ];
+    });
+
     // 获取当前函数所有输出变量
     const getOutputVariables = (flow = getCurrentFlow()) => {
       const variables = [];
@@ -251,7 +296,7 @@ export default defineComponent({
           label: v.type === "param" ? "函数参数" : "局部变量",
         },
       }));
-      return [...customVariables, ...variables];
+      return [...pluginGlobalVariables.value, ...customVariables, ...variables];
     };
 
     provide("getCurrentVariables", getCurrentVariables);
@@ -263,8 +308,10 @@ export default defineComponent({
       commandConfig,
       activeTab,
       getOutputVariables,
+      pluginGlobalVariables,
       updateFlows,
       clearFlows,
+      isRunComposerPage,
     };
   },
   data() {
@@ -275,9 +322,6 @@ export default defineComponent({
     };
   },
   computed: {
-    isRunComposerPage() {
-      return this.$route.name === "composer";
-    },
     showCommandConfig() {
       return !this.isRunComposerPage && this.commandConfig.features;
     },

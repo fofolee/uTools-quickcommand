@@ -92,6 +92,31 @@
         </div>
       </div>
 
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <q-icon name="data_object" size="16px" class="text-primary" />
+            <span>全局变量</span>
+          </div>
+        </div>
+        <div class="var-list">
+          <div
+            v-for="(variable, index) in globalVariables"
+            :key="index"
+            class="var-item"
+          >
+            <div class="global-var-name">{{ variable.name }}</div>
+            <q-tooltip
+              v-if="variable.description"
+              anchor="center left"
+              self="center end"
+            >
+              <div class="var-description">{{ variable.description }}</div>
+            </q-tooltip>
+          </div>
+        </div>
+      </div>
+
       <!-- 手动变量管理部分 -->
       <div class="section">
         <div class="section-header">
@@ -199,6 +224,11 @@ export default defineComponent({
       required: true,
     },
     outputVariables: {
+      type: Array,
+      required: true,
+      default: () => [],
+    },
+    globalVariables: {
       type: Array,
       required: true,
       default: () => [],
@@ -410,10 +440,21 @@ export default defineComponent({
   font-weight: 500;
 }
 
+.global-var-name {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 .var-source {
   margin-left: auto;
   font-size: 11px;
   opacity: 0.7;
+}
+
+.var-description {
+  word-break: break-all;
+  white-space: pre-wrap;
+  font-size: 11px;
 }
 
 .section-content {

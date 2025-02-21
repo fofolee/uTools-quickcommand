@@ -30,10 +30,27 @@
               <q-item-label class="variable-name">
                 {{ variable.name }}
               </q-item-label>
-              <q-item-label caption class="variable-source">
-                来自: {{ variable.sourceCommand.label }}
+              <q-item-label
+                caption
+                class="variable-source"
+                v-if="variable.sourceCommand"
+              >
+                <span>
+                  {{ variable.type === "global" ? "全局变量：" : "来自：" }}
+                </span>
+                <span>{{ variable.sourceCommand.label }}</span>
               </q-item-label>
             </q-item-section>
+            <q-tooltip
+              anchor="center left"
+              self="center end"
+              v-if="variable.description"
+            >
+              <div
+                v-text="variable.description"
+                class="variable-description"
+              ></div>
+            </q-tooltip>
           </q-item>
         </div>
         <div v-if="functions.length && showFunctionList">
@@ -56,7 +73,7 @@
               <q-item-label class="variable-name">
                 {{ func.name }}
               </q-item-label>
-              <q-item-label caption class="variable-source">
+              <q-item-label caption class="row item">
                 {{ func.label }}
               </q-item-label>
             </q-item-section>
@@ -138,12 +155,15 @@ import { defineComponent, inject } from "vue";
 export default defineComponent({
   name: "VariableList",
   emits: ["emitValue"],
-  setup() {
+  setup(props) {
     const getCurrentVariables = inject("getCurrentVariables");
     const commandIndex = inject("commandIndex", null);
 
     const getAvailableVariables = () => {
-      const variables = getCurrentVariables();
+      let variables = getCurrentVariables();
+      if (!props.showGlobalVariables) {
+        variables = variables.filter((variable) => variable.type !== "global");
+      }
       const usableVariables = variables.filter((variable) =>
         // 输出变量只显示在当前命令之前的
         variable.type === "output"
@@ -192,6 +212,10 @@ export default defineComponent({
     },
   },
   props: {
+    showGlobalVariables: {
+      type: Boolean,
+      default: true,
+    },
     showVariableList: {
       type: Boolean,
       default: true,
@@ -320,5 +344,11 @@ export default defineComponent({
 
 .empty-tip .q-separator {
   opacity: 0.2;
+}
+
+.variable-description {
+  word-break: break-all;
+  white-space: pre-wrap;
+  font-size: 11px;
 }
 </style>
