@@ -23,11 +23,22 @@ export const scriptCommands = {
       value: "quickcommand.runCode",
       label: "运行脚本",
       component: "ScriptEditor",
-      desc: "运行各种编程语言的代码",
+      description: "运行各种编程语言的代码，需要预安装对应的执行环境",
       asyncMode: "await",
       outputs: {
         label: "运行结果",
         suggestName: "runScriptResult",
+        typeName: "字符串",
+      },
+    },
+    {
+      value: "createCodeSnippet",
+      label: "新建代码片段",
+      component: "ScriptEditor",
+      description: "单纯将代码片段赋值到变量中，不会执行",
+      outputs: {
+        label: "代码片段",
+        suggestName: "codeSnippet",
         typeName: "字符串",
       },
     },

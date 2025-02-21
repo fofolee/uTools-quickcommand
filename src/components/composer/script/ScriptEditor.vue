@@ -11,11 +11,11 @@
       <q-select
         :model-value="argvs.language"
         @update:modelValue="updateArgvs('language', $event)"
-        :options="Object.keys(programs).slice(2, -1)"
+        :options="programOptions"
         label="编程语言"
         filled
         dense
-        class="col-6"
+        class="col"
       >
         <template v-slot:append>
           <q-avatar size="sm" square>
@@ -39,6 +39,7 @@
         class="col-3"
         filled
         dense
+        v-if="!isCodeSnippet"
         :model-value="argvs.scriptCode"
         @update:modelValue="updateArgvs('scriptCode', $event)"
         label="脚本文件编码"
@@ -50,6 +51,7 @@
         class="col-3"
         filled
         dense
+        v-if="!isCodeSnippet"
         :model-value="argvs.outputCode"
         @update:modelValue="updateArgvs('outputCode', $event)"
         label="命令行输出编码"
@@ -59,7 +61,7 @@
       />
     </div>
 
-    <div class="row q-col-gutter-sm">
+    <div class="row q-col-gutter-sm" v-if="!isCodeSnippet">
       <div class="col-6">
         <ArrayEditor
           topLabel="脚本参数"
@@ -176,10 +178,23 @@ export default defineComponent({
         this.defaultArgvs
       );
     },
+    isCodeSnippet() {
+      return this.modelValue.value === "createCodeSnippet";
+    },
+    programOptions() {
+      const startIndex = this.isCodeSnippet ? 1 : 2;
+      return Object.keys(programs).slice(startIndex, -1);
+    },
   },
   methods: {
     parseCodeToArgvs(code) {
       if (!code) return this.defaultArgvs;
+      if (this.isCodeSnippet) {
+        const result = parseFunction(code);
+        return {
+          code: quickcomposer.coding.base64Decode(result.argvs?.[0]),
+        };
+      }
       try {
         const variableFormatPaths = ["arg1.args[*]"];
         const result = parseFunction(code, { variableFormatPaths });
@@ -196,6 +211,11 @@ export default defineComponent({
       }
     },
     generateCode(argvs = this.argvs) {
+      if (this.isCodeSnippet) {
+        return `quickcomposer.coding.base64Decode("${quickcomposer.coding.base64Encode(
+          argvs.code
+        )}")`;
+      }
       const options = {
         language: argvs.language,
       };
