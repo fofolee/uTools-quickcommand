@@ -261,10 +261,6 @@ export default {
   overflow: hidden;
 }
 
-.q-tab-panels {
-  background: transparent;
-}
-
 .editor-container {
   color: var(--utools-font-color);
   overflow: hidden;

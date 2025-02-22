@@ -212,10 +212,6 @@ export default {
 </script>
 
 <style scoped>
-.q-tab-panels {
-  background: transparent;
-}
-
 /* 面板过渡效果 */
 .q-tab-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
