@@ -32,14 +32,13 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import { useCommandManager } from "js/commandManager.js";
-import changeLog from "js/options/changeLog.js";
 import { utoolsFull } from "js/utools.js";
 import CommandEditor from "components/CommandEditor";
 import ComposerEditor from "components/ComposerEditor";
-import FooterBar from "src/components/config/FooterBar.vue";
-import TagBar from "src/components/config/TagBar.vue";
-import BackgroundLayer from "src/components/config/BackgroundLayer.vue";
-import CommandPanels from "src/components/config/CommandPanels.vue";
+import FooterBar from "components/config/FooterBar.vue";
+import TagBar from "components/config/TagBar.vue";
+import BackgroundLayer from "components/config/BackgroundLayer.vue";
+import CommandPanels from "components/config/CommandPanels.vue";
 const CommandRunResult = defineAsyncComponent(() =>
   import("components/CommandRunResult.vue")
 );
@@ -232,22 +231,22 @@ export default {
       }
     },
     showChangeLog() {
-      let lastNeedLogEvent = changeLog[changeLog.length - 1];
+      const changeLog = require("raw-loader!src/markdown/CHANGELOG.md").default;
+      const lastVersion = changeLog.split("\n")[0].split(" ")[1];
       let loggedVersion =
         this.utools.dbStorage.getItem("cfg_loggedVersion") || "0.0.0";
-      if (loggedVersion < lastNeedLogEvent.version) {
+      if (loggedVersion < lastVersion) {
         quickcommand.showConfirmBox(
-          '<pre style="white-space: pre-wrap;word-wrap: break-word;">' +
-            lastNeedLogEvent.log +
-            "</pre>",
+          `
+          <div class="markdown">
+            ${quickcommand.markdownParse(changeLog)}
+          </div>
+          `,
           "更新日志",
           true,
           700
         );
-        this.utools.dbStorage.setItem(
-          "cfg_loggedVersion",
-          lastNeedLogEvent.version
-        );
+        this.utools.dbStorage.setItem("cfg_loggedVersion", lastVersion);
       }
     },
   },
