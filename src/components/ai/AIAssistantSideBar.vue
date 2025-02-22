@@ -271,9 +271,10 @@ export default defineComponent({
         cmd: "windows 批处理脚本",
         shell: "liunx shell脚本",
       };
-      const commonInstructions = `请根据我的需求编写${languageMap[language]}代码，并请遵循以下原则：
+      const languageName = languageMap[language] || language;
+      const commonInstructions = `接下来我所有的对话中的需求都请通过编写${languageName}代码来实现，并请遵循以下原则：
    - 编写简洁、可读性强的代码
-   - 遵循${language}最佳实践和设计模式
+   - 遵循${languageName}最佳实践和设计模式
    - 使用恰当的命名规范和代码组织
    - 添加必要的错误处理和边界检查
    - 保持中文注释的准确性和专业性
@@ -289,8 +290,7 @@ export default defineComponent({
       languageSpecific.quickcommand = languageSpecific.javascript;
 
       // 获取语言特定的提示，如果没有则使用空字符串
-      const specificInstructions =
-        languageSpecific[language.toLowerCase()] || "";
+      const specificInstructions = languageSpecific[language] || "";
 
       const lastInstructions =
         "\n请直接给我MARKDOWN格式的代码，任何情况下都不需要做解释和说明";
