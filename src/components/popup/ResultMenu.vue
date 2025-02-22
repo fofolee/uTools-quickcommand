@@ -56,7 +56,7 @@ export default {
     runResult: Array,
     selectText: String,
   },
-  emits: ["updateResult"],
+  emits: ["updateResult", "showImg"],
   computed: {
     /**
      * 处理运行结果数据，同时完成以下任务：
@@ -146,7 +146,9 @@ export default {
       const imagePattern = /data:image\/.*?;base64,.*/g;
       const imageUrls = this.getFormattedContent()
         .match(imagePattern)
-        ?.map((dataUrl) => `<img src="${dataUrl}"><br>`);
+        ?.map(
+          (dataUrl) => `<img src="${dataUrl}" style="max-width: 100%;"><br>`
+        );
 
       if (!imageUrls) {
         return quickcommand.showMessageBox("dataUrl 格式不正确！");
