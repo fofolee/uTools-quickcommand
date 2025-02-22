@@ -4,6 +4,12 @@
       <div class="row items-center q-gutter-x-xs no-wrap">
         <q-icon name="smart_toy" size="20px" />
         <div class="text-subtitle1">AI 助手</div>
+        <q-icon
+          name="help"
+          size="12px"
+          @click="openAIAssistantHelp"
+          class="cursor-pointer"
+        />
         <AISelector v-model="selectedApi" :dense="true" />
       </div>
       <q-btn icon="close" size="sm" flat dense @click.stop="$emit('close')" />
@@ -347,6 +353,9 @@ export default defineComponent({
       }
 
       return presetContext;
+    },
+    openAIAssistantHelp() {
+      window.showUb.help("#KUCwm");
     },
   },
   mounted() {

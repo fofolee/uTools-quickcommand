@@ -57,12 +57,9 @@
           <span class="q-ml-sm">匹配规则</span>
           <q-icon
             name="help"
-            size="16px"
-            class="q-ml-sm cursor-pointer"
-            @click="showMatchRuleHelp"
-          >
-            <q-tooltip>查看帮助</q-tooltip>
-          </q-icon>
+            class="q-ml-xs cursor-pointer"
+            @click.stop="showHelp('#fa11f8c0')"
+          />
           <q-icon
             name="data_object"
             size="16px"
@@ -92,6 +89,11 @@
             <div class="section-title">
               <q-icon name="output" size="16px" />
               <span class="q-ml-sm">输出</span>
+              <q-icon
+                name="help"
+                class="q-ml-xs cursor-pointer"
+                @click.stop="showHelp('#aT67a')"
+              />
             </div>
             <ButtonGroup
               :model-value="currentCommand.output"
@@ -115,7 +117,7 @@
               <q-icon
                 name="help"
                 class="cursor-pointer"
-                @click.stop="showMainPushHelp"
+                @click.stop="showHelp('#YYcxD')"
               />
             </div>
             <ButtonGroup
@@ -266,22 +268,17 @@ export default defineComponent({
       if (!inputValue) return;
       ref.add(inputValue, true);
     },
-    showMainPushHelp() {
-      window.showUb.help("#u0e9f1430");
-    },
-    showMatchRuleHelp() {
-      utools.ubrowser
-        .goto(
-          "https://www.u-tools.cn/docs/developer/information/plugin-json.html#%E5%8A%9F%E8%83%BD%E6%8C%87%E4%BB%A4"
-        )
-        .run();
+    showHelp(id) {
+      window.showUb.help(id);
     },
     handleOutsideClick(event) {
       // 如果面板已经折叠，不需要处理
       if (!this.isExpanded) return;
 
       // 检查点击是否在标签选择框或文件类型选择框的弹出菜单内
-      const popupMenu = document.querySelector(".command-tag-popup,.file-type-popup");
+      const popupMenu = document.querySelector(
+        ".command-tag-popup,.file-type-popup"
+      );
       if (popupMenu?.contains(event.target)) return;
 
       // 检查点击是否在组件内部
