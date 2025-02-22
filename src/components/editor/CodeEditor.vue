@@ -55,7 +55,6 @@ let languageCompletions = importAll(
 );
 
 let monacoCompletionProviders = {};
-let editor = null;
 
 // 声明文件映射
 const typeDefinitions = {
@@ -140,19 +139,19 @@ export default defineComponent({
     modelValue: {
       immediate: true,
       handler(newValue) {
-        if (!editor || editor.getValue() === newValue) return;
-        editor.setValue(newValue || "");
+        if (!this.codeEditor || this.codeEditor.getValue() === newValue) return;
+        this.codeEditor.setValue(newValue || "");
       },
     },
     cursorPosition: {
       immediate: true,
       handler(newValue) {
-        if (!editor) return;
+        if (!this.codeEditor) return;
         const { lineNumber, column } = newValue;
         if (!lineNumber || !column) return;
-        const pos = editor.getPosition();
+        const pos = this.codeEditor.getPosition();
         if (pos.lineNumber === lineNumber && pos.column === column) return;
-        editor.setPosition(newValue);
+        this.codeEditor.setPosition(newValue);
       },
     },
     "$q.dark.isActive": {
@@ -164,9 +163,9 @@ export default defineComponent({
     language: {
       immediate: true,
       handler(newValue) {
-        if (!editor) return;
+        if (!this.codeEditor) return;
         const language = this.getHighlighter(newValue);
-        monaco.editor.setModelLanguage(editor.getModel(), language);
+        monaco.editor.setModelLanguage(this.codeEditor.getModel(), language);
         this.loadTypes();
       },
     },
@@ -194,7 +193,10 @@ export default defineComponent({
         wordWrap: this.wordWrap,
       };
 
-      editor = monaco.editor.create(this.$refs.editorContainer, options);
+      this.codeEditor = monaco.editor.create(
+        this.$refs.editorContainer,
+        options
+      );
       this.listenEditorValue();
       this.loadTypes();
       this.registerLanguage();
@@ -207,13 +209,13 @@ export default defineComponent({
     },
     // 监听编辑器值变化
     listenEditorValue() {
-      editor.focus();
-      editor.onDidChangeModelContent(() => {
-        this.$emit("update:modelValue", editor.getValue());
+      this.codeEditor.focus();
+      this.codeEditor.onDidChangeModelContent(() => {
+        this.$emit("update:modelValue", this.codeEditor.getValue());
       });
 
       // 监听光标位置变化
-      editor.onDidChangeCursorPosition((e) => {
+      this.codeEditor.onDidChangeCursorPosition((e) => {
         this.$emit("update:cursorPosition", e.position);
       });
     },
@@ -223,19 +225,19 @@ export default defineComponent({
         clearTimeout(this.resizeTimeout);
       }
       this.resizeTimeout = setTimeout(() => {
-        editor.layout();
+        this.codeEditor.layout();
       }, 50);
     },
     // 销毁编辑器
     destroyEditor() {
       window.removeEventListener("resize", this.resizeEditor);
-      if (!editor) return;
-      editor.dispose();
-      editor = null;
+      if (!this.codeEditor) return;
+      this.codeEditor.dispose();
+      this.codeEditor = null;
     },
     // 聚焦编辑器
     focus() {
-      editor && editor.focus();
+      this.codeEditor && this.codeEditor.focus();
     },
     registerLanguage() {
       const identifierPattern = "([a-zA-Z_]\\w*)";
@@ -363,20 +365,23 @@ export default defineComponent({
     },
     setCursorPosition(position) {
       if (!position.lineNumber || !position.column) return;
-      editor.setPosition(position);
+      this.codeEditor.setPosition(position);
     },
     bindKeys() {
       // alt + z 换行
-      editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
-        this.wordWrap = this.wordWrap === "on" ? "off" : "on";
-        editor.updateOptions({
-          wordWrap: this.wordWrap,
-        });
-      });
+      this.codeEditor.addCommand(
+        monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
+        () => {
+          this.wordWrap = this.wordWrap === "on" ? "off" : "on";
+          this.codeEditor.updateOptions({
+            wordWrap: this.wordWrap,
+          });
+        }
+      );
     },
     // 替换选中的文本，供外部调用
     repacleEditorSelection(text) {
-      var selection = editor.getSelection();
+      var selection = this.codeEditor.getSelection();
       var range = new monaco.Range(
         selection.startLineNumber,
         selection.startColumn,
@@ -390,15 +395,15 @@ export default defineComponent({
         text: text,
         forceMoveMarkers: true,
       };
-      editor.executeEdits("my-source", [op]);
+      this.codeEditor.executeEdits("my-source", [op]);
     },
     // 格式化文档，供外部调用
     formatDocument() {
-      editor.getAction("editor.action.formatDocument").run();
+      this.codeEditor.getAction("editor.action.formatDocument").run();
     },
     updateEditorValue(type, value) {
       if (type === "replace") {
-        editor.setValue(value);
+        this.codeEditor.setValue(value);
       } else if (type === "insert") {
         this.repacleEditorSelection(value);
       }
