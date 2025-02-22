@@ -36,7 +36,7 @@
         v-if="isDev"
       >
       </q-btn>
-      <q-btn flat dense icon="help" @click="showHelp" v-if="isDev">
+      <q-btn flat dense icon="help" @click="showHelp">
         <q-tooltip>帮助</q-tooltip>
       </q-btn>
       <q-btn
