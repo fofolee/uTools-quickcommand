@@ -250,10 +250,10 @@ export default defineComponent({
         }
         return Array.from(new Set(tokens));
       };
-      let createDependencyProposals = (range, keyWords, editor, curWord) => {
+      let createDependencyProposals = (range, completions, curWord) => {
         let keys = [];
         // fix getValue of undefined
-        const tokens = getTokens(editor.getModel()?.getValue());
+        const tokens = getTokens(this.codeEditor.getModel()?.getValue());
         // 自定义变量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
@@ -267,8 +267,9 @@ export default defineComponent({
           }
         }
         // 关键字、函数
-        Object.keys(keyWords).forEach((ItemKind) => {
-          keyWords[ItemKind].forEach((item) => {
+        Object.keys(completions).forEach((ItemKind) => {
+          if (!Array.isArray(completions[ItemKind])) return;
+          completions[ItemKind].forEach((item) => {
             keys.push({
               label: item,
               kind: monaco.languages.CompletionItemKind[ItemKind],
@@ -288,6 +289,7 @@ export default defineComponent({
       Object.keys(languageCompletions).forEach((language) => {
         // 防止自动补全被多次注册
         if (monacoCompletionProviders[language]) return;
+        const completions = languageCompletions[language].default;
         monaco.languages.registerCompletionItemProvider(language, {
           provideCompletionItems: function (model, position) {
             var word = model.getWordUntilPosition(position);
@@ -298,15 +300,22 @@ export default defineComponent({
               endColumn: word.endColumn,
             };
             return {
-              suggestions: createDependencyProposals(
-                range,
-                languageCompletions[language].default,
-                editor,
-                word
-              ),
+              suggestions: createDependencyProposals(range, completions, word),
             };
           },
         });
+        if (language === "applescript") {
+          const { Keyword, Tokenizer, Operator, Symbol } = completions;
+          // applescript 需要再添加语法高亮定义
+          monaco.languages.setMonarchTokensProvider("applescript", {
+            defaultToken: "",
+            tokenPostfix: ".applescript",
+            keywords: Keyword,
+            operators: Operator,
+            symbols: Symbol,
+            tokenizer: Tokenizer,
+          });
+        }
         monacoCompletionProviders[language] = true;
       });
     },
@@ -355,13 +364,12 @@ export default defineComponent({
       }
     },
     getHighlighter(language) {
-      if (["quickcommand", "javascript", "webjavascript"].includes(language)) {
-        return "javascript";
-      }
-      if (language === "cmd") {
-        return "bat";
-      }
-      return language;
+      const highLightLanguageDict = {
+        quickcommand: "javascript",
+        webjavascript: "javascript",
+        cmd: "bat",
+      };
+      return highLightLanguageDict[language] || language;
     },
     setCursorPosition(position) {
       if (!position.lineNumber || !position.column) return;
