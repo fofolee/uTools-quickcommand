@@ -28,7 +28,7 @@
           @update:model-value="handleCommandsReorder"
           :component-data="{
             type: 'div',
-            class: 'row center q-pa-xs',
+            class: 'row center command-items',
           }"
           item-key="features.code"
           handle=".q-card"
@@ -216,6 +216,11 @@ export default {
 .q-tab-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.command-items {
+  padding-right: 4px;
+  margin-left: -4px;
 }
 
 .command-item {

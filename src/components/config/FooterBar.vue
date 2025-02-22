@@ -5,7 +5,7 @@
   >
     <div class="row">
       <!-- 搜索栏 -->
-      <div class="col">
+      <div class="col search-input">
         <q-input
           :model-value="commandSearchKeyword"
           @update:model-value="updateSearch"
@@ -22,7 +22,7 @@
       </div>
       <!-- 按钮组 -->
       <div class="col-auto justify-end flex">
-        <q-btn-group>
+        <q-btn-group class="btn-group">
           <!-- 暗色模式切换按钮 -->
           <q-btn
             flat
@@ -265,5 +265,19 @@ export default {
   place-items: center;
   font-family: monospace;
   line-height: 0;
+}
+
+.search-input {
+  margin-left: 4px;
+}
+
+.search-input :deep(.q-field--filled .q-field__control),
+.search-input :deep(.q-field--filled .q-field__control *) {
+  border-radius: 5px 0 0 5px;
+  min-height: 40px;
+}
+
+.btn-group {
+  border-radius: 0;
 }
 </style>
