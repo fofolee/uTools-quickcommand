@@ -1,5 +1,5 @@
 <template>
-  <div class="code-editor" :style="{ height: height }">
+  <div class="code-editor" :style="{ height: height + 'px' }">
     <div
       class="editor-container"
       :style="{
@@ -90,8 +90,8 @@ export default defineComponent({
     },
     // 编辑器高度
     height: {
-      type: String,
-      default: "300px",
+      type: Number,
+      default: 300,
     },
     // 编辑器主题
     theme: {

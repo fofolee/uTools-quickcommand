@@ -4,20 +4,41 @@ export const scriptCommands = {
   commands: [
     {
       value: "injectJs",
-      label: "注入JS代码",
+      label: "注入代码",
       icon: "script",
+      description: "注入的代码（js）将在流程对应的位置直接运行。",
       neverHasOutput: true,
       isExpression: true,
       config: [
         {
-          label: "JS脚本",
           component: "CodeEditor",
           language: "quickcommand",
           placeholder:
-            "共享当前上下文，支持utools，quickcommand，quickcomposer等接口",
+            "和当前流程共享上下文（变量、函数等），支持utools、quickcommand、quickcomposer、nodejs的接口",
           width: 12,
         },
       ],
+    },
+    {
+      value: `((code) => {return new Function("return " + code)()})`,
+      label: "eval代码",
+      description: "eval代码（js），并返回结果",
+      config: [
+        {
+          component: "CodeEditor",
+          language: "quickcommand",
+          height: 40,
+          hasAIAssistant: false,
+          placeholder:
+            "和当前流程共享上下文（变量、函数等），支持utools、quickcommand、quickcomposer、nodejs的接口。",
+          width: 12,
+        },
+      ],
+      outputs: {
+        label: "结果",
+        suggestName: "evalResult",
+        typeName: "字符串",
+      },
     },
     {
       value: "quickcommand.runCode",
