@@ -2,7 +2,9 @@
   <div class="code-editor" :style="{ height: height }">
     <div
       class="editor-container"
-      :class="{ 'with-assistant': showAIAssistant }"
+      :style="{
+        width: showAIAssistant ? `calc(100% - ${aiAssistantWidth}px)` : '100%',
+      }"
     >
       <div ref="editorContainer" class="monaco-container" />
       <div class="placeholder-wrapper" v-show="showPlaceholder">
@@ -15,8 +17,9 @@
     <!-- AI助手侧边栏 -->
     <Transition name="slide">
       <AIAssistantSideBar
-        v-if="showAIAssistant"
+        v-if="showAIAssistant && hasAIAssistant"
         class="ai-assistant-panel"
+        :style="{ width: aiAssistantWidth + 'px' }"
         :code="modelValue"
         :language="language"
         @close="toggleAIAssistant(false)"
@@ -25,7 +28,7 @@
     </Transition>
 
     <!-- AI助手按钮 -->
-    <div class="ai-button-wrapper">
+    <div class="ai-button-wrapper" v-if="hasAIAssistant">
       <q-btn
         round
         dense
@@ -109,6 +112,14 @@ export default defineComponent({
     cursorPosition: {
       type: Object,
       default: () => ({}),
+    },
+    hasAIAssistant: {
+      type: Boolean,
+      default: true,
+    },
+    aiAssistantWidth: {
+      type: Number,
+      default: 320,
     },
   },
   emits: [
@@ -421,19 +432,14 @@ export default defineComponent({
   transition: width 0.3s ease;
 }
 
-.editor-container.with-assistant {
-  width: 55%;
-}
-
 .monaco-container {
   width: 100%;
   height: 100%;
 }
 
 .ai-assistant-panel {
-  width: 45%;
   height: 100%;
-  transition: transform 0.3s ease;
+  transition: width 0.3s ease;
 }
 
 .slide-enter-active,

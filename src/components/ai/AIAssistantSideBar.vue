@@ -261,6 +261,7 @@ export default defineComponent({
       const languageMap = {
         quickcommand: "NodeJS",
         javascript: "NodeJS",
+        webjavascript: "前端JavaScript",
         cmd: "windows 批处理脚本",
         shell: "liunx shell脚本",
       };
