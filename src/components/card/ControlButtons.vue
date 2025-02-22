@@ -44,7 +44,7 @@
           transition-hide="jump-up"
           @hide="hideMenu"
         >
-          <q-list style="min-width: 100px">
+          <q-list style="min-width: 100px" dense>
             <q-item clickable v-close-popup @click="exportCommandFile">
               <q-item-section side>
                 <q-icon name="save" />
