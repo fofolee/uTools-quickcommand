@@ -2,6 +2,7 @@
   <div class="script-editor">
     <!-- 代码编辑器 -->
     <CodeEditor
+      ref="codeEditor"
       :model-value="argvs.code"
       @update:modelValue="updateArgvs('code', $event)"
       :language="argvs.language"
@@ -34,6 +35,19 @@
           </q-item>
         </template>
       </q-select>
+      <q-field filled dense class="col-auto">
+        <template v-slot:control>
+          <div class="variable-label">插入变量</div>
+        </template>
+        <template v-slot:append>
+          <VariableList
+            :show-variable-list="true"
+            :show-function-list="false"
+            :show-global-variables="true"
+            @emit-value="insertVariable"
+          />
+        </template>
+      </q-field>
 
       <!-- 编码设置 -->
       <q-select
@@ -137,6 +151,7 @@ import BorderLabel from "components/composer/common/BorderLabel.vue";
 import CheckButton from "components/composer/common/CheckButton.vue";
 import { parseFunction, stringifyArgv } from "js/composer/formatString";
 import programs from "js/options/programs";
+import VariableList from "components/composer/common/varinput/VariableList.vue";
 
 export default defineComponent({
   name: "ScriptEditor",
@@ -146,6 +161,7 @@ export default defineComponent({
     ArrayEditor,
     BorderLabel,
     CheckButton,
+    VariableList,
   },
   props: {
     modelValue: Object,
@@ -212,10 +228,19 @@ export default defineComponent({
       }
     },
     generateCode(argvs = this.argvs) {
+      const variables = argvs.code.match(/___([^_]+?)___/g);
+      const replaceStr =
+        variables
+          ?.map((variable) => {
+            return `.replace("${variable}", ${variable.slice(3, -3)})`;
+          })
+          .join("") || "";
       if (this.isCodeSnippet) {
-        return `quickcomposer.coding.base64Decode("${quickcomposer.coding.base64Encode(
-          argvs.code
-        )}")`;
+        return (
+          `quickcomposer.coding.base64Decode("${quickcomposer.coding.base64Encode(
+            argvs.code
+          )}")` + replaceStr
+        );
       }
       const options = {
         language: argvs.language,
@@ -239,7 +264,7 @@ export default defineComponent({
 
       return `${this.modelValue.value}(${stringifyArgv(
         argvs.code
-      )}, ${stringifyArgv(options)})`;
+      )}${replaceStr}, ${stringifyArgv(options)})`;
     },
     getSummary(argvs) {
       return `运行${argvs.language}代码`;
@@ -267,6 +292,9 @@ export default defineComponent({
         code: this.generateCode(argvs),
         argvs,
       });
+    },
+    insertVariable(_, variable) {
+      this.$refs.codeEditor.replaceEditorSelection("___" + variable + "___");
     },
   },
   mounted() {

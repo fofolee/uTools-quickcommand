@@ -388,7 +388,7 @@ export default defineComponent({
       );
     },
     // 替换选中的文本，供外部调用
-    repacleEditorSelection(text) {
+    replaceEditorSelection(text) {
       var selection = this.codeEditor.getSelection();
       var range = new monaco.Range(
         selection.startLineNumber,
@@ -413,7 +413,7 @@ export default defineComponent({
       if (type === "replace") {
         this.codeEditor.setValue(value);
       } else if (type === "insert") {
-        this.repacleEditorSelection(value);
+        this.replaceEditorSelection(value);
       }
       this.$emit("saveHistory", value);
     },

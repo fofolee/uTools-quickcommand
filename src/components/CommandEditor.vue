@@ -187,7 +187,7 @@ export default {
           this.showComposer = true;
           break;
         case "insert-text":
-          this.$refs.editor.repacleEditorSelection(data);
+          this.$refs.editor.replaceEditorSelection(data);
           break;
         case "restore":
           this.restoreHistory(data);
