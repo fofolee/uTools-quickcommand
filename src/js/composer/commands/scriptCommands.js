@@ -27,8 +27,6 @@ export const scriptCommands = {
         {
           component: "CodeEditor",
           language: "quickcommand",
-          height: 40,
-          hasAIAssistant: false,
           placeholder:
             "和当前流程共享上下文（变量、函数等），支持utools、quickcommand、quickcomposer、nodejs的接口。",
           width: 12,
