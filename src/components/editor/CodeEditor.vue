@@ -253,7 +253,7 @@ export default defineComponent({
       let createDependencyProposals = (range, completions, curWord) => {
         let keys = [];
         // fix getValue of undefined
-        const tokens = getTokens(this.codeEditor.getModel()?.getValue());
+        const tokens = getTokens(this.codeEditor?.getModel()?.getValue());
         // 自定义变量、字符串
         for (const item of tokens) {
           if (item != curWord.word) {
