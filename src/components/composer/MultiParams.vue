@@ -98,6 +98,8 @@ export default defineComponent({
 
       // 使用新选择的函数独有配置的默认值
       this.getSelectSubCommand(value)?.config?.forEach((config, index) => {
+        // 有默认值时才更新
+        if (!config.defaultValue) return;
         newArgvs[this.commonConfig.length + index] = config.defaultValue;
       });
 

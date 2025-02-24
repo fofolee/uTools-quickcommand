@@ -205,7 +205,7 @@ export default defineComponent({
   computed: {
     isString: {
       get() {
-        return this.modelValue.isString;
+        return this.modelValue?.isString;
       },
       set(value) {
         this.$emit("update:modelValue", {
@@ -225,7 +225,7 @@ export default defineComponent({
 
     inputValue: {
       get() {
-        return this.modelValue.value;
+        return this.modelValue?.value;
       },
       set(value) {
         this.$emit("update:modelValue", {
