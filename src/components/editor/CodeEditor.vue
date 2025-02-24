@@ -442,7 +442,6 @@ export default defineComponent({
 .editor-container {
   flex: 1;
   height: 100%;
-  transition: width 0.3s ease;
 }
 
 .monaco-container {
