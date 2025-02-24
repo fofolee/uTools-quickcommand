@@ -81,11 +81,18 @@ export const browserCommands = {
                   width: 3,
                 },
                 windowSize: {
-                  label: "窗口尺寸",
+                  label: "窗口尺寸(格式:宽,高)",
                   component: "VariableInput",
                   icon: "window",
                   width: 6,
-                  placeholder: "如1920x1080，不设置则最大化",
+                  placeholder: "如「1280,720」不设置则最大化",
+                },
+                windowPosition: {
+                  label: "窗口位置(格式:x,y)",
+                  component: "VariableInput",
+                  icon: "location_on",
+                  width: 6,
+                  placeholder: "如「160,120」不设置为0,0",
                 },
                 proxy: {
                   label: "代理",
@@ -98,7 +105,7 @@ export const browserCommands = {
                   label: "浏览器路径",
                   component: "VariableInput",
                   icon: "folder",
-                  width: 12,
+                  width: 6,
                   options: {
                     dialog: {
                       type: "open",

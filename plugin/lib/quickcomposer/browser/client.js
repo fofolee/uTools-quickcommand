@@ -119,6 +119,7 @@ const startClient = async (options) => {
     proxy = null,
     browserPath = getBrowserPath(browserType),
     windowSize = null,
+    windowPosition = null,
     incognito = false,
     headless = false,
     disableExtensions = false,
@@ -150,6 +151,7 @@ const startClient = async (options) => {
 
   const optionArgs = [
     windowSize ? `--window-size=${windowSize}` : "--start-maximized",
+    windowPosition ? `--window-position=${windowPosition}` : "",
     proxy ? `--proxy-server=${proxy}` : "",
     incognito ? incognitoArg[browserType] : "",
     headless ? "--headless" : "",
