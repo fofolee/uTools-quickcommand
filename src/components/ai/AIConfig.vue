@@ -75,7 +75,11 @@
                     dense
                     v-model="aiConfig.apiUrl"
                     class="col-7"
-                    :placeholder="`${aiConfig.apiType} API地址`"
+                    :placeholder="
+                      aiConfig.apiType === 'openai'
+                        ? '例：https://api.openai.com'
+                        : '例：http://localhost:11434'
+                    "
                   >
                     <template v-slot:prepend>
                       <q-badge
