@@ -296,7 +296,7 @@ export default {
           ? alert(stderr)
           : this.showRunResult(stderr, false);
       }
-      !options.action(stdout.toString()) || this.showRunResult(stdout, true);
+      !options.action(stdout?.toString()) || this.showRunResult(stdout, true);
     },
     // 显示运行结果
     async showRunResult(content, isSuccess) {

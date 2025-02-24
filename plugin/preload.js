@@ -151,6 +151,7 @@ let getSandboxFuns = () => {
 // 简化报错信息
 let liteErr = (e) => {
   if (!e) return;
+  if (typeof e === "string") return e;
   return e.error
     ? e.error.stack.replace(/([ ] +at.+)|(.+\.js:\d+)/g, "").trim()
     : e.message;
