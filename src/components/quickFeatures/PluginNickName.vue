@@ -85,6 +85,9 @@
 </template>
 
 <script>
+import { useCommandManager } from "js/commandManager";
+import { getUniqueId } from "js/common/uuid.js";
+
 export default {
   data() {
     return {
@@ -113,10 +116,13 @@ export default {
   },
   methods: {
     addPluNickName() {
+      const commandManager = useCommandManager();
       if (!this.nickName.length)
         return quickcommand.showMessageBox("请填写别名", "warning");
-      let uid = this.getUid();
-      let command = {
+      const uid = getUniqueId({
+        short: true,
+      });
+      const command = {
         features: {
           cmds: this.nickName,
           explain: this.feature.explain,
@@ -129,15 +135,11 @@ export default {
         output: "ignore",
         tags: [this.$root.profile.pluNickNameTag],
       };
-      this.importCommand(command);
+      commandManager.importCommand(JSON.stringify(command), {
+        showMessage: false,
+      });
       this.nickName = [];
       quickcommand.showMessageBox("添加成功！");
-    },
-    getUid() {
-      return this.$parent.getUid();
-    },
-    importCommand(command) {
-      this.$parent.importCommand(command);
     },
   },
 };

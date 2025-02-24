@@ -1,9 +1,19 @@
+<template>
+  <div></div>
+</template>
+
 <script>
+import { useCommandManager } from "js/commandManager";
+import { getUniqueId } from "js/common/uuid.js";
+
 export default {
   mounted() {
+    const commandManager = useCommandManager();
     utools.setExpendHeight(0);
     this.$root.enterData.payload.forEach((file) => {
-      let uid = this.getUid();
+      let uid = getUniqueId({
+        short: true,
+      });
       let fileInfo = window.getFileInfo({
         type: "file",
         argvs: file.path,
@@ -17,24 +27,17 @@ export default {
           icon: utools.getFileIcon(file.path),
           platform: [window.processPlatform],
           code: `key_${uid}`,
+          mainHide: true,
         },
         program: "quickcommand",
-        cmd: `open(\"${file.path.replace(/\\/g, "\\\\")}\")`,
+        cmd: `utools.shellOpenPath(\"${file.path.replace(/\\/g, "\\\\")}\")`,
         output: "ignore",
         tags: [this.$root.profile.quickFileTag],
       };
-      this.importCommand(command);
+      this.commandManager.importCommand(JSON.stringify(command));
     });
     utools.showNotification("操作成功！");
     utools.outPlugin();
-  },
-  methods: {
-    getUid() {
-      return this.$parent.getUid();
-    },
-    importCommand(command) {
-      this.$parent.importCommand(command);
-    },
   },
 };
 </script>

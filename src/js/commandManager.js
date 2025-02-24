@@ -109,11 +109,13 @@ export function useCommandManager() {
   };
 
   // 保存命令
-  const saveCommand = (command) => {
+  const saveCommand = (command, options = {}) => {
+    const { showMessage = true } = options;
     try {
       command = getValidCommand(command);
     } catch (e) {
-      return quickcommand.showMessageBox(e.toString(), "error");
+      showMessage && quickcommand.showMessageBox(e.toString(), "error");
+      return false;
     }
     const code = command.features.code;
     state.allQuickCommands[code] = command;
@@ -130,6 +132,9 @@ export function useCommandManager() {
     }
 
     getAllQuickCommandTags();
+
+    locateToCommand(command.tags, code);
+    showMessage && quickcommand.showMessageBox("保存成功！");
     return code;
   };
 
@@ -175,45 +180,76 @@ export function useCommandManager() {
   };
 
   // 导入命令
-  const importCommand = async (quickCommandInfo) => {
+  const importCommand = async (quickCommandInfo, options = {}) => {
+    const { showMessage = true } = options;
     if (!quickCommandInfo) {
-      quickcommand.showMessageBox("导入未完成！", "warning");
+      showMessage && quickcommand.showMessageBox("导入未完成！", "warning");
       return false;
     }
 
     let parsedData = await quickcommandParser(quickCommandInfo);
     if (!parsedData) {
-      quickcommand.showMessageBox("格式错误", "error");
+      showMessage && quickcommand.showMessageBox("格式错误", "error");
       return false;
     }
 
     let dataToPushed = {};
     if (parsedData.single) {
-      if (isDefaultCommand(parsedData.qc.features.code)) {
-        quickcommand.showMessageBox("默认命令不能导入！", "error");
+      const { code } = parsedData.qc.features;
+      if (isDefaultCommand(code)) {
+        showMessage &&
+          quickcommand.showMessageBox("默认命令不能导入！", "error");
         return false;
       }
-      dataToPushed[parsedData.qc.features.code] = parsedData.qc;
+      dataToPushed[code] = parsedData.qc;
     } else {
       dataToPushed = parsedData.qc;
     }
 
-    for (var code of Object.keys(dataToPushed)) {
+    for (const code of Object.keys(dataToPushed)) {
       if (isDefaultCommand(code)) continue;
       dbManager.putDB(dataToPushed[code], "qc_" + code);
     }
 
     Object.assign(state.allQuickCommands, dataToPushed);
     getAllQuickCommandTags();
-    quickcommand.showMessageBox("导入成功！");
+    if (parsedData.single) {
+      const { tags, features } = parsedData.qc;
+      locateToCommand(tags, features.code);
+      enableCommand(features.code);
+    }
+    showMessage && quickcommand.showMessageBox("导入成功！");
     return parsedData.qc;
+  };
+
+  // 定位命令, 包含changeCurrentTag
+  const locateToCommand = (tags = ["默认"], code) => {
+    state.currentTag = !tags || !tags.length ? "未分类" : tags[0];
+    if (!code) return;
+    // 等待 dom 渲染
+    nextTick(() => {
+      let el = document.getElementById(code);
+      if (!el) return;
+      el.scrollIntoViewIfNeeded();
+      el.querySelector(".q-card").style.boxShadow =
+        "0 1px 5px var(--q-primary), 0 2px 2px var(--q-primary), 0 3px 1px -2px var(--q-primary)";
+      setTimeout(() => {
+        el.querySelector(".q-card").style.boxShadow = "";
+      }, 5000);
+      // 跳转标签
+      document
+        .querySelector(".q-tab--active")
+        .scrollIntoView({ behavior: "smooth" });
+    });
   };
 
   // 创建命令副本
   const createCommandCopy = (code) => {
     const command = window.lodashM.cloneDeep(state.allQuickCommands[code]);
     command.features.code = getFeatureCode(command.features.cmds);
-    saveCommand(command);
+    saveCommand(command, {
+      showMessage: false,
+    });
   };
 
   // 是否为默认命令

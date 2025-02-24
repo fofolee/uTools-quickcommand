@@ -96,11 +96,13 @@ export default {
   methods: {
     // 初始化
     initPage() {
-      // newcommand 直接新建命令
-      if (this.fromNewCommand) this.addNewCommand();
-      // importcommand 导入命令
-      else if (this.fromImportCommand)
-        this.importCommand(this.$root.enterData.payload);
+      if (this.fromNewCommand) {
+        // newcommand 直接新建命令
+        this.addNewCommand();
+      } else if (this.fromImportCommand) {
+        // importcommand 导入命令
+        this.commandManager.importCommand(this.$root.enterData.payload);
+      }
       this.$router.push("/configuration");
       if (this.$route.params.tags) {
         this.changeCurrentTag(window.hexDecode(this.$route.params.tags));
@@ -178,32 +180,6 @@ export default {
         window.lodashM.cloneDeep(command);
       this.isEditorShow = true;
     },
-    // 导入命令
-    async importCommand(command) {
-      const result = await this.commandManager.importCommand(command);
-      if (result) {
-        this.locateToCommand(result.tags, result.features?.code);
-      }
-    },
-    // 定位命令, 包含changeCurrentTag
-    locateToCommand(tags = ["默认"], code) {
-      this.currentTag = !tags || !tags.length ? "未分类" : tags[0];
-      if (!code) return;
-      // 等待 dom 渲染
-      this.$nextTick(() => {
-        let el = document.getElementById(code);
-        el.scrollIntoViewIfNeeded();
-        el.querySelector(".q-card").style.boxShadow =
-          "0px 1px var(--q-primary)";
-        setTimeout(() => {
-          el.querySelector(".q-card").style.boxShadow = "";
-        }, 5000);
-        // 跳转标签
-        document
-          .querySelector(".q-tab--active")
-          .scrollIntoView({ behavior: "smooth" });
-      });
-    },
     // 新建命令
     addNewCommand(program = "quickcommand") {
       this.editorComponent =
@@ -212,16 +188,10 @@ export default {
         this.commandManager.getDefaultCommand(program);
       this.isEditorShow = true;
     },
-    saveCommand(command) {
-      const code = this.commandManager.saveCommand(command);
-      if (!code) return;
-      this.locateToCommand(command.tags, code);
-      quickcommand.showMessageBox("保存成功！");
-    },
     handleEditorEvent(event, data) {
       switch (event) {
         case "save":
-          this.saveCommand(data);
+          this.commandManager.saveCommand(data);
           break;
         case "back":
           this.isEditorShow = false;
