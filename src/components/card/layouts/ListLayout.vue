@@ -13,11 +13,11 @@
       >
         <img :src="commandInfo.features.icon" />
       </q-avatar>
-      <div class="column">
+      <div class="col">
         <!-- 名称 -->
         <div
           class="text-ellipsis"
-          v-html="commandInfo.features.explain.trim() || '<br/>'"
+          v-text="commandInfo.features.explain"
         />
         <!-- 匹配模式 -->
         <CommandTypeTag
@@ -96,5 +96,6 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 14px;
+  max-width: 100%;
 }
 </style>

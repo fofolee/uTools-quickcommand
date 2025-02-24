@@ -242,6 +242,7 @@ export default {
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
+  backdrop-filter: blur(1px);
 }
 
 /* 按钮悬浮效果 */

@@ -18,7 +18,7 @@
     <div class="row justify-center w-100">
       <div
         class="text-ellipsis text-center"
-        v-html="commandInfo.features.explain.trim() || '<br/>'"
+        v-text="commandInfo.features.explain"
       />
     </div>
 

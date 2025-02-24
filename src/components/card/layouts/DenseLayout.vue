@@ -19,7 +19,7 @@
     <div class="row justify-end">
       <div
         class="text-ellipsis"
-        v-html="commandInfo.features.explain.trim() || '<br/>'"
+        v-text="commandInfo.features.explain"
       />
     </div>
 
