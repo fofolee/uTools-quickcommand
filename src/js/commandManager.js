@@ -42,7 +42,8 @@ const getLabeledCmds = (cmds, explain) => {
     }
     return {
       ...cmd,
-      label: cmd.label || explain,
+      // 非关键字的cmd.label均使用explain
+      label: explain,
     };
   });
 };
@@ -52,7 +53,7 @@ const getValidCommand = (command) => {
   if (!explain) throw "名称不能为空";
   if (!Array.isArray(cmds)) throw "匹配规则格式错误";
 
-  // 未配置label或关键字时，直接使用名称
+  // 根据explain设置label和关键字
   command.features.cmds = getLabeledCmds(cmds, explain);
 
   // 不需要显示输入框的输入类型，添加mainHide属性
