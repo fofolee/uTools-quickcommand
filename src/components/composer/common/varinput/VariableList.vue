@@ -8,6 +8,11 @@
     :no-icon-animation="icon !== 'arrow_drop_down'"
     @click="({ variables, functions } = getAvailableVariablesAndFunctions())"
   >
+    <template #label>
+      <div class="variable-label" v-if="!!label">
+        <span>{{ label }}</span>
+      </div>
+    </template>
     <q-list class="variable-list">
       <template v-if="variables.length || functions.length">
         <div v-if="variables.length && showVariableList">
@@ -227,6 +232,10 @@ export default defineComponent({
     icon: {
       type: String,
       default: "arrow_drop_down",
+    },
+    label: {
+      type: String,
+      default: "",
     },
   },
 });

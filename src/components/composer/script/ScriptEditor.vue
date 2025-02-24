@@ -35,18 +35,21 @@
           </q-item>
         </template>
       </q-select>
-      <q-field filled dense class="col-auto">
-        <template v-slot:control>
-          <div class="variable-label">插入变量</div>
-        </template>
-        <template v-slot:append>
-          <VariableList
-            :show-variable-list="true"
-            :show-function-list="false"
-            :show-global-variables="true"
-            @emit-value="insertVariable"
-          />
-        </template>
+      <q-field filled dense class="col-auto variable-list-field">
+        <VariableList
+          label="插入变量"
+          :show-variable-list="true"
+          :show-function-list="false"
+          :show-global-variables="true"
+          @emit-value="insertVariable"
+        />
+        <q-tooltip>
+          <div>引入当前流程的变量到代码中</div>
+          <div class="text-primary" v-if="!isCodeSnippet">
+            注意，所有变量的值都是以<span class="text-weight-bold">字符串</span
+            >的形式传入，不要删除两边的引号
+          </div>
+        </q-tooltip>
       </q-field>
 
       <!-- 编码设置 -->
@@ -54,6 +57,7 @@
         class="col-3"
         filled
         dense
+        options-dense
         v-if="!isCodeSnippet"
         :model-value="argvs.scriptCode"
         @update:modelValue="updateArgvs('scriptCode', $event)"
@@ -66,6 +70,7 @@
         class="col-3"
         filled
         dense
+        options-dense
         v-if="!isCodeSnippet"
         :model-value="argvs.outputCode"
         @update:modelValue="updateArgvs('outputCode', $event)"
@@ -115,6 +120,7 @@
                     label="Windows终端"
                     filled
                     dense
+                    options-dense
                     emit-value
                     map-options
                     class="col-6"
@@ -127,6 +133,7 @@
                     label="macOS终端"
                     filled
                     dense
+                    options-dense
                     emit-value
                     map-options
                     class="col-6"
@@ -228,11 +235,18 @@ export default defineComponent({
       }
     },
     generateCode(argvs = this.argvs) {
-      const variables = argvs.code.match(/___([^_]+?)___/g);
+      const variables = argvs.code.match(/"?___([^_]+?)___"?/g);
       const replaceStr =
         variables
           ?.map((variable) => {
-            return `.replace("${variable}", ${variable.slice(3, -3)})`;
+            if (variable.startsWith('"') && variable.endsWith('"')) {
+              return `.replace('${variable}', JSON.stringify(${variable.slice(
+                4,
+                -4
+              )}))`;
+            } else {
+              return `.replace('${variable}', ${variable.slice(3, -3)})`;
+            }
           })
           .join("") || "";
       if (this.isCodeSnippet) {
@@ -294,7 +308,10 @@ export default defineComponent({
       });
     },
     insertVariable(_, variable) {
-      this.$refs.codeEditor.replaceEditorSelection("___" + variable + "___");
+      const replaceVar = this.isCodeSnippet
+        ? "___" + variable + "___"
+        : '"___' + variable + '___"';
+      this.$refs.codeEditor.replaceEditorSelection(replaceVar);
     },
   },
   mounted() {
@@ -311,5 +328,10 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.variable-list-field :deep(.q-field__control) {
+  padding: 0;
+  color: var(--utools-font-color);
 }
 </style>
