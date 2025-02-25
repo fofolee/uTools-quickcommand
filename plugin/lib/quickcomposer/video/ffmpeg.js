@@ -1,3 +1,11 @@
+const checkFFmpeg = () => {
+  if (!utools.runFFmpeg) {
+    quickcommand.showSystemMessageBox("请先升级uTools到6.1.0及以上版本");
+    return false;
+  }
+  return true;
+};
+
 /**
  * 运行FFmpeg命令并显示进度条
  * @param {string[]} args FFmpeg命令参数
@@ -11,12 +19,8 @@
  * @returns {Promise} 返回Promise
  */
 async function runFFmpeg(args, options = {}) {
-  if (!utools.runFFmpeg) {
-    quickcommand.showSystemMessageBox(
-      "请先升级uTools到6.1.0及以上版本"
-    );
-    return;
-  }
+  if (!checkFFmpeg()) return;
+
   const {
     text = "处理中...",
     position = "bottom-right",
@@ -234,6 +238,8 @@ async function extractAudio(input, output, options = {}) {
  * utools接口目前好像有问题，无法结束录制
  */
 async function recordScreen(output, options = {}) {
+  if (!checkFFmpeg()) return;
+
   const { fps = 30, overwrite = false } = options;
 
   const args = [];
@@ -456,6 +462,7 @@ async function addWatermark(input, watermark, output, options = {}) {
  * @param {boolean} options.overwrite 是否覆盖已存在的文件
  */
 async function mergeVideos(inputs, output, options = {}) {
+  if (!checkFFmpeg()) return;
   const { overwrite = false } = options;
 
   // 先获取第一个视频的分辨率
