@@ -160,6 +160,12 @@ const array = {
     array[index] = value;
     return array;
   },
+
+  // 获取数组长度
+  length: function (array) {
+    if (!Array.isArray(array)) return 0;
+    return array.length;
+  },
 };
 
 module.exports = array;
