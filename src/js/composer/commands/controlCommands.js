@@ -132,16 +132,16 @@ export const controlCommands = {
           config: [
             {
               name: "indexVar",
-              label: "元素",
+              label: "索引",
               component: "ControlInput",
-              defaultValue: "item",
+              defaultValue: "index",
               width: 4,
             },
             {
-              name: "indexVar",
-              label: "索引",
+              name: "itemVar",
+              label: "元素",
               component: "ControlInput",
-              defaultValue: "i",
+              defaultValue: "item",
               width: 4,
             },
             {
