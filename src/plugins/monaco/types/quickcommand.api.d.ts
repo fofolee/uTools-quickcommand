@@ -886,6 +886,7 @@ interface quickcommandApi {
    * @param options 其他选项
    * @param options.showProcessBar 是否显示进度条
    * @param options.onStream 流式请求回调
+   * @param options.onFetch 发起请求回调
    *
    *
    * ```js
@@ -922,13 +923,18 @@ interface quickcommandApi {
    *     model: "qwen2.5:32b"
    *   },
    *   {
-   *     onStream: (chunk, controller, isDone) => {
+   *     onStream: (chunk, isDone) => {
+   *       // 获取流式响应
    *       console.log(chunk);
-   *       if (某个特定条件，中断请求) {
-   *         controller.abort();
-   *       }
    *       if (isDone) {
    *         console.log("流式请求完成");
+   *       }
+   *     },
+   *     onFetch: (controller) => {
+   *       console.log("请求开始");
+   *       // 某个特定条件，中断请求
+   *       if (某个特定条件) {
+   *         controller.abort();
    *       }
    *     }
    *   }
@@ -956,12 +962,10 @@ interface quickcommandApi {
     options?: {
       /** 是否显示进度条, 默认 true */
       showProcessBar?: boolean;
+      /** 请求开始回调 */
+      onFetch?: (controller: AbortController) => void;
       /** 流式请求回调 */
-      onStream?: (
-        chunk: string,
-        controller: AbortController,
-        isDone: boolean
-      ) => void;
+      onStream?: (chunk: string, isDone: boolean) => void;
     }
   ): Promise<{
     /** 是否成功 */

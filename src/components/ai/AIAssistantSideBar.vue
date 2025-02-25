@@ -201,8 +201,10 @@ export default defineComponent({
           this.selectedApi,
           {
             showProcessBar: false,
-            onStream: (text, controller, done) => {
+            onFetch: (controller) => {
               this.currentRequest = controller;
+            },
+            onStream: (text, done) => {
               if (text) {
                 this.chatHistory[this.chatHistory.length - 1].content += text;
               }

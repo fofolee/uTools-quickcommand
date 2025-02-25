@@ -167,35 +167,35 @@ function parseModelsResponse(response, apiType) {
 }
 
 // 处理 OpenAI 流式响应
-async function handleOpenAIStreamResponse(line, controller, onStream) {
+async function handleOpenAIStreamResponse(line, onStream) {
   if (line.startsWith("data: ")) {
     const jsonStr = line.replace(/^data: /, "");
     if (jsonStr === "[DONE]") {
-      onStream("", controller, true);
+      onStream("", true);
       return;
     }
     const json = JSON.parse(jsonStr);
     const content = json.choices[0]?.delta?.content;
     if (content) {
-      onStream(content, controller, false);
+      onStream(content, false);
     }
   }
 }
 
 // 处理 Ollama 流式响应
-async function handleOllamaStreamResponse(line, controller, onStream) {
+async function handleOllamaStreamResponse(line, onStream) {
   const json = JSON.parse(line);
   if (json.done) {
-    onStream("", controller, true);
+    onStream("", true);
     return;
   }
   if (json.message?.content) {
-    onStream(json.message.content, controller, false);
+    onStream(json.message.content, false);
   }
 }
 
 // 处理流式响应
-async function handleStreamResponse(response, apiConfig, controller, onStream) {
+async function handleStreamResponse(response, apiConfig, onStream) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -213,9 +213,9 @@ async function handleStreamResponse(response, apiConfig, controller, onStream) {
         if (line.trim()) {
           try {
             if (apiConfig.apiType === API_TYPES.OPENAI) {
-              await handleOpenAIStreamResponse(line, controller, onStream);
+              await handleOpenAIStreamResponse(line, onStream);
             } else {
-              await handleOllamaStreamResponse(line, controller, onStream);
+              await handleOllamaStreamResponse(line, onStream);
             }
           } catch (e) {
             console.error("解析响应失败:", e);
@@ -228,9 +228,9 @@ async function handleStreamResponse(response, apiConfig, controller, onStream) {
     if (buffer.trim()) {
       try {
         if (apiConfig.apiType === API_TYPES.OPENAI) {
-          await handleOpenAIStreamResponse(buffer, controller, onStream);
+          await handleOpenAIStreamResponse(buffer, onStream);
         } else {
-          await handleOllamaStreamResponse(buffer, controller, onStream);
+          await handleOllamaStreamResponse(buffer, onStream);
         }
       } catch (e) {
         console.error("解析剩余响应失败:", e);
@@ -261,7 +261,11 @@ async function handleStreamResponse(response, apiConfig, controller, onStream) {
  */
 async function chat(content, apiConfig, options = {}) {
   try {
-    const { showProcessBar = true, onStream = () => {} } = options;
+    const {
+      showProcessBar = true,
+      onStream = () => {},
+      onFetch = () => {},
+    } = options;
 
     // 验证必要参数
     if (!apiConfig.apiUrl || !content.prompt || !apiConfig.model) {
@@ -292,7 +296,7 @@ async function chat(content, apiConfig, options = {}) {
     let fullResponse = "";
 
     // 包装 onStream 回调以收集完整响应并更新进度条
-    const streamHandler = (chunk, controller, isDone) => {
+    const streamHandler = (chunk, isDone) => {
       if (!isDone) {
         fullResponse += chunk;
         // 更新进度条显示最新的响应内容
@@ -305,11 +309,14 @@ async function chat(content, apiConfig, options = {}) {
           );
         }
       }
-      onStream(chunk, controller, isDone);
+      onStream(chunk, isDone);
     };
 
     // 统一使用 fetch 处理请求
     const controller = new AbortController();
+
+    onFetch(controller);
+
     const response = await fetch(url, {
       method: "POST",
       headers: config.headers,
@@ -324,7 +331,6 @@ async function chat(content, apiConfig, options = {}) {
     const result = await handleStreamResponse(
       response,
       apiConfig,
-      controller,
       streamHandler
     );
 
