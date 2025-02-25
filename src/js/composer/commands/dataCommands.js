@@ -6,6 +6,60 @@ export const dataCommands = {
   defaultOpened: false,
   commands: [
     {
+      value: "typeof",
+      label: "类型检查",
+      icon: "check_circle",
+      subCommands: [
+        {
+          value: "quickcomposer.data.type.get",
+          label: "获取类型",
+          icon: "text_fields",
+          outputs: {
+            label: "类型",
+            suggestName: "valueType",
+            typeName: "字符串",
+          },
+        },
+        {
+          value: "quickcomposer.data.type.check",
+          label: "判断类型",
+          icon: "text_fields",
+          config: [
+            {
+              component: "QSelect",
+              icon: "text_fields",
+              options: [
+                { label: "字符串", value: "string" },
+                { label: "数字", value: "number" },
+                { label: "布尔", value: "boolean" },
+                { label: "数组", value: "array" },
+                { label: "对象", value: "object" },
+                { label: "函数", value: "function" },
+                { label: "空", value: "null" },
+                { label: "未定义", value: "undefined" },
+                { label: "Buffer", value: "buffer" },
+              ],
+              width: 12,
+            },
+          ],
+          outputs: {
+            label: "判断结果",
+            suggestName: "isType",
+            typeName: "布尔",
+          },
+        },
+      ],
+      config: [
+        {
+          label: "要检查的值",
+          component: "VariableInput",
+          defaultValue: newVarInputVal("var"),
+          icon: "text_fields",
+          width: 12,
+        },
+      ],
+    },
+    {
       value: "quickcomposer.data.string.reverse",
       label: "字符串处理",
       icon: "text_fields",
