@@ -93,11 +93,6 @@ const string = {
     return text.split(separator);
   },
 
-  // 数组合并
-  join: function (array, separator = ",") {
-    return Array.isArray(array) ? array.join(separator) : String(array);
-  },
-
   // 字符串重复
   repeat: function (text, count = 1) {
     return text.repeat(Math.max(0, count));

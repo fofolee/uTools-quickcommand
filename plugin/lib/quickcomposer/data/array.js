@@ -81,8 +81,9 @@ const array = {
   },
 
   // 数组排序
-  sort: function (array, key, order = "asc") {
+  sort: function (array, order = "asc", key) {
     if (!Array.isArray(array)) return [];
+    if (order === "shuffle") return this.shuffle(array);
     return [...array].sort((a, b) => {
       const valueA = key ? a[key] : a;
       const valueB = key ? b[key] : b;
@@ -97,63 +98,10 @@ const array = {
     });
   },
 
-  // 数组分组
-  group: function (array, key) {
-    if (!Array.isArray(array) || !key) return {};
-    return array.reduce((groups, item) => {
-      const value = key.split(".").reduce((obj, k) => obj?.[k], item);
-      if (value !== undefined) {
-        if (!groups[value]) {
-          groups[value] = [];
-        }
-        groups[value].push(item);
-      }
-      return groups;
-    }, {});
-  },
-
   // 数组去重
-  unique: function (array, key) {
+  unique: function (array) {
     if (!Array.isArray(array)) return [];
-    if (!key) {
-      return [...new Set(array)];
-    }
-    const seen = new Set();
-    return array.filter((item) => {
-      const value = key.split(".").reduce((obj, k) => obj?.[k], item);
-      if (value === undefined || seen.has(value)) {
-        return false;
-      }
-      seen.add(value);
-      return true;
-    });
-  },
-
-  // 数组聚合
-  aggregate: function (array, operation, key) {
-    if (!Array.isArray(array)) return null;
-    const values = key
-      ? array.map((item) => key.split(".").reduce((obj, k) => obj?.[k], item))
-      : array;
-    const validNumbers = values.filter((v) => !isNaN(v));
-
-    switch (operation) {
-      case "sum":
-        return validNumbers.reduce((sum, val) => sum + val, 0);
-      case "avg":
-        return validNumbers.length
-          ? validNumbers.reduce((sum, val) => sum + val, 0) /
-              validNumbers.length
-          : 0;
-      case "max":
-        return validNumbers.length ? Math.max(...validNumbers) : null;
-      case "min":
-        return validNumbers.length ? Math.min(...validNumbers) : null;
-      case "count":
-        return array.length;
-      default:
-        return null;
-    }
+    return [...new Set(array)];
   },
 
   // 数组切片
@@ -168,61 +116,6 @@ const array = {
     return array.flat(depth);
   },
 
-  // 数组差集
-  diff: function (array1, array2, key) {
-    if (!Array.isArray(array1) || !Array.isArray(array2)) return [];
-    if (!key) {
-      return array1.filter((item) => !array2.includes(item));
-    }
-    const set2 = new Set(
-      array2.map((item) => key.split(".").reduce((obj, k) => obj?.[k], item))
-    );
-    return array1.filter(
-      (item) => !set2.has(key.split(".").reduce((obj, k) => obj?.[k], item))
-    );
-  },
-
-  // 数组交集
-  intersect: function (array1, array2, key) {
-    if (!Array.isArray(array1) || !Array.isArray(array2)) return [];
-    if (!key) {
-      return array1.filter((item) => array2.includes(item));
-    }
-    const set2 = new Set(
-      array2.map((item) => key.split(".").reduce((obj, k) => obj?.[k], item))
-    );
-    return array1.filter((item) =>
-      set2.has(key.split(".").reduce((obj, k) => obj?.[k], item))
-    );
-  },
-
-  // 数组并集
-  union: function (array1, array2, key) {
-    if (!Array.isArray(array1) || !Array.isArray(array2)) return [];
-    if (!key) {
-      return [...new Set([...array1, ...array2])];
-    }
-    const seen = new Set();
-    return [...array1, ...array2].filter((item) => {
-      const value = key.split(".").reduce((obj, k) => obj?.[k], item);
-      if (value === undefined || seen.has(value)) {
-        return false;
-      }
-      seen.add(value);
-      return true;
-    });
-  },
-
-  // 数组分块
-  chunk: function (array, size = 1) {
-    if (!Array.isArray(array) || size < 1) return [];
-    const chunks = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
-  },
-
   // 数组随机排序
   shuffle: function (array) {
     if (!Array.isArray(array)) return [];
@@ -232,6 +125,40 @@ const array = {
       [result[i], result[j]] = [result[j], result[i]];
     }
     return result;
+  },
+
+  // 数组添加元素
+  push: function (array, element, index) {
+    if (!Array.isArray(array)) return [];
+    if (index === undefined) {
+      array.push(element);
+    } else {
+      if (typeof index !== "number" || index < 0 || index > array.length) {
+        throw new Error("位置参数错误");
+      }
+      array.splice(index, 0, element);
+    }
+    return array;
+  },
+
+  // 数组删除元素
+  splice: function (array, start, deleteCount) {
+    if (!Array.isArray(array)) return [];
+    array.splice(start, deleteCount);
+    return array;
+  },
+
+  // 数组连接
+  join: function (array, separator) {
+    if (!Array.isArray(array)) return "";
+    return array.join(separator);
+  },
+
+  // 数组设置元素
+  set: function (array, index, value) {
+    if (!Array.isArray(array)) return [];
+    array[index] = value;
+    return array;
   },
 };
 
