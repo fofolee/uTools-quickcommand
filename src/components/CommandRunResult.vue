@@ -13,6 +13,7 @@
           width: fromUtools ? '100%' : '700px',
           overflow: 'hidden',
         }"
+        class="command-run-result"
       >
         <div
           v-if="!(enableHtml && fromUtools)"
@@ -384,3 +385,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.command-run-result {
+  background-color: var(--utools-bg-color);
+}
+</style>
