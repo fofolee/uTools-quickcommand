@@ -472,6 +472,70 @@ export const windowsCommands = {
       ],
       asyncMode: "await",
     },
+    // 资源管理器
+    {
+      value: "quickcomposer.windows.explorer.list",
+      label: "资源管理器操作",
+      icon: "folder",
+      asyncMode: "await",
+      subCommands: [
+        {
+          value: "quickcomposer.windows.explorer.list",
+          label: "获取所有已打开路径",
+          icon: "folder",
+          outputs: {
+            label: "已打开路径列表",
+            suggestName: "explorerList",
+            structure: [
+              {
+                handle: { label: "窗口句柄", suggestName: "windowHandle" },
+                title: { label: "窗口标题", suggestName: "windowTitle" },
+                path: { label: "当前路径", suggestName: "windowPath" },
+                class: { label: "窗口类名", suggestName: "windowClass" },
+              },
+            ],
+          },
+        },
+        {
+          value: "quickcomposer.windows.explorer.navigate",
+          label: "导航到指定路径",
+          icon: "folder",
+          config: [
+            {
+              component: "VariableInput",
+              label: "窗口句柄",
+              icon: "window",
+              width: 12,
+              placeholder: "输入要导航的窗口句柄",
+              defaultValue: newVarInputVal("var"),
+              disableToggleType: true,
+              width: 4,
+            },
+            {
+              component: "VariableInput",
+              label: "路径",
+              icon: "folder",
+              options: {
+                dialog: {
+                  type: "open",
+                  options: {
+                    title: "选择路径",
+                    properties: ["openDirectory"],
+                  },
+                },
+              },
+              width: 8,
+              placeholder: "输入要导航的路径",
+            },
+          ],
+          outputs: {
+            label: "是否成功",
+            suggestName: "isSuccess",
+            typeName: "布尔值",
+          },
+        },
+      ],
+    },
     // automation
     {
       value: "quickcomposer.windows.automation.click",

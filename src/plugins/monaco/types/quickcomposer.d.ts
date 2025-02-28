@@ -1722,6 +1722,32 @@ interface quickcomposerApi {
     };
 
     /**
+     * 资源管理器操作功能
+     */
+    explorer: {
+      /**
+       * 获取所有打开的资源管理器窗口信息
+       * @returns 资源管理器窗口信息数组
+       */
+      list(): Promise<
+        {
+          handle: number; // 窗口句柄
+          title: string; // 窗口标题
+          path: string; // 当前路径
+          class: string; // 窗口类名
+        }[]
+      >;
+
+      /**
+       * 导航到指定路径
+       * @param handle 窗口句柄
+       * @param path 目标路径
+       * @returns 是否成功
+       */
+      navigate(handle: number, path: string): Promise<boolean>;
+    };
+
+    /**
      * 进程管理功能
      */
     process: {
