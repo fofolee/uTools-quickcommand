@@ -301,9 +301,13 @@ export default {
     },
     // 显示运行结果
     async showRunResult(content, isSuccess) {
-      content = await this.handleContent(content);
+      if (content.__clearQuickcommandRunResult) {
+        this.runResult = [];
+      } else {
+        content = await this.handleContent(content);
+        this.runResult = this.runResult.concat(content);
+      }
       this.runResultStatus = isSuccess;
-      this.runResult = this.runResult.concat(content);
       // 刷新组件
       this.isResultShow
         ? (this.timeStamp = new Date().getTime())

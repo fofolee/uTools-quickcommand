@@ -179,6 +179,9 @@ window.runCodeInSandbox = (code, callback, addVars = {}) => {
     error: (...stderr) => {
       callback(null, stderr);
     },
+    clear: () => {
+      callback({ __clearQuickcommandRunResult: true }, null);
+    },
   };
   let sandboxWithAD = Object.assign(addVars, sandbox);
   sandboxWithAD.quickcommand = window.lodashM.cloneDeep(quickcommand);

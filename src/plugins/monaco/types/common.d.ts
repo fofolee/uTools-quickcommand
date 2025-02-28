@@ -86,7 +86,8 @@ declare function fetch(
 // console
 declare var console: {
   log(message?: any): void,
-  error(message?: any): void
+  error(message?: any): void,
+  clear(): void,
 }
 
 declare var setTimeout: (callback: () => void, ms: number) => number;
