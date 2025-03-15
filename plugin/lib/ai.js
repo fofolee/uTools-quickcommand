@@ -168,8 +168,8 @@ function parseModelsResponse(response, apiType) {
 
 // 处理 OpenAI 流式响应
 async function handleOpenAIStreamResponse(line, onStream) {
-  if (line.startsWith("data: ")) {
-    const jsonStr = line.replace(/^data: /, "");
+  if (line.startsWith("data:")) {
+    const jsonStr = line.replace(/^data:[ ]*/, "");
     if (jsonStr === "[DONE]") {
       onStream("", true);
       return;
