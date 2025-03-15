@@ -325,6 +325,7 @@ async function chat(content, apiConfig, options = {}) {
     });
 
     if (!response.ok) {
+      processBar?.close();
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
