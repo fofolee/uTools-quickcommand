@@ -17,7 +17,7 @@
         <!-- 名称 -->
         <div
           class="text-ellipsis"
-          v-text="commandInfo.features.explain"
+          v-html="purify(commandInfo.features.explain)"
         />
         <!-- 匹配模式 -->
         <CommandTypeTag
@@ -51,6 +51,7 @@
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
 import programs from "js/options/programs.js";
+import DOMPurify from "dompurify";
 
 export default {
   name: "ListLayout",
@@ -77,6 +78,11 @@ export default {
         };
       }
       return this.programs[this.commandInfo.program];
+    },
+  },
+  methods: {
+    purify(content) {
+      return DOMPurify.sanitize(content);
     },
   },
 };

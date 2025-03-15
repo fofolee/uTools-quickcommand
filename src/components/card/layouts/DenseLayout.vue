@@ -19,7 +19,7 @@
     <div class="row justify-end">
       <div
         class="text-ellipsis"
-        v-text="commandInfo.features.explain"
+        v-html="purify(commandInfo.features.explain)"
       />
     </div>
 
@@ -56,6 +56,7 @@
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
 import programs from "js/options/programs.js";
+import DOMPurify from "dompurify";
 
 export default {
   name: "DenseLayout",
@@ -85,6 +86,11 @@ export default {
     },
     programName() {
       return this.program.shortName ?? this.program.name;
+    },
+  },
+  methods: {
+    purify(content) {
+      return DOMPurify.sanitize(content);
     },
   },
 };

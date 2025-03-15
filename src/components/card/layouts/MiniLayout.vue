@@ -18,7 +18,7 @@
     <div class="row justify-center w-100">
       <div
         class="text-ellipsis text-center"
-        v-text="commandInfo.features.explain"
+        v-html="purify(commandInfo.features.explain)"
       />
     </div>
 
@@ -35,6 +35,7 @@
 <script>
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
+import DOMPurify from "dompurify";
 
 export default {
   name: "MiniLayout",
@@ -48,6 +49,11 @@ export default {
     return {
       platformTypes,
     };
+  },
+  methods: {
+    purify(content) {
+      return DOMPurify.sanitize(content);
+    },
   },
 };
 </script>
