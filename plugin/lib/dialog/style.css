@@ -606,6 +606,7 @@ textarea:focus {
   padding-right: 2px;
   width: calc(100% - 15px);
   box-sizing: border-box;
+  /* 290 - 40 的 padding*/
   max-height: 250px;
   -webkit-app-region: no-drag;
 }

@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let dialogType = null;
 
   // 监听父窗口发来的对话框配置
-  ipcRenderer.on("dialog-config", (event, config) => {
+  ipcRenderer.on("window-config", (event, config) => {
     parentId = event.senderId;
     dialogType = config.type;
 
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const button = document.createElement("button");
           button.textContent = btn;
           button.onclick = () => {
-            ipcRenderer.sendTo(parentId, "dialog-result", {
+            ipcRenderer.sendTo(parentId, "window-response", {
               id: index,
               text: btn,
             });
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: item,
                   }
                 : item;
-            ipcRenderer.sendTo(parentId, "dialog-result", result);
+            ipcRenderer.sendTo(parentId, "window-response", result);
           };
 
           // 鼠标移入事件
@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
         waitBtn.id = "wait-btn";
         waitBtn.textContent = config.text;
         waitBtn.onclick = () => {
-          ipcRenderer.sendTo(parentId, "dialog-result", true);
+          ipcRenderer.sendTo(parentId, "window-response", true);
         };
 
         buttonGroup.appendChild(waitBtn);
@@ -350,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cancelBtn.id = "wait-cancel-btn";
           cancelBtn.innerHTML = "&#x2715;"; // 使用 × 符号
           cancelBtn.onclick = () => {
-            ipcRenderer.sendTo(parentId, "dialog-result", false);
+            ipcRenderer.sendTo(parentId, "window-response", false);
           };
           buttonGroup.appendChild(cancelBtn);
         }
@@ -390,11 +390,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 添加关闭按钮点击事件
         document.getElementById("process-close-btn").onclick = () => {
-          ipcRenderer.sendTo(parentId, "dialog-result", "close");
+          ipcRenderer.sendTo(parentId, "window-response", "close");
         };
         break;
     }
-    ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());
+    ipcRenderer.sendTo(parentId, "window-resize", calculateHeight());
   });
 
   // 监听进度条更新事件
@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const processText = document.getElementById("process-text");
       processText.innerHTML = text;
       processText.scrollTop = processText.scrollHeight;
-      ipcRenderer.sendTo(parentId, "dialog-ready", calculateHeight());
+      ipcRenderer.sendTo(parentId, "window-resize", calculateHeight());
     }
   });
 
@@ -420,16 +420,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const titleBar = document.querySelector(".title-bar");
     const buttonBar = document.querySelector(".button-bar");
     const contentWrapper = document.querySelector(".content-wrapper");
+    const processText = document.getElementById("process-text");
 
-    // 计算总高度
+    // 对于进度条对话框，特殊处理高度计算
+    if (dialogType === "process") {
+      const processTextHeight = processText ? processText.scrollHeight : 0;
+      const totalHeight = Math.max(60, processTextHeight + 40);
+      return Math.min(totalHeight, 290); // 限制最大高度
+    }
+
+    // 其他对话框的高度计算保持不变
     const totalHeight =
       titleBar.offsetHeight +
       contentWrapper.scrollHeight +
       (buttonBar.style.display !== "none" ? buttonBar.offsetHeight : 0);
 
     const maxHeight = dialogType === "select" ? 620 : 520;
-    // 进度条的最大高度通过.process-text的max-height限制
-    const minHeight = dialogType === "process" ? 60 : 100;
+    const minHeight = 100;
 
     // 确保高度在最小值和最大值之间
     return Math.min(Math.max(totalHeight, minHeight), maxHeight);
@@ -458,7 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
     }
 
-    ipcRenderer.sendTo(parentId, "dialog-result", result);
+    ipcRenderer.sendTo(parentId, "window-response", result);
   };
 
   const cancelDialog = () => {
@@ -482,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
       default:
         result = null;
     }
-    ipcRenderer.sendTo(parentId, "dialog-result", result);
+    ipcRenderer.sendTo(parentId, "window-response", result);
   };
 
   // 取消按钮点击事件
