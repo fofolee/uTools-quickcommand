@@ -262,6 +262,7 @@ body {
   line-height: 1.4;
   font-size: 13px;
   user-select: text;
+  white-space: pre-wrap;
 }
 
 .button-bar {
