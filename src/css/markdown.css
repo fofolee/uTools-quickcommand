@@ -85,3 +85,8 @@
   color: #007bff;
   text-decoration: none;
 }
+
+.markdown hr {
+  border-style: solid;
+  border-width: 0.5px;
+}

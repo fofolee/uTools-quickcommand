@@ -41,7 +41,6 @@
 
 <script>
 import { defineComponent } from "vue";
-import DOMPurify from "dompurify";
 
 export default defineComponent({
   name: "AIChatHistory",
@@ -82,15 +81,7 @@ export default defineComponent({
     },
 
     getAssistantMsg(content) {
-      const markedContent = quickcommand.markdownParse(content.trim());
-      const processedContent = markedContent
-        .replace("<p><think>", "<think><p>")
-        .replace("</think></p>", "</p></think>")
-        .replace("<think>\n\n</think>", "");
-      const purifiedContent = DOMPurify.sanitize(processedContent, {
-        ADD_TAGS: ["think"],
-      });
-      return purifiedContent;
+      return window.aiResponseParser(content);
     },
 
     getUserMsg(content) {

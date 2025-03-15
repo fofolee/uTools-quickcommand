@@ -11,7 +11,7 @@
     </q-card-section>
     <q-card-section
       v-if="options.isHtml"
-      v-html="options.message"
+      v-html="purify(options.message)"
       class="content"
     />
     <q-card-section v-else v-text="options.message" class="content" />
@@ -31,6 +31,9 @@ export default {
     clickOK() {
       this.$emit("clickOK", true);
       this.hide();
+    },
+    purify(html) {
+      return window.DOMPurify.sanitize(html);
     },
   },
   props: {

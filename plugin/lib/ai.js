@@ -1,3 +1,18 @@
+const DOMPurify = require("dompurify");
+const marked = require("marked");
+
+window.aiResponseParser = (content) => {
+  const markedContent = marked.parse(content.trim());
+  const processedContent = markedContent
+    .replace("<p><think>", "<think><p>")
+    .replace("</think></p>", "</p></think>")
+    .replace("<think>\n\n</think>", "");
+  const purifiedContent = DOMPurify.sanitize(processedContent, {
+    ADD_TAGS: ["think"],
+  });
+  return purifiedContent;
+};
+
 // 支持的模型类型
 const API_TYPES = {
   OPENAI: "openai",
@@ -303,7 +318,7 @@ async function chat(content, apiConfig, options = {}) {
         if (processBar) {
           quickcommand.updateProcessBar(
             {
-              text: fullResponse,
+              text: window.aiResponseParser(fullResponse),
             },
             processBar
           );
@@ -410,5 +425,4 @@ async function getModels(apiConfig) {
     };
   }
 }
-
 module.exports = { chat, getModels };

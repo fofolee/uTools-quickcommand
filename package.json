@@ -14,7 +14,6 @@
     "@quasar/extras": "^1.14.0",
     "core-js": "^3.6.5",
     "croner": "^4.3.9",
-    "dompurify": "^3.2.4",
     "monaco-editor": "^0.33.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "picture-compressor": "^1.1.0",

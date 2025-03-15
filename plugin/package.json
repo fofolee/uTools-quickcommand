@@ -3,6 +3,7 @@
     "axios": "^1.7.9",
     "chrome-remote-interface": "^0.33.2",
     "crypto-js": "^4.2.0",
+    "dompurify": "^3.2.4",
     "exif-reader": "^2.0.1",
     "iconv-lite": "^0.6.3",
     "marked": "^15.0.7",

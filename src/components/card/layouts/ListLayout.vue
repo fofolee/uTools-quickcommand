@@ -51,7 +51,6 @@
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
 import programs from "js/options/programs.js";
-import DOMPurify from "dompurify";
 
 export default {
   name: "ListLayout",
@@ -82,7 +81,7 @@ export default {
   },
   methods: {
     purify(content) {
-      return DOMPurify.sanitize(content);
+      return window.DOMPurify.sanitize(content);
     },
   },
 };

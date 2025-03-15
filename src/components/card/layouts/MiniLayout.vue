@@ -35,7 +35,6 @@
 <script>
 import CommandTypeTag from "../CommandTypeTag.vue";
 import platformTypes from "js/options/platformTypes.js";
-import DOMPurify from "dompurify";
 
 export default {
   name: "MiniLayout",
@@ -52,7 +51,7 @@ export default {
   },
   methods: {
     purify(content) {
-      return DOMPurify.sanitize(content);
+      return window.DOMPurify.sanitize(content);
     },
   },
 };

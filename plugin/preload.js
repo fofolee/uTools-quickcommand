@@ -11,6 +11,7 @@ const http = require("http");
 const https = require("https");
 const url = require("url");
 const crypto = require("crypto");
+const DOMPurify = require("dompurify");
 
 require("ses");
 const md5 = (input) => {
@@ -19,6 +20,7 @@ const md5 = (input) => {
 
 window.lodashM = require("./lib/lodashMini");
 window.pinyinMatch = require("pinyin-match");
+window.DOMPurify = DOMPurify;
 
 const createTerminalCommand = require("./lib/createTerminalCommand");
 const shortCodes = require("./lib/shortCodes");
