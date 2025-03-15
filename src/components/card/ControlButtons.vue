@@ -191,10 +191,12 @@ export default {
     },
     // 导出到剪贴板
     exportCommandRaw() {
+      const commandName = this.commandInfo.features.explain.replace(
+        /<strong style=".*?">|<\/strong>/g,
+        ""
+      );
       utools.copyText(JSON.stringify(this.getRawCommand(), null, 4)) &&
-        utools.showNotification(
-          `「${this.commandInfo.features.explain}」已复制到剪贴板`
-        );
+        utools.showNotification(`「${commandName}」已复制到剪贴板`);
     },
     // 创建命令副本
     createCommandCopy() {
