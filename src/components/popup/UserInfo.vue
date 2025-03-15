@@ -146,7 +146,7 @@ export default {
       },
       levelDetail: levelDetail,
       showPayPage: false,
-      memberPrice: 2,
+      memberPrice: 12,
       isPluginVIP: false,
       isUtoolsVIP: false,
       isDoubleVIP: false,
