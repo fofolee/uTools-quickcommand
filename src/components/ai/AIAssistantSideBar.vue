@@ -19,6 +19,7 @@
     <AIChatHistory
       :messages="chatHistory"
       @update-code="(...event) => $emit('update-code', ...event)"
+      :render-md="renderMd"
     />
 
     <!-- 输入区域 -->
@@ -38,8 +39,18 @@
       </div>
       <div class="row items-center justify-between q-gutter-x-xs">
         <div class="row items-center q-gutter-x-xs">
-          <q-btn flat dense size="sm" icon="clear_all" @click="clearHistory">
-            <q-tooltip>清空对话</q-tooltip>
+          <q-btn
+            flat
+            dense
+            size="sm"
+            icon="html"
+            :color="renderMd ? 'primary' : 'grey'"
+            @click="renderMd = !renderMd"
+          >
+            <q-tooltip>
+              是否渲染md为html<br />
+              状态：{{ renderMd ? "已开启" : "已关闭" }}
+            </q-tooltip>
           </q-btn>
           <q-btn
             flat
@@ -87,20 +98,25 @@
             </q-tooltip>
           </q-btn>
         </div>
-        <q-btn
-          flat
-          dense
-          size="sm"
-          :label="streamingResponse ? '停止' : '发送'"
-          :disable="!streamingResponse && !prompt"
-          :color="streamingResponse ? 'negative' : 'primary'"
-          :icon="streamingResponse ? 'stop' : 'send'"
-          @click="handleSubmit"
-        >
-          <q-tooltip v-if="!streamingResponse">
-            Enter 发送，Shift+Enter 换行
-          </q-tooltip>
-        </q-btn>
+        <div class="row items-center q-gutter-x-xs">
+          <q-btn flat dense size="sm" icon="clear_all" @click="clearHistory">
+            <q-tooltip>清空对话</q-tooltip>
+          </q-btn>
+          <q-btn
+            flat
+            dense
+            size="sm"
+            :label="streamingResponse ? '停止' : '发送'"
+            :disable="!streamingResponse && !prompt"
+            :color="streamingResponse ? 'negative' : 'primary'"
+            :icon="streamingResponse ? 'stop' : 'send'"
+            @click="handleSubmit"
+          >
+            <q-tooltip v-if="!streamingResponse">
+              Enter 发送，Shift+Enter 换行
+            </q-tooltip>
+          </q-btn>
+        </div>
       </div>
     </div>
   </q-card>
@@ -144,6 +160,7 @@ export default defineComponent({
       autoUpdateCode: localStorage.getItem("ai_auto_update") !== "false",
       sendCode: false,
       submitDocs: true,
+      renderMd: true,
     };
   },
   props: {

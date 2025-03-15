@@ -18,13 +18,18 @@
         <div :class="['chat-message', message.role]">
           <div class="message-bubble">
             <div
-              v-if="message.role === 'assistant'"
+              v-if="message.role === 'assistant' && renderMd"
               class="message-content markdown"
               v-html="getAssistantMsg(message.content)"
             />
             <div
+              v-else-if="message.role === 'assistant' && !renderMd"
+              class="message-content pre-text"
+              v-text="message.content"
+            />
+            <div
               v-else
-              class="message-content"
+              class="message-content pre-text"
               v-text="getUserMsg(message.content)"
             />
           </div>
@@ -44,6 +49,10 @@ export default defineComponent({
     messages: {
       type: Array,
       default: () => [],
+    },
+    renderMd: {
+      type: Boolean,
+      default: true,
     },
   },
   emits: ["update-code"],
@@ -199,13 +208,16 @@ export default defineComponent({
 
 .chat-message.user .message-bubble {
   color: var(--q-primary);
-  word-break: break-all;
-  white-space: pre-wrap;
 }
 
 .message-content {
   font-size: 12px;
   line-height: 1.5;
+}
+
+.message-content.pre-text {
+  word-break: break-all;
+  white-space: pre-wrap;
 }
 
 /* 代码块样式优化 */
