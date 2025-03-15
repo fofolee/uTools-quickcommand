@@ -270,7 +270,7 @@ export default defineComponent({
 
       if (this.currentOutputs) {
         const flatVars = {};
-        Object.entries(this.outputVars).forEach(([path, value]) => {
+        Object.entries(this.outputVars || {}).forEach(([path, value]) => {
           if (!value) return; // 跳过空值
           flatVars[path] = value;
         });
