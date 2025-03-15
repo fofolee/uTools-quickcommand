@@ -281,7 +281,9 @@ export default defineComponent({
       )}${replaceStr}, ${stringifyArgv(options)})`;
     },
     getSummary(argvs) {
-      return `运行${argvs.language}代码`;
+      return this.isCodeSnippet
+        ? `${argvs.language}代码片段`
+        : `运行${argvs.language}代码`;
     },
     updateArgvs(key, value) {
       const newArgvs = { ...this.argvs, [key]: value };
