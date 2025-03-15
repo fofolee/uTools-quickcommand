@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ipcRenderer.on("window-config", (event, config) => {
     parentId = event.senderId;
     dialogType = config.type;
+    windowId = config.windowId;
 
     // 设置主题
     document.documentElement.setAttribute(
@@ -79,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const button = document.createElement("button");
           button.textContent = btn;
           button.onclick = () => {
-            ipcRenderer.sendTo(parentId, "window-response", {
+            ipcRenderer.sendTo(parentId, `window-response-${windowId}`, {
               id: index,
               text: btn,
             });
@@ -137,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: item,
                   }
                 : item;
-            ipcRenderer.sendTo(parentId, "window-response", result);
+            ipcRenderer.sendTo(parentId, `window-response-${windowId}`, result);
           };
 
           // 鼠标移入事件
@@ -339,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
         waitBtn.id = "wait-btn";
         waitBtn.textContent = config.text;
         waitBtn.onclick = () => {
-          ipcRenderer.sendTo(parentId, "window-response", true);
+          ipcRenderer.sendTo(parentId, `window-response-${windowId}`, true);
         };
 
         buttonGroup.appendChild(waitBtn);
@@ -350,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cancelBtn.id = "wait-cancel-btn";
           cancelBtn.innerHTML = "&#x2715;"; // 使用 × 符号
           cancelBtn.onclick = () => {
-            ipcRenderer.sendTo(parentId, "window-response", false);
+            ipcRenderer.sendTo(parentId, `window-response-${windowId}`, false);
           };
           buttonGroup.appendChild(cancelBtn);
         }
@@ -384,17 +385,21 @@ document.addEventListener("DOMContentLoaded", () => {
           pauseBtn.onclick = () => {
             isPaused = !isPaused;
             pauseBtn.classList.toggle("paused", isPaused);
-            ipcRenderer.sendTo(parentId, "process-pause", isPaused);
+            ipcRenderer.sendTo(parentId, `process-pause-${windowId}`, isPaused);
           };
         }
 
         // 添加关闭按钮点击事件
         document.getElementById("process-close-btn").onclick = () => {
-          ipcRenderer.sendTo(parentId, "window-response", "close");
+          ipcRenderer.sendTo(parentId, `process-close-${windowId}`);
         };
         break;
     }
-    ipcRenderer.sendTo(parentId, "window-resize", calculateHeight());
+    ipcRenderer.sendTo(
+      parentId,
+      `window-resize-${windowId}`,
+      calculateHeight()
+    );
   });
 
   // 监听进度条更新事件
@@ -412,7 +417,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const processText = document.getElementById("process-text");
       processText.innerHTML = text;
       processText.scrollTop = processText.scrollHeight;
-      ipcRenderer.sendTo(parentId, "window-resize", calculateHeight());
+      ipcRenderer.sendTo(
+        parentId,
+        `window-resize-${windowId}`,
+        calculateHeight()
+      );
     }
   });
 
@@ -465,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
     }
 
-    ipcRenderer.sendTo(parentId, "window-response", result);
+    ipcRenderer.sendTo(parentId, `window-response-${windowId}`, result);
   };
 
   const cancelDialog = () => {
@@ -489,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
       default:
         result = null;
     }
-    ipcRenderer.sendTo(parentId, "window-response", result);
+    ipcRenderer.sendTo(parentId, `window-response-${windowId}`, result);
   };
 
   // 取消按钮点击事件

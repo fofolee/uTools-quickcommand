@@ -49,9 +49,10 @@ const createDialog = (config, customDialogOptions = {}) => {
 
     // 创建窗口
     const UBrowser = createBrowserWindow(dialogPath, dialogOptions, () => {
+      const windowId = UBrowser.webContents.id;
+
       const windowResponseHandler = (event, result) => {
         resolve(result);
-        // 移除监听器
         UBrowser.destroy();
       };
 
@@ -74,16 +75,17 @@ const createDialog = (config, customDialogOptions = {}) => {
 
       // 监听子窗口返回的计算高度, 等待按钮有自己的计算逻辑
       config.type !== "wait-button" &&
-        ipcRenderer.once("window-resize", windowResizeHandler);
+        ipcRenderer.once(`window-resize-${windowId}`, windowResizeHandler);
 
       // 监听子窗口返回的返回值
-      ipcRenderer.once("window-response", windowResponseHandler);
+      ipcRenderer.once(`window-response-${windowId}`, windowResponseHandler);
 
       // 发送配置到子窗口
-      ipcRenderer.sendTo(UBrowser.webContents.id, "window-config", {
+      ipcRenderer.sendTo(windowId, `window-config`, {
         ...config,
         isDark: utools.isDarkColors(),
         platform,
+        windowId,
       });
     });
   });
@@ -354,7 +356,6 @@ const showProcessBar = async (options = {}) => {
 
         // 创建事件处理器
         windowResizeHandler = (event, height) => {
-          if (event.senderId !== windowId) return;
           const bounds = UBrowser.getBounds();
           const y = Math.round(bounds.y - (height - bounds.height));
           const newBounds = {
@@ -370,32 +371,40 @@ const showProcessBar = async (options = {}) => {
         // 监听暂停/恢复事件
         if (onPause && onResume) {
           processPauseHandler = (event, isPaused) => {
-            if (event.senderId !== windowId) return;
             if (isPaused) {
               onPause();
             } else {
               onResume();
             }
           };
-          ipcRenderer.on("process-pause", processPauseHandler);
+          ipcRenderer.on(`process-pause-${windowId}`, processPauseHandler);
         }
 
         // 监听子窗口返回的计算高度
-        ipcRenderer.on("window-resize", windowResizeHandler);
+        ipcRenderer.on(`window-resize-${windowId}`, windowResizeHandler);
 
-        // 监听对话框结果
-        ipcRenderer.once("window-response", (event, result) => {
-          if (event.senderId !== windowId) return;
-          if (result === "close" && typeof onClose === "function") {
+        const closeProcessBar = () => {
+          if (typeof onClose === "function") {
             onClose();
           }
           // 清理所有事件监听器
-          ipcRenderer.removeListener("window-resize", windowResizeHandler);
+          ipcRenderer.removeListener(
+            `window-resize-${windowId}`,
+            windowResizeHandler
+          );
           if (processPauseHandler) {
-            ipcRenderer.removeListener("process-pause", processPauseHandler);
+            ipcRenderer.removeListener(
+              `process-pause-${windowId}`,
+              processPauseHandler
+            );
           }
           lastProcessBar = null;
           UBrowser.destroy();
+        };
+
+        // 监听对话框结果
+        ipcRenderer.once(`process-close-${windowId}`, () => {
+          closeProcessBar();
         });
 
         // 发送配置到子窗口
@@ -407,22 +416,12 @@ const showProcessBar = async (options = {}) => {
           platform: process.platform,
           showPause: Boolean(onPause && onResume),
           isLoading: value === undefined,
+          windowId,
         });
 
         const processBar = {
           id: windowId,
-          close: () => {
-            if (typeof onClose === "function") {
-              onClose();
-            }
-            // 清理所有事件监听器
-            ipcRenderer.removeListener("window-resize", windowResizeHandler);
-            if (processPauseHandler) {
-              ipcRenderer.removeListener("process-pause", processPauseHandler);
-            }
-            lastProcessBar = null;
-            UBrowser.destroy();
-          },
+          close: closeProcessBar,
         };
 
         lastProcessBar = processBar;
