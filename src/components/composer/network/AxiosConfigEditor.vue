@@ -118,10 +118,29 @@
           name="data"
           class="q-pa-none q-pt-sm"
         >
-          <DictEditor
-            v-model="argvs.data"
-            @update:model-value="updateArgvs('data', $event)"
-          />
+          <div class="row q-col-gutter-sm">
+            <div class="col-auto">
+              <span class="text-caption">RAW</span>
+              <q-toggle
+                v-model="argvs.isReqDataRaw"
+                @update:model-value="handleReqRawUpdate"
+              />
+            </div>
+            <div class="col">
+              <VariableInput
+                v-model="argvs.data"
+                v-if="argvs.isReqDataRaw"
+                label="原始请求体"
+                icon="text_fields"
+                @update:model-value="updateArgvs('data', $event)"
+              />
+              <DictEditor
+                v-model="argvs.data"
+                @update:model-value="updateArgvs('data', $event)"
+                v-else
+              />
+            </div>
+          </div>
         </q-tab-panel>
 
         <q-tab-panel name="params" class="q-pa-none q-pt-sm">
@@ -160,7 +179,7 @@ import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import DictEditor from "components/composer/common/DictEditor.vue";
-import { stringifyArgv, parseFunction } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import {
   userAgent,
   commonHeaders,
@@ -203,6 +222,7 @@ export default defineComponent({
         otherHeaders: {},
         params: {},
         data: {},
+        isReqDataRaw: false,
         timeout: 0,
         maxRedirects: 5,
         responseType: "json",
@@ -362,9 +382,7 @@ export default defineComponent({
   },
   computed: {
     argvs() {
-      return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
-      );
+      return this.modelValue.argvs;
     },
     hasRequestData() {
       return ["PUT", "POST", "PATCH"].includes(this.argvs.method);
@@ -374,55 +392,10 @@ export default defineComponent({
     },
   },
   methods: {
-    // 解析代码为参数
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-      const method = code.match(/axios\.(\w+)/)?.[1].toUpperCase();
-      const hasData = ["PUT", "POST", "PATCH"].includes(method);
-      // 有请求体时，config 是第三个参数
-      const configIndex = hasData ? 2 : 1;
-      try {
-        // 定义需要使用 variableInput 格式的路径
-        const variableFormatPaths = [
-          "arg0", // url参数
-          `arg${configIndex}.params.**`, // 所有params对象下的字段
-          `arg${configIndex}.headers.**`, // 所有headers对象下的字段
-          `arg${configIndex}.auth.**`, // 所有认证相关字段
-          `arg${configIndex}.proxy.host`, // 代理主机
-          `arg${configIndex}.proxy.auth.**`, // 代理认证字段
-          `!arg${configIndex}.headers.Content-Type`, // ontent-Type
-        ];
-        if (hasData) variableFormatPaths.push(`arg1.**`);
-        // 返回所有解析出来的参数组成的数组
-        const result = parseFunction(code, {
-          variableFormatPaths,
-        });
-        if (!result) {
-          console.warn("axios 参数解析失败:", code);
-          return argvs;
-        }
-        const url = result.argvs[0] || "";
-        const data = hasData ? result.argvs[1] : {};
-        const config = result.argvs[hasData ? 2 : 1] || {};
-        const {
-          "Content-Type": contentType,
-          "User-Agent": userAgent,
-          ...otherHeaders
-        } = config.headers;
-        config.headers = {
-          "Content-Type": contentType,
-          "User-Agent": userAgent,
-        };
-        Object.assign(argvs, { url, data, method, otherHeaders, ...config });
-      } catch (e) {
-        console.warn("axios 参数解析失败:", code);
-      }
-      return argvs;
-    },
     // 从参数生成代码
     generateCode(argvs = this.argvs) {
-      const { url, method, data, otherHeaders, ...restConfig } = argvs;
+      const { url, method, data, isReqDataRaw, otherHeaders, ...restConfig } =
+        argvs;
       restConfig.headers = {
         ...restConfig.headers,
         ...otherHeaders,
@@ -496,6 +469,11 @@ export default defineComponent({
         argvs,
         code: this.generateCode(argvs),
       });
+    },
+    handleReqRawUpdate(isRaw) {
+      isRaw
+        ? this.updateArgvs("data", newVarInputVal("str"))
+        : this.updateArgvs("data", {});
     },
   },
   mounted() {
