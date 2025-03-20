@@ -2401,81 +2401,113 @@ interface quickcomposerApi {
      * 截图功能
      * @param tab 标签页配置
      * @param options 截图选项
+     * @param options.format 图片格式
+     * @param options.quality 图片质量(仅jpeg)
+     * @param options.savePath 保存路径
+     * @param options.selector 元素选择器
      */
     captureScreenshot(
-      tab: {
-        by?: "active" | "url" | "title" | "id";
-        searchValue?: string;
-      },
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
       options?: {
-        type?: "png" | "jpeg"; // 图片类型
-        quality?: number; // 图片质量(仅jpeg)
-        fullPage?: boolean; // 是否截取完整页面
-        clip?: {
-          // 裁剪区域
-          x: number;
-          y: number;
-          width: number;
-          height: number;
-        };
-        encoding?: "base64" | "binary"; // 编码方式
-        path?: string; // 保存路径
+        format?: "png" | "jpeg";
+        quality?: number;
+        savePath?: string;
+        selector?: string;
       }
     ): Promise<string>;
 
     /**
      * 获取当前URL
+     * @param tab 标签页配置
      */
-    getUrl(): Promise<string>;
+    getUrl(tab: {
+      by?: "active" | "url" | "title" | "id";
+      searchValue?: string;
+    }): Promise<string>;
 
     /**
      * 设置URL
+     * @param tab 标签页配置
      * @param url 要设置的URL
      */
-    setUrl(url: string): Promise<void>;
+    setUrl(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      url: string
+    ): Promise<void>;
 
     /**
      * 执行JavaScript代码
+     * @param tab 标签页配置
      * @param script 要执行的JavaScript代码
+     * @param args 脚本参数
      */
-    executeScript(script: string): Promise<any>;
+    executeScript(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      script: string,
+      args?: Record<string, any>
+    ): Promise<any>;
 
     /**
      * 点击元素
+     * @param tab 标签页配置
      * @param selector CSS选择器
      */
-    clickElement(selector: string): Promise<void>;
+    clickElement(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string
+    ): Promise<void>;
 
     /**
      * 输入文本
+     * @param tab 标签页配置
      * @param selector CSS选择器
      * @param text 要输入的文本
      */
-    inputText(selector: string, text: string): Promise<void>;
+    inputText(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string,
+      text: string
+    ): Promise<void>;
 
     /**
      * 获取文本内容
+     * @param tab 标签页配置
      * @param selector CSS选择器
      */
-    getText(selector: string): Promise<string>;
+    getText(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string
+    ): Promise<string>;
 
     /**
      * 获取HTML内容
+     * @param tab 标签页配置
      * @param selector CSS选择器
      */
-    getHtml(selector: string): Promise<string>;
+    getHtml(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string
+    ): Promise<string>;
 
     /**
      * 隐藏元素
+     * @param tab 标签页配置
      * @param selector CSS选择器
      */
-    hideElement(selector: string): Promise<void>;
+    hideElement(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string
+    ): Promise<void>;
 
     /**
      * 显示元素
+     * @param tab 标签页配置
      * @param selector CSS选择器
      */
-    showElement(selector: string): Promise<void>;
+    showElement(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string
+    ): Promise<void>;
 
     /**
      * 注入CSS样式
@@ -2485,57 +2517,136 @@ interface quickcomposerApi {
 
     /**
      * 设置Cookie
-     * @param name Cookie名称
-     * @param value Cookie值
+     * @param tab 标签页配置
+     * @param cookies Cookie配置数组
+     * @param options Cookie选项
      */
-    setCookie(name: string, value: string): Promise<void>;
+    setCookie(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      cookies: Array<{ name: string; value: string }>,
+      options?: {
+        domain?: string;
+        path?: string;
+        secure?: boolean;
+        expires?: number;
+      }
+    ): Promise<void>;
 
     /**
      * 获取Cookie
-     * @param name Cookie名称
+     * @param tab 标签页配置
+     * @param name Cookie名称，不传则返回所有Cookie
      */
-    getCookie(name: string): Promise<string>;
+    getCookie(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      name?: string
+    ): Promise<
+      | { name: string; value: string; domain: string; path: string }[]
+      | { name: string; value: string; domain: string; path: string }
+    >;
 
     /**
      * 删除Cookie
+     * @param tab 标签页配置
      * @param name Cookie名称
      */
-    deleteCookie(name: string): Promise<void>;
+    deleteCookie(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      name: string
+    ): Promise<void>;
 
     /**
      * 滚动到指定位置
+     * @param tab 标签页配置
      * @param x X坐标
      * @param y Y坐标
      */
-    scrollTo(x: number, y: number): Promise<void>;
+    scrollTo(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      x: number,
+      y: number
+    ): Promise<void>;
 
     /**
      * 滚动到指定元素
+     * @param tab 标签页配置
      * @param selector CSS选择器
      */
-    scrollToElement(selector: string): Promise<void>;
+    scrollToElement(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string
+    ): Promise<void>;
 
     /**
      * 获取滚动位置
+     * @param tab 标签页配置
      */
-    getScrollPosition(): Promise<{
-      x: number; // X坐标
-      y: number; // Y坐标
-    }>;
+    getScrollPosition(tab: {
+      by?: "active" | "url" | "title" | "id";
+      searchValue?: string;
+    }): Promise<{ x: number; y: number }>;
 
     /**
      * 获取页面尺寸
+     * @param tab 标签页配置
      */
-    getPageSize(): Promise<{
-      width: number; // 页面宽度
-      height: number; // 页面高度
-    }>;
+    getPageSize(tab: {
+      by?: "active" | "url" | "title" | "id";
+      searchValue?: string;
+    }): Promise<{ width: number; height: number }>;
 
     /**
      * 等待元素出现
+     * @param tab 标签页配置
      * @param selector CSS选择器
      * @param timeout 超时时间(毫秒)
      */
-    waitForElement(selector: string, timeout?: number): Promise<void>;
+    waitForElement(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      selector: string,
+      timeout?: number
+    ): Promise<void>;
+
+    /**
+     * 注入CSS样式
+     * @param tab 标签页配置
+     * @param css CSS样式代码
+     */
+    injectCSS(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      css: string
+    ): Promise<void>;
+
+    /**
+     * 提交表单
+     * @param tab 标签页配置
+     * @param buttonSelector 提交按钮的CSS选择器
+     * @param inputSelectors 输入字段配置数组
+     */
+    submitForm(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      buttonSelector: string,
+      inputSelectors: Array<{ selector: string; value: string }>
+    ): Promise<void>;
+
+    /**
+     * 注入远程脚本
+     * @param tab 标签页配置
+     * @param url 脚本URL
+     */
+    injectRemoteScript(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      url: string
+    ): Promise<boolean>;
+
+    /**
+     * 注入本地脚本
+     * @param tab 标签页配置
+     * @param filePath 脚本文件路径
+     */
+    injectLocalScript(
+      tab: { by?: "active" | "url" | "title" | "id"; searchValue?: string },
+      filePath: string
+    ): Promise<boolean>;
   };
 }
