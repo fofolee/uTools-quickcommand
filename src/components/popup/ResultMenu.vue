@@ -138,7 +138,7 @@ export default {
       quickcommand.showMessageBox("已复制到剪贴板");
     },
     sendResult() {
-      window.utools.hideMainWindowTypeString(
+      window.utools.hideMainWindowPasteText(
         this.selectText || this.getFormattedContent()
       );
     },

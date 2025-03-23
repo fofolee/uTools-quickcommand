@@ -48,7 +48,7 @@ const outputTypes = {
         label: "发送到活动窗口",
         icon: "web_asset",
         outPlugin: true,
-        action: result => window.utools.hideMainWindowTypeString(result)
+        action: result => window.utools.hideMainWindowPasteText(result)
     },
     notice: {
         name: "notice",

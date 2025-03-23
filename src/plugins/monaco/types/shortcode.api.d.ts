@@ -73,7 +73,7 @@ declare function copyTo(text: string): void;
  *
  * ```js
  * // 等同于
- * utools.hideMainWindowTypeString(text)
+ * utools.hideMainWindowPasteText(text)
  * ```
  */
 declare function send(text: string): void;

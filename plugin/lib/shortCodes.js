@@ -28,7 +28,7 @@ const shortCodes = {
     electron.clipboard.writeText(text);
   },
   send: (text) => {
-    window.utools.hideMainWindowTypeString(text);
+    window.utools.hideMainWindowPasteText(text);
   },
 };
 
