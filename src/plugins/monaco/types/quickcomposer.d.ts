@@ -507,89 +507,58 @@ interface quickcomposerApi {
   file: {
     /**
      * 文件操作
+     * @param config 操作配置
      */
-    operation: {
-      /**
-       * 统一的文件操作入口
-       * @param config 操作配置
-       */
-      operation(config: {
-        /** 操作类型：read-读取，write-写入，list-列表，stat-状态，delete-删除，manage-管理 */
-        operation: "read" | "write" | "list" | "stat" | "delete" | "manage";
-        /** 文件路径 */
-        filePath: string;
-        /** 读取操作配置 */
-        readOptions?: {
-          /** 编码方式 */
-          encoding?: BufferEncoding;
-          /** 起始位置 */
-          start?: number;
-          /** 结束位置 */
-          end?: number;
-        };
-        /** 写入操作配置 */
-        writeOptions?: {
-          /** 写入内容 */
-          content: string;
-          /** 编码方式 */
-          encoding?: BufferEncoding;
-          /** 写入模式：overwrite-覆盖，append-追加 */
-          writeMode?: "overwrite" | "append";
-          /** 文件权限 */
-          writeFlag?: string;
-        };
-        /** 列表操作配置 */
-        listOptions?: {
-          /** 是否递归 */
-          recursive?: boolean;
-          /** 是否包含隐藏文件 */
-          includeHidden?: boolean;
-        };
-        /** 管理操作配置 */
-        manageOptions?: {
-          /** 目标类型：file-文件，directory-目录 */
-          targetType?: "file" | "directory";
-          /** 管理操作类型：rename-重命名，chmod-修改权限，chown-修改所有者 */
-          manageOperation?: "rename" | "chmod" | "chown";
-          /** 新路径(重命名时使用) */
-          newPath?: string;
-          /** 权限模式(chmod时使用) */
-          mode?: string | number;
-          /** 用户ID(chown时使用) */
-          uid?: number;
-          /** 组ID(chown时使用) */
-          gid?: number;
-          /** 是否递归操作 */
-          recursive?: boolean;
-        };
-      }): Promise<any>;
-    };
+    operation(config: {
+      /** 操作类型：read-读取，write-写入，list-列表，stat-状态，delete-删除，permission-权限，transfer-复制移动 */
+      operation:
+        | "read"
+        | "write"
+        | "list"
+        | "stat"
+        | "delete"
+        | "permission"
+        | "transfer";
+      /** 文件路径 */
+      filePath: string;
+      /** 读取操作配置 */
+      encoding?: BufferEncoding;
+      readMode?: "all" | "start" | "line";
+      start?: number;
+      length?: number;
+      /** 写入操作配置 */
+      content?: string;
+      flag?: "w" | "a";
+      mode?: string | number;
+      /** 列表操作配置 */
+      recursive?: boolean;
+      showHidden?: boolean;
+      /** 权限操作配置 */
+      operationType?: "chmod" | "chown";
+      uid?: number;
+      gid?: number;
+      /** 复制移动操作配置 */
+      transferOperation?: "copy" | "rename";
+      newPath?: string;
+      /** 删除操作配置 */
+      force?: boolean;
+      /** 状态操作配置 */
+      followSymlinks?: boolean;
+    }): Promise<any>;
 
     /**
-     * 文件归档
+     * 文件归档操作
+     * @param operation 操作类型：compress-压缩，extract-解压
+     * @param format 归档格式：zip, tar, gzip
+     * @param source 源文件/文件夹路径
+     * @param destination 目标路径
      */
-    archive: {
-      /**
-       * 文件归档操作
-       * @param config 归档配置
-       */
-      archive(config: {
-        /** 操作类型：compress-压缩，extract-解压 */
-        operation: "compress" | "extract";
-        /** 归档格式：zip, tar, gzip */
-        format: "zip" | "tar" | "gzip";
-        /** 源文件/文件夹路径 */
-        sourcePath: string | string[];
-        /** 目标路径 */
-        targetPath: string;
-        /** 压缩级别(1-9) */
-        level?: number;
-        /** 是否保持目录结构 */
-        preserveStructure?: boolean;
-        /** 密码保护(仅zip格式支持) */
-        password?: string;
-      }): Promise<void>;
-    };
+    archive(
+      operation: "compress" | "extract",
+      format: "zip" | "tar" | "gzip",
+      source: string | string[],
+      destination: string
+    ): Promise<void>;
   };
   system: {
     /**

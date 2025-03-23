@@ -382,7 +382,7 @@ export default defineComponent({
   },
   computed: {
     argvs() {
-      return this.modelValue.argvs;
+      return this.modelValue.argvs || this.defaultArgvs;
     },
     hasRequestData() {
       return ["PUT", "POST", "PATCH"].includes(this.argvs.method);

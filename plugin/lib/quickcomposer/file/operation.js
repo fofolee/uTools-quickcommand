@@ -7,23 +7,22 @@ const path = require("path");
  * @param {string} config.filePath 文件路径
  * @param {string} config.encoding 编码方式
  * @param {string} config.readMode 读取模式
- * @param {string} config.flag 读取标志
  * @param {number} [config.start] 起始位置
  * @param {number} [config.length] 读取长度
  * @returns {Promise<string|Buffer>} 文件内容
  */
 async function read(config) {
-  const { filePath, encoding, readMode, flag, start, length } = config;
+  const { filePath, encoding, readMode, start, length } = config;
 
   if (readMode === "all") {
-    return await fs.readFile(filePath, { encoding, flag });
+    return await fs.readFile(filePath, { encoding });
   } else if (
     readMode === "start" &&
     typeof start === "number" &&
     typeof length === "number"
   ) {
     // 指定位置读取
-    const fileHandle = await fs.open(filePath, flag || "r");
+    const fileHandle = await fs.open(filePath, "r");
     try {
       const buffer = Buffer.alloc(length);
       const { bytesRead } = await fileHandle.read(buffer, 0, length, start);
@@ -39,12 +38,11 @@ async function read(config) {
     // 按行读取，暂时使用全部读取然后分行的方式
     const content = await fs.readFile(filePath, {
       encoding: encoding || "utf8",
-      flag,
     });
     return content.split(/\r?\n/);
   } else {
     // 默认使用全部读取
-    return await fs.readFile(filePath, { encoding, flag });
+    return await fs.readFile(filePath, { encoding });
   }
 }
 
@@ -85,19 +83,11 @@ async function write(config) {
  * 文件删除操作
  */
 async function remove(config) {
-  const { filePath, recursive, force, targetType } = config;
+  const { filePath, recursive, force } = config;
 
   // 检查文件是否存在
   try {
     const stats = await fs.lstat(filePath);
-
-    // 检查目标类型
-    if (targetType === "file" && !stats.isFile()) {
-      throw new Error("目标不是文件");
-    }
-    if (targetType === "directory" && !stats.isDirectory()) {
-      throw new Error("目标不是目录");
-    }
 
     // 执行删除操作
     if (stats.isDirectory()) {
@@ -115,39 +105,16 @@ async function remove(config) {
 }
 
 /**
- * 文件管理操作
+ * 文件权限操作
  */
-async function manage(config) {
-  const {
-    filePath,
-    manageOperation,
-    newPath,
-    mode,
-    uid,
-    gid,
-    recursive,
-    targetType,
-  } = config;
+async function permission(config) {
+  const { filePath, operationType, mode, uid, gid, recursive } = config;
 
-  // 检查文件是否存在
-  const stats = await fs.lstat(filePath);
+  try {
+    // 检查文件是否存在
+    const stats = await fs.lstat(filePath);
 
-  // 检查目标类型
-  if (targetType === "file" && !stats.isFile()) {
-    throw new Error("目标不是文件");
-  }
-  if (targetType === "directory" && !stats.isDirectory()) {
-    throw new Error("目标不是目录");
-  }
-
-  switch (manageOperation) {
-    case "rename":
-      // 确保目标目录存在
-      await fs.mkdir(path.dirname(newPath), { recursive: true });
-      await fs.rename(filePath, newPath);
-      break;
-
-    case "chmod":
+    if (operationType === "chmod") {
       if (recursive && stats.isDirectory()) {
         const walk = async (dir) => {
           const files = await fs.readdir(dir);
@@ -166,9 +133,7 @@ async function manage(config) {
       } else {
         await fs.chmod(filePath, parseInt(mode, 8));
       }
-      break;
-
-    case "chown":
+    } else if (operationType === "chown") {
       if (recursive && stats.isDirectory()) {
         await fs.chown(filePath, uid, gid);
         const walk = async (dir) => {
@@ -188,10 +153,71 @@ async function manage(config) {
       } else {
         await fs.chown(filePath, uid, gid);
       }
-      break;
+    } else {
+      throw new Error(`不支持的操作类型: ${operationType}`);
+    }
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new Error("文件或目录不存在");
+    }
+    throw error;
+  }
+}
 
-    default:
-      throw new Error(`不支持的操作类型: ${manageOperation}`);
+/**
+ * 文件复制移动操作
+ */
+async function transfer(config) {
+  const { filePath, transferOperation, newPath } = config;
+
+  // 检查文件是否存在
+  try {
+    const stats = await fs.lstat(filePath);
+
+    // 确保目标目录存在
+    await fs.mkdir(path.dirname(newPath), { recursive: true });
+    if (transferOperation === "copy") {
+      const processBar = await quickcommand.showProcessBar({
+        text: "复制中...",
+      });
+      if (stats.isDirectory()) {
+        // 复制目录
+        const copyDir = async (src, dest) => {
+          await fs.mkdir(dest, { recursive: true });
+          const entries = await fs.readdir(src);
+          for (const entry of entries) {
+            const srcPath = path.join(src, entry);
+            const destPath = path.join(dest, entry);
+            const entryStat = await fs.lstat(srcPath);
+            if (entryStat.isDirectory()) {
+              await copyDir(srcPath, destPath);
+            } else {
+              await fs.copyFile(srcPath, destPath);
+            }
+            quickcommand.updateProcessBar({ text: entry }, processBar);
+          }
+        };
+        await copyDir(filePath, newPath);
+      } else {
+        // 复制文件
+        await fs.copyFile(filePath, newPath);
+      }
+      processBar.close();
+    } else if (transferOperation === "rename") {
+      const processBar = await quickcommand.showProcessBar({
+        text: "处理中...",
+      });
+      await fs.rename(filePath, newPath);
+      processBar.close();
+    } else {
+      throw new Error(`不支持的操作类型: ${transferOperation}`);
+    }
+  } catch (error) {
+    processBar?.close();
+    if (error.code === "ENOENT") {
+      throw new Error("文件或目录不存在");
+    }
+    throw error;
   }
 }
 
@@ -247,68 +273,48 @@ async function list(config) {
 }
 
 /**
+ * 格式化文件大小
+ * @param {number} bytes 字节数
+ * @returns {string} 格式化后的文件大小
+ */
+function formatBytes(bytes) {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let unitIndex = 0;
+  while (bytes >= 1024 && unitIndex < units.length - 1) {
+    bytes /= 1024;
+    unitIndex++;
+  }
+  return `${bytes.toFixed(2)} ${units[unitIndex]}`;
+}
+
+/**
  * 获取文件或目录状态
  * @param {Object} config 配置对象
  * @param {string} config.filePath 路径
- * @param {string} config.targetType 目标类型
- * @param {string} config.statMode 检查类型
  * @param {boolean} [config.followSymlinks] 是否跟随符号链接
  * @returns {Promise<Object>} 状态信息
  */
 async function stat(config) {
-  const { filePath, targetType, statMode, followSymlinks } = config;
+  const { filePath, followSymlinks } = config;
 
   try {
     const statFn = followSymlinks ? fs.stat : fs.lstat;
     const stats = await statFn(filePath);
 
-    // 检查目标类型是否匹配
-    if (targetType === "file" && !stats.isFile()) {
-      throw new Error("目标不是文件");
-    }
-    if (targetType === "directory" && !stats.isDirectory()) {
-      throw new Error("目标不是目录");
-    }
-
-    // 根据检查类型返回不同的信息
-    if (statMode === "exists") {
-      return {
-        exists: true,
-        isFile: stats.isFile(),
-        isDirectory: stats.isDirectory(),
-      };
-    } else if (statMode === "status") {
-      return {
-        exists: true,
-        isFile: stats.isFile(),
-        isDirectory: stats.isDirectory(),
-        isSymbolicLink: stats.isSymbolicLink(),
-        size: stats.size,
-        mode: stats.mode,
-        uid: stats.uid,
-        gid: stats.gid,
-        accessTime: stats.atime,
-        modifyTime: stats.mtime,
-        changeTime: stats.ctime,
-        birthTime: stats.birthtime,
-      };
-    } else {
-      // 默认返回基本信息
-      return {
-        exists: true,
-        isFile: stats.isFile(),
-        isDirectory: stats.isDirectory(),
-        isSymbolicLink: stats.isSymbolicLink(),
-      };
-    }
+    return {
+      exists: true,
+      isFile: stats.isFile(),
+      isDirectory: stats.isDirectory(),
+      isSymbolicLink: stats.isSymbolicLink(),
+      humanReadSize: formatBytes(stats.size),
+      ...stats,
+    };
   } catch (error) {
     if (error.code === "ENOENT") {
       return {
         exists: false,
-        ...(statMode === "exists" && {
-          isFile: false,
-          isDirectory: false,
-        }),
+        isFile: false,
+        isDirectory: false,
       };
     }
     throw error;
@@ -319,39 +325,28 @@ async function stat(config) {
  * 统一的文件操作入口
  */
 async function operation(config) {
-  if (!config || typeof config !== "object") {
-    throw new Error("配置参数必须是一个对象");
-  }
+  const { operation: op } = config;
 
-  const { operation } = config;
-  if (!operation) {
-    throw new Error("缺少必要的 operation 参数");
-  }
-
-  switch (operation) {
+  switch (op) {
     case "read":
       return await read(config);
     case "write":
       return await write(config);
     case "list":
       return await list(config);
-    case "stat":
-      return await stat(config);
     case "delete":
       return await remove(config);
-    case "manage":
-      return await manage(config);
+    case "stat":
+      return await stat(config);
+    case "permission":
+      return await permission(config);
+    case "transfer":
+      return await transfer(config);
     default:
-      throw new Error(`不支持的操作类型: ${operation}`);
+      throw new Error(`不支持的操作类型: ${op}`);
   }
 }
 
 module.exports = {
-  read,
-  write,
-  list,
-  stat,
-  remove,
-  manage,
   operation,
 };

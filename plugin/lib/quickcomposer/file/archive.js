@@ -126,6 +126,4 @@ async function archive(
   });
 }
 
-module.exports = {
-  archive,
-};
+module.exports = archive;
