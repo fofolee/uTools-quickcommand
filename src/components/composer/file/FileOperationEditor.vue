@@ -70,7 +70,10 @@
         dialog: {
           options: {
             title: '选择文件',
-            properties: ['openDirectory', 'openFile', 'showHiddenFiles'],
+            properties: [
+              argvs.operation === 'list' ? 'openDirectory' : 'openFile',
+              'showHiddenFiles',
+            ],
           },
         },
       }"
