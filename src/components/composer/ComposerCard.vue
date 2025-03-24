@@ -36,6 +36,7 @@
         <CommandHead
           :command="localCommand"
           @update:outputVariable="handleOutputVariableUpdate"
+          @update:summary="localCommand.userComments = $event"
           @toggle-collapse="handleToggleCollapse"
           @run="runCommand"
           @remove="$emit('remove')"

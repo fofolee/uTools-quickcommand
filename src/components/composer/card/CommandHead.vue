@@ -20,15 +20,29 @@
     </div>
 
     <!-- 标题 -->
-    <div class="drag-handle command-label">
-      <div class="text-subtitle2 command-label-text">
+    <div class="command-label">
+      <div class="drag-handle text-subtitle2 command-label-text">
         {{ command.label }}
       </div>
       <div
-        class="text-caption text-grey command-summary"
-        v-if="command.summary && isCollapsed"
+        v-if="isCollapsed && !isControlFlow"
+        class="summary-container"
+        @click.stop="isEditingSummary = true"
       >
-        {{ command.summary }}
+        <div class="command-summary" v-if="!isEditingSummary">
+          {{ commandSummary || "添加描述" }}
+          <q-tooltip v-if="commandSummary"> 单击修改描述 </q-tooltip>
+        </div>
+        <q-input
+          v-else
+          borderless
+          class="summary-input"
+          :model-value="commandSummary"
+          @update:model-value="$emit('update:summary', $event)"
+          @blur="isEditingSummary = false"
+          autofocus
+          placeholder="描述"
+        />
       </div>
     </div>
 
@@ -70,13 +84,24 @@ export default {
   components: {
     CommandButtons,
   },
+  data() {
+    return {
+      isEditingSummary: false,
+    };
+  },
   props: {
     command: {
       type: Object,
       required: true,
     },
   },
-  emits: ["update:outputVariable", "run", "remove", "toggle-collapse"],
+  emits: [
+    "update:outputVariable",
+    "update:summary",
+    "run",
+    "remove",
+    "toggle-collapse",
+  ],
   computed: {
     contentClass() {
       return {
@@ -99,6 +124,9 @@ export default {
     },
     isCollapsed() {
       return this.command.isCollapsed;
+    },
+    commandSummary() {
+      return this.command.userComments || this.command.summary;
     },
   },
 };
@@ -142,14 +170,29 @@ export default {
 }
 
 .command-summary {
-  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: gray;
+  font-size: 11px;
+}
+
+.summary-container {
+  cursor: text;
+  width: 200px;
 }
 
 .info-icon {
   opacity: 0.6;
   font-size: 12px;
+}
+
+.summary-input :deep(.q-field__control),
+.summary-input :deep(.q-field__native),
+.summary-input :deep(.q-field__marginal) {
+  height: 20px !important;
+  min-height: 20px;
+  font-size: 11px;
+  color: gray;
 }
 </style>
