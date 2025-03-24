@@ -18,21 +18,16 @@
 
     <q-scroll-area class="command-scroll">
       <div>
-        <q-list separator class="rounded-borders">
+        <div class="category-list">
           <template
             v-for="category in filteredCategories"
             :key="category.label"
           >
-            <q-expansion-item
-              :label="category.label"
-              :icon="category.icon"
-              :model-value="isExpanded(category)"
-              @update:model-value="updateExpanded(category, $event)"
-              dense-toggle
-              class="category-item"
-              header-class="category-header"
-            >
-              <template v-slot:header>
+            <div class="category-item">
+              <div
+                class="category-header"
+                @click="updateExpanded(category, !isExpanded(category))"
+              >
                 <div class="category-header-content">
                   <q-icon
                     :name="category.icon"
@@ -41,29 +36,46 @@
                     class="category-icon"
                   />
                   <span class="text-weight-medium">{{ category.label }}</span>
-                </div>
-              </template>
-
-              <q-item
-                v-for="command in getCategoryCommands(category)"
-                :key="command.value"
-                class="command-item"
-                draggable="true"
-                @dragstart="onDragStart($event, command)"
-              >
-                <div class="drag-icon-left">
-                  <q-icon name="drag_indicator" color="grey-6" size="16px" />
-                </div>
-                <q-item-section>
-                  <q-item-label
-                    class="text-weight-medium q-px-lg"
-                    v-html="highlightText(command.label)"
+                  <q-icon
+                    :name="isExpanded(category) ? 'expand_less' : 'expand_more'"
+                    class="expand-icon"
+                    size="16px"
+                    color="grey"
                   />
-                </q-item-section>
-              </q-item>
-            </q-expansion-item>
+                </div>
+              </div>
+
+              <div
+                class="category-content-wrapper"
+                :class="{ expanded: isExpanded(category) }"
+              >
+                <div class="category-content">
+                  <q-item
+                    v-for="command in getCategoryCommands(category)"
+                    :key="command.value"
+                    class="command-item"
+                    draggable="true"
+                    @dragstart="onDragStart($event, command)"
+                  >
+                    <div class="drag-icon-left">
+                      <q-icon
+                        name="drag_indicator"
+                        color="grey-6"
+                        size="16px"
+                      />
+                    </div>
+                    <q-item-section>
+                      <q-item-label
+                        class="text-weight-medium q-px-lg"
+                        v-html="highlightText(command.label)"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </div>
+              </div>
+            </div>
           </template>
-        </q-list>
+        </div>
       </div>
     </q-scroll-area>
   </div>
@@ -219,52 +231,41 @@ export default defineComponent({
   height: 100%;
 }
 
-.composer-list :deep(.q-expansion-item) {
-  margin: 0;
-  border: none;
-}
-
-.composer-list :deep(.q-expansion-item .q-item) {
-  justify-content: space-between;
-}
-
 .body--dark .composer-list {
   background-color: #232323;
 }
 
+.category-list {
+  padding: 4px 0;
+}
+
 .category-item {
-  margin: 4px 0;
   border-radius: 4px;
   overflow: hidden;
 }
 
-:deep(.q-item.category-header) {
+.category-header {
   min-height: 30px;
   margin: 0 8px;
   padding: 0 4px;
   border-radius: 4px;
   transition: background-color 0.3s ease;
-  position: relative;
-  display: flex;
-  align-items: center;
+  cursor: pointer;
 }
 
-:deep(.q-item.category-header .q-item__section--side) {
-  position: absolute;
-  right: 4px;
-  padding: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
+.category-header:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark .category-header:hover {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .category-header-content {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 100%;
+  height: 30px;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .category-icon {
@@ -282,12 +283,32 @@ export default defineComponent({
   line-height: 1;
 }
 
-:deep(.q-expansion-item__toggle-icon) {
-  font-size: 1.2em;
-  line-height: 1;
+.expand-icon {
+  position: absolute;
+  right: 4px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.8;
 }
 
-.command-item.q-item-type {
+.category-content-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-content-wrapper.expanded {
+  grid-template-rows: 1fr;
+}
+
+.category-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.command-item {
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 4px;
   margin: 4px 8px;
@@ -302,18 +323,7 @@ export default defineComponent({
   position: relative;
 }
 
-.command-item.q-item-type :deep(.q-item__section) {
-  padding: 0;
-  min-height: unset;
-  flex: 1;
-}
-
-.command-item.q-item-type :deep(.q-item__label) {
-  line-height: 1;
-  text-align: center;
-}
-
-.command-item.q-item-type:hover {
+.command-item:hover {
   transform: translateX(3px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -321,17 +331,6 @@ export default defineComponent({
 .command-item.dragging {
   opacity: 0.5;
   transform: scale(0.95);
-}
-
-.body--dark .section-header {
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
-.command-item :deep(.highlight) {
-  color: var(--q-primary);
-  font-weight: bold;
-  padding: 0 1px;
-  border-radius: 2px;
 }
 
 .drag-icon-left {
@@ -342,8 +341,29 @@ export default defineComponent({
   align-items: center;
 }
 
-.section-header .q-field--focused .q-field__prepend .q-icon {
-  animation: shake 0.8s ease;
+.command-item :deep(.q-item__section) {
+  padding: 0;
+  min-height: unset;
+  flex: 1;
+}
+
+.command-item :deep(.q-item__label) {
+  line-height: 1;
+  text-align: center;
+}
+
+.command-item :deep(.highlight) {
   color: var(--q-primary);
+  font-weight: bold;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.body--dark .command-item {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.body--dark .command-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 </style>
