@@ -31,7 +31,13 @@
       >
         <div class="command-summary" v-if="!isEditingSummary">
           {{ commandSummary || "添加描述" }}
-          <q-tooltip v-if="commandSummary"> 单击修改描述 </q-tooltip>
+          <q-tooltip
+            anchor="bottom left"
+            self="top start"
+            v-if="commandSummary"
+          >
+            单击修改描述
+          </q-tooltip>
         </div>
         <q-input
           v-else
