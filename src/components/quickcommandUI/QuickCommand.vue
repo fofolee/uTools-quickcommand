@@ -141,7 +141,7 @@ export default {
        * @param position 消息显示位置，默认为"top"
        */
       showMessageBox: (message, icon = "success", time, position = "top") => {
-        message = window.lodashM.truncate(message, { length: 1200 });
+        message = window.lodashM.truncate(message.toString(), { length: 1200 });
         if (icon === "success") icon = "positive";
         if (icon === "error") icon = "negative";
         if (typeof time === "undefined")
