@@ -346,8 +346,10 @@ interface quickcommandApi {
    * ```
    *
    * @param url 脚本地址
+   * @param options 选项
+   * @param options.useCache 使用缓存，默认为假。为真时会将远程脚本缓存到本地的utools.getPath("userData")/quickcommand目录，否则每次都会下载脚本
    */
-  loadRemoteScript(url: string): Promise<object>;
+  loadRemoteScript(url: string, options?: { useCache?: boolean }): Promise<object>;
 
   /**
    * 将 signal 发送给 pid 标识的进程 , 默认为关闭进程

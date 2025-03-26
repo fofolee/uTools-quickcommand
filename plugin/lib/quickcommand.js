@@ -14,7 +14,10 @@ window.getModelsFromAiApi = getModels;
 
 const systemDialog = require("./dialog/service");
 
-const { getQuickcommandTempFile } = require("./getQuickcommandFile");
+const {
+  getQuickcommandTempFile,
+  getQuickcommandFolderFile,
+} = require("./getQuickcommandFile");
 
 const createTerminalCommand = require("./createTerminalCommand");
 
@@ -153,18 +156,26 @@ const quickcommand = {
   },
 
   // 载入在线资源
-  loadRemoteScript: async function (url) {
-    if (
-      !/^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/.test(
-        url
-      )
-    )
-      throw "url 不合法";
-    let local = getQuickcommandTempFile("js");
-    await this.downloadFile(url, local);
-    let source = require(local);
-    fs.unlinkSync(local);
-    return source;
+  loadRemoteScript: async function (url, options) {
+    const urlReg =
+      /^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/;
+    if (!urlReg.test(url)) throw "url 不合法";
+    const { useCache = false } = options;
+    if (useCache) {
+      const urlHash = quickcomposer.coding.md5Hash(url);
+      const fileName = path.basename(url, ".js") + "." + urlHash.slice(8, -8);
+      const local = getQuickcommandFolderFile(fileName, "js");
+      if (!fs.existsSync(local)) {
+        await this.downloadFile(url, local);
+      }
+      return require(local);
+    } else {
+      const local = getQuickcommandTempFile("js");
+      await this.downloadFile(url, local);
+      let source = require(local);
+      fs.unlinkSync(local);
+      return source;
+    }
   },
 
   // 唤醒 uTools
