@@ -459,7 +459,7 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
   },
@@ -608,14 +608,25 @@ export default defineComponent({
       }
       return `${this.modelValue.value}(${JSON.stringify(keySequence)})`;
     },
-    updateValue(newArgvs) {
+    updateValue(newArgvs = this.argvs) {
       const updatedModelValue = {
         ...this.modelValue,
-        argvs: newArgvs || this.argvs,
-        code: this.generateCode(newArgvs || this.argvs),
+        argvs: newArgvs,
+        code: this.generateCode(newArgvs),
+        summary: this.getSummary(newArgvs),
       };
 
       this.$emit("update:modelValue", updatedModelValue);
+    },
+    getSingleSummary(item) {
+      const modifiers = Object.entries(item.modifiers)
+        .filter(([_, active]) => active)
+        .map(([key]) => this.modifierLabels[key])
+        .join(" + ");
+      return modifiers ? `${modifiers} + ${item.mainKey}` : item.mainKey;
+    },
+    getSummary(argvs) {
+      return argvs.sequence.map(this.getSingleSummary).join("; ");
     },
     appendSequence(newSequence) {
       const startId = Date.now();
@@ -626,37 +637,6 @@ export default defineComponent({
         }))
       );
       this.updateValue();
-    },
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-      try {
-        const match = code.match(/\((.*)\)/s);
-        if (match) {
-          const args = eval(`[${match[1]}]`);
-          if (Array.isArray(args[0])) {
-            argvs.sequence = args[0].map((keys) => {
-              const mainKey = keys[0];
-              const modifiers = {
-                control: keys.includes("control"),
-                alt: keys.includes("alt"),
-                shift: keys.includes("shift"),
-                command:
-                  !isMac && keys.includes("meta")
-                    ? true
-                    : keys.includes("command"),
-              };
-              return { mainKey, modifiers, id: Date.now() + Math.random() };
-            });
-            if (args[1] && args[1].interval) {
-              argvs.interval = args[1].interval;
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse existing code:", e);
-      }
-      return argvs;
     },
     toggleModifier(index, key) {
       // 创建新的 argvs 对象
@@ -678,10 +658,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateValue(argvs);
-    }
+    this.updateValue(this.argvs);
   },
 });
 </script>

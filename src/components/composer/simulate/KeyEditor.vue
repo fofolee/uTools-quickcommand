@@ -438,7 +438,7 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
     mainKeyDisplay() {
@@ -622,44 +622,7 @@ export default defineComponent({
         ...this.argvs,
         ...argv,
       };
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        argvs: newArgvs,
-        code: this.generateCode(newArgvs),
-      });
-    },
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-      try {
-        const result = parseFunction(code);
-        if (!result || !result.argvs || !result.argvs[0]) return argvs;
-
-        const keys = result.argvs[0];
-        const options = result.argvs[1] || {};
-
-        if (keys.length > 0) {
-          argvs.mainKey = keys[0];
-          Object.keys(argvs.modifiers).forEach((key) => {
-            // 在非 Mac 系统上，将 meta 转换为 command
-            const modKey = !isMac && key === "command" ? "meta" : key;
-            argvs.modifiers[key] = keys.slice(1).includes(modKey);
-          });
-        }
-
-        // 解析选项对象
-        if (options) {
-          if (options.repeatCount) argvs.repeatCount = options.repeatCount;
-          if (options.repeatInterval)
-            argvs.repeatInterval = options.repeatInterval;
-          if (options.keyDelay) argvs.keyDelay = options.keyDelay;
-        }
-
-        return argvs;
-      } catch (e) {
-        console.error("Failed to parse key string:", e);
-        return argvs;
-      }
+      this.updateModelValue(newArgvs);
     },
     handleKeyInput(val) {
       let newMainKey;
@@ -703,16 +666,24 @@ export default defineComponent({
         .join(" + ");
       return `${modifiers} + ${shortcut.mainKey}`;
     },
-  },
-  mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
+    getSummary(argvs) {
+      const modifiers = Object.entries(argvs.modifiers)
+        .filter(([_, active]) => active)
+        .map(([key]) => this.modifierLabels[key])
+        .join(" + ");
+      return modifiers ? `${modifiers} + ${argvs.mainKey}` : argvs.mainKey;
+    },
+    updateModelValue(argvs) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
-        argvs,
+        argvs: argvs,
         code: this.generateCode(argvs),
+        summary: this.getSummary(argvs),
       });
-    }
+    },
+  },
+  mounted() {
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

@@ -132,7 +132,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { parseFunction, stringifyArgv } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
@@ -182,9 +182,7 @@ export default defineComponent({
     argvs: {
       get() {
         return (
-          this.modelValue.argvs ||
-          this.parseCodeToArgvs(this.modelValue.code) ||
-          this.defaultArgvs
+          this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
         );
       },
       set(value) {
@@ -193,32 +191,6 @@ export default defineComponent({
     },
   },
   methods: {
-    parseCodeToArgvs(code) {
-      if (!code) return null;
-
-      // 定义需要使用variable格式的路径
-      const variableFormatPaths = [
-        "arg0", // 命令字符串
-        "arg1.cwd", // 工作目录
-        "arg1.env.**", // 环境变量
-      ];
-
-      // 解析代码
-      const result = parseFunction(code, { variableFormatPaths });
-      if (!result) return this.defaultArgvs;
-
-      // 返回解析结果
-      const [command, options = {}] = result.argvs;
-      return {
-        command: command || this.defaultArgvs.command,
-        options: {
-          ...this.defaultArgvs.options,
-          ...options,
-          cwd: options.cwd || this.defaultArgvs.options.cwd,
-          env: options.env || this.defaultArgvs.options.env,
-        },
-      };
-    },
     generateCode(argvs) {
       const args = [];
 
@@ -260,7 +232,7 @@ export default defineComponent({
       }
     },
     getSummary(argvs) {
-      return argvs.command.value;
+      return stringifyArgv(argvs.command);
     },
     updateModelValue(argvs) {
       this.$emit("update:modelValue", {
@@ -272,10 +244,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

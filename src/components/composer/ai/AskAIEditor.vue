@@ -29,7 +29,7 @@ import { defineComponent } from "vue";
 import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import { newVarInputVal } from "js/composer/varInputValManager";
 import VariableInput from "components/composer/common/VariableInput.vue";
-import { parseFunction, stringifyArgv } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import AISelector from "components/ai/AISelector.vue";
 export default defineComponent({
   name: "AskAIEditor",
@@ -69,30 +69,18 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
   },
   methods: {
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-      try {
-        const variableFormatPaths = ["arg0.prompt"];
-        const params = parseFunction(code, { variableFormatPaths });
-        return params;
-      } catch (e) {
-        console.error("解析参数失败:", e);
-      }
-      return argvs;
-    },
     generateCode(argvs = this.argvs) {
       return `${this.modelValue.value}(${stringifyArgv(
         argvs.content
       )}, ${JSON.stringify(argvs.apiConfig)})`;
     },
     getSummary(argvs) {
-      return "问AI：" + argvs.content.prompt;
+      return "问AI：" + stringifyArgv(argvs.content.prompt);
     },
     updateArgvs(keyPath, newValue) {
       const newArgvs = { ...this.argvs };

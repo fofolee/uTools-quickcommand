@@ -50,6 +50,7 @@ import UBrowserBasic from "components/composer/ubrowser/UBrowserBasic.vue";
 import UBrowserOperations from "components/composer/ubrowser/UBrowserOperations.vue";
 import UBrowserRun from "components/composer/ubrowser/UBrowserRun.vue";
 import { generateUBrowserCode } from "js/composer/generateUBrowserCode";
+import { stringifyArgv } from "src/js/composer/formatString";
 
 export default {
   name: "UBrowserEditor",
@@ -83,7 +84,7 @@ export default {
       return this.modelValue.argvs || this.defaultArgvs;
     },
     summary() {
-      const goto = this.argvs.goto?.url || "";
+      const goto = stringifyArgv(this.argvs.goto?.url || "");
       return `访问 ${goto}`;
     },
   },
@@ -111,9 +112,6 @@ export default {
         summary: this.summary,
         code: this.generateCode(),
       });
-    },
-    parseCodeToArgvs(code) {
-      // TODO: 实现代码解析逻辑
     },
   },
 };
