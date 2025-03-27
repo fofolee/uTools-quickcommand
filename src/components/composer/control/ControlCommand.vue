@@ -87,7 +87,7 @@ export default defineComponent({
     },
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
   },
@@ -123,44 +123,7 @@ export default defineComponent({
 
       return code;
     },
-    parseCodeToArgvs(code) {
-      if (!code) return this.defaultArgvs;
-      if (!this.currentFunction?.codeTemplate) return {};
 
-      const template = this.currentFunction.codeTemplate;
-      const argvs = {};
-
-      // 如果没有变量模板，直接返回空对象
-      if (!template.includes("${")) return {};
-
-      // 将模板转换为正则表达式
-      const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      let pattern = escapeRegExp(template);
-
-      // 收集所有变量名
-      const variables = [];
-      const variablePattern = /\${(\w+)}/g;
-      let match;
-
-      while ((match = variablePattern.exec(template)) !== null) {
-        variables.push(match[1]);
-        pattern = pattern.replace(escapeRegExp(`\${${match[1]}}`), "([^}]*?)");
-      }
-
-      // 创建正则表达式并匹配代码
-      const regex = new RegExp(`^${pattern}$`);
-      const matches = code.match(regex);
-
-      if (matches) {
-        // 从第二个元素开始，依次赋值给变量
-        variables.forEach((variable, index) => {
-          argvs[variable] = matches[index + 1] || "";
-        });
-        return argvs;
-      }
-
-      return this.defaultArgvs;
-    },
     updateModelValue(argvs) {
       const code = this.generateCode(argvs);
 
@@ -180,9 +143,7 @@ export default defineComponent({
     }
   },
   mounted() {
-    if (!this.modelValue.code) {
-      this.updateModelValue(this.defaultArgvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

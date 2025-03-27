@@ -156,7 +156,7 @@ import VariableInput from "components/composer/common/VariableInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
 import BorderLabel from "components/composer/common/BorderLabel.vue";
 import CheckButton from "components/composer/common/CheckButton.vue";
-import { parseFunction, stringifyArgv } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import programs from "js/options/programs";
 import VariableList from "components/composer/common/varinput/VariableList.vue";
 
@@ -197,9 +197,7 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs ||
-        this.parseCodeToArgvs(this.modelValue.code) ||
-        this.defaultArgvs
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
     isCodeSnippet() {
@@ -211,29 +209,6 @@ export default defineComponent({
     },
   },
   methods: {
-    parseCodeToArgvs(code) {
-      if (!code) return this.defaultArgvs;
-      if (this.isCodeSnippet) {
-        const result = parseFunction(code);
-        return {
-          code: quickcomposer.coding.base64Decode(result.argvs?.[0]),
-        };
-      }
-      try {
-        const variableFormatPaths = ["arg1.args[*]"];
-        const result = parseFunction(code, { variableFormatPaths });
-        if (!result) return this.defaultArgvs;
-
-        const [scriptCode, options] = result.argvs;
-        return {
-          code: scriptCode,
-          ...options,
-        };
-      } catch (e) {
-        console.error("解析参数失败:", e);
-        return this.defaultArgvs;
-      }
-    },
     generateCode(argvs = this.argvs) {
       const variables = argvs.code.match(/"?___([^_]+?)___"?/g);
       const replaceStr =
@@ -317,10 +292,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

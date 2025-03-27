@@ -14,7 +14,7 @@
 import { defineComponent } from "vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
 import ParamInput from "components/composer/param/ParamInput.vue";
-import { stringifyArgv, parseFunction } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import {
   newVarInputVal,
   isVarInputVal,
@@ -68,7 +68,7 @@ export default defineComponent({
     },
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
     hasSubCommands() {
@@ -143,42 +143,6 @@ export default defineComponent({
 
       return `${subCommand}(${finalArgvs.join(",")})`;
     },
-    parseCodeToArgvs(code) {
-      let argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-
-      if (this.localCommand.isExpression) {
-        return [code];
-      }
-
-      const variableFormatPaths = [];
-
-      const addVariableFormatPath = (prefix, config) => {
-        if (config.component === "VariableInput") {
-          variableFormatPaths.push(prefix);
-        } else if (config.component === "ArrayEditor") {
-          variableFormatPaths.push(`${prefix}[*].**`, `${prefix}[*]`);
-        } else if (config.component === "DictEditor") {
-          variableFormatPaths.push(`${prefix}.**`);
-        }
-      };
-
-      this.localConfig.forEach((item, index) => {
-        if (item.component === "OptionEditor") {
-          Object.entries(item.options).forEach(([key, config]) => {
-            addVariableFormatPath(`arg${index}.${key}`, config);
-          });
-        } else {
-          addVariableFormatPath(`arg${index}`, item);
-        }
-      });
-      try {
-        argvs = parseFunction(code, { variableFormatPaths }).argvs;
-      } catch (e) {
-        console.log("解析参数失败:", e);
-      }
-      return argvs;
-    },
     getAllInputValues(argvs) {
       const flatArgvs = [];
       if (!argvs) return flatArgvs;
@@ -237,9 +201,8 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code && Array.isArray(argvs)) {
-      this.updateModelValue(this.subCommand, argvs);
+    if (Array.isArray(this.argvs)) {
+      this.updateModelValue(this.subCommand, this.argvs);
     }
   },
 });

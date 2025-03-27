@@ -150,7 +150,6 @@
 <script>
 import { defineComponent } from "vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
-import { parseFunction } from "js/composer/formatString";
 
 // 检测操作系统
 const isMac = window.utools.isMacOs();

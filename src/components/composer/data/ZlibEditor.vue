@@ -128,7 +128,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { stringifyArgv, parseFunction } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import VariableInput from "components/composer/common/VariableInput.vue";
 import NumberInput from "components/composer/common/NumberInput.vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
@@ -208,10 +208,7 @@ export default defineComponent({
     argvs: {
       get() {
         return (
-          this.modelValue.argvs ||
-          this.parseCodeToArgvs(this.modelValue.code) || {
-            ...this.defaultArgvs,
-          }
+          this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
         );
       },
       set(value) {
@@ -233,49 +230,6 @@ export default defineComponent({
       return `${this.modelValue.value}.${argvs.operation}(${stringifyArgv(
         argvs.data
       )}, "${argvs.method}", ${stringifyArgv(options)})`;
-    },
-    parseCodeToArgvs(code) {
-      if (!code) return null;
-
-      try {
-        // 定义需要使用variable格式的路径
-        const variableFormatPaths = [
-          "arg0", // 数据参数
-        ];
-
-        // 使用 parseFunction 解析代码
-        const result = parseFunction(code, { variableFormatPaths });
-        if (!result) return this.defaultArgvs;
-
-        const operation = result.name.split(".").pop();
-        const [data, method, options] = result.argvs;
-
-        const newArgvs = {
-          ...this.defaultArgvs,
-          operation,
-          data,
-          method: method?.value || "gzip",
-        };
-
-        if (options) {
-          if (method?.value === "brotli") {
-            newArgvs.options = {
-              params: options.params || this.defaultArgvs.options.params,
-            };
-          } else {
-            newArgvs.options = {
-              level: options.level ?? this.defaultArgvs.options.level,
-              memLevel: options.memLevel ?? this.defaultArgvs.options.memLevel,
-              strategy: options.strategy ?? this.defaultArgvs.options.strategy,
-            };
-          }
-        }
-
-        return newArgvs;
-      } catch (e) {
-        console.error("解析Zlib参数失败:", e);
-        return this.defaultArgvs;
-      }
     },
     updateArgvs(key, value) {
       this.argvs = {
@@ -300,10 +254,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

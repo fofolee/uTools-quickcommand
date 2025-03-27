@@ -97,7 +97,6 @@ import VariableInput from "components/composer/common/VariableInput.vue";
 import RegexInput from "./RegexInput.vue";
 import RegexBuilder from "./RegexBuilder.vue";
 import RegexTester from "./RegexTester.vue";
-import { parseToHasType } from "js/composer/formatString";
 import { newVarInputVal } from "js/composer/varInputValManager";
 
 export default defineComponent({
@@ -141,7 +140,7 @@ export default defineComponent({
     },
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
   },
@@ -230,31 +229,6 @@ export default defineComponent({
         this.updateArgvs("regexValue", newContent);
       }
     },
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-      const match = code.match(/^.*?\((.*)\)$/);
-      if (!match) return argvs;
-      const params = match[1];
-      const parts = params.split(",");
-      const text = parts[0];
-      const regexPart = parts[1];
-      const replace = parts[2];
-      if (regexPart) {
-        const [_, pattern, flags] = regexPart.match(/\/(.*?)\/(.*)/) || [];
-        return {
-          textValue: parseToHasType(text),
-          regexValue: pattern,
-          replaceValue: parseToHasType(replace),
-          flags: {
-            ignoreCase: flags.includes("i"),
-            multiline: flags.includes("m"),
-            global: flags.includes("g"),
-          },
-          isReplace: !!replace,
-        };
-      }
-    },
     getSummary(argvs) {
       return argvs.isReplace
         ? argvs.textValue.value +
@@ -274,10 +248,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

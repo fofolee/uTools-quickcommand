@@ -152,8 +152,8 @@ import VariableInput from "components/composer/common/VariableInput.vue";
 import ArrayEditor from "components/composer/common/ArrayEditor.vue";
 import OperationCard from "components/composer/common/OperationCard.vue";
 import BorderLabel from "components/composer/common/BorderLabel.vue";
-import { parseFunction, stringifyArgv } from "js/composer/formatString";
-import { newVarInputVal, isVarInputVal } from "js/composer/varInputValManager";
+import { stringifyArgv } from "js/composer/formatString";
+import { newVarInputVal } from "js/composer/varInputValManager";
 
 const jsonDefaultSelects = new Array(3).fill().map((_, index) => ({
   id: newVarInputVal("var", index),
@@ -235,7 +235,7 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
     optionTypes() {
@@ -310,32 +310,6 @@ export default defineComponent({
         Object.keys(options).length ? `, ${stringifyArgv(options)}` : ""
       })`;
     },
-    parseCodeToArgvs(code) {
-      if (!code) return this.defaultArgvs;
-
-      try {
-        const result = parseFunction(code, {
-          variableFormatPaths: ["arg0", "arg0[*]", "arg1.placeholder"],
-        });
-
-        if (!result) return this.defaultArgvs;
-
-        const subCommand = result.name;
-
-        const [selects, options = {}] = result.argvs;
-        const inputMode = isVarInputVal(selects) ? "variable" : "manual";
-        return {
-          ...this.defaultArgvs,
-          inputMode,
-          selects,
-          subCommand,
-          ...options,
-        };
-      } catch (e) {
-        console.warn("选择列表参数解析失败:" + e, code);
-        return this.defaultArgvs;
-      }
-    },
     getSummary(argvs) {
       const count = Array.isArray(argvs.selects) ? argvs.selects.length : "?";
       return `显示${count}个${
@@ -390,10 +364,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

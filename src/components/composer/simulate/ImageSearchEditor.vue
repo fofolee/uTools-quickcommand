@@ -132,7 +132,7 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
   },
@@ -208,35 +208,6 @@ export default defineComponent({
       return `${this.modelValue.value}("data:image/png;base64,${config.imageData}", { threshold: ${config.threshold}, mouseAction: "${config.mouseAction}" })`;
     },
 
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-
-      // 从代码字符串解析配置
-      try {
-        const imageDataMatch = code.match(/"data:image\/png;base64,([^"]+)"/);
-        const thresholdMatch = code.match(/threshold:\s*([\d.]+)/);
-        const mouseActionMatch = code.match(/mouseAction:\s*"([^"]+)"/);
-        let { imagePreview, threshold, mouseAction } = argvs;
-
-        if (imageDataMatch) {
-          imagePreview = `data:image/png;base64,${imageDataMatch[1]}`;
-        }
-        if (thresholdMatch) {
-          threshold = parseFloat(thresholdMatch[1]);
-        }
-        if (mouseActionMatch) {
-          mouseAction = mouseActionMatch[1];
-        }
-        return {
-          imagePreview,
-          threshold,
-          mouseAction,
-        };
-      } catch (e) {
-        return argvs;
-      }
-    },
     updateModelValue(argvs) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
@@ -246,10 +217,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>

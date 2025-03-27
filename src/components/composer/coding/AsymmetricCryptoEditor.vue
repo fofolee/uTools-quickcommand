@@ -189,7 +189,7 @@
 <script>
 import { defineComponent } from "vue";
 import VariableInput from "components/composer/common/VariableInput.vue";
-import { stringifyArgv, parseFunction } from "js/composer/formatString";
+import { stringifyArgv } from "js/composer/formatString";
 import { newVarInputVal } from "js/composer/varInputValManager";
 export default defineComponent({
   name: "AsymmetricCryptoEditor",
@@ -224,7 +224,7 @@ export default defineComponent({
   computed: {
     argvs() {
       return (
-        this.modelValue.argvs || this.parseCodeToArgvs(this.modelValue.code)
+        this.modelValue.argvs || window.lodashM.cloneDeep(this.defaultArgvs)
       );
     },
     algorithms() {
@@ -261,18 +261,6 @@ export default defineComponent({
     },
   },
   methods: {
-    parseCodeToArgvs(code) {
-      const argvs = window.lodashM.cloneDeep(this.defaultArgvs);
-      if (!code) return argvs;
-      try {
-        const variableFormatPaths = ["arg0.text"];
-        const params = parseFunction(code, { variableFormatPaths });
-        return params.argvs[0];
-      } catch (e) {
-        console.error("解析加密参数失败:", e);
-      }
-      return argvs;
-    },
     generateCode(argvs = this.argvs) {
       return `${this.modelValue.value}(${stringifyArgv({
         text: argvs.text,
@@ -321,10 +309,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const argvs = this.modelValue.argvs || this.defaultArgvs;
-    if (!this.modelValue.code) {
-      this.updateModelValue(argvs);
-    }
+    this.updateModelValue(this.argvs);
   },
 });
 </script>
