@@ -2,7 +2,7 @@
   <div class="composer-flow">
     <ChainStyles ref="chainStyles" :commands="commands" />
 
-    <q-scroll-area class="command-scroll">
+    <q-scroll-area class="command-scroll" ref="scrollArea">
       <div
         class="command-flow-container"
         @dragover.prevent="onDragOver"
@@ -540,6 +540,12 @@ export default defineComponent({
 
       this.$emit("update:modelValue", newCommands);
     },
+  },
+  mounted() {
+    // 当高度超过1000时，会出现非预期的自动滚动，暂时找不到原因，先强制滚动到顶部
+    this.$nextTick(() => {
+      this.$refs.scrollArea.setScrollPosition("vertical", 0);
+    });
   },
 });
 </script>
