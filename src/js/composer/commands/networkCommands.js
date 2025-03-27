@@ -28,6 +28,7 @@ export const networkCommands = {
         label: "HTTP请求结果",
         suggestName: "responseResult",
         structure: {
+          data: { label: "响应数据", suggestName: "responseData" },
           status: { label: "HTTP状态码", suggestName: "responseStatus" },
           statusText: {
             label: "HTTP状态信息",
@@ -36,7 +37,6 @@ export const networkCommands = {
           headers: { label: "服务器响应头", suggestName: "responseHeaders" },
           config: { label: "请求配置信息", suggestName: "requestConfig" },
           request: { label: "发送的请求", suggestName: "request" },
-          data: { label: "响应数据", suggestName: "responseData" },
         },
       },
     },
