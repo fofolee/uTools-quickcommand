@@ -87,9 +87,11 @@ export default {
       const savedTagOrder = dbManager.getDB(TAG_ORDER_KEY);
       if (savedTagOrder.length) {
         this.savedTagOrder = savedTagOrder;
-        this.commandManager.changeCurrentTag(this.savedTagOrder[0]);
-      } else {
-        this.commandManager.changeCurrentTag(this.allQuickCommandTags[0]);
+      }
+      if (!this.commandManager.state.currentTag) {
+        this.commandManager.changeCurrentTag(
+          this.savedTagOrder[0] || this.allQuickCommandTags[0]
+        );
       }
     });
   },
