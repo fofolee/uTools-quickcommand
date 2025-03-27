@@ -323,7 +323,7 @@ export default defineComponent({
   },
   computed: {
     showCommandConfig() {
-      return !this.isRunComposerPage && this.commandConfig.features;
+      return !this.isRunComposerPage && !!this.commandConfig.features;
     },
   },
   methods: {
@@ -590,14 +590,23 @@ export default defineComponent({
 .flow-container {
   flex: 1;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
+}
+
+.command-config-panel {
+  flex-shrink: 0;
+  padding: 8px;
+  z-index: 1;
 }
 
 .flow-wrapper {
   flex: 1;
+  min-height: 0;
   position: relative;
   overflow: hidden;
-  height: 100%;
 }
 
 .variable-panel {
@@ -623,9 +632,5 @@ export default defineComponent({
   color: var(--q-primary);
   border-bottom: 2px solid var(--q-primary);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.command-config-panel {
-  padding: 8px;
 }
 </style>
