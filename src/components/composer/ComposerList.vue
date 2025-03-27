@@ -117,9 +117,7 @@ export default defineComponent({
           ...category,
           commands: this.commands
             .filter(
-              (cmd) =>
-                (cmd.label && window.pinyinMatch.match(cmd.label, query)) ||
-                (cmd.value && window.pinyinMatch.match(cmd.value, query))
+              (cmd) => cmd.label && window.pinyinMatch.match(cmd.label, query)
             )
             .filter((cmd) => cmd.type === category.label),
         }))
