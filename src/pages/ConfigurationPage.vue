@@ -167,6 +167,8 @@ export default {
     },
     // 编辑命令
     editCommand(commandOrCode) {
+      // 防止多次触发
+      if (this.isEditorShow) return;
       // 即可传入 code，也可直接传入 command
       const command =
         typeof commandOrCode === "string"
@@ -182,6 +184,8 @@ export default {
     },
     // 新建命令
     addNewCommand(program = "quickcommand") {
+      // 防止多次触发
+      if (this.isEditorShow) return;
       this.editorComponent =
         program === "quickcomposer" ? "ComposerEditor" : "CommandEditor";
       this.commandManager.state.currentCommand =
