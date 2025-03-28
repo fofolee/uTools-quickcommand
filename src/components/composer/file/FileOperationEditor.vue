@@ -240,8 +240,16 @@
           <VariableInput
             :model-value="argvs.newPath"
             @update:model-value="updateArgvs('newPath', $event)"
-            label="目标路径"
+            label="目标路径（含被复制/移动的文件名）"
             icon="drive_file_rename_outline"
+            :options="{
+              dialog: {
+                options: {
+                  title: '选择文件',
+                  properties: ['openFile', 'showHiddenFiles'],
+                },
+              },
+            }"
             class="col-6"
           />
         </div>

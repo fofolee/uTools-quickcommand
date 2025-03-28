@@ -1,4 +1,5 @@
 const fs = require("fs").promises;
+const fsSync = require("fs");
 const path = require("path");
 
 /**
@@ -164,6 +165,240 @@ async function permission(config) {
   }
 }
 
+async function mkdir(targetDir) {
+  // 在 Windows 上，在根目录上使用 fs.mkdir() （即使使用递归参数）也会导致错误
+  // 所以还是要先检查目录是否存在
+  if (fsSync.existsSync(targetDir)) return;
+  await fs.mkdir(targetDir, { recursive: true });
+}
+
+/**
+ * 格式化速度显示
+ * @param {number} bytesPerSecond 每秒字节数
+ * @returns {string} 格式化后的速度字符串
+ */
+function formatSpeed(bytesPerSecond) {
+  if (bytesPerSecond >= 1024 * 1024) {
+    return `${(bytesPerSecond / (1024 * 1024)).toFixed(2)} MB/s`;
+  } else if (bytesPerSecond >= 1024) {
+    return `${(bytesPerSecond / 1024).toFixed(2)} KB/s`;
+  }
+  return `${bytesPerSecond.toFixed(2)} B/s`;
+}
+
+/**
+ * 获取目录下所有文件的总大小和文件数
+ * @param {string} dir 目录路径
+ * @returns {Promise<{totalSize: number, fileCount: number}>}
+ */
+async function getDirStats(dir) {
+  let totalSize = 0;
+  let fileCount = 0;
+
+  async function walk(currentDir) {
+    const entries = await fs.readdir(currentDir);
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry);
+      const stat = await fs.lstat(fullPath);
+      if (stat.isDirectory()) {
+        await walk(fullPath);
+      } else {
+        totalSize += stat.size;
+        fileCount++;
+      }
+    }
+  }
+
+  await walk(dir);
+  return { totalSize, fileCount };
+}
+
+/**
+ * 使用流复制文件，支持进度显示
+ * @param {string} src 源文件路径
+ * @param {string} dest 目标文件路径
+ * @param {Object} progressInfo 进度信息
+ * @returns {Promise<void>}
+ */
+async function copyFileWithProgress(src, dest, progressInfo) {
+  const {
+    processBar,
+    totalSize,
+    fileCount,
+    processedFiles,
+    startTime,
+    signal, // AbortController 的 signal
+  } = progressInfo;
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      let currentCopiedSize = 0;
+      let lastUpdate = Date.now();
+      let lastCopiedSize = 0;
+
+      const readStream = fsSync.createReadStream(src);
+      const writeStream = fsSync.createWriteStream(dest);
+
+      // 监听中止信号
+      signal.addEventListener("abort", () => {
+        readStream.destroy();
+        writeStream.destroy();
+        fs.unlink(dest).catch(() => {});
+        reject(new Error("操作已取消"));
+      });
+
+      readStream.on("data", (chunk) => {
+        currentCopiedSize += chunk.length;
+        progressInfo.copiedSize += chunk.length;
+        const now = Date.now();
+
+        if (now - lastUpdate >= 100) {
+          const progress = Math.round(
+            (progressInfo.copiedSize / totalSize) * 100
+          );
+          const timeSpent = (now - lastUpdate) / 1000;
+          const bytesCopied = currentCopiedSize - lastCopiedSize;
+          const speed = bytesCopied / timeSpent;
+
+          quickcommand.updateProcessBar(
+            {
+              value: progress,
+              text:
+                `[${processedFiles}/${fileCount}][${formatBytes(
+                  progressInfo.copiedSize
+                )}/${formatBytes(totalSize)}] ${formatSpeed(speed)}<br/>` +
+                `${path.basename(src)}`,
+            },
+            processBar
+          );
+
+          lastUpdate = now;
+          lastCopiedSize = currentCopiedSize;
+        }
+      });
+
+      writeStream.on("finish", () => {
+        progressInfo.processedFiles++;
+        resolve();
+      });
+
+      writeStream.on("error", reject);
+      readStream.on("error", reject);
+
+      readStream.pipe(writeStream);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+async function copyDirWithProcess(src, dest, progressInfo) {
+  await mkdir(dest);
+  const entries = await fs.readdir(src);
+
+  for (const entry of entries) {
+    // 检查是否已中止
+    if (progressInfo.signal.aborted) {
+      throw new Error("操作已取消");
+    }
+
+    const srcPath = path.join(src, entry);
+    const destPath = path.join(dest, entry);
+    const entryStat = await fs.lstat(srcPath);
+
+    if (entryStat.isDirectory()) {
+      await copyDirWithProcess(srcPath, destPath, progressInfo);
+    } else {
+      await copyFileWithProgress(srcPath, destPath, progressInfo);
+    }
+  }
+}
+
+async function copy(filePath, newPath) {
+  const controller = new AbortController();
+  let isCompleted = false; // 添加完成标志
+
+  const processBar = await quickcommand.showProcessBar({
+    text: "正在计算文件大小...",
+    value: 0,
+    onClose: () => {
+      // 只有在未完成时才触发取消
+      if (!isCompleted) {
+        controller.abort();
+      }
+    },
+  });
+
+  try {
+    let totalSize = 0;
+    let fileCount = 0;
+    const stat = await fs.stat(filePath);
+
+    if (stat.isDirectory()) {
+      const stats = await getDirStats(filePath);
+      totalSize = stats.totalSize;
+      fileCount = stats.fileCount;
+    } else {
+      totalSize = stat.size;
+      fileCount = 1;
+    }
+
+    const progressInfo = {
+      processBar,
+      totalSize,
+      copiedSize: 0,
+      fileCount,
+      processedFiles: 0,
+      startTime: Date.now(),
+      signal: controller.signal,
+    };
+
+    if (stat.isDirectory()) {
+      await copyDirWithProcess(filePath, newPath, progressInfo);
+    } else {
+      await copyFileWithProgress(filePath, newPath, progressInfo);
+    }
+
+    const totalTime = (Date.now() - progressInfo.startTime) / 1000;
+    const averageSpeed = totalSize / totalTime;
+
+    isCompleted = true; // 标记为已完成
+    quickcommand.updateProcessBar(
+      {
+        value: 100,
+        text:
+          `总大小: ${formatBytes(totalSize)} - 文件数: ${fileCount} <br/>` +
+          `平均速度: ${formatSpeed(averageSpeed)} - 用时: ${totalTime.toFixed(
+            1
+          )}s`,
+        complete: true,
+      },
+      processBar
+    );
+  } catch (error) {
+    if (error.message === "操作已取消") {
+      // 清理目标文件/目录
+      fs.rm(newPath, { recursive: true }).catch(() => {});
+    }
+    throw error;
+  }
+}
+
+async function move(filePath, newPath) {
+  try {
+    // rename 不支持跨驱动器
+    await fs.rename(filePath, newPath);
+  } catch (error) {
+    try {
+      await copy(filePath, newPath);
+      if (!fsSync.existsSync(newPath)) return;
+      await fs.rm(filePath, { recursive: true });
+    } catch (error) {
+      throw error;
+    }
+  }
+}
+
 /**
  * 文件复制移动操作
  */
@@ -171,53 +406,15 @@ async function transfer(config) {
   const { filePath, transferOperation, newPath } = config;
 
   // 检查文件是否存在
-  try {
-    const stats = await fs.lstat(filePath);
-
-    // 确保目标目录存在
-    await fs.mkdir(path.dirname(newPath), { recursive: true });
-    if (transferOperation === "copy") {
-      const processBar = await quickcommand.showProcessBar({
-        text: "复制中...",
-      });
-      if (stats.isDirectory()) {
-        // 复制目录
-        const copyDir = async (src, dest) => {
-          await fs.mkdir(dest, { recursive: true });
-          const entries = await fs.readdir(src);
-          for (const entry of entries) {
-            const srcPath = path.join(src, entry);
-            const destPath = path.join(dest, entry);
-            const entryStat = await fs.lstat(srcPath);
-            if (entryStat.isDirectory()) {
-              await copyDir(srcPath, destPath);
-            } else {
-              await fs.copyFile(srcPath, destPath);
-            }
-            quickcommand.updateProcessBar({ text: entry }, processBar);
-          }
-        };
-        await copyDir(filePath, newPath);
-      } else {
-        // 复制文件
-        await fs.copyFile(filePath, newPath);
-      }
-      processBar.close();
-    } else if (transferOperation === "rename") {
-      const processBar = await quickcommand.showProcessBar({
-        text: "处理中...",
-      });
-      await fs.rename(filePath, newPath);
-      processBar.close();
-    } else {
-      throw new Error(`不支持的操作类型: ${transferOperation}`);
-    }
-  } catch (error) {
-    processBar?.close();
-    if (error.code === "ENOENT") {
-      throw new Error("文件或目录不存在");
-    }
-    throw error;
+  if (!fsSync.existsSync(filePath)) throw "文件或目录不存在!";
+  // 确保目标目录存在
+  await mkdir(path.dirname(newPath));
+  if (transferOperation === "copy") {
+    await copy(filePath, newPath);
+  } else if (transferOperation === "rename") {
+    await move(filePath, newPath);
+  } else {
+    throw new Error(`不支持的操作类型: ${transferOperation}`);
   }
 }
 
