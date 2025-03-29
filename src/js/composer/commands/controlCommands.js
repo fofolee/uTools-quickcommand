@@ -24,15 +24,9 @@ export const controlCommands = {
           ],
         },
         {
-          label: "否则",
-          value: "else",
-          icon: "fork_left",
-          codeTemplate: "} else {",
-        },
-        {
           label: "否则满足",
           value: "else if",
-          icon: "fork_left",
+          icon: "fork_right",
           codeTemplate: "} else if (${condition}) {",
           config: [
             {
@@ -42,6 +36,12 @@ export const controlCommands = {
               placeholder: "表达式",
             },
           ],
+        },
+        {
+          label: "否则",
+          value: "else",
+          icon: "airline_stops",
+          codeTemplate: "} else {",
         },
         {
           label: "结束",
@@ -295,7 +295,7 @@ export const controlCommands = {
         {
           label: "匹配分支",
           value: "case",
-          icon: "check",
+          icon: "fork_right",
           codeTemplate: "case ${value}:",
           config: [
             {
@@ -314,7 +314,7 @@ export const controlCommands = {
         {
           label: "默认分支",
           value: "default",
-          icon: "last_page",
+          icon: "airline_stops",
           codeTemplate: "default:",
         },
         {
@@ -340,7 +340,7 @@ export const controlCommands = {
         {
           label: "捕获异常",
           value: "catch",
-          icon: "error",
+          icon: "priority_high",
           codeTemplate: "} catch (${errorVar}) {",
           config: [
             {

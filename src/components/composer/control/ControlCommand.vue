@@ -2,7 +2,7 @@
   <div class="control-command-wrapper">
     <div class="control-command">
       <!-- 类型标签 -->
-      <div class="control-type-label">
+      <div class="control-type-label drag-handle">
         {{ currentFunction?.label || modelValue.commandType }}
       </div>
 
@@ -25,7 +25,7 @@
         no-icon-animation
         class="control-btn"
       >
-        <q-list>
+        <q-list dense>
           <q-item
             v-for="func in branchOptions"
             :key="func.value"
@@ -168,6 +168,12 @@ export default defineComponent({
   opacity: 0.9;
   user-select: none;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.control-type-label:hover {
+  color: var(--q-primary) !important;
+  transition: all 0.3s ease;
 }
 
 .control-settings {

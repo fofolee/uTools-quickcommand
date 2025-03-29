@@ -16,16 +16,16 @@
       <q-icon name="linear_scale" size="xs" />
     </div>
     <div v-else class="chain-icon">
-      <q-icon name="fork_left" size="xs" />
+      <q-icon :name="getChianIcon()" size="xs" />
     </div>
 
     <!-- 标题 -->
-    <div class="command-label">
+    <div class="command-label" v-if="!isControlFlow">
       <div class="drag-handle text-subtitle2 command-label-text">
         {{ command.label }}
       </div>
       <div
-        v-if="isCollapsed && !isControlFlow"
+        v-if="isCollapsed"
         class="summary-container"
         @click.stop="isEditingSummary = true"
       >
@@ -135,6 +135,15 @@ export default {
       return this.command.userComments || this.command.summary;
     },
   },
+  methods: {
+    getChianIcon() {
+      return (
+        this.command?.subCommands?.find(
+          (command) => command.value === this.command.commandType
+        )?.icon || "fork_left"
+      );
+    },
+  },
 };
 </script>
 
@@ -163,15 +172,18 @@ export default {
 .command-label {
   user-select: none;
   pointer-events: all;
-  cursor: grab;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
   margin-right: 8px;
 }
 
-.command-label:hover {
+.command-label-text {
+  cursor: grab;
+  transition: all 0.3s ease;
+}
+
+.command-label-text:hover {
   color: var(--q-primary);
   transition: all 0.3s ease;
 }
