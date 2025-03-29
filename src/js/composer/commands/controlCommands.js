@@ -306,6 +306,12 @@ export const controlCommands = {
           ],
         },
         {
+          label: "中断",
+          value: "break",
+          icon: "stop",
+          codeTemplate: "break;",
+        },
+        {
           label: "默认分支",
           value: "default",
           icon: "last_page",
