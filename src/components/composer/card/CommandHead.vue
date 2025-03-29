@@ -143,6 +143,7 @@ export default {
 .chain-icon {
   display: flex;
   align-items: center;
+  margin-right: 2px;
   transition: all 0.2s ease;
 }
 
