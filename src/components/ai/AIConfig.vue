@@ -130,7 +130,7 @@
                     dense
                     v-model="aiConfig.apiToken"
                     v-if="aiConfig.apiType === 'openai'"
-                    type="password"
+                    :type="tokenInputTypes[index] || 'password'"
                     class="col-7"
                   >
                     <template v-slot:prepend>
@@ -139,6 +139,22 @@
                         text-color="white"
                         label="令牌"
                         class="q-pa-xs"
+                      />
+                    </template>
+                    <template v-slot:append>
+                      <q-icon
+                        name="visibility_off"
+                        @click="tokenInputTypes[index] = 'password'"
+                        size="16px"
+                        class="cursor-pointer"
+                        v-if="tokenInputTypes[index] === 'text'"
+                      />
+                      <q-icon
+                        name="visibility"
+                        @click="tokenInputTypes[index] = 'text'"
+                        size="16px"
+                        class="cursor-pointer"
+                        v-else
                       />
                     </template>
                   </q-input>
@@ -180,6 +196,7 @@ export default defineComponent({
       apiToAdd: "openai",
       aiConfigs: [],
       models: [],
+      tokenInputTypes: [],
     };
   },
   emits: ["save"],
