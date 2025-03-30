@@ -78,6 +78,8 @@
       @update:outputVariable="$emit('update:outputVariable', $event)"
       @run="$emit('run')"
       @remove="$emit('remove')"
+      @add-print="$emit('add-print')"
+      @copy="$emit('copy')"
     />
   </div>
 </template>
@@ -107,6 +109,8 @@ export default {
     "run",
     "remove",
     "toggle-collapse",
+    "copy",
+    "add-print",
   ],
   computed: {
     contentClass() {
