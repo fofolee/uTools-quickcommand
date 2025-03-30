@@ -312,7 +312,7 @@ export default defineComponent({
       const specificInstructions = languageSpecific[language] || "";
 
       const lastInstructions =
-        "\n请直接给我MARKDOWN格式的代码，任何情况下都不需要做解释和说明";
+        "\n请直接给我MARKDOWN格式的代码（以```脚本语言开头，以```结尾），任何情况下都不需要做解释和说明";
 
       return commonInstructions + specificInstructions + lastInstructions;
     },
