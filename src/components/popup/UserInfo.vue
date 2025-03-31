@@ -28,7 +28,7 @@
         size="xs"
         label="插件会员"
         @click="showPayPage = true"
-        ><q-tooltip>2元解锁本插件所有会员特权</q-tooltip></q-btn
+        ><q-tooltip>{{ memberPrice }}元解锁本插件所有会员特权</q-tooltip></q-btn
       >
     </div>
     <q-separator vertical inset class="q-mx-lg" />
