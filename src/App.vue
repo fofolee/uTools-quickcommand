@@ -16,6 +16,8 @@ import programmings from "./js/options/programs.js";
 import defaultProfile from "./js/options/defaultProfile.js";
 import Cron from "croner";
 import QuickCommand from "components/quickcommandUI/QuickCommand";
+import { generateFlowsCode } from "js/composer/generateCode";
+
 // import autoDetach from "./js/autoDetach.js";
 
 export default defineComponent({
@@ -157,10 +159,13 @@ export default defineComponent({
             reslove([`超过${timeout}ms未响应`]);
           }, timeout);
         let command = dbManager.getDB("qc_" + featureCode);
-        let commandCode = command.cmd;
+        let commandCode =
+          command.program === "quickcomposer"
+            ? generateFlowsCode(command.flows)
+            : command.cmd;
         if (mainInput)
           commandCode = commandCode.replace(/\{\{input\}\}/g, mainInput);
-        if (command.program === "quickcommand") {
+        if (["quickcommand", "quickcomposer"].includes(command.program)) {
           window.runCodeInSandbox(commandCode, (stdout, stderr) => {
             stderr && reslove([stderr.toString()]);
             reslove(stdout);
