@@ -4,13 +4,13 @@ export function generateCode(flow) {
   // 获取变量赋值代码，如果变量已经存在，则直接赋值，否则声明并赋值
   const getVarAssignCode = (varName, varValue) => {
     if (usedVarNames.includes(varName)) {
-      return `${varName} = ${varValue};`;
+      return `${varName} = ${varValue}`;
     }
     usedVarNames.push(varName);
     if (!varValue) {
-      return `let ${varName};`;
+      return `let ${varName}`;
     }
-    return `let ${varName} = ${varValue};`;
+    return `let ${varName} = ${varValue}`;
   };
 
   const getVarByPath = (name, path) => {
@@ -36,10 +36,11 @@ export function generateCode(flow) {
   );
 
   const indent = "  ";
+  const comma = ";";
 
   // 局部变量赋值
   manualVars.forEach((v) => {
-    code.push(indent + getVarAssignCode(v.name, v.value));
+    code.push(indent + getVarAssignCode(v.name, v.value) + comma);
   });
 
   commands.forEach((cmd) => {
@@ -65,7 +66,7 @@ export function generateCode(flow) {
             const extractVarCode = Object.entries(details)
               .map(
                 ([path, varName]) =>
-                  `let ${varName} = ${getVarByPath(promiseName, path)}`
+                  `let ${varName} = ${getVarByPath(promiseName, path)};`
               )
               .join("\n");
 
@@ -80,20 +81,22 @@ export function generateCode(flow) {
               })`;
           }
         }
-        code.push(indent + cmdCode);
+        code.push(indent + cmdCode + comma);
       } else if (cmd.asyncMode === "await") {
         // 使用 await 模式
         const promiseName = name || "__result";
         cmdCode = getVarAssignCode(promiseName, `await ${cmdCode}`);
-        code.push(indent + cmdCode);
+        code.push(indent + cmdCode + comma);
         // 处理详细变量
         if (details) {
           Object.entries(details).forEach(([path, varName]) => {
             code.push(
-              `${indent}${getVarAssignCode(
-                varName,
-                getVarByPath(promiseName, path)
-              )}`
+              indent +
+                `${getVarAssignCode(
+                  varName,
+                  getVarByPath(promiseName, path)
+                )}` +
+                comma
             );
           });
         }
@@ -101,15 +104,17 @@ export function generateCode(flow) {
         // 非Async命令
         const resultVarName = name || "__result";
         cmdCode = getVarAssignCode(resultVarName, `${cmdCode}`);
-        code.push(indent + cmdCode);
+        code.push(indent + cmdCode + comma);
         // 处理详细变量
         if (details) {
           Object.entries(details).forEach(([path, varName]) => {
             code.push(
-              `${indent}${getVarAssignCode(
-                varName,
-                getVarByPath(resultVarName, path)
-              )}`
+              indent +
+                `${getVarAssignCode(
+                  varName,
+                  getVarByPath(resultVarName, path)
+                )}` +
+                comma
             );
           });
         }
@@ -119,11 +124,11 @@ export function generateCode(flow) {
       if (cmd.asyncMode === "await") {
         cmdCode = `await ${cmdCode}`;
       }
-      code.push(indent + cmdCode);
+      code.push(indent + cmdCode + comma);
     }
   });
 
-  code.push("}"); // Close the function
+  code.push("};"); // Close the function
 
   // 如果是主函数，则自动执行
   if (funcName === "main") {
