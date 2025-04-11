@@ -114,9 +114,13 @@ export default {
 
       return this.items.filter((x) => {
         if (this.is.json) {
-          const titleMatch = window.pinyinMatch.match(x.title, this.searchWords);
+          const titleMatch = window.pinyinMatch.match(
+            x.title,
+            this.searchWords
+          );
           const descMatch =
-            x.description && window.pinyinMatch.match(x.description, this.searchWords);
+            x.description &&
+            window.pinyinMatch.match(x.description, this.searchWords);
           return titleMatch || descMatch;
         } else {
           return window.pinyinMatch.match(x, this.searchWords);
@@ -212,6 +216,7 @@ export default {
         this.searchWords = text;
         if (this.matchedItems.length < this.currentIndex + 1)
           this.currentIndex = 0;
+        this.setUtoolsHeight(this.itemHeight * this.matchedItemsSize);
       }, this.options.options.placeholder);
     },
 
