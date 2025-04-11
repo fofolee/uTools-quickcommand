@@ -14,12 +14,15 @@
               bordered
               class="action-card cursor-pointer"
               :class="{
-                'action-selected': selectedActionKeys.includes(actionKey),
+                'action-selected': actionCount[actionKey] > 0,
               }"
-              @click="toggleAction(actionKey)"
+              @click="addAction(actionKey)"
             >
               <div class="q-pa-xs text-caption text-wrap text-center">
                 {{ action.label }}
+                <q-badge v-if="actionCount[actionKey]" color="primary" floating>
+                  {{ actionCount[actionKey] }}
+                </q-badge>
               </div>
             </q-card>
           </div>
@@ -38,7 +41,7 @@
           <q-chip
             square
             removable
-            @remove="toggleAction(selectedActionKey)"
+            @remove="removeAction(index)"
             class="text-caption q-mb-sm"
             :style="{
               paddingLeft: '7px',
@@ -125,6 +128,13 @@ export default {
     selectedActionArgs() {
       return this.modelValue.map((x) => x.args);
     },
+    actionCount() {
+      const count = {};
+      this.selectedActionKeys.forEach((key) => {
+        count[key] = (count[key] || 0) + 1;
+      });
+      return count;
+    },
   },
   methods: {
     moveAction(index, direction) {
@@ -138,26 +148,25 @@ export default {
         this.$emit("update:model-value", newOperation);
       }
     },
-    toggleAction(actionKey) {
-      const index = this.selectedActionKeys.indexOf(actionKey);
+    addAction(actionKey) {
       let newOperation = [...this.modelValue];
-      if (index !== -1) {
-        // 移除操作
-        newOperation.splice(index, 1);
-      } else {
-        // 添加操作
-        const { config, value } = this.operationsMap[actionKey];
-        const args = config?.length
-          ? config.map((field) => field.defaultValue)
-          : [];
+      // 添加操作
+      const { config, value } = this.operationsMap[actionKey];
+      const args = config?.length
+        ? config.map((field) => field.defaultValue)
+        : [];
 
-        const newOperationItem = { value, args };
-        if (actionKey !== value) {
-          newOperationItem.key = actionKey;
-        }
-
-        newOperation.push(newOperationItem);
+      const newOperationItem = { value, args };
+      if (actionKey !== value) {
+        newOperationItem.key = actionKey;
       }
+
+      newOperation.push(newOperationItem);
+      this.$emit("update:model-value", newOperation);
+    },
+    removeAction(index) {
+      let newOperation = [...this.modelValue];
+      newOperation.splice(index, 1);
       this.$emit("update:model-value", newOperation);
     },
     updateActionArgs(argvIndex, argvVal, actionIndex) {
@@ -249,5 +258,12 @@ export default {
 
 .row.q-col-gutter-xs > * {
   padding: 2px;
+}
+
+.q-badge {
+  font-size: 10px;
+  padding: 2px 4px;
+  right: -4px;
+  top: -4px;
 }
 </style>
