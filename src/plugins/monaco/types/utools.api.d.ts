@@ -139,6 +139,11 @@ interface UBrowser {
    */
   end(): this;
   /**
+   * 转为markdown
+   * @param selector CSS 或 XPath 选择器，不传递则转换整个网页内容
+   */
+  markdown(selector: string): this;
+  /**
    * 单击元素
    */
   click(selector: string): this;

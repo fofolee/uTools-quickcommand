@@ -323,6 +323,19 @@ export const ubrowserOperationConfigs = {
       },
     ],
   },
+  markdown: {
+    value: "markdown",
+    label: "转markdown",
+    icon: "get_app",
+    config: [
+      {
+        label: "CSS 或 XPath 选择器，不传递则转换整个网页内容",
+        icon: "find_in_page",
+        component: "VariableInput",
+        width: 12,
+      },
+    ],
+  },
   setCookies: {
     value: "setCookies",
     label: "设置Cookie",
