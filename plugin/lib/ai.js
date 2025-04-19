@@ -81,8 +81,8 @@ const ROLE_PROMPTS = {
 // API URL 处理
 const API_ENDPOINTS = {
   [API_TYPES.OPENAI]: {
-    chat: "/v1/chat/completions",
-    models: "/v1/models",
+    chat: "/chat/completions",
+    models: "/models",
   },
   [API_TYPES.OLLAMA]: {
     chat: "/api/chat",
