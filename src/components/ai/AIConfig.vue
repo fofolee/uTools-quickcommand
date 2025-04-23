@@ -6,10 +6,7 @@
         <ButtonGroup
           v-model="apiToAdd"
           class="col"
-          :options="[
-            { label: 'OPENAI', value: 'openai' },
-            { label: 'OLLAMA', value: 'ollama' },
-          ]"
+          :options="aiOptions"
           height="26px"
         />
         <q-icon
@@ -78,8 +75,11 @@
                     :placeholder="
                       aiConfig.apiType === 'openai'
                         ? '例：https://api.openai.com'
-                        : '例：http://localhost:11434'
+                        : aiConfig.apiType === 'ollama'
+                        ? '例：http://localhost:11434'
+                        : '无需配置'
                     "
+                    :disable="aiConfig.apiType === 'utools'"
                   >
                     <template v-slot:prepend>
                       <q-badge
@@ -179,7 +179,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import { dbManager } from "js/utools.js";
 import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import draggable from "vuedraggable";
@@ -190,6 +190,18 @@ export default defineComponent({
   components: {
     ButtonGroup,
     draggable,
+  },
+  setup() {
+    const aiOptions = ref([
+      { label: "OPENAI接口", value: "openai" },
+      { label: "OLLAMA接口", value: "ollama" },
+    ]);
+    if (utools.allAiModels) {
+      aiOptions.value.push({ label: "uTools内置", value: "utools" });
+    }
+    return {
+      aiOptions,
+    };
   },
   data() {
     return {
@@ -202,6 +214,19 @@ export default defineComponent({
   emits: ["save"],
   methods: {
     async getModels(aiConfig) {
+      if (aiConfig.apiType === "utools") {
+        try {
+          const models = await utools.allAiModels();
+          this.models = models.map((model) => model.id);
+        } catch (error) {
+          quickcommand.showMessageBox(
+            "获取 uTools AI 模型失败: " + error.message,
+            "error"
+          );
+          this.models = [];
+        }
+        return;
+      }
       const { success, result, error } = await window.getModelsFromAiApi(
         aiConfig
       );
@@ -223,13 +248,21 @@ export default defineComponent({
       this.aiConfigs.splice(index, 1);
     },
     addModel() {
-      this.aiConfigs.push({
+      const defaultConfig = {
         id: getUniqueId(),
         apiType: this.apiToAdd,
         apiUrl: "",
         apiToken: "",
         model: "",
         name: "",
+      };
+
+      if (this.apiToAdd === "utools") {
+        defaultConfig.apiUrl = "";
+      }
+
+      this.aiConfigs.push(defaultConfig);
+
       });
     },
     getConfigListHeight() {
