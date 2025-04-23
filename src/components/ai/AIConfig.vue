@@ -18,6 +18,7 @@
         />
       </div>
       <q-scroll-area
+        ref="scrollArea"
         :style="`height: ${getConfigListHeight()}px;`"
         class="q-px-sm"
         :vertical-thumb-style="{
@@ -263,6 +264,9 @@ export default defineComponent({
 
       this.aiConfigs.push(defaultConfig);
 
+      // 滚动到底部
+      this.$nextTick(() => {
+        this.$refs.scrollArea.setScrollPosition("vertical", 99999);
       });
     },
     getConfigListHeight() {
