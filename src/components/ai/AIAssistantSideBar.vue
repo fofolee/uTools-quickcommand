@@ -213,7 +213,7 @@ export default defineComponent({
         const response = await window.quickcommand.askAI(
           {
             prompt: promptText,
-            context: [...presetContext, ...this.chatHistory.slice(0, -2)],
+            context: [presetContext, ...this.chatHistory.slice(0, -2)],
           },
           this.selectedApi,
           {
@@ -291,7 +291,7 @@ export default defineComponent({
         shell: "liunx shell脚本",
       };
       const languageName = languageMap[language] || language;
-      const commonInstructions = `接下来我所有的对话中的需求都请通过编写${languageName}代码来实现，并请遵循以下原则：
+      const commonInstructions = `接下来所有的对话中的需求都请通过编写${languageName}代码来实现，并请遵循以下原则：
    - 编写简洁、可读性强的代码
    - 遵循${languageName}最佳实践和设计模式
    - 使用恰当的命名规范和代码组织
@@ -312,7 +312,7 @@ export default defineComponent({
       const specificInstructions = languageSpecific[language] || "";
 
       const lastInstructions =
-        "\n请直接给我MARKDOWN格式的代码（以```脚本语言开头，以```结尾），任何情况下都不需要做解释和说明";
+        "\n请直接提供MARKDOWN格式的代码（以```脚本语言开头，以```结尾），任何情况下都不需要做解释和说明";
 
       return commonInstructions + specificInstructions + lastInstructions;
     },
@@ -330,48 +330,26 @@ export default defineComponent({
       ];
     },
     getPresetContext() {
+      let finnalPrompt = ""
+
       const languagePrompt = this.getLanguagePrompt(this.language);
 
-      let presetContext = [
-        {
-          role: "user",
-          content: languagePrompt,
-        },
-        {
-          role: "assistant",
-          content: "好的，我会严格按照你的要求编写代码。",
-        },
-      ];
+      finnalPrompt += languagePrompt;
 
       if (this.submitDocs && this.language === "quickcommand") {
         const docs = this.getLanguageDocs(this.language);
 
-        presetContext.push(
-          {
-            role: "user",
-            content: `你现在使用的是一种特殊的环境，支持uTools和quickcommand两种特殊的接口，请优先使用uTools和quickcommand接口解决需求，然后再使用当前语言通用的解决方案`,
-          },
-          {
-            role: "assistant",
-            content: "好的，我会注意。",
-          }
-        );
+        finnalPrompt += `\n你现在使用的是一种特殊的环境，支持uTools和quickcommand两种特殊的接口，请优先使用uTools和quickcommand接口解决需求，然后再使用当前语言通用的解决方案`;
 
         docs.forEach((doc) => {
-          presetContext.push(
-            {
-              role: "user",
-              content: `这是${doc.name}的API文档：\n${doc.api}`,
-            },
-            {
-              role: "assistant",
-              content: "好的，我会认真学习并记住这些接口。",
-            }
-          );
+          finnalPrompt += `\n这是${doc.name}的API文档：\n${doc.api}`;
         });
       }
 
-      return presetContext;
+      return {
+        role: "system",
+        content: finnalPrompt,
+      };
     },
     openAIAssistantHelp() {
       window.showUb.help("#KUCwm");

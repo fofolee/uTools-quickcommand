@@ -123,7 +123,7 @@ function buildRequestData(content, apiConfig) {
   const roleMessage = rolePrompt
     ? [
         {
-          role: "user",
+          role: "system",
           content: rolePrompt,
         },
       ]
