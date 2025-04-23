@@ -2,19 +2,16 @@
   <q-card style="width: 800px" class="q-pa-sm">
     <div class="text-h5 q-my-md q-px-sm">API配置</div>
     <div>
-      <div class="flex q-mb-md q-px-sm" style="height: 26px">
-        <ButtonGroup
-          v-model="apiToAdd"
-          class="col"
-          :options="aiOptions"
-          height="26px"
-        />
-        <q-icon
-          name="add_box"
-          @click="addModel"
+      <div class="q-pa-sm row q-gutter-sm">
+        <q-btn
+          v-for="option in aiOptions"
+          :key="option.value"
+          icon="add_link"
+          dense
           color="primary"
-          size="26px"
-          class="cursor-pointer q-ml-sm"
+          :label="option.label"
+          @click="addModel(option.value)"
+          class="col"
         />
       </div>
       <q-scroll-area
@@ -76,11 +73,9 @@
                     :placeholder="
                       aiConfig.apiType === 'openai'
                         ? '例：https://api.openai.com'
-                        : aiConfig.apiType === 'ollama'
-                        ? '例：http://localhost:11434'
-                        : '无需配置'
+                        : '例：http://localhost:11434'
                     "
-                    :disable="aiConfig.apiType === 'utools'"
+                    v-show="aiConfig.apiType !== 'utools'"
                   >
                     <template v-slot:prepend>
                       <q-badge
@@ -182,31 +177,31 @@
 <script>
 import { defineComponent, ref } from "vue";
 import { dbManager } from "js/utools.js";
-import ButtonGroup from "components/composer/common/ButtonGroup.vue";
 import draggable from "vuedraggable";
 import { getUniqueId } from "js/common/uuid.js";
 
 export default defineComponent({
   name: "AIConfig",
   components: {
-    ButtonGroup,
     draggable,
   },
   setup() {
+    const initAiOptions = utools.allAiModels
+      ? [{ label: "uTools内置AI", value: "utools" }]
+      : [];
+
     const aiOptions = ref([
-      { label: "OPENAI接口", value: "openai" },
+      ...initAiOptions,
+      { label: "OPENAI接口(需Key)", value: "openai" },
       { label: "OLLAMA接口", value: "ollama" },
     ]);
-    if (utools.allAiModels) {
-      aiOptions.value.push({ label: "uTools内置", value: "utools" });
-    }
+
     return {
       aiOptions,
     };
   },
   data() {
     return {
-      apiToAdd: "openai",
       aiConfigs: [],
       models: [],
       tokenInputTypes: [],
@@ -248,17 +243,17 @@ export default defineComponent({
     deleteModel(index) {
       this.aiConfigs.splice(index, 1);
     },
-    addModel() {
+    addModel(apiType) {
       const defaultConfig = {
         id: getUniqueId(),
-        apiType: this.apiToAdd,
+        apiType: apiType,
         apiUrl: "",
         apiToken: "",
         model: "",
         name: "",
       };
 
-      if (this.apiToAdd === "utools") {
+      if (apiType === "utools") {
         defaultConfig.apiUrl = "";
       }
 
