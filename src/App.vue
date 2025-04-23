@@ -173,10 +173,10 @@ export default defineComponent({
         } else {
           let option =
             command.program === "custom"
-              ? command.customOptions
-              : this.programs[command.program];
-          option.scptarg = command.scptarg;
-          option.charset = command.charset;
+              ? command.customOptions || {}
+              : this.programs[command.program] || {};
+          option.scptarg = command.scptarg || "";
+          option.charset = command.charset || {};
           window.runCodeFile(
             commandCode,
             option,

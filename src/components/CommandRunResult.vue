@@ -170,8 +170,8 @@ export default {
     getCommandOpt(command) {
       let option =
         command.program === "custom"
-          ? command.customOptions
-          : programs[command.program];
+          ? command.customOptions || {}
+          : programs[command.program] || {};
       option.scptarg = command.scptarg || "";
       option.charset = command.charset || {};
       option.envPath = this.$root.nativeProfile.envPath.trim() || "";
