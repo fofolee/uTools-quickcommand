@@ -667,6 +667,134 @@ interface UToolsApi {
   isLinux(): boolean;
 
   ubrowser: UBrowser;
+
+  /**
+   * 调用 AI 能力，支持 Function Calling
+   * @param option AI 选项
+   * @param streamCallback 流式调用函数 (可选)
+   * @returns 返回定制的 PromiseLike
+   */
+  ai(option: AiOption): PromiseLike<Message>;
+  ai(
+    option: AiOption,
+    streamCallback: (chunk: Message) => void
+  ): PromiseLike<void>;
+
+  /**
+   * 获取所有 AI 模型
+   * @returns 返回 AI 模型数组
+   */
+  allAiModels(): Promise<AiModel[]>;
+}
+
+/**
+ * AI 选项接口
+ */
+interface AiOption {
+  /**
+   * AI 模型, 为空默认使用 deepseek-v3
+   */
+  model?: string;
+  /**
+   * 消息列表
+   */
+  messages: Message[];
+  /**
+   * 工具列表
+   */
+  tools?: Tool[];
+}
+
+/**
+ * AI 消息接口
+ */
+interface Message {
+  /**
+   * 消息角色
+   * system：系统消息
+   * user：用户消息
+   * assistant：AI 消息
+   */
+  role: "system" | "user" | "assistant";
+  /**
+   * 消息内容
+   */
+  content?: string;
+  /**
+   * 消息推理内容，一般只有推理模型会返回
+   */
+  reasoning_content?: string;
+}
+
+/**
+ * AI 工具接口
+ */
+interface Tool {
+  /**
+   * 工具类型
+   * function：函数工具
+   */
+  type: "function";
+  /**
+   * 函数工具配置
+   */
+  function?: {
+    /**
+     * 函数名称
+     */
+    name: string;
+    /**
+     * 函数描述
+     */
+    description: string;
+    /**
+     * 函数参数
+     */
+    parameters: {
+      type: "object";
+      properties: Record<string, any>;
+    };
+    /**
+     * 必填参数
+     */
+    required?: string[];
+  };
+}
+
+/**
+ * AI 模型接口
+ */
+interface AiModel {
+  /**
+   * AI 模型 ID，用于 utools.ai 调用的 model 参数
+   */
+  id: string;
+  /**
+   * AI 模型名称
+   */
+  label: string;
+  /**
+   * AI 模型描述
+   */
+  description: string;
+  /**
+   * AI 模型图标
+   */
+  icon: string;
+  /**
+   * AI 模型调用消耗
+   */
+  cost: number;
+}
+
+/**
+ * Promise 扩展类型，包含 abort() 函数
+ */
+interface PromiseLike<T> extends Promise<T> {
+  /**
+   * 中止 AI 调用
+   */
+  abort(): void;
 }
 
 declare var utools: UToolsApi;
