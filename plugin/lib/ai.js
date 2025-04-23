@@ -17,6 +17,7 @@ window.aiResponseParser = (content) => {
 const API_TYPES = {
   OPENAI: "openai",
   OLLAMA: "ollama",
+  UTOOLS: "utools",
 };
 
 // 角色提示词
@@ -151,21 +152,6 @@ function buildRequestData(content, apiConfig) {
   };
 }
 
-// 处理普通响应
-function parseResponse(response, apiType) {
-  if (apiType === API_TYPES.OPENAI) {
-    if (!response.data.choices || !response.data.choices[0]) {
-      throw new Error("OpenAI 响应格式错误");
-    }
-    return response.data.choices[0].message.content;
-  } else {
-    if (!response.data.message) {
-      throw new Error("Ollama 响应格式错误");
-    }
-    return response.data.message.content;
-  }
-}
-
 // 处理模型列表响应
 function parseModelsResponse(response, apiType) {
   if (apiType === API_TYPES.OPENAI) {
@@ -209,8 +195,38 @@ async function handleOllamaStreamResponse(line, onStream) {
   }
 }
 
+let reasoning_content_start = false;
+// 处理 uTools AI 流式响应
+async function handleUToolsAIStreamResponse(response, onStream) {
+  if (response.reasoning_content) {
+    if (!reasoning_content_start) {
+      reasoning_content_start = true;
+      onStream("<think>", false);
+    }
+    onStream(response.reasoning_content, false);
+  }
+  if (response.content) {
+    if (reasoning_content_start) {
+      reasoning_content_start = false;
+      onStream("</think>", false);
+    }
+    onStream(response.content, false);
+  }
+}
+
 // 处理流式响应
 async function handleStreamResponse(response, apiConfig, onStream) {
+  // 处理 uTools AI 响应
+  if (apiConfig.apiType === API_TYPES.UTOOLS) {
+    try {
+      await handleUToolsAIStreamResponse(response, onStream);
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // 处理其他 API 的流式响应
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -283,24 +299,27 @@ async function chat(content, apiConfig, options = {}) {
     } = options;
 
     // 验证必要参数
-    if (!apiConfig.apiUrl || !content.prompt || !apiConfig.model) {
-      throw new Error("API地址、模型名称和提示词不能为空");
+    if (apiConfig.apiType === API_TYPES.UTOOLS) {
+      if (!content.prompt || !apiConfig.model) {
+        throw new Error("模型名称和提示词不能为空");
+      }
+    } else {
+      if (!apiConfig.apiUrl) {
+        throw new Error("API地址不能为空");
+      }
+      if (!apiConfig.apiUrl || !content.prompt || !apiConfig.model) {
+        throw new Error("API地址、模型名称和提示词不能为空");
+      }
     }
 
-    // 构建请求URL和配置
-    const url = buildApiUrl(
-      apiConfig.apiUrl,
-      API_ENDPOINTS[apiConfig.apiType].chat
-    );
-    const config = buildRequestConfig(apiConfig);
-    const requestData = buildRequestData(content, apiConfig);
+    let controller;
 
     // 显示进度条
     const processBar = showProcessBar
       ? await quickcommand.showProcessBar({
           text: "AI思考中...",
           onClose: () => {
-            if (controller) {
+            if (typeof controller !== "undefined") {
               controller.abort();
             }
           },
@@ -327,10 +346,64 @@ async function chat(content, apiConfig, options = {}) {
       onStream(chunk, isDone);
     };
 
-    // 统一使用 fetch 处理请求
-    const controller = new AbortController();
+    // 处理 uTools AI 请求
+    if (apiConfig.apiType === API_TYPES.UTOOLS) {
+      try {
+        const messages = buildRequestData(content, apiConfig).messages;
+        controller = utools.ai(
+          {
+            model: apiConfig.model,
+            messages: messages,
+          },
+          (chunk) => {
+            handleUToolsAIStreamResponse(chunk, streamHandler);
+          }
+        );
+        onFetch(controller);
+
+        await controller;
+
+        // 在流式响应完全结束后，发送一个空字符串表示结束
+        streamHandler("", true);
+
+        // 完成时更新进度条并关闭
+        if (processBar) {
+          quickcommand.updateProcessBar(
+            {
+              text: "AI响应完成",
+              complete: true,
+            },
+            processBar
+          );
+        }
+
+        return {
+          success: true,
+          result: fullResponse,
+        };
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return {
+            success: false,
+            error: "请求已取消",
+            cancelled: true,
+          };
+        }
+        throw error;
+      }
+    }
+
+    // 统一使用 fetch 处理其他 API 请求
+    controller = new AbortController();
 
     onFetch(controller);
+
+    const url = buildApiUrl(
+      apiConfig.apiUrl,
+      API_ENDPOINTS[apiConfig.apiType].chat
+    );
+    const config = buildRequestConfig(apiConfig);
+    const requestData = (content, apiConfig);
 
     const response = await fetch(url, {
       method: "POST",
