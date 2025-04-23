@@ -167,37 +167,8 @@ function parseModelsResponse(response, apiType) {
   }
 }
 
-// 处理 OpenAI 流式响应
-async function handleOpenAIStreamResponse(line, onStream) {
-  if (line.startsWith("data:")) {
-    const jsonStr = line.replace(/^data:[ ]*/, "");
-    if (jsonStr === "[DONE]") {
-      onStream("", true);
-      return;
-    }
-    const json = JSON.parse(jsonStr);
-    const content = json.choices[0]?.delta?.content;
-    if (content) {
-      onStream(content, false);
-    }
-  }
-}
-
-// 处理 Ollama 流式响应
-async function handleOllamaStreamResponse(line, onStream) {
-  const json = JSON.parse(line);
-  if (json.done) {
-    onStream("", true);
-    return;
-  }
-  if (json.message?.content) {
-    onStream(json.message.content, false);
-  }
-}
-
 let reasoning_content_start = false;
-// 处理 uTools AI 流式响应
-async function handleUToolsAIStreamResponse(response, onStream) {
+function processContentWithReason(response, onStream) {
   if (response.reasoning_content) {
     if (!reasoning_content_start) {
       reasoning_content_start = true;
@@ -212,6 +183,40 @@ async function handleUToolsAIStreamResponse(response, onStream) {
     }
     onStream(response.content, false);
   }
+}
+
+// 处理 OpenAI 流式响应
+async function handleOpenAIStreamResponse(line, onStream) {
+  if (line.startsWith("data:")) {
+    const jsonStr = line.replace(/^data:[ ]*/, "");
+    if (jsonStr === "[DONE]") {
+      onStream("", true);
+      return;
+    }
+    const json = JSON.parse(jsonStr);
+    const response = json.choices[0]?.delta;
+    if (response) {
+      processContentWithReason(response, onStream);
+    }
+  }
+}
+
+// 处理 Ollama 流式响应
+async function handleOllamaStreamResponse(line, onStream) {
+  const json = JSON.parse(line);
+  if (json.done) {
+    onStream("", true);
+    return;
+  }
+  const response = json.message;
+  if (response) {
+    processContentWithReason(response, onStream);
+  }
+}
+
+// 处理 uTools AI 流式响应
+async function handleUToolsAIStreamResponse(response, onStream) {
+  processContentWithReason(response, onStream);
 }
 
 // 处理流式响应
@@ -403,7 +408,7 @@ async function chat(content, apiConfig, options = {}) {
       API_ENDPOINTS[apiConfig.apiType].chat
     );
     const config = buildRequestConfig(apiConfig);
-    const requestData = (content, apiConfig);
+    const requestData = buildRequestData(content, apiConfig);
 
     const response = await fetch(url, {
       method: "POST",
