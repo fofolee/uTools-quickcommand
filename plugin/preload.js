@@ -20,6 +20,7 @@ const md5 = (input) => {
 
 window.lodashM = require("./lib/lodashMini");
 window.pinyinMatch = require("pinyin-match");
+window.pinService = require("./lib/pin/service");
 window.DOMPurify = DOMPurify;
 
 const createTerminalCommand = require("./lib/createTerminalCommand");

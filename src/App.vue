@@ -122,6 +122,10 @@ export default defineComponent({
         window.quickcommandHttpServer().run(this.nativeProfile.serverPort);
         console.log("Server Start...");
       }
+      // 恢复固定到桌面的命令
+      if (this.nativeProfile.pinnedCommands) {
+        window.pinService.restorePinWindows(this.nativeProfile.pinnedCommands);
+      }
     },
     enterPlugin(enter) {
       this.updateExp();
