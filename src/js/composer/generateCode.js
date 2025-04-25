@@ -124,7 +124,7 @@ export function generateCode(flow) {
       if (cmd.asyncMode === "await") {
         cmdCode = `await ${cmdCode}`;
       }
-      code.push(indent + cmdCode + comma);
+      code.push(indent + cmdCode + (cmd.isControlFlow ? "" : comma));
     }
   });
 

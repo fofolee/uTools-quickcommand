@@ -46,7 +46,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
@@ -112,7 +112,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
@@ -169,7 +169,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
@@ -225,7 +225,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
@@ -266,7 +266,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
@@ -320,7 +320,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
@@ -360,7 +360,7 @@ export const controlCommands = {
         {
           label: "结束",
           value: "end",
-          codeTemplate: "}",
+          codeTemplate: "};",
         },
       ],
     },
