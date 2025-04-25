@@ -257,12 +257,8 @@ export default defineComponent({
         defaultConfig.apiUrl = "";
       }
 
-      this.aiConfigs.push(defaultConfig);
+      this.aiConfigs.unshift(defaultConfig);
 
-      // 滚动到底部
-      this.$nextTick(() => {
-        this.$refs.scrollArea.setScrollPosition("vertical", 99999);
-      });
     },
     getConfigListHeight() {
       const counts = Math.min(this.aiConfigs.length, 3);
