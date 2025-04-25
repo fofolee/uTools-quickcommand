@@ -491,13 +491,13 @@ export const ubrowserOperationConfigs = {
     ],
   },
   setValue: {
-    value: "setValue",
+    value: "value",
     label: "设置值",
     icon: "check_box",
     config: [
       {
         label: "元素选择器",
-        icon: "varInput",
+        icon: "find_in_page",
         component: "VariableInput",
         width: 6,
       },
