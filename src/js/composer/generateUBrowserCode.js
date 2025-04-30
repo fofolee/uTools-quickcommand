@@ -70,8 +70,6 @@ export function generateUBrowserCode(argvs) {
   // 添加其他操作
   if (argvs.operations?.length) {
     argvs.operations.forEach(({ value, args }) => {
-      if (!args?.length) return;
-
       const stringifiedArgs = args
         .map((arg) => stringifyArgv(arg))
         .filter(Boolean);
