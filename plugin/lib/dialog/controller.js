@@ -520,6 +520,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dialogType === "textarea" && !e.ctrlKey) {
         return;
       }
+      // select 类型有自己的键盘处理器，不需要全局处理器处理 Enter 键
+      if (dialogType === "select") {
+        return;
+      }
       document.getElementById("ok-btn").click();
     }
   });
