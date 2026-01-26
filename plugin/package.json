@@ -11,7 +11,7 @@
     "pinyin-match": "^1.2.6",
     "png2icons": "^2.0.1",
     "ses": "^1.12.0",
-    "sm-crypto": "^0.3.13",
+    "sm-crypto": "^0.4.0",
     "tree-kill": "^1.2.2"
   }
 }
