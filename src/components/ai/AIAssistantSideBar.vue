@@ -221,36 +221,50 @@ export default defineComponent({
             onFetch: (controller) => {
               this.currentRequest = controller;
             },
-            onStream: (text, done) => {
+            onStream: (text) => {
               if (text) {
                 this.chatHistory[this.chatHistory.length - 1].content += text;
-              }
-
-              if (done) {
-                this.streamingResponse = false;
-                if (this.autoUpdateCode) {
-                  const response =
-                    this.chatHistory[this.chatHistory.length - 1].content;
-                  const code = response.match(
-                    /```[a-z]*\n([\s\S]*?)\n```/
-                  )?.[1];
-
-                  if (!code) return;
-
-                  this.$emit("update-code", "replace", code);
-                }
               }
             },
           }
         );
 
-        if (!response.success && !response.cancelled) {
+        // 以请求的最终结果为准，不再依赖流式接口的 done 事件
+        if (response.success) {
+          this.updateCodeFromResponse();
+        } else if (!response.cancelled) {
           window.quickcommand.showMessageBox(response.error, "error");
         }
       } catch (error) {
         window.quickcommand.showMessageBox(error.message, "error");
+      } finally {
         this.streamingResponse = false;
+        this.currentRequest = null;
       }
+    },
+    updateCodeFromResponse() {
+      if (!this.autoUpdateCode) return;
+
+      const code = this.extractCode(
+        this.chatHistory[this.chatHistory.length - 1]?.content
+      );
+
+      if (code) {
+        this.$emit("update-code", "replace", code);
+      } else {
+        window.utools.showNotification("未找到完整代码块，已跳过自动更新");
+      }
+    },
+    extractCode(content = "") {
+      // 推理模型的思考内容里常有代码片段，先剔除，避免取错
+      const answer = content.replace(/<think>[\s\S]*?<\/think>/g, "");
+      const blocks = [
+        ...answer.matchAll(
+          /^[ \t]*```[ \t]*[^\s`]*[ \t]*\r?\n([\s\S]*?)\r?\n?[ \t]*```/gm
+        ),
+      ];
+      // 取最后一个完整代码块：模型常见“先给片段，再给完整代码”
+      return blocks.length ? blocks[blocks.length - 1][1] : "";
     },
     stopStreaming() {
       this.streamingResponse = false;

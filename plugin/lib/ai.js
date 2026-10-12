@@ -188,7 +188,7 @@ function processContentWithReason(response, onStream) {
 // 处理 OpenAI 流式响应
 async function handleOpenAIStreamResponse(line, onStream) {
   if (line.startsWith("data:")) {
-    const jsonStr = line.replace(/^data:[ ]*/, "");
+    const jsonStr = line.replace(/^data:[ ]*/, "").trim();
     if (jsonStr === "[DONE]") {
       onStream("", true);
       return;
@@ -333,10 +333,15 @@ async function chat(content, apiConfig, options = {}) {
 
     // 用于收集完整响应
     let fullResponse = "";
+    // 保证 done 只回调一次
+    let doneEmitted = false;
 
     // 包装 onStream 回调以收集完整响应并更新进度条
     const streamHandler = (chunk, isDone) => {
-      if (!isDone) {
+      if (isDone) {
+        if (doneEmitted) return;
+        doneEmitted = true;
+      } else {
         fullResponse += chunk;
         // 更新进度条显示最新的响应内容
         if (processBar) {
@@ -433,6 +438,9 @@ async function chat(content, apiConfig, options = {}) {
       processBar?.close();
       return result;
     }
+
+    // 部分接口不发 [DONE] 就直接关流，这里兜底补发结束事件
+    streamHandler("", true);
 
     // 完成时更新进度条并关闭
     if (processBar) {
