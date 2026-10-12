@@ -124,7 +124,7 @@
                 "properties": {
                   "explain": { "type": "string", "description": "命令名称，不能为空" },
                   "cmds": { "type": "array", "description": "触发方式数组：关键词字符串，或 {type, match} 形式的匹配规则" },
-                  "icon": { "type": "string", "description": "建议留空，用户可以在界面里自己设置图标" },
+                  "icon": { "type": "string", "description": "建议留空，留空时自动用该执行方式的默认图标" },
                   "platform": { "type": "array", "items": { "type": "string" }, "description": "生效平台，默认三个平台都生效" }
                 },
                 "required": ["explain", "cmds"]

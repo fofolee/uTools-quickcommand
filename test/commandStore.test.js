@@ -45,6 +45,22 @@ const code = command.features.code;
 assert.match(code, /^key_[0-9a-f]{8}$/);
 assert.strictEqual(command.features.cmds[0], "测试命令");
 assert.strictEqual(command.features.mainHide, false);
+// 不带图标时用该执行方式的默认图标
+assert.strictEqual(command.features.icon, "logo/quickcommand.png");
+const pyCommand = store.create({
+  program: "python",
+  cmd: "print(1)",
+  features: { explain: "py", cmds: ["py"] },
+}).command;
+assert.strictEqual(pyCommand.features.icon, "logo/python.png");
+const customCommand = store.create({
+  program: "custom",
+  cmd: "x",
+  features: { explain: "自定义", cmds: ["自定义"], icon: "data:image/png;base64,xxx" },
+}).command;
+assert.strictEqual(customCommand.features.icon, "data:image/png;base64,xxx");
+store.remove(pyCommand.features.code);
+store.remove(customCommand.features.code);
 assert.ok(db.has("qc_" + code));
 assert.ok(features.has(code));
 

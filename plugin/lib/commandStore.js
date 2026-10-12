@@ -46,6 +46,26 @@ const CMD_TYPES = [
 ];
 const ICON_MAX_LENGTH = 32 * 1024;
 
+// 各执行方式的默认图标，与 src/js/options/programs.js 保持一致（那边是 webpack 模块，preload 引不到）
+const DEFAULT_ICONS = {
+  quickcommand: "logo/quickcommand.png",
+  quickcomposer: "logo/quickcommand.png",
+  html: "logo/html.png",
+  shell: "logo/shell.png",
+  applescript: "logo/applescript.png",
+  cmd: "logo/cmd.png",
+  powershell: "logo/powershell.png",
+  python: "logo/python.png",
+  javascript: "logo/javascript.png",
+  ruby: "logo/ruby.png",
+  php: "logo/php.png",
+  c: "logo/c.png",
+  csharp: "logo/csharp.png",
+  lua: "logo/lua.png",
+  perl: "logo/perl.png",
+  custom: "logo/custom.png",
+};
+
 const getUniqueId = (options = {}) => {
   const { short = false } = options;
   const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -179,6 +199,11 @@ const normalizeCommand = (command) => {
   normalized.features.mainHide = outPluginOutputs.includes(normalized.output);
   normalized.features.code =
     normalized.features.code || getFeatureCode(normalized.features.cmds);
+  // 图标留空时用该类型的默认图标，否则命令卡片上是个空位
+  if (!normalized.features.icon) {
+    normalized.features.icon =
+      DEFAULT_ICONS[normalized.program] || DEFAULT_ICONS.quickcommand;
+  }
   if (!Array.isArray(normalized.tags)) normalized.tags = [];
   if (normalized.output === undefined) normalized.output = "text";
   return normalized;

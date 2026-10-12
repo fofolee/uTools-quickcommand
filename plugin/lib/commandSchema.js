@@ -46,7 +46,7 @@ module.exports = `# 快捷命令数据结构
   - 多种类型混用时会自动变成 "professional"
 - platform：命令生效的系统，默认三个平台都生效
 - mainPush：为 true 时命令出现在 uTools 主输入框的推送列表里（输出类型会被限制）
-- icon：data URL 或相对路径，**建议留空**（超过 32KB 会报错），用户可以在界面里自己设置
+- icon：data URL 或相对路径。**建议留空**，留空时会自动用该执行方式的默认图标（如 shell 命令用 logo/shell.png），用户可以在界面里改成自己喜欢的。自己传的话超过 32KB 会报错
 
 ## output（输出方式）
 
