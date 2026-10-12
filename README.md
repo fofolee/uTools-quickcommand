@@ -36,6 +36,7 @@ quasar build
 - 快速收藏文件、网址、插件别名，通过面板视图，实现类似软件启动器、网页搜藏夹、插件面板等功能
 - 定时运行命令
 - 提供后台服务，将插件内部和外部环境打通
+- 把命令的增删改查作为 MCP 工具开放给 AI Agent（需要 uTools 支持本地 MCP 服务）
 
 # 三、配置参数
 
@@ -87,6 +88,20 @@ quasar build
 - 发送到活动窗口（可实现发送常用短语之类的功能）
 - 发送到系统通知
 - 在终端中显示
+
+## 「 AI Agent 」
+
+把快捷命令的增删改查开放给外部 AI Agent（Claude Code、Codex、Cursor 等），让它帮你批量写命令、改命令。
+
+使用步骤：
+
+1. 在 uTools 的 `设置 → MCP 服务` 里开启本地 MCP 服务，并用它的一键写入功能把 uTools 加进 AI Agent 的 MCP 配置
+2. 打开任意命令的编辑器，点右侧 AI 助手里的齿轮图标，在 `API配置` 弹窗底部按需打开 AI Agent 的 `读取` / `写入` / `运行` 开关
+3. 让 Agent 调用 `qc_get_schema` 了解命令格式后再动手
+
+提供的工具：`qc_list_commands`、`qc_get_command`、`qc_list_tags`、`qc_get_schema`、`qc_create_command`、`qc_update_command`、`qc_delete_command`、`qc_set_enabled`、`qc_run_command`。
+
+插件自带的默认命令（code 以 `default_` 开头）不能被读写。
 
 # 四、可视化编排功能概览
 

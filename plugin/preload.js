@@ -45,6 +45,8 @@ window.convertFilePathToUtoolsPayload = convertFilePathToUtoolsPayload;
 window.getuToolsLite = require("./lib/utoolsLite");
 window.quickcommand = require("./lib/quickcommand");
 window.quickcomposer = require("./lib/quickcomposer");
+// 注册 AI Agent 可调用的 MCP 工具（声明在 plugin.json 的 tools 字段里）
+require("./lib/quickcommandMcp");
 window.showUb = require("./lib/showDocs");
 window.getQuickcommandTempFile =
   require("./lib/getQuickcommandFile").getQuickcommandTempFile;
