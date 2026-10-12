@@ -18,6 +18,7 @@
     <!-- 聊天记录区域 -->
     <AIChatHistory
       :messages="chatHistory"
+      :streaming="streamingResponse"
       @update-code="(...event) => $emit('update-code', ...event)"
       :render-md="renderMd"
     />
@@ -208,6 +209,20 @@ export default defineComponent({
       this.prompt = "";
 
       const presetContext = this.getPresetContext();
+      const assistantMessage = this.chatHistory[this.chatHistory.length - 1];
+
+      // 分片先在本地攒着，定时合并写入：长回答每来一个分片就重排一次整条消息会卡死
+      let buffered = "";
+      let flushTimer = null;
+      const flushBufferedChunks = () => {
+        if (flushTimer) {
+          clearTimeout(flushTimer);
+          flushTimer = null;
+        }
+        if (!buffered) return;
+        assistantMessage.content += buffered;
+        buffered = "";
+      };
 
       try {
         const response = await window.quickcommand.askAI(
@@ -222,12 +237,17 @@ export default defineComponent({
               this.currentRequest = controller;
             },
             onStream: (text) => {
-              if (text) {
-                this.chatHistory[this.chatHistory.length - 1].content += text;
+              if (!text) return;
+              buffered += text;
+              if (!flushTimer) {
+                flushTimer = setTimeout(flushBufferedChunks, 100);
               }
             },
           }
         );
+
+        // 先把剩下的分片并进去，保证抽取代码时拿到完整内容
+        flushBufferedChunks();
 
         // 以请求的最终结果为准，不再依赖流式接口的 done 事件
         if (response.success) {
@@ -236,6 +256,7 @@ export default defineComponent({
           window.quickcommand.showMessageBox(response.error, "error");
         }
       } catch (error) {
+        flushBufferedChunks();
         window.quickcommand.showMessageBox(error.message, "error");
       } finally {
         this.streamingResponse = false;

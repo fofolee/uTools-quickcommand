@@ -13,18 +13,18 @@
       <div
         v-for="(message, index) in messages"
         :key="index"
-        v-memo="[message.role, message.content, renderMd]"
+        v-memo="[message.role, message.content, renderMd, isStreamingMessage(index)]"
         class="chat-message-wrapper"
       >
         <div :class="['chat-message', message.role]">
           <div class="message-bubble">
             <div
-              v-if="message.role === 'assistant' && renderMd"
+              v-if="message.role === 'assistant' && renderMd && !isStreamingMessage(index)"
               class="message-content markdown"
               v-html="getAssistantMsg(message.content)"
             />
             <div
-              v-else-if="message.role === 'assistant' && !renderMd"
+              v-else-if="message.role === 'assistant'"
               class="message-content pre-text"
               v-text="message.content"
             />
@@ -53,6 +53,11 @@ export default defineComponent({
     renderMd: {
       type: Boolean,
       default: true,
+    },
+    // 正在流式输出：正文先按纯文本渲染，等输出结束再做一次 markdown 渲染
+    streaming: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ["update-code"],
@@ -83,6 +88,10 @@ export default defineComponent({
 
     getAssistantMsg(content) {
       return window.aiResponseParser(content);
+    },
+
+    isStreamingMessage(index) {
+      return this.streaming && index === this.messages.length - 1;
     },
 
     getUserMsg(content) {
