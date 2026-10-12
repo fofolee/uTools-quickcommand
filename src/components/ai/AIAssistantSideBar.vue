@@ -266,26 +266,33 @@ export default defineComponent({
     updateCodeFromResponse() {
       if (!this.autoUpdateCode) return;
 
-      const code = this.extractCode(
+      const codes = this.extractCodes(
         this.chatHistory[this.chatHistory.length - 1]?.content
       );
 
-      if (code) {
-        this.$emit("update-code", "replace", code);
-      } else {
+      if (codes.length === 1) {
+        this.$emit("update-code", "replace", codes[0]);
+      } else if (!codes.length) {
         window.utools.showNotification("未找到完整代码块，已跳过自动更新");
+      } else {
+        // 多段代码无法判断该用哪一段，直接替换会把脚本换成片段
+        window.utools.showNotification(
+          `回复里有 ${codes.length} 个代码块，已跳过自动更新，请用代码块右上角按钮选择替换`
+        );
       }
     },
-    extractCode(content = "") {
-      // 推理模型的思考内容里常有代码片段，先剔除，避免取错
-      const answer = content.replace(/<think>[\s\S]*?<\/think>/g, "");
-      const blocks = [
+    extractCodes(content = "") {
+      // 只取最后一个 </think> 之后的内容：思考里常有代码片段，何况流式标记可能残缺
+      // （没有 <think> 开头但有一个 </think> 收尾），照搬全篇会把思考里的片段当成结果
+      const answer = content
+        .split(/<\/think(?:ing)?>/i)
+        .pop()
+        .replace(/<think(?:ing)?>[\s\S]*$/i, "");
+      return [
         ...answer.matchAll(
           /^[ \t]*```[ \t]*[^\s`]*[ \t]*\r?\n([\s\S]*?)\r?\n?[ \t]*```/gm
         ),
-      ];
-      // 取最后一个完整代码块：模型常见“先给片段，再给完整代码”
-      return blocks.length ? blocks[blocks.length - 1][1] : "";
+      ].map((match) => match[1]);
     },
     stopStreaming() {
       this.streamingResponse = false;
