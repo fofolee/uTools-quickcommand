@@ -18,6 +18,7 @@
     <!-- 聊天记录区域 -->
     <AIChatHistory
       :messages="chatHistory"
+      :streaming="streamingResponse"
       @update-code="(...event) => $emit('update-code', ...event)"
       :render-md="renderMd"
     />
@@ -208,6 +209,20 @@ export default defineComponent({
       this.prompt = "";
 
       const presetContext = this.getPresetContext();
+      const assistantMessage = this.chatHistory[this.chatHistory.length - 1];
+
+      // 分片先在本地攒着，定时合并写入：长回答每来一个分片就重排一次整条消息会卡死
+      let buffered = "";
+      let flushTimer = null;
+      const flushBufferedChunks = () => {
+        if (flushTimer) {
+          clearTimeout(flushTimer);
+          flushTimer = null;
+        }
+        if (!buffered) return;
+        assistantMessage.content += buffered;
+        buffered = "";
+      };
 
       try {
         const response = await window.quickcommand.askAI(
@@ -221,36 +236,63 @@ export default defineComponent({
             onFetch: (controller) => {
               this.currentRequest = controller;
             },
-            onStream: (text, done) => {
-              if (text) {
-                this.chatHistory[this.chatHistory.length - 1].content += text;
-              }
-
-              if (done) {
-                this.streamingResponse = false;
-                if (this.autoUpdateCode) {
-                  const response =
-                    this.chatHistory[this.chatHistory.length - 1].content;
-                  const code = response.match(
-                    /```[a-z]*\n([\s\S]*?)\n```/
-                  )?.[1];
-
-                  if (!code) return;
-
-                  this.$emit("update-code", "replace", code);
-                }
+            onStream: (text) => {
+              if (!text) return;
+              buffered += text;
+              if (!flushTimer) {
+                flushTimer = setTimeout(flushBufferedChunks, 100);
               }
             },
           }
         );
 
-        if (!response.success && !response.cancelled) {
+        // 先把剩下的分片并进去，保证抽取代码时拿到完整内容
+        flushBufferedChunks();
+
+        // 以请求的最终结果为准，不再依赖流式接口的 done 事件
+        if (response.success) {
+          this.updateCodeFromResponse();
+        } else if (!response.cancelled) {
           window.quickcommand.showMessageBox(response.error, "error");
         }
       } catch (error) {
+        flushBufferedChunks();
         window.quickcommand.showMessageBox(error.message, "error");
+      } finally {
         this.streamingResponse = false;
+        this.currentRequest = null;
       }
+    },
+    updateCodeFromResponse() {
+      if (!this.autoUpdateCode) return;
+
+      const codes = this.extractCodes(
+        this.chatHistory[this.chatHistory.length - 1]?.content
+      );
+
+      if (codes.length === 1) {
+        this.$emit("update-code", "replace", codes[0]);
+      } else if (!codes.length) {
+        window.utools.showNotification("未找到完整代码块，已跳过自动更新");
+      } else {
+        // 多段代码无法判断该用哪一段，直接替换会把脚本换成片段
+        window.utools.showNotification(
+          `回复里有 ${codes.length} 个代码块，已跳过自动更新，请用代码块右上角按钮选择替换`
+        );
+      }
+    },
+    extractCodes(content = "") {
+      // 只取最后一个 </think> 之后的内容：思考里常有代码片段，何况流式标记可能残缺
+      // （没有 <think> 开头但有一个 </think> 收尾），照搬全篇会把思考里的片段当成结果
+      const answer = content
+        .split(/<\/think(?:ing)?>/i)
+        .pop()
+        .replace(/<think(?:ing)?>[\s\S]*$/i, "");
+      return [
+        ...answer.matchAll(
+          /^[ \t]*```[ \t]*[^\s`]*[ \t]*\r?\n([\s\S]*?)\r?\n?[ \t]*```/gm
+        ),
+      ].map((match) => match[1]);
     },
     stopStreaming() {
       this.streamingResponse = false;

@@ -13,17 +13,18 @@
       <div
         v-for="(message, index) in messages"
         :key="index"
+        v-memo="[message.role, message.content, renderMd, isStreamingMessage(index)]"
         class="chat-message-wrapper"
       >
         <div :class="['chat-message', message.role]">
           <div class="message-bubble">
             <div
-              v-if="message.role === 'assistant' && renderMd"
+              v-if="message.role === 'assistant' && renderMd && !isStreamingMessage(index)"
               class="message-content markdown"
               v-html="getAssistantMsg(message.content)"
             />
             <div
-              v-else-if="message.role === 'assistant' && !renderMd"
+              v-else-if="message.role === 'assistant'"
               class="message-content pre-text"
               v-text="message.content"
             />
@@ -52,6 +53,11 @@ export default defineComponent({
     renderMd: {
       type: Boolean,
       default: true,
+    },
+    // 正在流式输出：正文先按纯文本渲染，等输出结束再做一次 markdown 渲染
+    streaming: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ["update-code"],
@@ -84,6 +90,10 @@ export default defineComponent({
       return window.aiResponseParser(content);
     },
 
+    isStreamingMessage(index) {
+      return this.streaming && index === this.messages.length - 1;
+    },
+
     getUserMsg(content) {
       content = content.replace(
         /这是当前代码：\n-----代码开始-----([\s\S]*?)-----代码结束-----\n/g,
@@ -93,9 +103,14 @@ export default defineComponent({
     },
 
     setupMessageActions() {
-      const codeBlocks = document.querySelectorAll(".message-content pre code");
+      const root = this.$el;
+      if (!root) return;
+
+      const codeBlocks = root.querySelectorAll(".message-content pre code");
       codeBlocks.forEach((codeBlock) => {
-        if (codeBlock.querySelector(".code-actions")) return;
+        // 按钮挂在 pre 上，之前查的是 code 内部，导致每次重复插入
+        const pre = codeBlock.parentNode;
+        if (pre.querySelector(".code-actions")) return;
 
         const actionGroup = document.createElement("div");
         actionGroup.className = "code-actions";
@@ -105,7 +120,7 @@ export default defineComponent({
         copyBtn.title = "复制代码";
         copyBtn.onclick = () => {
           navigator.clipboard.writeText(codeBlock.textContent);
-          window.quickcommand.showNotification("代码已复制到剪贴板");
+          window.utools.showNotification("代码已复制到剪贴板");
         };
 
         const insertBtn = document.createElement("button");
@@ -128,7 +143,7 @@ export default defineComponent({
         codeBlock.parentNode.appendChild(actionGroup);
       });
 
-      const links = document.querySelectorAll(".message-content a");
+      const links = root.querySelectorAll(".message-content a");
       links.forEach((link) => {
         if (link.hasAttribute("data-processed")) return;
 
@@ -156,6 +171,12 @@ export default defineComponent({
         });
       },
       deep: true,
+    },
+    // 切换渲染方式会重建全部消息 DOM，需要重新挂载代码块按钮
+    renderMd() {
+      this.$nextTick(() => {
+        this.updateView();
+      });
     },
   },
   beforeUnmount() {

@@ -167,18 +167,19 @@ function parseModelsResponse(response, apiType) {
   }
 }
 
-let reasoning_content_start = false;
-function processContentWithReason(response, onStream) {
+// 思考内容的状态跟着单次请求走：之前用模块级变量，请求中断在思考阶段时会残留 true，
+// 下一次请求的思考就不再包 <think>，导致思考里的代码片段被当成正文取走
+function processContentWithReason(response, onStream, reasoningState) {
   if (response.reasoning_content) {
-    if (!reasoning_content_start) {
-      reasoning_content_start = true;
+    if (!reasoningState.started) {
+      reasoningState.started = true;
       onStream("<think>", false);
     }
     onStream(response.reasoning_content, false);
   }
   if (response.content) {
-    if (reasoning_content_start) {
-      reasoning_content_start = false;
+    if (reasoningState.started) {
+      reasoningState.started = false;
       onStream("</think>", false);
     }
     onStream(response.content, false);
@@ -186,9 +187,9 @@ function processContentWithReason(response, onStream) {
 }
 
 // 处理 OpenAI 流式响应
-async function handleOpenAIStreamResponse(line, onStream) {
+async function handleOpenAIStreamResponse(line, onStream, reasoningState) {
   if (line.startsWith("data:")) {
-    const jsonStr = line.replace(/^data:[ ]*/, "");
+    const jsonStr = line.replace(/^data:[ ]*/, "").trim();
     if (jsonStr === "[DONE]") {
       onStream("", true);
       return;
@@ -196,13 +197,13 @@ async function handleOpenAIStreamResponse(line, onStream) {
     const json = JSON.parse(jsonStr);
     const response = json.choices[0]?.delta;
     if (response) {
-      processContentWithReason(response, onStream);
+      processContentWithReason(response, onStream, reasoningState);
     }
   }
 }
 
 // 处理 Ollama 流式响应
-async function handleOllamaStreamResponse(line, onStream) {
+async function handleOllamaStreamResponse(line, onStream, reasoningState) {
   const json = JSON.parse(line);
   if (json.done) {
     onStream("", true);
@@ -210,21 +211,21 @@ async function handleOllamaStreamResponse(line, onStream) {
   }
   const response = json.message;
   if (response) {
-    processContentWithReason(response, onStream);
+    processContentWithReason(response, onStream, reasoningState);
   }
 }
 
 // 处理 uTools AI 流式响应
-async function handleUToolsAIStreamResponse(response, onStream) {
-  processContentWithReason(response, onStream);
+async function handleUToolsAIStreamResponse(response, onStream, reasoningState) {
+  processContentWithReason(response, onStream, reasoningState);
 }
 
 // 处理流式响应
-async function handleStreamResponse(response, apiConfig, onStream) {
+async function handleStreamResponse(response, apiConfig, onStream, reasoningState) {
   // 处理 uTools AI 响应
   if (apiConfig.apiType === API_TYPES.UTOOLS) {
     try {
-      await handleUToolsAIStreamResponse(response, onStream);
+      await handleUToolsAIStreamResponse(response, onStream, reasoningState);
       return { success: true };
     } catch (error) {
       throw error;
@@ -249,9 +250,9 @@ async function handleStreamResponse(response, apiConfig, onStream) {
         if (line.trim()) {
           try {
             if (apiConfig.apiType === API_TYPES.OPENAI) {
-              await handleOpenAIStreamResponse(line, onStream);
+              await handleOpenAIStreamResponse(line, onStream, reasoningState);
             } else {
-              await handleOllamaStreamResponse(line, onStream);
+              await handleOllamaStreamResponse(line, onStream, reasoningState);
             }
           } catch (e) {
             console.error("解析响应失败:", e);
@@ -264,9 +265,9 @@ async function handleStreamResponse(response, apiConfig, onStream) {
     if (buffer.trim()) {
       try {
         if (apiConfig.apiType === API_TYPES.OPENAI) {
-          await handleOpenAIStreamResponse(buffer, onStream);
+          await handleOpenAIStreamResponse(buffer, onStream, reasoningState);
         } else {
-          await handleOllamaStreamResponse(buffer, onStream);
+          await handleOllamaStreamResponse(buffer, onStream, reasoningState);
         }
       } catch (e) {
         console.error("解析剩余响应失败:", e);
@@ -333,10 +334,17 @@ async function chat(content, apiConfig, options = {}) {
 
     // 用于收集完整响应
     let fullResponse = "";
+    // 保证 done 只回调一次
+    let doneEmitted = false;
+    // 本次请求的思考内容状态
+    const reasoningState = { started: false };
 
     // 包装 onStream 回调以收集完整响应并更新进度条
     const streamHandler = (chunk, isDone) => {
-      if (!isDone) {
+      if (isDone) {
+        if (doneEmitted) return;
+        doneEmitted = true;
+      } else {
         fullResponse += chunk;
         // 更新进度条显示最新的响应内容
         if (processBar) {
@@ -361,7 +369,7 @@ async function chat(content, apiConfig, options = {}) {
             messages: messages,
           },
           (chunk) => {
-            handleUToolsAIStreamResponse(chunk, streamHandler);
+            handleUToolsAIStreamResponse(chunk, streamHandler, reasoningState);
           }
         );
         onFetch(controller);
@@ -425,7 +433,8 @@ async function chat(content, apiConfig, options = {}) {
     const result = await handleStreamResponse(
       response,
       apiConfig,
-      streamHandler
+      streamHandler,
+      reasoningState
     );
 
     // 如果请求被取消，返回取消状态
@@ -433,6 +442,9 @@ async function chat(content, apiConfig, options = {}) {
       processBar?.close();
       return result;
     }
+
+    // 部分接口不发 [DONE] 就直接关流，这里兜底补发结束事件
+    streamHandler("", true);
 
     // 完成时更新进度条并关闭
     if (processBar) {

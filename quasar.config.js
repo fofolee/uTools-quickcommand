@@ -55,6 +55,17 @@ module.exports = configure(function (ctx) {
     build: {
       vueRouterMode: "hash", // available values: 'hash', 'history'
 
+      // 产物里的 development 入口指向 quasar dev 的 8080，uTools 开发者工具加载该目录时会优先连它，
+      // 没启动 dev server 就是白屏，所以打包完直接去掉
+      afterBuild: async ({ quasarConf }) => {
+        const fs = require("fs");
+        const pluginJson = path.join(quasarConf.build.distDir, "plugin.json");
+        if (!fs.existsSync(pluginJson)) return;
+        const pluginConfig = JSON.parse(fs.readFileSync(pluginJson, "utf8"));
+        delete pluginConfig.development;
+        fs.writeFileSync(pluginJson, JSON.stringify(pluginConfig, null, 2));
+      },
+
       // transpile: false,
       // publicPath: '/',
 

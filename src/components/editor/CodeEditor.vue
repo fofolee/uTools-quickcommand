@@ -411,7 +411,16 @@ export default defineComponent({
     },
     updateEditorValue(type, value) {
       if (type === "replace") {
-        this.codeEditor.setValue(value);
+        // 走 executeEdits 而不是 setValue，保留撤销记录，AI 更新错了可以 Ctrl+Z 恢复
+        this.codeEditor.pushUndoStop();
+        this.codeEditor.executeEdits("ai-assistant", [
+          {
+            range: this.codeEditor.getModel().getFullModelRange(),
+            text: value,
+            forceMoveMarkers: true,
+          },
+        ]);
+        this.codeEditor.pushUndoStop();
       } else if (type === "insert") {
         this.replaceEditorSelection(value);
       }
