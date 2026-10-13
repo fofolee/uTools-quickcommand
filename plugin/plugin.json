@@ -70,5 +70,122 @@
       ],
       "icon": "features/server.png"
     }
-  ]
+  ],
+  "tools": {
+    "qc_list_commands": {
+      "description": "列出用户自己创建的快捷命令（只返回摘要，不含脚本正文）。可用 tag、keyword、program、enabled 过滤。插件内置的 default_ 命令不会列出，也不能通过 MCP 读写。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tag": { "type": "string", "description": "只看某个标签下的命令" },
+          "keyword": { "type": "string", "description": "按名称、关键词、匹配规则、标签模糊搜索" },
+          "program": {
+            "type": "string",
+            "enum": ["quickcommand", "quickcomposer", "html", "shell", "applescript", "cmd", "powershell", "python", "javascript", "ruby", "php", "c", "csharp", "lua", "perl", "custom"],
+            "description": "只看某种执行方式的命令"
+          },
+          "enabled": { "type": "boolean", "description": "只看已启用（true）或已禁用（false）的命令" }
+        }
+      }
+    },
+    "qc_get_command": {
+      "description": "按 code 取一条快捷命令的完整 JSON（含脚本正文、匹配规则、输出方式）。修改前先读一次，改完用 qc_update_command 整体写回。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "description": "命令的唯一标识，由 qc_list_commands 返回" }
+        },
+        "required": ["code"]
+      }
+    },
+    "qc_list_tags": {
+      "description": "列出所有标签以及每个标签下的命令数量，用于把新命令归类和按标签筛选。",
+      "inputSchema": { "type": "object", "additionalProperties": false }
+    },
+    "qc_get_schema": {
+      "description": "返回快捷命令的数据结构说明、各种 program 和匹配类型的含义、输出方式枚举，以及可直接照抄的完整示例。第一次创建或修改命令之前先调用它。",
+      "inputSchema": { "type": "object", "additionalProperties": false }
+    },
+    "qc_create_command": {
+      "description": "新建一条快捷命令。传入命令对象（字段说明见 qc_get_schema），服务端会补齐 code、匹配规则的 label 等派生字段，并注册到 uTools 让它可以被关键词唤起。返回新建命令的完整内容和 code。参数不合法时返回 errors 数组，按提示改完重试。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "type": "object",
+            "description": "完整命令对象，至少包含 program、features.explain、features.cmds，其余字段参考 qc_get_schema",
+            "properties": {
+              "program": { "type": "string", "description": "执行方式，如 quickcommand、shell、python" },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "explain": { "type": "string", "description": "命令名称，不能为空" },
+                  "cmds": { "type": "array", "description": "触发方式数组：关键词字符串，或 {type, match} 形式的匹配规则" },
+                  "icon": { "type": "string", "description": "建议留空，留空时自动用该执行方式的默认图标" },
+                  "platform": { "type": "array", "items": { "type": "string" }, "description": "生效平台，默认三个平台都生效" }
+                },
+                "required": ["explain", "cmds"]
+              },
+              "cmd": { "type": "string", "description": "脚本正文，program 为 quickcommand 等脚本类型时必填" },
+              "output": { "type": "string", "enum": ["ignore", "nothing", "text", "html", "terminal", "clip", "send", "notice"], "description": "输出方式，默认 text" },
+              "tags": { "type": "array", "items": { "type": "string" }, "description": "标签，留空归入未分类" }
+            },
+            "required": ["program", "features"]
+          }
+        },
+        "required": ["command"]
+      }
+    },
+    "qc_update_command": {
+      "description": "整体替换一条命令的内容，按 code 定位，code 本身不能改。参数必须是一条完整命令：先用 qc_get_command 读出来，改完再整条写回，只传要改的字段会被判为参数不合法。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "description": "要修改的命令的 code" },
+          "command": { "type": "object", "description": "修改后的完整命令对象，字段说明见 qc_get_schema" }
+        },
+        "required": ["code", "command"]
+      }
+    },
+    "qc_delete_command": {
+      "description": "删除一条命令，返回被删除的命令内容以便确认删对了。插件内置的 default_ 命令不能删除。删除不可撤销，删之前先 qc_get_command 确认一下。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "description": "要删除的命令的 code" }
+        },
+        "required": ["code"]
+      }
+    },
+    "qc_set_enabled": {
+      "description": "启用或禁用一条或多条命令，等价于插件界面命令卡片上的开关。禁用的命令不会出现在 uTools 的搜索结果里，但数据仍然保留。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "codes": { "type": "array", "items": { "type": "string" }, "description": "要操作的命令 code 列表" },
+          "enabled": { "type": "boolean", "description": "true 启用，false 禁用" }
+        },
+        "required": ["codes", "enabled"]
+      }
+    },
+    "qc_run_command": {
+      "description": "运行一条命令并返回它的输出，等价于点界面上命令卡片的运行按钮。需要 uTools 保持运行，插件进程被回收时会返回提示。只返回第一次输出的内容，输出方式为剪贴板/通知/终端的命令不会回传结果。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "description": "要运行的命令的 code" },
+          "input": { "type": "string", "description": "替换脚本里 {{input}} 占位符的输入内容，可选" },
+          "timeout": { "type": "number", "description": "等待输出的毫秒数，默认 10000" }
+        },
+        "required": ["code"]
+      }
+    }
+  }
 }

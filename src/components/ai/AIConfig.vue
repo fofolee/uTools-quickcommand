@@ -161,7 +161,26 @@
         </draggable>
       </q-scroll-area>
     </div>
-    <div class="flex justify-end q-gutter-sm q-px-sm">
+    <q-separator class="q-mt-md" />
+    <div class="q-px-sm q-pt-md">
+      <div class="row items-center q-gutter-sm">
+        <q-icon name="smart_toy" size="20px" />
+        <span class="text-subtitle1 text-weight-bold">AI Agent（MCP）</span>
+        <q-toggle dense v-model="mcpPermissions.read" label="读取">
+          <q-tooltip>允许 Agent 查询命令列表和内容</q-tooltip>
+        </q-toggle>
+        <q-toggle dense v-model="mcpPermissions.write" label="写入">
+          <q-tooltip>允许 Agent 新建、修改、删除、启用/禁用命令</q-tooltip>
+        </q-toggle>
+        <q-toggle dense v-model="mcpPermissions.run" label="运行">
+          <q-tooltip>允许 Agent 直接运行命令，建议只在需要时开</q-tooltip>
+        </q-toggle>
+      </div>
+      <div class="text-grey-7 q-mt-xs" style="font-size: 12px">
+        开启后，外部 AI Agent 可以通过 uTools 的本地 MCP 服务增删改查快捷命令（需先在 uTools 设置 → MCP 服务里开启本地服务，并把地址写进 Agent 的配置）
+      </div>
+    </div>
+    <div class="flex justify-end q-gutter-sm q-px-sm q-mt-md">
       <q-btn flat color="grey" label="取消" v-close-popup />
       <q-btn
         flat
@@ -205,6 +224,7 @@ export default defineComponent({
       aiConfigs: [],
       models: [],
       tokenInputTypes: [],
+      mcpPermissions: { read: true, write: true, run: false },
     };
   },
   emits: ["save"],
@@ -238,6 +258,9 @@ export default defineComponent({
         "cfg_aiConfigs",
         window.lodashM.cloneDeep(this.aiConfigs)
       );
+      // MCP 权限存在本机 profile 里
+      this.$root.nativeProfile.mcpPermissions = { ...this.mcpPermissions };
+      this.$root.saveProfile();
       this.$emit("save");
     },
     deleteModel(index) {
@@ -272,6 +295,10 @@ export default defineComponent({
         id: config.id || getUniqueId(),
       })
     );
+    this.mcpPermissions = {
+      ...this.mcpPermissions,
+      ...(this.$root.nativeProfile.mcpPermissions || {}),
+    };
   },
 });
 </script>

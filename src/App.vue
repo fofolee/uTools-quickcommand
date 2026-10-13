@@ -38,6 +38,15 @@ export default defineComponent({
     };
   },
   created: function () {
+    // 给 preload 里的 MCP 工具用的桥接（运行命令需要界面侧的命令运行器）
+    window.qcBridge = {
+      runCommand: (code, input, timeout) =>
+        this.runCommand(code, input, timeout),
+    };
+    // Agent 改了命令后刷新列表
+    window.addEventListener("qc:mcp-changed", () => {
+      this.commandManager.getAllQuickCommands();
+    });
     this.init();
   },
   methods: {
